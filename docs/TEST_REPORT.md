@@ -1,7 +1,7 @@
 # Test Report
 
 Report date: 2026-07-12
-Build/commit: Current working source; replacement Git commit pending
+Build/commit: Validated implementation commit `b9659b0bae918d3309c7ea0dcf8447dad9109644`; privately published
 Release verdict: **NO-GO pending exact-production browser/offline QA and required human reviews**
 
 ## Evidence status
