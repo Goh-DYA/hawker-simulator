@@ -15,7 +15,7 @@ All shipped art and audio must be original and reproducible from repository sour
 | Queue overlays and editor | Original runtime geometry and DOM controls | Canvas lines/cells/badges plus HTML controls | Project-original | Counts, automatic routes, cardinal directions, bends, and saved custom paths implemented; development-browser screenshots captured |
 | UI icons | Original geometric SVG/CSS | SVG/CSS | Project-original | Implemented |
 | App icon | Repository-authored SVG | public/icons/icon.svg | Project-original; final visual review pending | Present |
-| Social share card | Original fictional hawker-centre illustration for social previews | public/og.png | Project-original | Present; human similarity/brand/cultural review pending |
+| Social share card | Original fictional hawker-centre illustration for social previews | public/og.png, 1731 × 908, SHA-256 `F372FE01C02080F235962DB6FD70C76D95970CBC51018C2927C13F13A2D10F06` | Project-original | Present; text/composition inspected, human similarity/brand/cultural review pending |
 | Environment/background | Original Community Courtyard kit | Canvas geometry | Project-original | Implemented; visual review pending |
 | Adaptive music, ambience, and audio cues | Repository-authored deterministic synthesis in `src/game/audio/AudioDirector.ts`; filtered oscillators, seeded phrase cycle, state-aware layers, and bounded gain buses | Web Audio nodes generated at runtime; no recorded or downloaded assets | Project-original | Implemented; automated lifecycle checks and human browser/peak-level review pending |
 | Fonts | System font stack | No bundled font | Platform-provided | Implemented |
