@@ -25,10 +25,11 @@ test("server-renders the release game shell", async () => {
   assert.match(html, /Run the centre\. Read the plate\./);
   assert.match(html, /data-testid="game-world"/);
   assert.match(html, /data-testid="build-catalogue"/);
-  assert.match(html, /Open centre/);
+  assert.match(html, /Start Breakfast/i);
   assert.match(html, /Open settings/);
   assert.match(html, /10×/);
-  assert.match(html, /Three ways to grow/);
+  assert.match(html, /Three feasible ways to grow/);
+  assert.match(html, /S\$4,200/);
   assert.match(html, />Access</);
   assert.match(html, /manifest\.webmanifest/);
   assert.doesNotMatch(html, /Your site is taking shape|react-loading-skeleton/);

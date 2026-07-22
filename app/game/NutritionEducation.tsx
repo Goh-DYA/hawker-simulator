@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { describeSgd, formatSgd } from "@/src/game/runtime/money";
 
 export type NutritionValueView =
   | { readonly status: "known"; readonly value: number }
@@ -27,6 +28,16 @@ export interface NutritionProfileView {
   readonly intentFits?: Readonly<Record<string, number | undefined>>;
 }
 
+export interface PreparationTermsView {
+  readonly priceCents: number;
+  readonly ingredientCostCents: number;
+  readonly preparationTimeMs: number;
+  readonly servingTimeMs: number;
+  readonly eatingTimeMs: number;
+  readonly starAppeal: number;
+  readonly demandModifierBasisPoints: number;
+}
+
 export interface NutritionVariantView {
   readonly id: string;
   readonly label: string;
@@ -34,6 +45,7 @@ export interface NutritionVariantView {
   readonly visualKey: string;
   readonly unlocked: boolean;
   readonly selected: boolean;
+  readonly terms: PreparationTermsView;
   readonly profile?: NutritionProfileView;
 }
 
@@ -82,6 +94,7 @@ export interface CustomerNutritionView {
   readonly healthImpact?: number;
   readonly healthPreferenceResult?: "matched" | "missed" | "unknown";
   readonly healthDecisionReasons?: readonly string[];
+  readonly servingTerms?: PreparationTermsView;
   readonly profile?: NutritionProfileView;
 }
 
@@ -424,6 +437,78 @@ function comparisonText(
   return candidate.value > current.value ? "Higher" : "Lower";
 }
 
+export function preparationDurationLabel(milliseconds: number): string {
+  const seconds = milliseconds / 1_000;
+  if (seconds < 60) {
+    return `${Number.isInteger(seconds) ? seconds : seconds.toFixed(1)} sec`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.round(seconds % 60);
+  return remainingSeconds === 0
+    ? `${minutes} min`
+    : `${minutes} min ${remainingSeconds} sec`;
+}
+
+export function demandModifierLabel(basisPoints: number): string {
+  const multiplier = (basisPoints / 10_000).toFixed(2);
+  const percentage = (basisPoints - 10_000) / 100;
+  const change = percentage === 0
+    ? "neutral"
+    : `${percentage > 0 ? "+" : ""}${percentage.toFixed(percentage % 1 === 0 ? 0 : 1)}%`;
+  return `${multiplier}\u00d7 (${change})`;
+}
+
+function PreparationMoney({ cents }: { readonly cents: number }) {
+  return (
+    <>
+      <span aria-hidden="true">{formatSgd(cents)}</span>
+      <span className="sr-only">{describeSgd(cents)}</span>
+    </>
+  );
+}
+
+export function PreparationTermsSummary({
+  terms,
+  label = "Preparation terms",
+  compact = false,
+}: {
+  readonly terms: PreparationTermsView;
+  readonly label?: string;
+  readonly compact?: boolean;
+}) {
+  return (
+    <dl
+      className={`preparation-terms${compact ? " is-compact" : ""}`}
+      aria-label={label}
+    >
+      <div>
+        <dt>Price</dt>
+        <dd><PreparationMoney cents={terms.priceCents} /></dd>
+      </div>
+      <div>
+        <dt>Ingredients</dt>
+        <dd><PreparationMoney cents={terms.ingredientCostCents} /></dd>
+      </div>
+      <div className="preparation-terms-timing">
+        <dt>Timing</dt>
+        <dd>
+          Prep {preparationDurationLabel(terms.preparationTimeMs)}
+          {" \u00b7 "}serve {preparationDurationLabel(terms.servingTimeMs)}
+          {" \u00b7 "}eat {preparationDurationLabel(terms.eatingTimeMs)}
+        </dd>
+      </div>
+      <div>
+        <dt>Star appeal</dt>
+        <dd>{ratingText(terms.starAppeal)}</dd>
+      </div>
+      <div>
+        <dt>Demand</dt>
+        <dd>{demandModifierLabel(terms.demandModifierBasisPoints)}</dd>
+      </div>
+    </dl>
+  );
+}
+
 export function VariantLabDialog({
   dishName,
   family,
@@ -503,8 +588,8 @@ export function VariantLabDialog({
           <button type="button" aria-label="Close Variant Lab" onClick={onClose}>×</button>
         </header>
         <p className="nutrition-lab-intro">
-          Choose the version this stall will serve. Every variant has its own nutrition and health
-          ratings; the dish&apos;s taste-and-popularity star rating stays the same.
+          Choose the version this stall will serve. Price, ingredient cost, timing, Star appeal,
+          demand, and nutrition can all change with the preparation.
         </p>
         <div className="nutrition-variant-list" role="radiogroup" aria-label={`${dishName} version`}>
           {family.variants.map((variant) => {
@@ -526,7 +611,14 @@ export function VariantLabDialog({
                     <small>{variant.unlocked ? (variant.selected ? "Currently served" : "Available now") : `Unlocks at mastery rank ${variant.unlockRank}`}</small>
                   </span>
                 </label>
-                <NutritionProfileSummary profile={profile} starRating={family.starRating} />
+                <PreparationTermsSummary
+                  terms={variant.terms}
+                  label={`${variant.label} preparation terms`}
+                />
+                <NutritionProfileSummary
+                  profile={profile}
+                  starRating={variant.terms.starAppeal}
+                />
                 {current && current.id !== variant.id ? (
                   <dl className="nutrition-delta-list" aria-label={`Compared with ${current.label}`}>
                     {COMPARISON_METRICS.map((metric) => (
@@ -542,7 +634,7 @@ export function VariantLabDialog({
           })}
         </div>
         <footer>
-          <p>Changes apply to future orders only and are freely reversible.</p>
+          <p>Changes apply to future orders only. Accepted orders keep their frozen terms.</p>
           <button type="button" className="primary-button" onClick={onClose}>Done</button>
         </footer>
       </section>
@@ -584,7 +676,8 @@ export function CustomerNutritionInspector({
     : undefined;
   const healthConditions = customer.healthConditionIds ?? [];
   const healthDecisionReasons = customer.healthDecisionReasons ?? [];
-  const orderedStarRating = customer.dishId ? starRating?.(customer.dishId) : undefined;
+  const orderedStarRating = customer.servingTerms?.starAppeal
+    ?? (customer.dishId ? starRating?.(customer.dishId) : undefined);
   const resultCopy = customer.requestResult === "matched"
     ? `Matched · ${INTENT_MATCH_COPY[customer.intentId ?? ""] ?? "Visit intent"}`
     : customer.requestResult === "missed"
@@ -674,6 +767,17 @@ export function CustomerNutritionInspector({
         <div className="customer-order-summary">
           <strong>{dishLabel(customer.dishId)}</strong>
           {selectedVariantLabel ? <small>{selectedVariantLabel}</small> : null}
+        </div>
+      ) : null}
+      {customer.servingTerms ? (
+        <div className="customer-frozen-terms">
+          <strong>Frozen order terms</strong>
+          <small>Captured when this order was accepted.</small>
+          <PreparationTermsSummary
+            terms={customer.servingTerms}
+            label="Frozen order terms"
+            compact
+          />
         </div>
       ) : null}
       <NutritionProfileSummary

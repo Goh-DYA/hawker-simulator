@@ -7,6 +7,7 @@ import {
   getGlobalWayfinding,
   getUtilityInfluence,
   mealConsumptionFraction,
+  sgdToCents,
   utilitySatisfactionBonus,
   type PlaceableDefinition,
   type PlacedObject,
@@ -30,6 +31,8 @@ function utilityFixture(itemId: string): {
     allowedRotations: item.rotations,
     blocksMovement: item.walkability === "blocked",
     price: item.price,
+    priceCents: sgdToCents(item.price),
+    upkeepCents: sgdToCents(0),
     utility: utilityEffectsForPlaceable(item),
   };
   return {

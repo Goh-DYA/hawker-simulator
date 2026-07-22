@@ -32,6 +32,12 @@ function positiveInteger(value: number, path: string, issues: ValidationIssue[])
   if (!Number.isInteger(value) || value <= 0) issues.push({ path, message: "must be a positive integer" });
 }
 
+function nonNegativeSafeInteger(value: number, path: string, issues: ValidationIssue[]): void {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    issues.push({ path, message: "must be a non-negative safe integer" });
+  }
+}
+
 function gridPoint(
   value: unknown,
   path: string,
@@ -104,6 +110,11 @@ function validateCatalogInternal(catalog: SimulationCatalog): readonly Validatio
       }
     }
     positiveNumber(definition.price, `${path}.price`, issues, true);
+    nonNegativeSafeInteger(definition.priceCents, `${path}.priceCents`, issues);
+    nonNegativeSafeInteger(definition.upkeepCents, `${path}.upkeepCents`, issues);
+    if (definition.kind !== "stall" && definition.upkeepCents !== 0) {
+      issues.push({ path: `${path}.upkeepCents`, message: "must be zero for non-stalls" });
+    }
     if (
       definition.refundRate !== undefined &&
       (!Number.isFinite(definition.refundRate) || definition.refundRate < 0 || definition.refundRate > 1)
@@ -134,6 +145,11 @@ function validateCatalogInternal(catalog: SimulationCatalog): readonly Validatio
           if (!isValidSimulationId(dishId)) issues.push({ path: `${path}.stall.dishIds`, message: "contains an invalid dish ID" });
           else if (!catalog.dishes[dishId]) issues.push({ path: `${path}.stall.dishIds`, message: `references unknown dish ${dishId}` });
         }
+        for (const [index, upgrade] of (definition.stall.upgradeLevels ?? []).entries()) {
+          const upgradePath = `${path}.stall.upgradeLevels[${index}]`;
+          positiveNumber(upgrade.cost, `${upgradePath}.cost`, issues, true);
+          nonNegativeSafeInteger(upgrade.costCents, `${upgradePath}.costCents`, issues);
+        }
       }
     }
     if (definition.seatPoints !== undefined && !Array.isArray(definition.seatPoints)) {
@@ -163,8 +179,23 @@ function validateCatalogInternal(catalog: SimulationCatalog): readonly Validatio
     if (!isValidSimulationId(dish.id)) issues.push({ path: `${path}.id`, message: "must be a non-empty safe ID" });
     else if (dish.id !== key) issues.push({ path: `${path}.id`, message: "must match its record key" });
     positiveNumber(dish.price, `${path}.price`, issues, true);
+    nonNegativeSafeInteger(dish.priceCents, `${path}.priceCents`, issues);
+    nonNegativeSafeInteger(dish.ingredientCostCents, `${path}.ingredientCostCents`, issues);
+    if (dish.ingredientCostCents > dish.priceCents) {
+      issues.push({ path: `${path}.ingredientCostCents`, message: "must not exceed priceCents" });
+    }
     positiveNumber(dish.preparationMs, `${path}.preparationMs`, issues);
+    if (dish.servingMs !== undefined) {
+      nonNegativeSafeInteger(dish.servingMs, `${path}.servingMs`, issues);
+    }
     positiveNumber(dish.eatingMs, `${path}.eatingMs`, issues);
+    if (dish.demandModifierBasisPoints !== undefined) {
+      nonNegativeSafeInteger(
+        dish.demandModifierBasisPoints,
+        `${path}.demandModifierBasisPoints`,
+        issues,
+      );
+    }
     if (!Number.isFinite(dish.quality) || dish.quality < 0 || dish.quality > 5) {
       issues.push({ path: `${path}.quality`, message: "must be between zero and five" });
     }
@@ -215,6 +246,7 @@ function validateCatalogInternal(catalog: SimulationCatalog): readonly Validatio
     if (!isValidSimulationId(archetype.id)) issues.push({ path: `${path}.id`, message: "must be a non-empty safe ID" });
     else if (archetype.id !== key) issues.push({ path: `${path}.id`, message: "must match its record key" });
     positiveNumber(archetype.budget, `${path}.budget`, issues, true);
+    nonNegativeSafeInteger(archetype.budgetCents, `${path}.budgetCents`, issues);
     positiveNumber(archetype.patienceMs, `${path}.patienceMs`, issues);
     positiveNumber(archetype.walkingSpeed, `${path}.walkingSpeed`, issues);
     for (const field of ["priceSensitivity", "qualitySensitivity", "queueSensitivity", "distanceSensitivity"] as const) {

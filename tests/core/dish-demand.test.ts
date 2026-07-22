@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   boundedDishDemandAppeal,
+  sgdToCents,
   stepSimulation,
   type GameState,
   type SimulationCatalog,
@@ -10,6 +11,8 @@ import { makeGame, TEST_CATALOG } from "./fixtures";
 function demandCatalog(): SimulationCatalog {
   const sharedDish = {
     price: 6,
+    priceCents: sgdToCents(6),
+    ingredientCostCents: sgdToCents(0),
     preparationMs: 100_000,
     eatingMs: 1_000,
     quality: 0.7,

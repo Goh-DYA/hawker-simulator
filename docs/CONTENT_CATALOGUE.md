@@ -34,7 +34,7 @@ Dish count is 54: twelve four-dish stalls plus two three-dish stalls.
 
 ### Dish production matrix
 
-| Dish | Price C | Required readable depiction / vessel |
+| Dish | Simplified in-game price (S$) | Required readable depiction / vessel |
 |---|---:|---|
 | Poached chicken rice | 7 | pale sliced chicken, rice mound, plate |
 | Roast chicken rice | 8 | amber chicken, rice mound, plate |

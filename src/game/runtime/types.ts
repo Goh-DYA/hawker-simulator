@@ -1,11 +1,17 @@
 import type {
   AccessPoint,
   GridPoint,
+  MoneyCents,
+  MoneyDeltaCents,
   NutritionIntent,
   NutritionProfileStatus,
   NutritionRequestResult,
   NutritionValue,
+  ObjectiveKind,
+  PeriodLedgerEntryKind,
   QueueDirection,
+  ServicePeriodId,
+  ServicePeriodPhase,
   VisitRatingComponents,
 } from "@/src/game/core";
 import type { SatisfactionTip } from "./satisfactionInsight";
@@ -22,13 +28,84 @@ export type HealthConditionId =
 
 export interface RuntimeObjective {
   readonly id: string;
+  readonly kind: ObjectiveKind;
   readonly title: string;
   readonly description: string;
+  readonly accessibleDescription: string;
   readonly progress: number;
   readonly target: number;
+  readonly rewardCashCents: MoneyCents;
+  /** @deprecated Compatibility-only whole-SGD view. */
   readonly rewardCash: number;
   readonly rewardXp: number;
   readonly completed: boolean;
+  readonly accepted: boolean;
+  readonly skipped?: boolean;
+  readonly canAccept?: boolean;
+  readonly canSkip: boolean;
+}
+
+export interface RuntimeServicePeriod {
+  readonly sequenceId: number;
+  readonly day: number;
+  readonly id: ServicePeriodId;
+  readonly label: string;
+  readonly phase: ServicePeriodPhase;
+  readonly startMinute: number;
+  readonly endMinute: number;
+  readonly clockLabel: string;
+  readonly arrivalElapsedMs: number;
+  readonly drainElapsedMs: number;
+  readonly arrivalRemainingMs: number;
+  readonly drainRemainingMs: number;
+  readonly configurationLocked: boolean;
+  readonly canAdvance: boolean;
+  readonly actionLabel: string;
+}
+
+export interface RuntimePeriodLedgerEntry {
+  readonly id: string;
+  readonly periodSequenceId: number;
+  readonly kind: PeriodLedgerEntryKind;
+  readonly amountCents: MoneyCents;
+  readonly tick: number;
+  readonly referenceId?: string;
+}
+
+export interface RuntimePeriodLedger {
+  readonly periodSequenceId: number;
+  readonly openingCashCents: MoneyCents;
+  readonly grossSalesCents: MoneyCents;
+  readonly ingredientCostsCents: MoneyCents;
+  readonly refundsCents: MoneyCents;
+  readonly purchasesCents: MoneyCents;
+  readonly resaleCents: MoneyCents;
+  readonly upkeepCents: MoneyCents;
+  readonly objectiveRewardsCents: MoneyCents;
+  readonly milestoneRewardsCents: MoneyCents;
+  readonly recoveryCents: MoneyCents;
+  readonly contributionCents: MoneyDeltaCents;
+  readonly operatingMargin?: number;
+  /** Sum of all cash-affecting entries recorded for this period. */
+  readonly recordedCashMovementCents: MoneyDeltaCents;
+  /** Current cash less the immutable cash balance captured when planning began. */
+  readonly actualCashMovementCents: MoneyDeltaCents;
+  readonly reconciliationDeltaCents: MoneyDeltaCents;
+  readonly reconcilesToCash: boolean;
+  readonly entries: readonly RuntimePeriodLedgerEntry[];
+}
+
+export type RuntimeDebriefCauseCode =
+  | "period-complete"
+  | "served-timeout"
+  | "unserved-departure";
+
+export interface RuntimePeriodDebrief {
+  readonly periodSequenceId: number;
+  readonly servedVisits: number;
+  readonly timedOutServedVisits: number;
+  readonly unservedDepartures: number;
+  readonly causeCodes: readonly RuntimeDebriefCauseCode[];
 }
 
 export interface RuntimeNutritionProfileSummary {
@@ -53,6 +130,24 @@ export interface RuntimeNutritionProfileSummary {
   readonly intentFits?: Partial<Readonly<Record<NutritionIntent, number>>>;
 }
 
+/** Fully resolved player-facing terms for one preparation or frozen order line. */
+export interface RuntimeServingTermsSummary {
+  readonly priceCents: MoneyCents;
+  readonly ingredientCostCents: MoneyCents;
+  readonly preparationTimeMs: number;
+  readonly servingTimeMs: number;
+  readonly eatingTimeMs: number;
+  readonly starAppeal: number;
+  readonly demandModifierBasisPoints: number;
+}
+
+export interface RuntimePreparationSummary {
+  readonly preparationId: string;
+  readonly dishId: string;
+  readonly variantId?: string;
+  readonly terms: RuntimeServingTermsSummary;
+}
+
 export interface RuntimeNutritionVariantSummary {
   readonly id: string;
   readonly label: string;
@@ -61,12 +156,13 @@ export interface RuntimeNutritionVariantSummary {
   readonly visualKey: string;
   readonly unlocked: boolean;
   readonly selected: boolean;
+  readonly terms: RuntimeServingTermsSummary;
   readonly profile?: RuntimeNutritionProfileSummary;
 }
 
 export interface RuntimeNutritionFamilySummary {
   readonly dishId: string;
-  /** Taste and popularity score; unlike health ratings, this is shared by every variant. */
+  /** Active preparation's taste-and-popularity score. */
   readonly starRating?: number;
   readonly defaultVariantId: string;
   readonly activeVariantId: string;
@@ -111,6 +207,8 @@ export interface RuntimeCustomerNutritionSummary {
   readonly healthImpact?: number;
   readonly healthPreferenceResult?: NutritionRequestResult;
   readonly healthDecisionReasons: readonly string[];
+  /** Immutable serving terms captured when this order was accepted. */
+  readonly servingTerms?: RuntimeServingTermsSummary;
   readonly profile?: RuntimeNutritionProfileSummary;
 }
 
@@ -119,6 +217,7 @@ export interface RuntimeStallMastery {
   readonly points: number;
   readonly rank: number;
   readonly upgradeLevel: 1 | 2 | 3 | 4;
+  /** Legacy authored whole-SGD catalogue display; the purchase boundary resolves it to MoneyCents. */
   readonly nextUpgradeCost?: number;
   readonly requiredRank?: number;
 }
@@ -142,13 +241,19 @@ export interface RuntimeStallSummary {
 }
 
 export interface RuntimeSnapshot {
+  readonly cashCents: MoneyCents;
+  /** @deprecated Compatibility-only whole-SGD view. */
   cash: number;
   reputation: number;
   level: number;
   experience: number;
-  nextLevelExperience: number;
+  /** Null is the explicit authored-level-cap sentinel. */
+  nextLevelExperience: number | null;
   day: number;
   timeLabel: string;
+  readonly servicePeriod: RuntimeServicePeriod;
+  readonly periodLedger: RuntimePeriodLedger;
+  readonly periodDebrief?: RuntimePeriodDebrief;
   isOpen: boolean;
   speed: GameSpeed;
   quality: QualityMode;
@@ -172,6 +277,7 @@ export interface RuntimeSnapshot {
   unlockedContentIds: readonly string[];
   stallMenus: Readonly<Record<string, readonly string[]>>;
   activeDishVariants: Readonly<Record<string, string>>;
+  activePreparations: readonly RuntimePreparationSummary[];
   nutritionFamilies: readonly RuntimeNutritionFamilySummary[];
   nutritionPulse: RuntimeNutritionPulse;
   selectedCustomerId?: string;
@@ -201,6 +307,9 @@ export interface RuntimeEvent {
   message: string;
   importance?: "routine" | "important";
   groupKey?: string;
+  /** UI aggregation DTO; validated core events are converted before display. */
+  amountCents?: number;
+  /** @deprecated Use amountCents for monetary events. */
   amount?: number;
 }
 
@@ -222,10 +331,13 @@ export interface RuntimeController {
   rotateSelection(): void;
   undo(): void;
   toggleOpen(): boolean;
+  setStallOpen(objectId: string, open: boolean): boolean;
   setSpeed(speed: GameSpeed): void;
   setQuality(quality: QualityMode): void;
   setReducedMotion(enabled: boolean): void;
   setHighContrast(enabled: boolean): void;
+  /** Updates text drawn inside the game canvas independently of DOM CSS. */
+  setTextScale(scale: number): void;
   setDebugOverlay(enabled: boolean): void;
   zoomBy(delta: number): void;
   centreCamera(): void;
@@ -233,13 +345,16 @@ export interface RuntimeController {
   importState(value: unknown): void;
   reset(): void;
   spawnCustomer(): void;
-  addCash(amount: number): void;
+  addCash(amountCents: number): void;
   expandMap(): boolean;
   beginQueueEdit(objectId: string): boolean;
   setQueueDirection(objectId: string, direction: QueueDirection): boolean;
   finishQueueEdit(): void;
   setDishEnabled(stallId: string, dishId: string, enabled: boolean): boolean;
   setDishVariant(dishId: string, variantId: string): boolean;
+  acceptObjective(objectiveId: string): boolean;
+  /** Declines the complete three-offer board for the current period. */
+  skipObjective(): boolean;
   selectCustomer(customerId?: string): void;
   addAccessPoint(kind: AccessPoint["kind"]): void;
   selectAccessPoint(accessPointId?: string): void;

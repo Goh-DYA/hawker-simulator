@@ -1,4 +1,15 @@
-import { applyPurchase, applyRefund, calculateExpansionCost, calculateRefund, canAfford } from "./economy";
+import {
+  applyPurchaseCents,
+  applyResaleCents,
+  calculateExpansionCostCents,
+  calculateResaleCents,
+  canAffordCents,
+  createPeriodLedger,
+  economyWithCompatibilityAliases,
+  recordLedgerEntry,
+} from "./economy";
+import { asMoneyCents, asMoneyDeltaCents } from "./money";
+import { isConfigurationLocked } from "./servicePeriods";
 import {
   expandGridMap,
   getBlockedTileKeys,
@@ -53,6 +64,34 @@ function accept(state: GameState, events: readonly SimulationEvent[]): CommandRe
   return { state: { ...state, events }, accepted: true, events };
 }
 
+function recordCommandCash(
+  state: GameState,
+  kind: "purchase" | "resale",
+  amountCents: ReturnType<typeof asMoneyCents>,
+  referenceId: string,
+): GameState {
+  const sequenceId = state.servicePeriod.sequenceId;
+  const existing = state.periodLedgers[sequenceId] ?? createPeriodLedger(
+    sequenceId,
+    asMoneyCents(kind === "purchase"
+      ? state.economy.cashCents + amountCents
+      : state.economy.cashCents - amountCents),
+  );
+  return {
+    ...state,
+    periodLedgers: {
+      ...state.periodLedgers,
+      [sequenceId]: recordLedgerEntry(existing, {
+        id: `period-${sequenceId}-${kind}-${state.tick}-${existing.entries.length}`,
+        kind,
+        amountCents,
+        tick: state.tick,
+        referenceId,
+      }),
+    },
+  };
+}
+
 function isBuildCommand(command: GameCommand): command is BuildCommand {
   return (
     command.type === "place-object" ||
@@ -73,8 +112,13 @@ function withUndo(state: GameState, command: BuildCommand, before: UndoSnapshot)
   const entry = {
     commandType: command.type,
     snapshot: before,
-    currencyDelta: state.economy.currency - before.economy.currency,
-    lifetimeSpendDelta: state.economy.lifetimeSpend - before.economy.lifetimeSpend,
+    cashDeltaCents: asMoneyDeltaCents(state.economy.cashCents - before.economy.cashCents),
+    lifetimePurchasesDeltaCents: asMoneyCents(
+      state.economy.lifetimePurchasesCents - before.economy.lifetimePurchasesCents,
+    ),
+    lifetimeResaleDeltaCents: asMoneyCents(
+      state.economy.lifetimeResaleCents - before.economy.lifetimeResaleCents,
+    ),
     expansionCountDelta: state.progression.expansionCount - before.expansionCount,
     createdAtTick: state.tick,
   };
@@ -285,6 +329,7 @@ function restoreUndoSnapshot(state: GameState, entry: GameState["undoStack"][num
     entrance: snapshot.entrance,
     exit: snapshot.exit,
     objects: snapshot.objects,
+    recovery: snapshot.recovery,
   };
   const preservesStallTarget =
     entry.commandType === "configure-queue" || entry.commandType === "set-stall-queue-direction";
@@ -299,14 +344,14 @@ function restoreUndoSnapshot(state: GameState, entry: GameState["undoStack"][num
   const placedDefinition = placedObject ? state.catalog.placeables[placedObject.definitionId] : undefined;
   const placedStallHasOperated =
     placedDefinition?.kind === "stall" &&
-    (state.economy.lifetimeRevenue > snapshot.economy.lifetimeRevenue || state.progression.xp > snapshot.xp);
+    (state.economy.lifetimeGrossSalesCents > snapshot.economy.lifetimeGrossSalesCents || state.progression.xp > snapshot.xp);
   // Revenue and progression are intentionally retained across undo. Once a newly
   // placed stall has produced either, treating undo as a build-preview rollback
   // would let players keep the sale while erasing its full purchase cost. From
   // that point on, removing it follows the same resale/lifetime-spend policy as
   // the explicit remove-object command.
-  const refund = placedStallHasOperated && placedDefinition
-    ? calculateRefund(placedDefinition.price, placedDefinition.refundRate ?? 0.5)
+  const refundCents = placedStallHasOperated && placedDefinition
+    ? calculateResaleCents(placedDefinition.priceCents)
     : undefined;
   return {
     ...state,
@@ -317,13 +362,18 @@ function restoreUndoSnapshot(state: GameState, entry: GameState["undoStack"][num
     exit: snapshot.exit,
     objects: snapshot.objects,
     ...reconciled,
-    economy: {
+    economy: economyWithCompatibilityAliases({
       ...state.economy,
-      currency: refund === undefined ? state.economy.currency - entry.currencyDelta : state.economy.currency + refund,
-      lifetimeSpend: refund === undefined
-        ? state.economy.lifetimeSpend - entry.lifetimeSpendDelta
-        : state.economy.lifetimeSpend,
-    },
+      cashCents: asMoneyCents(refundCents === undefined
+        ? state.economy.cashCents - entry.cashDeltaCents
+        : state.economy.cashCents + refundCents),
+      lifetimePurchasesCents: refundCents === undefined
+        ? asMoneyCents(state.economy.lifetimePurchasesCents - entry.lifetimePurchasesDeltaCents)
+        : state.economy.lifetimePurchasesCents,
+      lifetimeResaleCents: refundCents === undefined
+        ? asMoneyCents(state.economy.lifetimeResaleCents - entry.lifetimeResaleDeltaCents)
+        : asMoneyCents(state.economy.lifetimeResaleCents + refundCents),
+    }),
     progression: {
       ...state.progression,
       expansionCount: state.progression.expansionCount - entry.expansionCountDelta,
@@ -333,6 +383,12 @@ function restoreUndoSnapshot(state: GameState, entry: GameState["undoStack"][num
 }
 
 export function dispatchCommand(state: GameState, command: GameCommand): CommandResult {
+  if (
+    isConfigurationLocked(state.servicePeriod.phase) &&
+    (command.type === "undo" || isBuildCommand(command) || command.type === "upgrade-stall")
+  ) {
+    return reject(state, "Configuration is locked during service and drain");
+  }
   if (command.type === "undo") {
     const entry = state.undoStack.at(-1);
     if (!entry) return reject(state, "There is no build action to undo");
@@ -348,7 +404,16 @@ export function dispatchCommand(state: GameState, command: GameCommand): Command
     ) {
       return reject(state, "Cannot undo expansion while a customer is in the expanded area");
     }
-    const restored = restoreUndoSnapshot(state, entry);
+    const restoredBase = restoreUndoSnapshot(state, entry);
+    const cashMovement = restoredBase.economy.cashCents - state.economy.cashCents;
+    const restored = cashMovement === 0
+      ? restoredBase
+      : recordCommandCash(
+          restoredBase,
+          cashMovement > 0 ? "resale" : "purchase",
+          asMoneyCents(Math.abs(cashMovement)),
+          `undo:${entry.commandType}`,
+        );
     return accept(restored, [commandEvent(state, true, `Undid ${entry.commandType}`)]);
   }
 
@@ -367,7 +432,8 @@ export function dispatchCommand(state: GameState, command: GameCommand): Command
     if (mastery.rank < requiredRank) return reject(state, `Mastery rank ${requiredRank} is required`);
     const upgrade = definition.stall.upgradeLevels?.find((candidate) => candidate.level === nextLevel);
     if (!upgrade) return reject(state, "This stall has no authored upgrade at that level");
-    if (!canAfford(state.economy, upgrade.cost)) return reject(state, "Insufficient currency");
+    const upgradeCostCents = upgrade.costCents;
+    if (!canAffordCents(state.economy, upgradeCostCents)) return reject(state, "Insufficient cash");
     const progression = {
       ...state.progression,
       stallMastery: {
@@ -375,10 +441,14 @@ export function dispatchCommand(state: GameState, command: GameCommand): Command
         [command.definitionId]: { ...mastery, upgradeLevel: nextLevel as 2 | 3 | 4 },
       },
     };
-    return accept(
-      { ...state, economy: applyPurchase(state.economy, upgrade.cost), progression },
-      [commandEvent(state, true, `Upgraded ${command.definitionId} to level ${nextLevel}`)],
+    const updated = recordCommandCash(
+      { ...state, economy: applyPurchaseCents(state.economy, upgradeCostCents), progression },
+      "purchase",
+      upgradeCostCents,
+      `upgrade:${command.definitionId}:${nextLevel}`,
     );
+    const upgradeEvent = commandEvent(state, true, `Upgraded ${command.definitionId} to level ${nextLevel}`);
+    return accept(updated, [{ ...upgradeEvent, amount: upgradeCostCents, amountCents: upgradeCostCents }]);
   }
 
   if (command.type === "set-stall-open") {
@@ -505,7 +575,8 @@ export function dispatchCommand(state: GameState, command: GameCommand): Command
     const definition = state.catalog.placeables[command.definitionId];
     if (!definition) return reject(state, `Unknown placeable: ${command.definitionId}`);
     if (!state.progression.unlockedDefinitionIds.includes(definition.id)) return reject(state, "Placeable is locked");
-    if (!canAfford(state.economy, definition.price)) return reject(state, "Insufficient currency");
+    const priceCents = definition.priceCents;
+    if (!canAffordCents(state.economy, priceCents)) return reject(state, "Insufficient cash");
     let rotation: Rotation;
     try {
       rotation = normalizeRotation(command.rotation ?? 0);
@@ -528,19 +599,19 @@ export function dispatchCommand(state: GameState, command: GameCommand): Command
     if (routeError) return reject(state, routeError);
     const queues = definition.kind === "stall" ? { ...state.queues, [object.id]: [] } : state.queues;
     const reconciled = reconcileWorldGeometryChange({ ...state, queues }, objects);
-    const next = withUndo(
+    const next = recordCommandCash(withUndo(
       {
         ...state,
         objects,
         ...reconciled,
-        economy: applyPurchase(state.economy, definition.price),
+        economy: applyPurchaseCents(state.economy, priceCents),
       },
       command,
       before,
-    );
+    ), "purchase", priceCents, object.id);
     return accept(next, [
       commandEvent(state, true),
-      { type: "object-placed", tick: state.tick, entityId: object.id },
+      { type: "object-placed", tick: state.tick, entityId: object.id, amount: priceCents, amountCents: priceCents },
     ]);
   }
 
@@ -558,20 +629,21 @@ export function dispatchCommand(state: GameState, command: GameCommand): Command
     map = normalizeBoundaryOpenings(map, accessPoints.map((point) => point.position));
     const routeError = validateWorldNavigationAccess(map, accessPoints, state.objects, state.catalog);
     if (routeError) return reject(state, routeError);
-    const cost = calculateExpansionCost(state.map, state.progression, state.config, command.addColumns, command.addRows);
-    if (!canAfford(state.economy, cost)) return reject(state, "Insufficient currency");
+    const costCents = calculateExpansionCostCents(state.map, state.progression, state.config, command.addColumns, command.addRows);
+    if (!canAffordCents(state.economy, costCents)) return reject(state, "Insufficient cash");
     const expandedState: GameState = withAccessAliases({
       ...state,
-      economy: applyPurchase(state.economy, cost),
+      economy: applyPurchaseCents(state.economy, costCents),
       progression: { ...state.progression, expansionCount: state.progression.expansionCount + 1 },
     }, map, accessPoints);
     const reconciled = reconcileWorldGeometryChange(expandedState, state.objects);
-    const next = withUndo(
+    const next = recordCommandCash(withUndo(
       { ...expandedState, ...reconciled },
       command,
       before,
-    );
-    return accept(next, [commandEvent(state, true)]);
+    ), "purchase", costCents, "map-expansion");
+    const expansionEvent = commandEvent(state, true);
+    return accept(next, [{ ...expansionEvent, amount: costCents, amountCents: costCents }]);
   }
 
   const existing = state.objects[command.objectId];
@@ -634,15 +706,21 @@ export function dispatchCommand(state: GameState, command: GameCommand): Command
     const objects = { ...state.objects };
     delete objects[existing.id];
     const reconciled = reconcileWorldGeometryChange(state, objects, existing.id);
-    const refund = calculateRefund(definition.price, definition.refundRate ?? 0.5);
-    const next = withUndo(
-      { ...state, objects, ...reconciled, economy: applyRefund(state.economy, refund) },
+    const refundCents = state.recovery.zeroResaleObjectIds.includes(existing.id)
+      ? asMoneyCents(0)
+      : calculateResaleCents(definition.priceCents);
+    const recovery = {
+      ...state.recovery,
+      zeroResaleObjectIds: state.recovery.zeroResaleObjectIds.filter((id) => id !== existing.id),
+    };
+    const next = recordCommandCash(withUndo(
+      { ...state, objects, ...reconciled, recovery, economy: applyResaleCents(state.economy, refundCents) },
       command,
       before,
-    );
+    ), "resale", refundCents, existing.id);
     return accept(next, [
       commandEvent(state, true),
-      { type: "object-removed", tick: state.tick, entityId: existing.id, amount: refund },
+      { type: "object-removed", tick: state.tick, entityId: existing.id, amount: refundCents, amountCents: refundCents },
     ]);
   }
 

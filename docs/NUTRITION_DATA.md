@@ -17,6 +17,16 @@ Food profiles come from `food_nutrition_sgfoodid_combined_nutrition_subset.csv` 
 
 Raw CSV files and machine-specific paths are not committed. Generated provenance stores only the source filename, file hash, row number and name, canonical row hash, mapping method, serving multiplier, source type, and review note. Mappings are exact and authored; runtime fuzzy matching is prohibited.
 
+### Food-option selection rule
+
+`data/food_nutrition_sgfoodid_combined_nutrition_subset.csv` is the authoritative reference whenever a playable food or preparation is selected, added, removed, substituted, renamed, or materially changed. Treat the file as read-only source material.
+
+- Prefer one exact, case-sensitive `Food Name` match.
+- A curated synonym, serving multiplier, or composition mapping must remain defensible and explicitly record its exact source `Food Name`, mapping kind, serving multiplier, serving label, and concise review rationale in `tools/nutrition/manifest.mjs`. Curated synonyms with an unchanged multiplier must still copy the reviewed source serving label into the manifest.
+- A nutrition-changing variant requires its own defensible source mapping. An operational-only change must still confirm that the existing mapping and serving remain appropriate.
+- If no defensible row exists, choose another source-supported option for new content or retain the existing food with an `unavailable` profile. Never invent nutrient values or silently borrow them from another dish.
+- Regenerate the derived JSON through the importer and verify snapshot hash, unique row, row provenance, serving interpretation, quarantine status, and generated diff after every affected change.
+
 When only the food CSV is available, regenerate profiles while retaining the reviewed immutable guideline block:
 
 ```powershell

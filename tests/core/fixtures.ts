@@ -1,6 +1,8 @@
 import {
   createGridMap,
   createNewGame,
+  sgdToCents,
+  startServicePeriod,
   type GameState,
   type NewGameOptions,
   type PlacedObject,
@@ -12,6 +14,8 @@ export const TEST_CATALOG: SimulationCatalog = {
     noodles: {
       id: "noodles",
       price: 8,
+      priceCents: sgdToCents(8),
+      ingredientCostCents: sgdToCents(0),
       preparationMs: 200,
       eatingMs: 300,
       quality: 4,
@@ -20,6 +24,8 @@ export const TEST_CATALOG: SimulationCatalog = {
     rice: {
       id: "rice",
       price: 6,
+      priceCents: sgdToCents(6),
+      ingredientCostCents: sgdToCents(0),
       preparationMs: 100,
       eatingMs: 200,
       quality: 3,
@@ -30,6 +36,7 @@ export const TEST_CATALOG: SimulationCatalog = {
     regular: {
       id: "regular",
       budget: 30,
+      budgetCents: sgdToCents(30),
       patienceMs: 8_000,
       walkingSpeed: 8,
       priceSensitivity: 0.1,
@@ -41,6 +48,7 @@ export const TEST_CATALOG: SimulationCatalog = {
     valueSeeker: {
       id: "valueSeeker",
       budget: 12,
+      budgetCents: sgdToCents(12),
       patienceMs: 6_000,
       walkingSpeed: 6,
       priceSensitivity: 0.5,
@@ -58,6 +66,8 @@ export const TEST_CATALOG: SimulationCatalog = {
       allowedRotations: [0, 90, 180, 270],
       blocksMovement: true,
       price: 100,
+      priceCents: sgdToCents(100),
+      upkeepCents: sgdToCents(0),
       refundRate: 0.5,
       servicePoint: { x: 1, y: 2 },
       queueAnchor: { x: 0, y: 2 },
@@ -77,6 +87,8 @@ export const TEST_CATALOG: SimulationCatalog = {
       allowedRotations: [0, 90, 180, 270],
       blocksMovement: false,
       price: 20,
+      priceCents: sgdToCents(20),
+      upkeepCents: sgdToCents(0),
       seatPoints: [{ x: 0, y: 0 }],
     },
     tray: {
@@ -86,6 +98,8 @@ export const TEST_CATALOG: SimulationCatalog = {
       allowedRotations: [0, 90, 180, 270],
       blocksMovement: true,
       price: 30,
+      priceCents: sgdToCents(30),
+      upkeepCents: sgdToCents(0),
       trayReturnPoint: { x: -1, y: 0 },
     },
     table: {
@@ -95,6 +109,8 @@ export const TEST_CATALOG: SimulationCatalog = {
       allowedRotations: [0, 90, 180, 270],
       blocksMovement: true,
       price: 40,
+      priceCents: sgdToCents(40),
+      upkeepCents: sgdToCents(0),
     },
   },
 };
@@ -107,7 +123,7 @@ export const INITIAL_OBJECTS: readonly PlacedObject[] = [
 ];
 
 export function makeGame(overrides: Partial<NewGameOptions> = {}): GameState {
-  return createNewGame({
+  const game = createNewGame({
     map: createGridMap(12, 8, { tileSize: 32, worldOrigin: { x: 16, y: 24 } }),
     entrance: { x: 0, y: 3 },
     exit: { x: 11, y: 3 },
@@ -125,4 +141,5 @@ export function makeGame(overrides: Partial<NewGameOptions> = {}): GameState {
     },
     ...overrides,
   });
+  return { ...game, servicePeriod: startServicePeriod(game.servicePeriod) };
 }

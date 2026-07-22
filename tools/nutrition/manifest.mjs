@@ -29,6 +29,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "The reviewed steamed-chicken serving is the closest source match for the game's poached chicken rice.",
     "curated-synonym",
+    1,
+    "1 plate(s) = 346g",
   ),
   released(
     "dish.roast-chicken-rice",
@@ -36,6 +38,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "The source uses roasted rather than roast in the food name.",
     "curated-synonym",
+    1,
+    "1 plate(s) = 363g",
   ),
   released(
     "dish.soya-tofu-rice",
@@ -49,6 +53,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "Singapore source terminology uses porridge for the game's chicken congee.",
     "curated-synonym",
+    1,
+    "1 bowl(s) = 556g",
   ),
   released(
     "dish.nasi-lemak",
@@ -56,6 +62,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "The chicken-wing set matches the default plated game recipe.",
     "curated-synonym",
+    1,
+    "1 plate(s) = 410g",
   ),
   released("dish.mee-rebus", "Mee rebus", "meal", "Exact named dish match."),
   released("dish.soto-ayam", "Soto ayam", "meal", "Exact named dish match."),
@@ -72,6 +80,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "drink",
     "The source adds the preparation descriptor fresh.",
     "curated-synonym",
+    1,
+    "1 medium cup(s) = 550ml",
   ),
   released("dish.ice-kacang", "Ice kacang", "meal", "Exact named dessert match."),
   released(
@@ -92,6 +102,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "White carrot cake is the game's default recipe; black is available as a reviewed variant.",
     "curated-synonym",
+    1,
+    "1 plate(s) = 321g",
   ),
   released(
     "dish.oyster-omelette",
@@ -105,6 +117,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "The source serving matches the game's two-piece prata plate with curry.",
     "curated-synonym",
+    1,
+    "1 set(s) = 535g",
   ),
   released(
     "dish.mee-goreng-mamak",
@@ -112,6 +126,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "The source row is the reviewed local mee goreng preparation.",
     "curated-synonym",
+    1,
+    "1 plate(s) = 465g",
   ),
   released(
     "dish.chicken-murtabak",
@@ -119,6 +135,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "The source expresses the protein as a parenthetical variant.",
     "curated-synonym",
+    1,
+    "1 plate(s) = 330g",
   ),
   released(
     "dish.nasi-briyani",
@@ -126,6 +144,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "Chicken is the game's default briyani protein.",
     "curated-synonym",
+    1,
+    "1 plate(s) = 759g",
   ),
   released(
     "dish.masala-thosai",
@@ -139,6 +159,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "The reviewed source serving description includes the accompaniments represented by the game.",
     "curated-synonym",
+    1,
+    "1 piece(s) = 269g",
   ),
   released(
     "dish.vadai-set",
@@ -191,6 +213,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "The no-milk beehoon preparation matches the default game bowl.",
     "curated-synonym",
+    1,
+    "1 bowl(s) = 811g",
   ),
   released(
     "dish.black-pepper-crab",
@@ -204,6 +228,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "Dry is the game's default noodle preparation.",
     "curated-synonym",
+    1,
+    "1 bowl(s) = 430g",
   ),
   released(
     "dish.fishball-mee-pok",
@@ -211,6 +237,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "The reviewed dry fishball-noodle serving matches the game's mee pok presentation.",
     "curated-synonym",
+    1,
+    "1 bowl(s) = 377g",
   ),
   released("dish.lor-mee", "Lor mee", "meal", "Exact named dish match."),
   released(
@@ -296,6 +324,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "The source uses a descriptive food name for the game's complete lotus-leaf rice parcel.",
     "curated-synonym",
+    1,
+    "1 scoop(s) (serving spoon) = 317g",
   ),
   released(
     "dish.yong-tau-foo",

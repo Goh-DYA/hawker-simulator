@@ -1,4 +1,5 @@
 import type { RuntimeEvent } from "./types";
+import { describeSgd, formatSgd } from "./money";
 
 export interface ActivityEntry extends RuntimeEvent {
   readonly id: number;
@@ -24,7 +25,7 @@ export function appendActivityEvent(
         ...event,
         id: latest.id,
         count: latest.count + 1,
-        amount: (latest.amount ?? 0) + (event.amount ?? 0),
+        amountCents: (latest.amountCents ?? 0) + (event.amountCents ?? 0),
       },
       ...current.slice(1),
     ];
@@ -34,8 +35,46 @@ export function appendActivityEvent(
 }
 
 export function activityEntryMessage(entry: ActivityEntry): string {
-  if (entry.groupKey === "sales" && entry.count > 1) {
-    return `${entry.count} neighbours enjoyed their meals · +$${Math.round(entry.amount ?? 0)}`;
+  if (entry.groupKey === "sales" && entry.amountCents !== undefined) {
+    return entry.count > 1
+      ? `${entry.count} neighbours enjoyed their meals · ${formatSgd(entry.amountCents)} gross sales`
+      : `A neighbour enjoyed their meal · ${formatSgd(entry.amountCents)} gross sale`;
+  }
+  if (entry.groupKey === "resales" && entry.amountCents !== undefined) {
+    return entry.count > 1
+      ? `${entry.count} items resold · ${formatSgd(entry.amountCents)} received`
+      : `Item resold · ${formatSgd(entry.amountCents)} received`;
+  }
+  if (entry.groupKey === "purchases" && entry.amountCents !== undefined) {
+    return entry.count > 1
+      ? `${entry.count} purchases · ${formatSgd(entry.amountCents)} paid`
+      : `Purchase · ${formatSgd(entry.amountCents)} paid`;
+  }
+  if (entry.groupKey === "recovery" && entry.amountCents !== undefined) {
+    return `Valid-setup recovery · ${formatSgd(entry.amountCents)} granted`;
+  }
+  return entry.message;
+}
+
+/** Full Singapore-dollar wording for assistive technology. */
+export function activityEntryAccessibleMessage(entry: ActivityEntry): string {
+  if (entry.groupKey === "sales" && entry.amountCents !== undefined) {
+    return entry.count > 1
+      ? `${entry.count} neighbours enjoyed their meals · ${describeSgd(entry.amountCents)} gross sales`
+      : `A neighbour enjoyed their meal · ${describeSgd(entry.amountCents)} gross sale`;
+  }
+  if (entry.groupKey === "resales" && entry.amountCents !== undefined) {
+    return entry.count > 1
+      ? `${entry.count} items resold · ${describeSgd(entry.amountCents)} received`
+      : `Item resold · ${describeSgd(entry.amountCents)} received`;
+  }
+  if (entry.groupKey === "purchases" && entry.amountCents !== undefined) {
+    return entry.count > 1
+      ? `${entry.count} purchases · ${describeSgd(entry.amountCents)} paid`
+      : `Purchase · ${describeSgd(entry.amountCents)} paid`;
+  }
+  if (entry.groupKey === "recovery" && entry.amountCents !== undefined) {
+    return `Valid-setup recovery · ${describeSgd(entry.amountCents)} granted`;
   }
   return entry.message;
 }

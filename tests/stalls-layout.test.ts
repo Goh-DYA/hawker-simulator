@@ -13,7 +13,7 @@ describe("Stalls panel typography", () => {
     expect(componentSource).toContain('className="stall-upgrade-button"');
     expect(componentSource).toContain("Upgrade to level {mastery.upgradeLevel + 1}");
     expect(componentSource).toContain("Requires mastery rank {mastery.requiredRank}");
-    expect(cssSource).toContain("--stall-action-size: 0.56rem");
+    expect(cssSource).toContain("--stall-action-size: 0.75rem");
     expect(cssSource).toContain(".stall-upgrade-button {");
     expect(cssSource).toContain("font-size: var(--stall-action-size)");
   });

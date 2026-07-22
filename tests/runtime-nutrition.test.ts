@@ -9,7 +9,11 @@ import {
   resolveDishVariants,
   resolvePersistedDishVariants,
 } from "../src/game/runtime/createHawkerRuntime";
-import type { GameState, SimulationCatalog } from "../src/game/core";
+import {
+  sgdToCents,
+  type GameState,
+  type SimulationCatalog,
+} from "../src/game/core";
 
 function progressionWithRanks(
   ranks: Readonly<Record<string, number>>,
@@ -24,6 +28,7 @@ function progressionWithRanks(
       focusDay: 1,
       dailyObjectives: [],
       claimedMilestoneIds: [],
+      firstServedPreparationIds: [],
       stallMastery: Object.fromEntries(Object.entries(ranks).map(([id, rank]) => [
         id,
         { points: 0, rank, upgradeLevel: 1 as const },
@@ -60,6 +65,8 @@ describe("runtime nutrition persistence", () => {
         selected: {
           id: "selected",
           price: 6,
+          priceCents: sgdToCents(6),
+          ingredientCostCents: sgdToCents(0),
           preparationMs: 1_000,
           eatingMs: 1_000,
           quality: 3,
@@ -70,6 +77,7 @@ describe("runtime nutrition persistence", () => {
         guest: {
           id: "guest",
           budget: 12,
+          budgetCents: sgdToCents(12),
           patienceMs: 10_000,
           walkingSpeed: 1,
           priceSensitivity: 1,

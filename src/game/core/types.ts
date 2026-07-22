@@ -1,5 +1,8 @@
 /** Pure simulation-domain types. Rendering and UI state intentionally live elsewhere. */
 
+import type { MoneyCents, MoneyDeltaCents } from "./money";
+import type { OrderLineSnapshot } from "./servingTerms";
+
 export interface GridPoint {
   readonly x: number;
   readonly y: number;
@@ -41,14 +44,23 @@ export interface GridMap {
 
 export interface DishDefinition {
   readonly id: string;
+  /** Canonical resolved selling price used by every core calculation. */
+  readonly priceCents: MoneyCents;
+  /** Canonical resolved per-serving ingredient cost. */
+  readonly ingredientCostCents: MoneyCents;
+  /** @deprecated Display-only SGD compatibility alias resolved at the content boundary. */
   readonly price: number;
   readonly preparationMs: number;
+  /** Resolved handover time for this preparation. */
+  readonly servingMs?: number;
   readonly eatingMs: number;
   readonly quality: number;
   /** Authored taste and popularity rating in the inclusive 1-5 range. */
   readonly starRating?: number;
   /** Authored relative appeal in the inclusive 0-1 range. */
   readonly baseDemand?: number;
+  /** Resolved preparation demand modifier in integer basis points. */
+  readonly demandModifierBasisPoints?: number;
   readonly preferenceTags?: readonly string[];
   /** Optional progression gates used when evaluating nutrition-intent availability. */
   readonly unlockLevel?: number;
@@ -74,6 +86,9 @@ export interface StallDefinition {
 
 export interface StallUpgradeDefinition {
   readonly level: 2 | 3 | 4;
+  /** Canonical resolved upgrade purchase price used by core calculations. */
+  readonly costCents: MoneyCents;
+  /** @deprecated Display-only SGD compatibility alias resolved at the content boundary. */
   readonly cost: number;
   readonly serviceTimeMultiplier: number;
   readonly capacityBonus: number;
@@ -107,6 +122,11 @@ export interface PlaceableDefinition {
   readonly footprint: Footprint;
   readonly allowedRotations: readonly Rotation[];
   readonly blocksMovement: boolean;
+  /** Canonical purchase price used by every core calculation. */
+  readonly priceCents: MoneyCents;
+  /** Per-open-minute operating charge; zero for non-stalls. */
+  readonly upkeepCents: MoneyCents;
+  /** @deprecated Display-only SGD compatibility alias resolved at the content boundary. */
   readonly price: number;
   readonly refundRate?: number;
   readonly unlockLevel?: number;
@@ -122,6 +142,9 @@ export interface PlaceableDefinition {
 
 export interface CustomerArchetype {
   readonly id: string;
+  /** Canonical resolved per-visit budget used by every core calculation. */
+  readonly budgetCents: MoneyCents;
+  /** @deprecated Display-only SGD compatibility alias resolved at the content boundary. */
   readonly budget: number;
   readonly patienceMs: number;
   /** Tiles per simulated second. */
@@ -193,6 +216,8 @@ export interface Customer {
   readonly walkingDistanceTiles: number;
   readonly patienceRemainingMs: number;
   readonly satisfaction: number;
+  /** Immutable attribution to the arrivals cohort in which this visit began. */
+  readonly arrivalPeriodSequenceId: number;
   /** Visit-specific conditions assigned independently of customer archetype. */
   readonly healthConditions: readonly HealthCondition[];
   readonly sourceEntranceId?: string;
@@ -207,6 +232,8 @@ export interface Customer {
   /** Order-time values remain frozen when the player changes a stall recipe. */
   readonly orderedNutritionVariantId?: string;
   readonly orderedNutritionProfile?: NutritionProfile;
+  /** Immutable serving, money, nutrition, and period terms captured when the order is accepted. */
+  readonly orderLineSnapshot?: OrderLineSnapshot;
   readonly nutritionRequestResult?: NutritionRequestResult;
   /** Frozen condition-aware rating for the ordered nutrition variant. */
   readonly personalizedHealthRating?: number;
@@ -218,6 +245,11 @@ export interface Customer {
   readonly hasTray: boolean;
   /** True once the order has been handed over, including a zero-price dish. */
   readonly served: boolean;
+  /** XP already awarded for this visit; preparation bonus may precede final departure XP. */
+  readonly awardedVisitXp?: number;
+  readonly firstServeBonusAwarded?: boolean;
+  readonly spentCents: MoneyCents;
+  /** @deprecated Compatibility-only SGD value derived from spentCents. */
   readonly spent: number;
   readonly stuckMs: number;
 }
@@ -260,9 +292,19 @@ export interface DailyObjective {
   readonly target: number;
   readonly progress: number;
   readonly startValue: number;
+  readonly rewardCashCents: MoneyCents;
+  /** @deprecated Compatibility-only SGD value derived from rewardCashCents. */
   readonly rewardCash: number;
   readonly rewardXp: number;
   readonly completed: boolean;
+  /** Accepted objectives retain their authored target for the whole period. */
+  readonly accepted?: boolean;
+  /** A skipped offer is no longer eligible to progress or pay a reward in this period. */
+  readonly skipped?: boolean;
+  /** Consecutive qualifying duration for flow objectives. */
+  readonly flowQualifiedMs?: number;
+  readonly flowRequiredMs?: number;
+  readonly flowMinimumActiveGuests?: number;
   readonly nutritionCriterion?: NutritionObjectiveCriterion;
 }
 
@@ -391,9 +433,85 @@ export interface StallMasteryState {
   readonly upgradeLevel: 1 | 2 | 3 | 4;
 }
 
+export type PeriodLedgerEntryKind =
+  | "gross-sale"
+  | "ingredient-cost"
+  | "refund"
+  | "purchase"
+  | "resale"
+  | "upkeep"
+  | "overtime-upkeep"
+  | "objective"
+  | "milestone"
+  | "recovery";
+
+export interface PeriodLedgerEntry {
+  readonly id: string;
+  readonly periodSequenceId: number;
+  readonly kind: PeriodLedgerEntryKind;
+  readonly amountCents: MoneyCents;
+  readonly tick: number;
+  readonly referenceId?: string;
+}
+
+export interface PeriodLedger {
+  readonly periodSequenceId: number;
+  readonly openingCashCents: MoneyCents;
+  readonly grossSalesCents: MoneyCents;
+  readonly ingredientCostsCents: MoneyCents;
+  readonly refundsCents: MoneyCents;
+  readonly purchasesCents: MoneyCents;
+  readonly resaleCents: MoneyCents;
+  readonly upkeepCents: MoneyCents;
+  readonly objectiveRewardsCents: MoneyCents;
+  readonly milestoneRewardsCents: MoneyCents;
+  readonly recoveryCents: MoneyCents;
+  readonly entries: readonly PeriodLedgerEntry[];
+}
+
+export type ServicePeriodId = "breakfast" | "lunch" | "tea" | "evening";
+export type ServicePeriodPhase = "planning" | "arrivals" | "draining" | "debrief";
+
+export interface ServicePeriodState {
+  readonly day: number;
+  readonly periodIndex: 0 | 1 | 2 | 3;
+  readonly periodId: ServicePeriodId;
+  /** Monotonic identifier used to attribute orders and drain outcomes. */
+  readonly sequenceId: number;
+  readonly phase: ServicePeriodPhase;
+  readonly arrivalElapsedMs: number;
+  readonly drainElapsedMs: number;
+  /** Frozen at the authored closing time throughout drain and debrief. */
+  readonly displayedMinute: number;
+  readonly cohortCustomerIds: readonly string[];
+  readonly overtimeUpkeepCharged: boolean;
+  /** Total arrivals milliseconds each stall has actually been open this period. */
+  readonly stallOpenElapsedMs: Readonly<Record<string, number>>;
+}
+
+export interface RecoveryState {
+  /** Episode ids are immutable guards; one episode can never grant twice. */
+  readonly resolvedEpisodeIds: readonly string[];
+  /** Reclaimed starter/essential objects are never eligible for resale proceeds. */
+  readonly zeroResaleObjectIds: readonly string[];
+}
+
 export interface EconomyState {
+  readonly cashCents: MoneyCents;
+  readonly lifetimeGrossSalesCents: MoneyCents;
+  readonly lifetimeIngredientCostsCents: MoneyCents;
+  readonly lifetimePurchasesCents: MoneyCents;
+  readonly lifetimeRefundsCents: MoneyCents;
+  readonly lifetimeResaleCents: MoneyCents;
+  readonly lifetimeUpkeepCents: MoneyCents;
+  readonly lifetimeObjectiveRewardsCents: MoneyCents;
+  readonly lifetimeMilestoneRewardsCents: MoneyCents;
+  readonly lifetimeRecoveryCents: MoneyCents;
+  /** @deprecated Compatibility-only SGD value derived from cashCents. */
   readonly currency: number;
+  /** @deprecated Compatibility-only SGD value derived from lifetimeGrossSalesCents. */
   readonly lifetimeRevenue: number;
+  /** @deprecated Compatibility-only SGD value derived from lifetimePurchasesCents. */
   readonly lifetimeSpend: number;
   readonly completedVisits: number;
   readonly abandonedVisits: number;
@@ -408,7 +526,11 @@ export interface ProgressionState {
   readonly focusDay: number;
   readonly dailyObjectives: readonly DailyObjective[];
   readonly claimedMilestoneIds: readonly string[];
+  /** One-load migration guard used to baseline legacy accomplishments without rewards. */
+  readonly milestoneBaselinePending?: boolean;
   readonly stallMastery: Readonly<Record<string, StallMasteryState>>;
+  /** Preparation ids that have already received the one-time first-serve XP bonus. */
+  readonly firstServedPreparationIds: readonly string[];
 }
 
 export interface SimulationMetrics {
@@ -462,10 +584,14 @@ export interface SimulationEvent {
     | "target-recovered"
     | "objective-completed"
     | "milestone-completed"
+    | "recovery-granted"
     | "stall-upgraded";
   readonly tick: number;
   readonly entityId?: string;
   readonly message?: string;
+  /** Canonical cents for monetary events. */
+  readonly amountCents?: MoneyCents;
+  /** @deprecated Compatibility alias. Monetary events use cents. */
   readonly amount?: number;
 }
 
@@ -479,20 +605,22 @@ export interface UndoSnapshot {
   readonly economy: EconomyState;
   readonly expansionCount: number;
   readonly xp: number;
+  readonly recovery: RecoveryState;
 }
 
 export interface UndoEntry {
   readonly commandType: BuildCommand["type"];
   readonly snapshot: UndoSnapshot;
   /** Difference applied by the build command; undo subtracts these from live economy state. */
-  readonly currencyDelta: number;
-  readonly lifetimeSpendDelta: number;
+  readonly cashDeltaCents: MoneyDeltaCents;
+  readonly lifetimePurchasesDeltaCents: MoneyCents;
+  readonly lifetimeResaleDeltaCents: MoneyCents;
   readonly expansionCountDelta: number;
   readonly createdAtTick: number;
 }
 
 export interface GameState {
-  readonly schemaVersion: 4;
+  readonly schemaVersion: 5;
   readonly map: GridMap;
   readonly accessPoints: readonly AccessPoint[];
   readonly routeGuidePoints: readonly GridPoint[];
@@ -508,6 +636,9 @@ export interface GameState {
   readonly seatReservations: Readonly<Record<string, string>>;
   readonly economy: EconomyState;
   readonly progression: ProgressionState;
+  readonly servicePeriod: ServicePeriodState;
+  readonly periodLedgers: Readonly<Record<number, PeriodLedger>>;
+  readonly recovery: RecoveryState;
   readonly rngState: number;
   readonly nextCustomerSequence: number;
   readonly spawnCountdownMs: number;
@@ -529,6 +660,7 @@ export interface NewGameOptions {
   readonly catalog: SimulationCatalog;
   readonly seed?: number | string;
   readonly startingCurrency?: number;
+  readonly startingCashCents?: MoneyCents;
   readonly qualityMode?: QualityMode;
   readonly config?: SimulationConfigOverrides;
   readonly initialObjects?: readonly PlacedObject[];
@@ -641,7 +773,7 @@ export interface AdvanceResult {
 }
 
 export interface GameSnapshot {
-  readonly schemaVersion: 4;
+  readonly schemaVersion: 5;
   readonly tick: number;
   readonly elapsedMs: number;
   readonly map: GridMap;
@@ -656,6 +788,9 @@ export interface GameSnapshot {
   readonly seatReservations: Readonly<Record<string, string>>;
   readonly economy: EconomyState;
   readonly progression: ProgressionState;
+  readonly servicePeriod: ServicePeriodState;
+  readonly periodLedgers: Readonly<Record<number, PeriodLedger>>;
+  readonly recovery: RecoveryState;
   readonly metrics: SimulationMetrics;
   readonly canUndo: boolean;
   readonly events: readonly SimulationEvent[];
@@ -670,7 +805,7 @@ export interface PersistentGameStateV2 {
   readonly exit: GridPoint;
   readonly qualityMode: QualityMode;
   readonly objects: readonly PlacedObject[];
-  readonly economy: EconomyState;
+  readonly economy: LegacyEconomyState;
   readonly progression: ProgressionState;
   readonly rngState: number;
   readonly nextCustomerSequence: number;
@@ -685,7 +820,7 @@ export interface PersistentGameStateV3 {
   readonly routeGuidePoints: readonly GridPoint[];
   readonly qualityMode: QualityMode;
   readonly objects: readonly PlacedObject[];
-  readonly economy: EconomyState;
+  readonly economy: LegacyEconomyState;
   readonly progression: ProgressionState;
   readonly metrics: Pick<SimulationMetrics, "trayReturns" | "visitRatings">;
   readonly rngState: number;
@@ -701,9 +836,60 @@ export interface PersistentGameStateV4 {
   readonly routeGuidePoints: readonly GridPoint[];
   readonly qualityMode: QualityMode;
   readonly objects: readonly PlacedObject[];
-  readonly economy: EconomyState;
+  readonly economy: LegacyEconomyState;
   readonly progression: ProgressionState;
   readonly metrics: Pick<SimulationMetrics, "trayReturns" | "visitRatings" | "nutrition">;
+  readonly rngState: number;
+  readonly nextCustomerSequence: number;
+  readonly elapsedMs: number;
+}
+
+export interface PersistentEconomyV5 {
+  readonly cashCents: MoneyCents;
+  readonly lifetimeGrossSalesCents: MoneyCents;
+  readonly lifetimeIngredientCostsCents: MoneyCents;
+  readonly lifetimePurchasesCents: MoneyCents;
+  readonly lifetimeRefundsCents: MoneyCents;
+  readonly lifetimeResaleCents: MoneyCents;
+  readonly lifetimeUpkeepCents: MoneyCents;
+  readonly lifetimeObjectiveRewardsCents: MoneyCents;
+  readonly lifetimeMilestoneRewardsCents: MoneyCents;
+  readonly lifetimeRecoveryCents: MoneyCents;
+  readonly completedVisits: number;
+  readonly abandonedVisits: number;
+}
+
+/** Historical V2-V4 money fields were SGD units, not cents. */
+export interface LegacyEconomyState {
+  readonly currency: number;
+  readonly lifetimeRevenue: number;
+  readonly lifetimeSpend: number;
+  readonly completedVisits: number;
+  readonly abandonedVisits: number;
+}
+
+export interface PersistentGameStateV5 {
+  readonly schemaVersion: 5;
+  readonly savedAtTick: number;
+  readonly map: GridMap;
+  readonly accessPoints: readonly AccessPoint[];
+  readonly routeGuidePoints: readonly GridPoint[];
+  readonly qualityMode: QualityMode;
+  readonly objects: readonly PlacedObject[];
+  readonly economy: PersistentEconomyV5;
+  readonly progression: ProgressionState;
+  readonly servicePeriod: ServicePeriodState;
+  readonly periodLedgers: Readonly<Record<number, PeriodLedger>>;
+  /** V5 persists active visits so a drain reload cannot erase outcomes. */
+  readonly customers: readonly Customer[];
+  readonly queues: Readonly<Record<string, readonly string[]>>;
+  readonly seatReservations: Readonly<Record<string, string>>;
+  readonly spawnCountdownMs: number;
+  readonly accumulatorMs: number;
+  readonly arrivalPerformancePressure: number;
+  readonly recovery: RecoveryState;
+  /** Includes active-cohort counters required by simulation accounting invariants. */
+  readonly metrics: SimulationMetrics;
   readonly rngState: number;
   readonly nextCustomerSequence: number;
   readonly elapsedMs: number;
@@ -725,4 +911,5 @@ export type AnyPersistentGameState =
   | PersistentGameStateV1
   | PersistentGameStateV2
   | PersistentGameStateV3
-  | PersistentGameStateV4;
+  | PersistentGameStateV4
+  | PersistentGameStateV5;

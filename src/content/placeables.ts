@@ -1279,7 +1279,7 @@ const asPlaceable = (input: PlaceableInput): PlaceableDefinition => {
     footprint: input.footprint,
     rotations,
     price: input.price,
-    resaleValue: Math.max(1, Math.floor(input.price * 0.6)),
+    resaleValue: Math.max(1, Math.floor(input.price * 0.7)),
     upkeepPerMinute: input.upkeep ?? 0,
     unlockRequirement: {
       level: input.level,

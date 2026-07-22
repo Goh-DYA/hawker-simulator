@@ -144,6 +144,39 @@ describe("nutrition CSV importer", () => {
     assert.deepEqual(foodOnlyRefresh, first);
   });
 
+  it("records explicit serving interpretations for every non-exact mapping", () => {
+    const mappings = [
+      ...PRIMARY_PROFILE_MAPPINGS,
+      ...VARIANT_FAMILY_MAPPINGS.flatMap((family) => family.variants),
+    ] as readonly {
+      readonly foodName: string;
+      readonly mappingKind: string;
+      readonly multiplier?: number;
+      readonly servingLabel?: string;
+      readonly reviewNote: string;
+    }[];
+    const nonExactMappings = mappings.filter((mapping) => (
+      mapping.mappingKind !== "exact"
+    ));
+
+    assert.ok(nonExactMappings.length > 0);
+    for (const mapping of nonExactMappings) {
+      assert.ok(mapping.foodName.trim().length > 0, mapping.foodName);
+      assert.ok(
+        Number.isFinite(mapping.multiplier) && (mapping.multiplier ?? 0) > 0,
+        `${mapping.foodName} requires an explicit positive serving multiplier`,
+      );
+      assert.ok(
+        mapping.servingLabel?.trim(),
+        `${mapping.foodName} requires an explicit serving label`,
+      );
+      assert.ok(
+        mapping.reviewNote.trim().length > 0,
+        `${mapping.foodName} requires a concise review rationale`,
+      );
+    }
+  });
+
   it("parses a BOM, quoted commas, embedded newlines, and malformed source booleans losslessly", () => {
     const parsed = parseCsv(
       '\uFEFFFood Name,Hawker Food,Description\r\n"Dish, Special","True\u200B","Line one\nline two"\r\n',

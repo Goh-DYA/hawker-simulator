@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   assertSimulationInvariants,
+  asMoneyCents,
   createGridMap,
   createNewGame,
   deserializeGameState,
@@ -16,6 +17,11 @@ import {
   type GridPoint,
 } from "../../src/game/core";
 import { makeGame, TEST_CATALOG } from "./fixtures";
+
+function planningGame(overrides: Parameters<typeof makeGame>[0] = {}) {
+  const game = makeGame(overrides);
+  return { ...game, servicePeriod: { ...game.servicePeriod, phase: "planning" as const } };
+}
 
 const ROUTE_MAP_WIDTH = 14;
 const ROUTE_MAP_HEIGHT = 9;
@@ -92,7 +98,7 @@ describe("weighted guest route guidance", () => {
   });
 
   it("canonicalizes configured tiles and does not add undo history for a reordered no-op", () => {
-    const initial = makeGame();
+    const initial = planningGame();
     const configured = dispatchCommand(initial, {
       type: "configure-guest-route",
       points: [
@@ -121,7 +127,7 @@ describe("weighted guest route guidance", () => {
   });
 
   it("rejects invalid guide tiles atomically", () => {
-    const baseline = dispatchCommand(makeGame(), {
+    const baseline = dispatchCommand(planningGame(), {
       type: "configure-guest-route",
       points: [{ x: 4, y: 5 }],
     }).state;
@@ -141,7 +147,7 @@ describe("weighted guest route guidance", () => {
       );
     }
 
-    const wallGame = makeGame({
+    const wallGame = planningGame({
       map: withTile(makeGame().map, { x: 4, y: 5 }, "wall"),
     });
     expectAtomicRouteRejection(
@@ -154,7 +160,7 @@ describe("weighted guest route guidance", () => {
   });
 
   it("reserves guide tiles from movement-blocking placement", () => {
-    const guided = dispatchCommand(makeGame(), {
+    const guided = dispatchCommand(planningGame(), {
       type: "configure-guest-route",
       points: [{ x: 4, y: 6 }],
     }).state;
@@ -190,12 +196,14 @@ describe("weighted guest route guidance", () => {
       walkingDistanceTiles: 3,
       patienceRemainingMs: archetype.patienceMs,
       satisfaction: 3,
+      arrivalPeriodSequenceId: initial.servicePeriod.sequenceId,
       healthConditions: [],
       sourceEntranceId: "entrance-1",
       targetExitId: "exit-1",
       hasTray: false,
       served: true,
       spent: 8,
+      spentCents: asMoneyCents(800),
       stuckMs: 400,
     };
     const active: GameState = {
@@ -220,6 +228,7 @@ describe("weighted guest route guidance", () => {
       targetExitId: "exit-1",
       served: true,
       spent: 8,
+      spentCents: asMoneyCents(800),
       stuckMs: 0,
     });
     expect(configured.state.metrics.recoveredTargets).toBe(

@@ -1,14 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
+  acceptDailyObjective,
   averageVisitRating,
   deserializeGameState,
   dispatchCommand,
   persistentStateFromGame,
+  sgdToCents,
   stepSimulation,
   type GameState,
   type PersistentGameStateV2,
 } from "../../src/game/core";
 import { makeGame, TEST_CATALOG } from "./fixtures";
+
+function planningGame(overrides: Parameters<typeof makeGame>[0] = {}) {
+  const game = makeGame(overrides);
+  return { ...game, servicePeriod: { ...game.servicePeriod, phase: "planning" as const } };
+}
 
 function runSteps(source: GameState, count: number): GameState {
   let state = source;
@@ -50,8 +57,11 @@ describe("adaptive satisfaction, demand, and progression", () => {
       economy: { ...initial.economy, completedVisits: initial.economy.completedVisits + (service?.target ?? 0) },
       progression: {
         ...initial.progression,
-        dailyObjectives: initial.progression.dailyObjectives.map((objective) =>
-          objective.id === service?.id ? objective : { ...objective, completed: true },
+        dailyObjectives: acceptDailyObjective(
+          initial.progression.dailyObjectives.map((objective) =>
+            objective.id === service?.id ? objective : { ...objective, completed: true },
+          ),
+          service!.id,
         ),
       },
     };
@@ -81,12 +91,12 @@ describe("adaptive satisfaction, demand, and progression", () => {
           ...TEST_CATALOG.placeables.stall,
           stall: {
             ...TEST_CATALOG.placeables.stall.stall!,
-            upgradeLevels: [{ level: 2 as const, cost: 75, serviceTimeMultiplier: 0.9, capacityBonus: 1, qualityBonus: 0.05, menuSlotsBonus: 1 }],
+            upgradeLevels: [{ level: 2 as const, cost: 75, costCents: sgdToCents(75), serviceTimeMultiplier: 0.9, capacityBonus: 1, qualityBonus: 0.05, menuSlotsBonus: 1 }],
           },
         },
       },
     };
-    const initial = makeGame({ catalog, startingCurrency: 500 });
+    const initial = planningGame({ catalog, startingCurrency: 500 });
     expect(dispatchCommand(initial, { type: "upgrade-stall", definitionId: "stall" }).accepted).toBe(false);
     const mastered: GameState = {
       ...initial,
@@ -106,7 +116,7 @@ describe("adaptive satisfaction, demand, and progression", () => {
 
 describe("multiple movable access points", () => {
   it("adds, moves, removes, and undoes boundary access points atomically", () => {
-    const initial = makeGame();
+    const initial = planningGame();
     const added = dispatchCommand(initial, {
       type: "add-access-point",
       accessPoint: { id: "entrance-2", kind: "entrance", position: { x: 0, y: 5 } },
@@ -128,7 +138,7 @@ describe("multiple movable access points", () => {
   });
 
   it("rejects interior access points and preserves the last entrance and exit", () => {
-    const initial = makeGame();
+    const initial = planningGame();
     expect(dispatchCommand(initial, {
       type: "add-access-point",
       accessPoint: { id: "bad-entry", kind: "entrance", position: { x: 4, y: 4 } },
@@ -154,7 +164,7 @@ describe("multiple movable access points", () => {
       elapsedMs: current.elapsedMs,
     };
     const loaded = deserializeGameState(legacy, TEST_CATALOG, { config: current.config });
-    expect(loaded.schemaVersion).toBe(4);
+    expect(loaded.schemaVersion).toBe(5);
     expect(loaded.accessPoints.map((point) => point.kind)).toEqual(["entrance", "exit"]);
   });
 });

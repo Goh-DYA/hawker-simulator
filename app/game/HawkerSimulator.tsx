@@ -2,6 +2,7 @@
 
 import {
   type CSSProperties,
+  type RefObject,
   useCallback,
   useEffect,
   useMemo,
@@ -32,9 +33,12 @@ import {
   savePreference,
 } from "@/src/game/persistence/saveStore";
 import { registerPwa } from "@/src/game/pwa/registerPwa";
+import { asMoneyCents, asMoneyDeltaCents } from "@/src/game/core/money";
 import { utilityEffectsForPlaceable } from "@/src/game/runtime/contentUtility";
+import { describeSgd, formatSgd } from "@/src/game/runtime/money";
 import { defaultStallMenusForProgression } from "@/src/game/runtime/stallMenus";
 import {
+  activityEntryAccessibleMessage,
   activityEntryMessage,
   appendActivityEvent,
   shouldShowPopup,
@@ -51,6 +55,10 @@ import type {
   GameSpeed,
   RuntimeController,
   RuntimeEvent,
+  RuntimeObjective,
+  RuntimePeriodDebrief,
+  RuntimePeriodLedger,
+  RuntimeServicePeriod,
   RuntimeSettings,
   RuntimeSnapshot,
 } from "@/src/game/runtime/types";
@@ -62,6 +70,7 @@ import {
   NutritionDisclosure,
   NutritionProfileSummary,
   NutritionPulseCard,
+  PreparationTermsSummary,
   VariantLabDialog,
   type CustomerNutritionView,
   type NutritionFamilyView,
@@ -71,15 +80,64 @@ import {
 
 const INITIAL_LEVEL = 1;
 const INITIAL_REPUTATION = 8;
+const INITIAL_CASH_CENTS = asMoneyCents(420_000);
+const ZERO_CENTS = asMoneyCents(0);
+const ZERO_DELTA_CENTS = asMoneyDeltaCents(0);
+
+export function latestRuntimeSavePayload(
+  controller: Pick<RuntimeController, "exportState"> | undefined,
+  pendingPayload: unknown,
+): unknown {
+  const freshPayload = controller?.exportState();
+  return freshPayload === undefined ? pendingPayload : freshPayload;
+}
 
 const INITIAL_SNAPSHOT: RuntimeSnapshot = {
+  cashCents: INITIAL_CASH_CENTS,
   cash: 4_200,
   reputation: INITIAL_REPUTATION,
   level: INITIAL_LEVEL,
   experience: 0,
   nextLevelExperience: 120,
   day: 1,
-  timeLabel: "10:30 AM",
+  timeLabel: "06:00",
+  servicePeriod: {
+    sequenceId: 1,
+    day: 1,
+    id: "breakfast",
+    label: "Breakfast",
+    phase: "planning",
+    startMinute: 360,
+    endMinute: 600,
+    clockLabel: "06:00",
+    arrivalElapsedMs: 0,
+    drainElapsedMs: 0,
+    arrivalRemainingMs: 240_000,
+    drainRemainingMs: 180_000,
+    configurationLocked: false,
+    canAdvance: true,
+    actionLabel: "Start breakfast",
+  },
+  periodLedger: {
+    periodSequenceId: 1,
+    openingCashCents: INITIAL_CASH_CENTS,
+    grossSalesCents: ZERO_CENTS,
+    ingredientCostsCents: ZERO_CENTS,
+    refundsCents: ZERO_CENTS,
+    purchasesCents: ZERO_CENTS,
+    resaleCents: ZERO_CENTS,
+    upkeepCents: ZERO_CENTS,
+    objectiveRewardsCents: ZERO_CENTS,
+    milestoneRewardsCents: ZERO_CENTS,
+    recoveryCents: ZERO_CENTS,
+    contributionCents: ZERO_DELTA_CENTS,
+    operatingMargin: undefined,
+    recordedCashMovementCents: ZERO_DELTA_CENTS,
+    actualCashMovementCents: ZERO_DELTA_CENTS,
+    reconciliationDeltaCents: ZERO_DELTA_CENTS,
+    reconcilesToCash: true,
+    entries: [],
+  },
   isOpen: false,
   speed: 1,
   quality: "standard",
@@ -103,6 +161,7 @@ const INITIAL_SNAPSHOT: RuntimeSnapshot = {
     reputation: INITIAL_REPUTATION,
   }),
   activeDishVariants: {},
+  activePreparations: [],
   nutritionFamilies: [],
   nutritionPulse: {
     servedMeals: 0,
@@ -124,7 +183,7 @@ const INITIAL_SNAPSHOT: RuntimeSnapshot = {
   objectiveProgress: 0,
   objectiveTarget: 5,
   objectives: [],
-  objectiveRefreshLabel: "8h 0m",
+  objectiveRefreshLabel: "Choose now",
   claimedMilestoneCount: 0,
   milestoneTracks: [],
   stallMastery: [],
@@ -170,7 +229,7 @@ function normalizeSettings(
       typeof record.highContrast === "boolean"
         ? record.highContrast
         : defaults.highContrast,
-    textScale: Math.max(1, Math.min(1.35, number("textScale", 1))),
+    textScale: Math.max(1, Math.min(2, number("textScale", 1))),
     musicVolume: Math.max(0, Math.min(1, number("musicVolume", 0.32))),
     ambienceVolume: Math.max(0, Math.min(1, number("ambienceVolume", number("musicVolume", 0.24)))),
     sfxVolume: Math.max(0, Math.min(1, number("sfxVolume", 0.55))),
@@ -383,12 +442,23 @@ function CustomerStatusGuide() {
   );
 }
 
-function money(value: number) {
-  return new Intl.NumberFormat("en-SG", {
-    style: "currency",
-    currency: "SGD",
-    maximumFractionDigits: 0,
-  }).format(value);
+function legacySgdCents(value: number) {
+  return Math.round(value * 100);
+}
+
+function SgdAmount({
+  cents,
+  ledger = false,
+}: {
+  cents: number;
+  ledger?: boolean;
+}) {
+  return (
+    <>
+      <span aria-hidden="true">{formatSgd(cents, ledger ? "ledger" : "compact")}</span>
+      <span className="sr-only">{describeSgd(cents)}</span>
+    </>
+  );
 }
 
 function catalogueIcon(category: PlaceableDefinition["category"] | "stall") {
@@ -411,6 +481,246 @@ function catalogueIcon(category: PlaceableDefinition["category"] | "stall") {
 
 function getContentPrice(item: PlaceableDefinition | StallDefinition) {
   return "purchaseCost" in item ? item.purchaseCost : item.price;
+}
+
+function getContentPriceCents(item: PlaceableDefinition | StallDefinition) {
+  return legacySgdCents(getContentPrice(item));
+}
+
+const SERVICE_PHASE_LABELS: Readonly<Record<RuntimeServicePeriod["phase"], string>> = {
+  planning: "Planning",
+  arrivals: "Arrivals open",
+  draining: "Finishing current visits",
+  debrief: "Period debrief",
+};
+
+const DEBRIEF_CAUSE_LABELS: Readonly<Record<RuntimePeriodDebrief["causeCodes"][number], string>> = {
+  "period-complete": "The period cohort finished service.",
+  "served-timeout": "A served visit reached the drain watchdog and received the explicit timeout result.",
+  "unserved-departure": "An unserved guest departed with no sale or experience awarded.",
+};
+
+function formatCountdown(milliseconds: number) {
+  const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1_000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function ObjectiveBoard({
+  objectives,
+  refreshLabel,
+  onAccept,
+  onSkip,
+}: {
+  objectives: readonly RuntimeObjective[];
+  refreshLabel: string;
+  onAccept(objectiveId: string): void;
+  onSkip(): void;
+}) {
+  const canSkipBoard = objectives.some((objective) => objective.canSkip);
+  const progressLabel = (objective: RuntimeObjective) => {
+    const progress = Math.max(0, Math.min(objective.progress, objective.target));
+    if (objective.kind === "revenue") {
+      return {
+        visible: `${formatSgd(Math.round(progress))} / ${formatSgd(Math.round(objective.target))}`,
+        accessible: `${describeSgd(Math.round(progress))} of ${describeSgd(Math.round(objective.target))} in gross sales`,
+      };
+    }
+    if (objective.kind === "flow") {
+      return {
+        visible: `${formatCountdown(progress)} / ${formatCountdown(objective.target)}`,
+        accessible: `${Math.round(progress / 1_000)} seconds of ${Math.round(objective.target / 1_000)} seconds of qualifying flow`,
+      };
+    }
+    if (objective.kind === "happiness") {
+      return {
+        visible: `${Math.round(progress)}% / ${Math.round(objective.target)}%`,
+        accessible: `${Math.round(progress)} percent of ${Math.round(objective.target)} percent happiness`,
+      };
+    }
+    return {
+      visible: `${Math.round(progress)} / ${Math.round(objective.target)}`,
+      accessible: `${Math.round(progress)} of ${Math.round(objective.target)}`,
+    };
+  };
+  return (
+    <section className="objective-card">
+      <div className="card-kicker">
+        <span>Period objectives</span>
+        <span>{refreshLabel}</span>
+      </div>
+      <h2>Three feasible ways to grow</h2>
+      <div className="objective-list">
+        {objectives.map((objective) => (
+          <article key={objective.id} data-complete={objective.completed}>
+            <div className="objective-title-row">
+              <strong>{objective.completed ? "✓ " : ""}{objective.title}</strong>
+              {objective.skipped
+                ? <span>Skipped</span>
+                : objective.accepted && !objective.completed
+                  ? <span>Target locked</span>
+                  : null}
+            </div>
+            <p>
+              <span aria-hidden="true">{objective.description}</span>
+              <span className="sr-only">{objective.accessibleDescription}</span>
+            </p>
+            <div className="objective-progress">
+              <span
+                style={{
+                  width: `${Math.min(100, (objective.progress / Math.max(1, objective.target)) * 100)}%`,
+                }}
+              />
+            </div>
+            <div className="objective-reward-row">
+              <small>
+                <span aria-hidden="true">{progressLabel(objective).visible}</span>
+                <span className="sr-only">{progressLabel(objective).accessible}</span>
+                {" · "}<SgdAmount cents={objective.rewardCashCents} /> + {objective.rewardXp} XP
+              </small>
+              {objective.canAccept ? (
+                <span className="objective-offer-actions">
+                  <button type="button" className="accept" onClick={() => onAccept(objective.id)}>
+                    Accept<span className="sr-only"> {objective.title}</span>
+                  </button>
+                </span>
+              ) : null}
+            </div>
+          </article>
+        ))}
+        {objectives.length === 0 ? <small>Preparing this period&apos;s objective board…</small> : null}
+      </div>
+      {canSkipBoard ? (
+        <button type="button" className="objective-board-skip" onClick={onSkip}>
+          Skip objectives for this period
+        </button>
+      ) : null}
+    </section>
+  );
+}
+
+function PeriodLedgerCard({
+  ledger,
+  compact = false,
+}: {
+  ledger: RuntimePeriodLedger;
+  compact?: boolean;
+}) {
+  const overtimeUpkeepCents = ledger.entries
+    .filter((entry) => entry.kind === "overtime-upkeep")
+    .reduce((total, entry) => total + entry.amountCents, 0);
+  const regularUpkeepCents = Math.max(0, ledger.upkeepCents - overtimeUpkeepCents);
+  const rows = [
+    ["Gross sales", ledger.grossSalesCents, "income"],
+    ["Ingredient costs", -ledger.ingredientCostsCents, "cost"],
+    ["Refunds", -ledger.refundsCents, "cost"],
+    ["Paid upkeep", -regularUpkeepCents, "cost"],
+    ["Overtime upkeep", -overtimeUpkeepCents, "cost"],
+    ["Contribution", ledger.contributionCents, "total"],
+    ["Purchases", -ledger.purchasesCents, "cost"],
+    ["Resale", ledger.resaleCents, "income"],
+    ["Objective rewards", ledger.objectiveRewardsCents, "income"],
+    ["Milestone rewards", ledger.milestoneRewardsCents, "income"],
+    ["Recovery", ledger.recoveryCents, "income"],
+  ] as const;
+
+  return (
+    <section className={compact ? "period-ledger is-compact" : "period-ledger"} aria-label="Period Singapore dollar reconciliation">
+      <div className="period-ledger-heading">
+        <div>
+          <span>SGD reconciliation</span>
+          <h3>Period ledger</h3>
+        </div>
+        <strong aria-label={`Net cash change ${describeSgd(ledger.actualCashMovementCents)}`}>
+          {ledger.actualCashMovementCents >= 0 ? "+" : "−"}
+          {formatSgd(Math.abs(ledger.actualCashMovementCents), "ledger")}
+        </strong>
+      </div>
+      <dl>
+        {rows.map(([label, cents, tone]) => (
+          <div key={label} data-tone={tone}>
+            <dt>{label}</dt>
+            <dd><SgdAmount cents={cents} ledger /></dd>
+          </div>
+        ))}
+      </dl>
+      <p className="ledger-reconciliation" data-reconciled={ledger.reconcilesToCash} role="status">
+        <span aria-hidden="true">
+          {ledger.reconcilesToCash
+            ? `Reconciled to the cent from opening cash of ${formatSgd(ledger.openingCashCents, "ledger")}.`
+            : `Reconciliation difference: ${formatSgd(ledger.reconciliationDeltaCents, "ledger")}.`}
+        </span>
+        <span className="sr-only">
+          {ledger.reconcilesToCash
+            ? `Reconciled to the cent from opening cash of ${describeSgd(ledger.openingCashCents)}.`
+            : `Reconciliation difference: ${describeSgd(ledger.reconciliationDeltaCents)}.`}
+        </span>
+      </p>
+      <p className="margin-note">
+        <strong>Operating margin: {ledger.operatingMargin === undefined ? "Not available" : `${Math.round(ledger.operatingMargin * 100)}%`}</strong>
+        <span>Gross sales minus ingredient costs and paid upkeep, divided by gross sales. Purchases, resale, refunds, objectives, recovery, scenarios, and cosmetics are excluded.</span>
+      </p>
+    </section>
+  );
+}
+
+function PeriodDebrief({
+  dialogRef,
+  period,
+  ledger,
+  debrief,
+  onContinue,
+}: {
+  dialogRef: RefObject<HTMLElement | null>;
+  period: RuntimeServicePeriod;
+  ledger: RuntimePeriodLedger;
+  debrief?: RuntimePeriodDebrief;
+  onContinue(): void;
+}) {
+  return (
+    <section
+      ref={dialogRef}
+      className="period-debrief"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="period-debrief-title"
+      tabIndex={-1}
+    >
+      <div className="period-debrief-card">
+        <div className="period-debrief-scroll">
+          <span className="period-debrief-kicker">Day {period.day} · {period.label} complete</span>
+          <h2 id="period-debrief-title">Service debrief</h2>
+          <p>The displayed clock is frozen while you reconcile this period&apos;s original arrival cohort.</p>
+          <dl className="debrief-outcomes" aria-label="Visit outcomes">
+            <div><dt>Served visits</dt><dd>{debrief?.servedVisits ?? 0}</dd></div>
+            <div><dt>Served timeouts</dt><dd>{debrief?.timedOutServedVisits ?? 0}</dd></div>
+            <div><dt>Unserved departures</dt><dd>{debrief?.unservedDepartures ?? 0}</dd></div>
+          </dl>
+          {debrief?.causeCodes.length ? (
+            <p className="debrief-cause-summary">
+              <strong>{debrief.causeCodes.length} recorded {debrief.causeCodes.length === 1 ? "cause" : "causes"}.</strong>{" "}
+              {DEBRIEF_CAUSE_LABELS[debrief.causeCodes[0]!]}
+            </p>
+          ) : null}
+          <PeriodLedgerCard ledger={ledger} />
+          {debrief?.causeCodes.length ? (
+            <div className="debrief-causes">
+              <h3>Recorded causes</h3>
+              <ul>
+                {debrief.causeCodes.map((cause) => <li key={cause}>{DEBRIEF_CAUSE_LABELS[cause]}</li>)}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+        <footer className="period-debrief-footer">
+          <button type="button" className="primary-button" onClick={onContinue}>
+            {period.actionLabel}
+          </button>
+        </footer>
+      </div>
+    </section>
+  );
 }
 
 type PreviewStyle = CSSProperties & {
@@ -610,7 +920,7 @@ const TUTORIAL_COPY = [
   {
     eyebrow: "Welcome, neighbour",
     title: "Run the centre. Read the plate.",
-    body: "Your community dining hall is ready for its first lunch crowd. Every choice changes how people move, queue, eat, and compare menu trade-offs.",
+    body: "Your community dining hall is ready for its first breakfast service. Every choice changes how people move, queue, eat, and compare menu trade-offs.",
     action: "Show me around",
   },
   {
@@ -633,9 +943,9 @@ const TUTORIAL_COPY = [
   },
   {
     eyebrow: "Step 4 of 4",
-    title: "Open when you are ready",
-    body: "Customers arrive automatically, choose a stall, queue, collect food, reserve a seat, eat, return their tray, and leave. You can pause at any time.",
-    action: "Open my centre",
+    title: "Start breakfast when you are ready",
+    body: "Each period opens for a fixed four-minute arrival cohort, then drains the same guests before a debrief. You can pause or change speed; arrivals close automatically.",
+    action: "Start breakfast",
   },
 ] as const;
 
@@ -659,6 +969,7 @@ export function HawkerSimulator() {
   const settingsDialogRef = useRef<HTMLElement>(null);
   const helpDialogRef = useRef<HTMLElement>(null);
   const resetDialogRef = useRef<HTMLElement>(null);
+  const periodDebriefDialogRef = useRef<HTMLElement>(null);
   const managementReturnFocusRef = useRef<HTMLElement | null>(null);
 
   const [snapshot, setSnapshot] = useState(INITIAL_SNAPSHOT);
@@ -673,6 +984,7 @@ export function HawkerSimulator() {
   const [resetOpen, setResetOpen] = useState(false);
   const [tutorialStep, setTutorialStep] = useState<TutorialStep>(0);
   const [nutritionTourStep, setNutritionTourStep] = useState<NutritionTourStep>(2);
+  const [startAfterNutritionTour, setStartAfterNutritionTour] = useState(false);
   const [nutritionLens, setNutritionLens] = useState(true);
   const [variantLabDishId, setVariantLabDishId] = useState<string>();
   const [managementOpen, setManagementOpen] = useState(false);
@@ -750,8 +1062,15 @@ export function HawkerSimulator() {
     [announce],
   );
 
-  const flushPendingSave = useCallback(async () => {
+  const flushPendingSave = useCallback(async (captureFreshState = false) => {
     window.clearTimeout(saveTimerRef.current);
+    if (captureFreshState) {
+      const freshPayload = latestRuntimeSavePayload(
+        controllerRef.current,
+        pendingSaveRef.current,
+      );
+      if (freshPayload !== undefined) pendingSaveRef.current = freshPayload;
+    }
     const payload = pendingSaveRef.current;
     if (payload === undefined) return;
     pendingSaveRef.current = undefined;
@@ -780,12 +1099,29 @@ export function HawkerSimulator() {
             await loadPreference<unknown>("settings", undefined),
             initialSettings,
           );
+          if (process.env.NODE_ENV !== "production") {
+            const qaParams = new URLSearchParams(window.location.search);
+            const requestedScale = Number(qaParams.get("textScale"));
+            if (qaParams.has("visualQa") && Number.isFinite(requestedScale)) {
+              savedSettings = {
+                ...savedSettings,
+                textScale: Math.min(2, Math.max(1, requestedScale)),
+              };
+            }
+          }
           completedTutorial =
             (await loadPreference<unknown>("tutorial-complete", false)) === true;
           completedNutritionTour =
             (await loadPreference<unknown>("nutrition-tour-v1-complete", false)) === true;
           savedNutritionLens =
             (await loadPreference<unknown>("nutrition-lens-enabled", true)) !== false;
+          if (
+            process.env.NODE_ENV !== "production"
+            && new URLSearchParams(window.location.search).has("visualQa")
+          ) {
+            completedTutorial = true;
+            completedNutritionTour = true;
+          }
         } catch {
           reportStorageIssue(
             "Local preferences are unavailable. The game will continue with defaults.",
@@ -863,13 +1199,13 @@ export function HawkerSimulator() {
     }
 
     void start();
-    const flushOnPageHide = () => void flushPendingSave();
+    const flushOnPageHide = () => void flushPendingSave(true);
     window.addEventListener("pagehide", flushOnPageHide);
 
     return () => {
       disposed = true;
       window.clearTimeout(saveTimerRef.current);
-      void flushPendingSave();
+      void flushPendingSave(true);
       window.removeEventListener("pagehide", flushOnPageHide);
       controllerRef.current?.destroy();
       audioRef.current?.destroy();
@@ -883,6 +1219,7 @@ export function HawkerSimulator() {
       String(settings.textScale),
     );
     controllerRef.current?.setQuality(settings.quality);
+    controllerRef.current?.setTextScale(settings.textScale);
     controllerRef.current?.setReducedMotion(settings.reducedMotion);
     controllerRef.current?.setHighContrast(settings.highContrast);
     audioRef.current?.setVoiceLimit(settings.quality === "standard" ? 16 : 8);
@@ -919,6 +1256,8 @@ export function HawkerSimulator() {
         ? settingsDialogRef.current
           : helpOpen
             ? helpDialogRef.current
+            : snapshot.servicePeriod.phase === "debrief"
+              ? periodDebriefDialogRef.current
             : tutorialStep < 5
               ? tutorialDialogRef.current
               : nutritionTourStep < 2
@@ -938,7 +1277,10 @@ export function HawkerSimulator() {
       Array.from(modal.querySelectorAll<HTMLElement>(focusableSelector)).filter(
         (element) => !element.hidden && element.getAttribute("aria-hidden") !== "true",
       );
-    const initial = modal.querySelector<HTMLElement>("[autofocus]") ?? focusables()[0] ?? modal;
+    const initial = modal.querySelector<HTMLElement>("[data-modal-initial-focus]")
+      ?? modal.querySelector<HTMLElement>("[autofocus]")
+      ?? focusables()[0]
+      ?? modal;
     window.requestAnimationFrame(() => initial.focus());
 
     const handleModalKeys = (event: KeyboardEvent) => {
@@ -947,13 +1289,18 @@ export function HawkerSimulator() {
         if (resetOpen) setResetOpen(false);
         else if (settingsOpen) setSettingsOpen(false);
         else if (helpOpen) setHelpOpen(false);
+        else if (snapshot.servicePeriod.phase === "debrief") {
+          (focusables()[0] ?? modal).focus();
+        }
         else if (tutorialStep < 5) {
           setTutorialStep(5);
+          setStartAfterNutritionTour(false);
           void savePreference("tutorial-complete", true).catch(() =>
             reportStorageIssue("Tutorial progress could not be saved."),
           );
         } else {
           setNutritionTourStep(2);
+          setStartAfterNutritionTour(false);
           void savePreference("nutrition-tour-v1-complete", true).catch(() =>
             reportStorageIssue("Nutrition tour progress could not be saved."),
           );
@@ -969,7 +1316,10 @@ export function HawkerSimulator() {
       }
       const first = available[0]!;
       const last = available[available.length - 1]!;
-      if (event.shiftKey && document.activeElement === first) {
+      if (document.activeElement === initial && !available.includes(initial)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -982,7 +1332,7 @@ export function HawkerSimulator() {
       document.removeEventListener("keydown", handleModalKeys);
       window.requestAnimationFrame(() => previousFocus?.focus());
     };
-  }, [helpOpen, nutritionTourStep, reportStorageIssue, resetOpen, settingsOpen, tutorialStep]);
+  }, [helpOpen, nutritionTourStep, reportStorageIssue, resetOpen, settingsOpen, snapshot.servicePeriod.phase, tutorialStep]);
 
   const buildCategories = useMemo(
     () => ["all", ...new Set(PLACEABLES.map((item) => item.category))],
@@ -1004,6 +1354,14 @@ export function HawkerSimulator() {
       STALLS.find((stall) => stall.id === selectedId),
     [selectedId],
   );
+  const configurationLocked = snapshot.servicePeriod.configurationLocked;
+
+  function explainConfigurationLock() {
+    announce({
+      kind: "info",
+      message: `${snapshot.servicePeriod.label} service is in progress. Layout, menu, and preparation changes reopen during planning.`,
+    });
+  }
 
   function unlockAudio() {
     void audioRef.current
@@ -1021,6 +1379,10 @@ export function HawkerSimulator() {
 
   function selectBuildItem(item: PlaceableDefinition | StallDefinition) {
     unlockAudio();
+    if (configurationLocked) {
+      explainConfigurationLock();
+      return;
+    }
     if (!snapshot.unlockedContentIds.includes(item.id)) {
       announce({
         kind: "warning",
@@ -1028,8 +1390,8 @@ export function HawkerSimulator() {
       });
       return;
     }
-    if (getContentPrice(item) > snapshot.cash) {
-      announce({ kind: "warning", message: "You need more cash for that item." });
+    if (getContentPriceCents(item) > snapshot.cashCents) {
+      announce({ kind: "warning", message: "You need more Singapore dollars for that item." });
       return;
     }
     setSelectedId(item.id);
@@ -1039,6 +1401,10 @@ export function HawkerSimulator() {
   }
 
   function chooseTool(tool: BuildTool) {
+    if (configurationLocked && tool !== "select") {
+      explainConfigurationLock();
+      return;
+    }
     setSelectedId(tool === "place" ? selectedId : undefined);
     controllerRef.current?.setBuildTool(tool);
     if (tool !== "place") controllerRef.current?.selectBuildItem(undefined);
@@ -1061,8 +1427,30 @@ export function HawkerSimulator() {
 
   function toggleCentre() {
     unlockAudio();
+    if (snapshot.servicePeriod.phase === "planning") {
+      setSelectedId(undefined);
+      setVariantLabDishId(undefined);
+      controllerRef.current?.selectBuildItem(undefined);
+      controllerRef.current?.setBuildTool("select");
+    }
     const changed = controllerRef.current?.toggleOpen() ?? false;
-    if (changed) audioRef.current?.play(snapshot.isOpen ? "close" : "open");
+    if (changed) {
+      audioRef.current?.play(snapshot.servicePeriod.phase === "arrivals" ? "close" : "open");
+    }
+  }
+
+  function skipObjective() {
+    if (controllerRef.current?.skipObjective()) {
+      audioRef.current?.play("ui");
+      announce({ kind: "info", message: "Objective skipped for this period." });
+    }
+  }
+
+  function acceptObjective(objectiveId: string) {
+    if (controllerRef.current?.acceptObjective(objectiveId)) {
+      audioRef.current?.play("reward");
+      announce({ kind: "success", message: "Objective accepted. Its target and reward are now locked for this period." });
+    }
   }
 
   async function finishTutorial(openCentre: boolean) {
@@ -1070,14 +1458,21 @@ export function HawkerSimulator() {
     await savePreference("tutorial-complete", true).catch(() =>
       reportStorageIssue("Tutorial progress could not be saved."),
     );
-    if (openCentre && !snapshot.isOpen) toggleCentre();
+    if (!openCentre || snapshot.servicePeriod.phase !== "planning") return;
+    if (nutritionTourStep < 2) {
+      setStartAfterNutritionTour(true);
+      return;
+    }
+    toggleCentre();
   }
 
-  async function finishNutritionTour() {
+  async function finishNutritionTour(openCentre = false) {
     setNutritionTourStep(2);
+    setStartAfterNutritionTour(false);
     await savePreference("nutrition-tour-v1-complete", true).catch(() =>
       reportStorageIssue("Nutrition tour progress could not be saved."),
     );
+    if (openCentre && snapshot.servicePeriod.phase === "planning") toggleCentre();
   }
 
   function openPanel(nextPanel: Panel, returnFocus?: HTMLElement) {
@@ -1170,6 +1565,7 @@ export function HawkerSimulator() {
     setResetOpen(false);
     setTutorialStep(0);
     setNutritionTourStep(0);
+    setStartAfterNutritionTour(false);
     await savePreference("tutorial-complete", false).catch(() =>
       reportStorageIssue("Tutorial progress could not be reset."),
     );
@@ -1200,6 +1596,7 @@ export function HawkerSimulator() {
     settingsOpen ||
     helpOpen ||
     resetOpen ||
+    snapshot.servicePeriod.phase === "debrief" ||
     Boolean(variantLabFamily);
 
   useEffect(() => {
@@ -1285,6 +1682,14 @@ export function HawkerSimulator() {
       className="game-shell"
       data-contrast={settings.highContrast ? "high" : "normal"}
       data-motion={settings.reducedMotion ? "reduced" : "full"}
+      data-text-scale={
+        settings.textScale >= 1.75
+          ? "large"
+          : settings.textScale >= 1.35
+            ? "medium"
+            : "normal"
+      }
+      data-service-phase={snapshot.servicePeriod.phase}
       data-management-open={managementOpen || Boolean(selectedCustomerNutrition)}
       onPointerDown={unlockAudio}
     >
@@ -1303,7 +1708,7 @@ export function HawkerSimulator() {
         <dl className="hud-stats" aria-label="Centre status">
           <div>
             <dt>Cash</dt>
-            <dd data-testid="cash-value">{money(snapshot.cash)}</dd>
+            <dd data-testid="cash-value"><SgdAmount cents={snapshot.cashCents} /></dd>
           </div>
           <div>
             <dt>Reputation</dt>
@@ -1314,24 +1719,34 @@ export function HawkerSimulator() {
           <div className="level-stat">
             <dt>Level {snapshot.level}</dt>
             <dd>
-              <span className="progress-track" aria-hidden="true">
-                <span
-                  style={{
-                    width: `${Math.min(100, (snapshot.experience / Math.max(1, snapshot.nextLevelExperience)) * 100)}%`,
-                  }}
-                />
-              </span>
-              <span className="sr-only">
-                {snapshot.experience} of {snapshot.nextLevelExperience} experience
-              </span>
+              {snapshot.nextLevelExperience === null ? (
+                <>
+                  <strong aria-hidden="true">MAX</strong>
+                  <span className="sr-only">Maximum authored level reached</span>
+                </>
+              ) : (
+                <>
+                  <span className="progress-track" aria-hidden="true">
+                    <span
+                      style={{
+                        width: `${Math.min(100, (snapshot.experience / Math.max(1, snapshot.nextLevelExperience)) * 100)}%`,
+                      }}
+                    />
+                  </span>
+                  <span className="sr-only">
+                    {snapshot.experience} of {snapshot.nextLevelExperience} experience
+                  </span>
+                </>
+              )}
             </dd>
           </div>
         </dl>
 
         <div className="day-controls">
           <div className="clock-card">
-            <span>Day {snapshot.day}</span>
-            <strong>{snapshot.timeLabel}</strong>
+            <span>Day {snapshot.servicePeriod.day} · {snapshot.servicePeriod.label}</span>
+            <strong>{snapshot.servicePeriod.clockLabel}</strong>
+            <small>{SERVICE_PHASE_LABELS[snapshot.servicePeriod.phase]}</small>
           </div>
           <div className="speed-group" aria-label="Simulation speed">
             {([0, 1, 2, 4, 10] as const).map((speed) => (
@@ -1347,6 +1762,18 @@ export function HawkerSimulator() {
               </button>
             ))}
           </div>
+          <select
+            className="speed-select"
+            aria-label="Simulation speed"
+            value={snapshot.speed}
+            onChange={(event) => setGameSpeed(Number(event.target.value) as GameSpeed)}
+          >
+            {([0, 1, 2, 4, 10] as const).map((speed) => (
+              <option key={speed} value={speed}>
+                {speed === 0 ? "Pause" : `${speed}× speed`}
+              </option>
+            ))}
+          </select>
           <button
             type="button"
             className="icon-button"
@@ -1368,24 +1795,14 @@ export function HawkerSimulator() {
 
       <section className="play-layout" inert={interfaceInert} aria-hidden={interfaceInert}>
         <aside className="left-rail" aria-label="Objectives and centre pulse">
-          <section className="objective-card">
-            <div className="card-kicker">
-              <span>Today&apos;s focus</span>
-              <span>Refresh {snapshot.objectiveRefreshLabel}</span>
-            </div>
-            <h2>Three ways to grow</h2>
-            <div className="objective-list">
-              {snapshot.objectives.map((objective) => (
-                <article key={objective.id} data-complete={objective.completed}>
-                  <strong>{objective.completed ? "✓ " : ""}{objective.title}</strong>
-                  <p>{objective.description}</p>
-                  <div className="objective-progress"><span style={{ width: `${Math.min(100, (objective.progress / Math.max(1, objective.target)) * 100)}%` }} /></div>
-                  <small>{Math.round(objective.progress)} / {objective.target} · ${objective.rewardCash} + {objective.rewardXp} XP</small>
-                </article>
-              ))}
-              {snapshot.objectives.length === 0 ? <small>Opening today&apos;s objective board…</small> : null}
-            </div>
-          </section>
+          <ObjectiveBoard
+            objectives={snapshot.objectives}
+            refreshLabel={snapshot.objectiveRefreshLabel}
+            onAccept={acceptObjective}
+            onSkip={skipObjective}
+          />
+
+          <PeriodLedgerCard ledger={snapshot.periodLedger} compact />
 
           <NutritionPulseCard
             compact
@@ -1415,22 +1832,32 @@ export function HawkerSimulator() {
                     ? "Access editor"
                     : snapshot.buildTool === "route"
                       ? "Route editor"
-                      : snapshot.isOpen
-                        ? "Centre open"
-                        : "Planning mode"}
+                      : SERVICE_PHASE_LABELS[snapshot.servicePeriod.phase]}
             </div>
-            <div className="world-message" aria-live="polite">
-              {snapshot.buildTool === "queue"
-                ? "Queue editor: choose adjacent clear tiles to bend the line; Escape finishes"
-                : snapshot.buildTool === "access"
-                  ? "Access editor: choose an entry or exit, then choose a boundary tile"
-                : snapshot.buildTool === "route"
-                  ? "Route editor: choose clear floor tiles to guide guests; choose a guide again to remove it; Escape finishes"
-                  : selectedContent
-                    ? `${localize(selectedContent.nameKey)} selected — choose a clear tile`
-                    : snapshot.isOpen
-                      ? `${snapshot.activeCustomers} neighbours are visiting`
-                      : "Arrange your centre, then open the shutters"}
+            <div className="period-hud" data-phase={snapshot.servicePeriod.phase} aria-live="polite">
+              <div>
+                <span>Day {snapshot.servicePeriod.day} · {snapshot.servicePeriod.label}</span>
+                <strong>{snapshot.servicePeriod.clockLabel}</strong>
+                <em>{SERVICE_PHASE_LABELS[snapshot.servicePeriod.phase]}</em>
+                {snapshot.servicePeriod.phase === "arrivals" ? (
+                  <small>{formatCountdown(snapshot.servicePeriod.arrivalRemainingMs)} arrivals</small>
+                ) : snapshot.servicePeriod.phase === "draining" ? (
+                  <small>{formatCountdown(snapshot.servicePeriod.drainRemainingMs)} watchdog</small>
+                ) : null}
+              </div>
+              <span className="world-message">
+                {configurationLocked
+                  ? `${snapshot.activeCustomers} period guests remain · configuration reopens after the debrief`
+                  : snapshot.buildTool === "queue"
+                    ? "Queue editor: choose adjacent clear tiles to bend the line; Escape finishes"
+                    : snapshot.buildTool === "access"
+                      ? "Access editor: choose an entry or exit, then choose a boundary tile"
+                    : snapshot.buildTool === "route"
+                      ? "Route editor: choose clear floor tiles to guide guests; choose a guide again to remove it; Escape finishes"
+                      : selectedContent
+                        ? `${localize(selectedContent.nameKey)} selected — choose a clear tile`
+                        : "Arrange the centre and menu during planning, then start the period"}
+              </span>
             </div>
             <div className="tool-segment" aria-label="Build tools">
               {(["select", "move", "remove"] as const).map((tool) => (
@@ -1439,6 +1866,7 @@ export function HawkerSimulator() {
                   key={tool}
                   aria-pressed={snapshot.buildTool === tool}
                   className={snapshot.buildTool === tool ? "is-active" : ""}
+                  disabled={configurationLocked && tool !== "select"}
                   onClick={() => chooseTool(tool)}
                 >
                   {tool === "select" ? "Select" : tool === "move" ? "Move" : "Remove"}
@@ -1448,6 +1876,7 @@ export function HawkerSimulator() {
                 type="button"
                 aria-pressed={snapshot.buildTool === "access"}
                 className={snapshot.buildTool === "access" ? "is-active" : ""}
+                disabled={configurationLocked}
                 onClick={() => chooseTool(snapshot.buildTool === "access" ? "select" : "access")}
               >
                 {snapshot.buildTool === "access" ? "Finish access" : "Access"}
@@ -1456,15 +1885,16 @@ export function HawkerSimulator() {
                 type="button"
                 aria-pressed={snapshot.buildTool === "route"}
                 className={snapshot.buildTool === "route" ? "is-active" : ""}
+                disabled={configurationLocked}
                 onClick={chooseRouteTool}
               >
                 {snapshot.buildTool === "route" ? "Finish route" : "Route"}
               </button>
               {snapshot.buildTool === "access" ? (
                 <>
-                  <button type="button" onClick={() => controllerRef.current?.addAccessPoint("entrance")}>+ Entry</button>
-                  <button type="button" onClick={() => controllerRef.current?.addAccessPoint("exit")}>+ Exit</button>
-                  <button type="button" disabled={!snapshot.selectedAccessPointId} onClick={() => controllerRef.current?.removeSelectedAccessPoint()}>Remove access</button>
+                  <button type="button" disabled={configurationLocked} onClick={() => controllerRef.current?.addAccessPoint("entrance")}>+ Entry</button>
+                  <button type="button" disabled={configurationLocked} onClick={() => controllerRef.current?.addAccessPoint("exit")}>+ Exit</button>
+                  <button type="button" disabled={configurationLocked || !snapshot.selectedAccessPointId} onClick={() => controllerRef.current?.removeSelectedAccessPoint()}>Remove access</button>
                 </>
               ) : null}
               {snapshot.selectedObjectId && snapshot.selectedObjectDefinitionId?.startsWith("stall.") ? (
@@ -1472,6 +1902,7 @@ export function HawkerSimulator() {
                   type="button"
                   aria-pressed={snapshot.buildTool === "queue"}
                   className={snapshot.buildTool === "queue" ? "is-active" : ""}
+                  disabled={configurationLocked}
                   onClick={() => {
                     if (snapshot.buildTool === "queue") controllerRef.current?.finishQueueEdit();
                     else controllerRef.current?.beginQueueEdit(snapshot.selectedObjectId as string);
@@ -1489,6 +1920,8 @@ export function HawkerSimulator() {
               className="game-host"
               data-testid="game-world"
               role="application"
+              inert={snapshot.servicePeriod.phase === "debrief"}
+              aria-hidden={snapshot.servicePeriod.phase === "debrief" || undefined}
               aria-label={snapshot.buildTool === "route"
                 ? "Guest route editor. Use arrow keys to move the route cursor, Enter to add or remove a preferred route guide, and Escape to finish."
                 : "Interactive hawker centre. Use arrow keys to move the cursor. Enter selects a guest or places the current item, R rotates, and Escape clears the selection."}
@@ -1545,32 +1978,35 @@ export function HawkerSimulator() {
           </div>
 
           <div className="action-strip">
-            <div className="save-state" role="status">
-              <span className={snapshot.autosaveState === "error" ? "error-dot" : "green-dot"} />
-              {snapshot.autosaveState === "saving"
-                ? "Saving…"
-                : snapshot.autosaveState === "error"
-                  ? "Save needs attention"
-                  : "Saved on this device"}
+            <div className="service-save-state" role="status">
+              <div className="save-state">
+                <span className={snapshot.autosaveState === "error" ? "error-dot" : "green-dot"} />
+                {snapshot.autosaveState === "saving"
+                  ? "Saving…"
+                  : snapshot.autosaveState === "error"
+                    ? "Save needs attention"
+                    : "Saved on this device"}
+              </div>
+              {configurationLocked ? <small>Planning changes locked during service</small> : null}
             </div>
             <div className="edit-actions">
               {snapshot.buildTool === "route" ? (
                 <>
                   <button
                     type="button"
-                    disabled={!snapshot.canUndo}
+                    disabled={configurationLocked || !snapshot.canUndo}
                     onClick={() => controllerRef.current?.undo()}
                   >
                     ↶ Undo
                   </button>
                   <button
                     type="button"
-                    disabled={snapshot.routeGuidePoints.length === 0}
+                    disabled={configurationLocked || snapshot.routeGuidePoints.length === 0}
                     onClick={() => controllerRef.current?.clearGuestRoute()}
                   >
                     Clear route
                   </button>
-                  <button type="button" onClick={() => chooseTool("select")}>
+                  <button type="button" disabled={configurationLocked} onClick={() => chooseTool("select")}>
                     Finish <kbd>Esc</kbd>
                   </button>
                 </>
@@ -1578,15 +2014,15 @@ export function HawkerSimulator() {
                 <>
                   <button
                     type="button"
-                    disabled={!snapshot.canUndo}
+                    disabled={configurationLocked || !snapshot.canUndo}
                     onClick={() => controllerRef.current?.undo()}
                   >
                     ↶ Undo
                   </button>
-                  <button type="button" onClick={() => controllerRef.current?.rotateSelection()}>
+                  <button type="button" disabled={configurationLocked} onClick={() => controllerRef.current?.rotateSelection()}>
                     ↻ Rotate <kbd>R</kbd>
                   </button>
-                  <button type="button" onClick={() => chooseTool("select")}>
+                  <button type="button" disabled={configurationLocked} onClick={() => chooseTool("select")}>
                     Cancel <kbd>Esc</kbd>
                   </button>
                 </>
@@ -1594,12 +2030,22 @@ export function HawkerSimulator() {
             </div>
             <button
               type="button"
-              className={snapshot.isOpen ? "centre-toggle close" : "centre-toggle"}
+              className={`centre-toggle phase-${snapshot.servicePeriod.phase}`}
               data-testid="toggle-centre"
+              disabled={!snapshot.servicePeriod.canAdvance}
+              aria-label={`${snapshot.servicePeriod.actionLabel} for ${snapshot.servicePeriod.label}`}
               onClick={toggleCentre}
             >
-              <span aria-hidden="true">{snapshot.isOpen ? "▥" : "▤"}</span>
-              {snapshot.isOpen ? "Close centre" : "Open centre"}
+              <span aria-hidden="true">
+                {snapshot.servicePeriod.phase === "planning"
+                  ? "▶"
+                  : snapshot.servicePeriod.phase === "arrivals"
+                    ? "◷"
+                    : snapshot.servicePeriod.phase === "draining"
+                      ? "…"
+                      : "→"}
+              </span>
+              {snapshot.servicePeriod.actionLabel}
             </button>
           </div>
         </section>
@@ -1642,26 +2088,13 @@ export function HawkerSimulator() {
 
           {panel === "focus" ? (
             <div className="focus-panel">
-              <section className="objective-card">
-                <div className="card-kicker">
-                  <span>Today&apos;s focus</span>
-                  <span>Refresh {snapshot.objectiveRefreshLabel}</span>
-                </div>
-                <h2>Three ways to grow</h2>
-                <div className="objective-list">
-                  {snapshot.objectives.map((objective) => (
-                    <article key={objective.id} data-complete={objective.completed}>
-                      <strong>{objective.completed ? "✓ " : ""}{objective.title}</strong>
-                      <p>{objective.description}</p>
-                      <div className="objective-progress">
-                        <span style={{ width: `${Math.min(100, (objective.progress / Math.max(1, objective.target)) * 100)}%` }} />
-                      </div>
-                      <small>{Math.round(objective.progress)} / {objective.target} · ${objective.rewardCash} + {objective.rewardXp} XP</small>
-                    </article>
-                  ))}
-                  {snapshot.objectives.length === 0 ? <small>Opening today&apos;s objective board…</small> : null}
-                </div>
-              </section>
+              <ObjectiveBoard
+                objectives={snapshot.objectives}
+                refreshLabel={snapshot.objectiveRefreshLabel}
+                onAccept={acceptObjective}
+                onSkip={skipObjective}
+              />
+              <PeriodLedgerCard ledger={snapshot.periodLedger} />
               <NutritionPulseCard
                 pulse={nutritionPulse}
                 dishLabel={dishLabel}
@@ -1682,6 +2115,11 @@ export function HawkerSimulator() {
 
           {panel === "build" ? (
             <>
+              {configurationLocked ? (
+                <p className="configuration-lock-notice" role="status">
+                  Service is underway. You can inspect the catalogue now; placement, movement, removal, routes, and purchases reopen in planning.
+                </p>
+              ) : null}
               <label className="search-field">
                 <span className="sr-only">Search catalogue</span>
                 <span aria-hidden="true">⌕</span>
@@ -1715,7 +2153,8 @@ export function HawkerSimulator() {
                       key={item.id}
                       className={`catalogue-item ${selected ? "is-selected" : ""}`}
                       aria-pressed={selected}
-                      aria-label={`${localize(item.nameKey)}, ${money(item.price)}${locked ? `, locked: ${unlockLabel(item, snapshot.level, snapshot.reputation, snapshot.unlockedContentIds)}` : ""}`}
+                      disabled={configurationLocked}
+                      aria-label={`${localize(item.nameKey)}, ${describeSgd(legacySgdCents(item.price))}${locked ? `, locked: ${unlockLabel(item, snapshot.level, snapshot.reputation, snapshot.unlockedContentIds)}` : configurationLocked ? ", configuration locked during service" : ""}`}
                       onClick={() => selectBuildItem(item)}
                     >
                       <span
@@ -1732,7 +2171,7 @@ export function HawkerSimulator() {
                       <small>
                         {locked
                           ? unlockLabel(item, snapshot.level, snapshot.reputation, snapshot.unlockedContentIds)
-                          : `${money(item.price)} · ${primaryUtility(item)}`}
+                          : <><SgdAmount cents={legacySgdCents(item.price)} /> · {primaryUtility(item)}</>}
                       </small>
                       {locked ? <i aria-hidden="true">●</i> : null}
                     </button>
@@ -1744,6 +2183,11 @@ export function HawkerSimulator() {
 
           {panel === "stalls" ? (
             <div className="stall-list" data-testid="stall-catalogue">
+              {configurationLocked ? (
+                <p className="configuration-lock-notice" role="status">
+                  Stall placement, queue routes, and upgrades reopen after the period debrief. Stall details remain available for inspection.
+                </p>
+              ) : null}
               {snapshot.placedStalls.length > 0 ? (
                 <section className="operating-stalls" aria-labelledby="operating-stalls-title">
                   <h3 id="operating-stalls-title">Operating queue plans</h3>
@@ -1758,6 +2202,15 @@ export function HawkerSimulator() {
                           <small key={mastery.definitionId}>Mastery rank {mastery.rank} · Upgrade {mastery.upgradeLevel}/4</small>
                         ))}
                       </div>
+                      <button
+                        type="button"
+                        className="stall-shutter-toggle"
+                        data-open={placed.open}
+                        aria-pressed={placed.open}
+                        onClick={() => controllerRef.current?.setStallOpen(placed.objectId, !placed.open)}
+                      >
+                        {placed.open ? "Close stall" : "Open stall"}
+                      </button>
                       <div className="queue-direction-group" aria-label={`${placed.name} queue direction`}>
                         {(["north", "east", "south", "west"] as const).map((direction) => (
                           <button
@@ -1766,6 +2219,7 @@ export function HawkerSimulator() {
                             className={!placed.customQueue && placed.queueDirection === direction ? "is-active" : ""}
                             aria-pressed={!placed.customQueue && placed.queueDirection === direction}
                             aria-label={`Route ${placed.name} queue ${direction}`}
+                            disabled={configurationLocked}
                             onClick={() => controllerRef.current?.setQueueDirection(placed.objectId, direction)}
                           >
                             {{ north: "↑", east: "→", south: "↓", west: "←" }[direction]}
@@ -1774,6 +2228,7 @@ export function HawkerSimulator() {
                         <button
                           type="button"
                           className={placed.customQueue ? "is-active edit-queue-button" : "edit-queue-button"}
+                          disabled={configurationLocked}
                           onClick={() => controllerRef.current?.beginQueueEdit(placed.objectId)}
                         >
                           Bend line
@@ -1784,14 +2239,14 @@ export function HawkerSimulator() {
                           type="button"
                           key={`upgrade-${mastery.definitionId}`}
                           className="stall-upgrade-button"
-                          disabled={mastery.rank < (mastery.requiredRank ?? 1) || snapshot.cash < (mastery.nextUpgradeCost ?? 0)}
+                          disabled={configurationLocked || mastery.rank < (mastery.requiredRank ?? 1) || snapshot.cashCents < legacySgdCents(mastery.nextUpgradeCost ?? 0)}
                           onClick={() => controllerRef.current?.upgradeStall(mastery.definitionId)}
                         >
                           <span className="stall-upgrade-copy">
                             Upgrade to level {mastery.upgradeLevel + 1}
                             <small>Requires mastery rank {mastery.requiredRank}</small>
                           </span>
-                          <strong>{money(mastery.nextUpgradeCost ?? 0)}</strong>
+                          <strong><SgdAmount cents={legacySgdCents(mastery.nextUpgradeCost ?? 0)} /></strong>
                         </button>
                       ))}
                     </article>
@@ -1806,6 +2261,7 @@ export function HawkerSimulator() {
                     type="button"
                     key={stall.id}
                     className={selectedId === stall.id ? "stall-card is-selected" : "stall-card"}
+                    disabled={configurationLocked}
                     onClick={() => selectBuildItem(stall)}
                   >
                     <span
@@ -1822,7 +2278,7 @@ export function HawkerSimulator() {
                       <strong>{localize(stall.nameKey)}</strong>
                       <small>{stall.dishIds.length} dishes · {Math.round(stall.quality * 100)} quality</small>
                     </span>
-                    <em>{locked ? unlockLabel(stall, snapshot.level, snapshot.reputation, snapshot.unlockedContentIds) : money(stall.purchaseCost)}</em>
+                    <em>{locked ? unlockLabel(stall, snapshot.level, snapshot.reputation, snapshot.unlockedContentIds) : <SgdAmount cents={legacySgdCents(stall.purchaseCost)} />}</em>
                   </button>
                 );
               })}
@@ -1831,6 +2287,11 @@ export function HawkerSimulator() {
 
           {panel === "dishes" ? (
             <div className="menu-manager">
+              {configurationLocked ? (
+                <p className="configuration-lock-notice" role="status">
+                  Menu offers and preparation terms are frozen for this service cohort. Nutrition and recipe details remain available to inspect.
+                </p>
+              ) : null}
               <label className="menu-stall-picker">
                 Operating stall
                 <select value={menuStallId} onChange={(event) => setMenuStallId(event.target.value)}>
@@ -1876,16 +2337,18 @@ export function HawkerSimulator() {
                           (id) => !snapshot.unlockedContentIds.includes(id),
                         );
                       const atCapacity = !checked && activeMenu.length >= menuSlots;
-                      const unavailableReason = gated
-                        ? unlockLabel(
-                            dish,
-                            snapshot.level,
-                            snapshot.reputation,
-                            snapshot.unlockedContentIds,
-                          )
-                        : atCapacity
-                          ? `All ${menuSlots} menu slots are active`
-                          : undefined;
+                      const unavailableReason = configurationLocked
+                        ? "Menu changes reopen during planning"
+                        : gated
+                          ? unlockLabel(
+                              dish,
+                              snapshot.level,
+                              snapshot.reputation,
+                              snapshot.unlockedContentIds,
+                            )
+                          : atCapacity
+                            ? `All ${menuSlots} menu slots are active`
+                            : undefined;
                       const reasonId = `dish-menu-reason-${dish.id.slice("dish.".length)}`;
                       const dishTitleId = `dish-menu-title-${dish.id.slice("dish.".length)}`;
                       const nutritionFamily = nutritionFamilies.find(
@@ -1894,9 +2357,14 @@ export function HawkerSimulator() {
                       const activeVariant = nutritionFamily?.variants.find(
                         (variant) => variant.id === nutritionFamily.activeVariantId,
                       );
+                      const activePreparation = snapshot.activePreparations.find(
+                        (preparation) => preparation.dishId === dish.id,
+                      );
                       const profile = activeVariant?.profile
                         ?? nutritionProfileView(dish.id, activeVariant?.id);
-                      const starRating = nutritionFamily?.starRating ?? dishStarRating(dish.id);
+                      const starRating = activePreparation?.terms.starAppeal
+                        ?? nutritionFamily?.starRating
+                        ?? dishStarRating(dish.id);
                       return (
                         <article
                           key={dish.id}
@@ -1921,10 +2389,15 @@ export function HawkerSimulator() {
                           </span>
                           <div className="dish-menu-main">
                             <h3 id={dishTitleId}>{localize(dish.nameKey)}</h3>
-                            <small>
-                              {dish.category.replace("-", " ")} · {money(dish.price)} · demand {Math.round(dish.baseDemand * 100)}%
-                            </small>
+                            <small>{dish.category.replace("-", " ")}</small>
                             {activeVariant ? <small>Serving: {activeVariant.label}</small> : null}
+                            {activePreparation ? (
+                              <PreparationTermsSummary
+                                terms={activePreparation.terms}
+                                label={`Active ${localize(dish.nameKey)} preparation terms`}
+                                compact
+                              />
+                            ) : null}
                           </div>
                           {nutritionLens ? (
                             <NutritionProfileSummary
@@ -1949,6 +2422,7 @@ export function HawkerSimulator() {
                               <button
                                 type="button"
                                 aria-label={`Tune recipe for ${localize(dish.nameKey)}`}
+                                disabled={configurationLocked}
                                 onClick={() => setVariantLabDishId(dish.id)}
                               >
                                 Tune recipe
@@ -2126,14 +2600,14 @@ export function HawkerSimulator() {
               <button
                 type="button"
                 className="expansion-button"
-                disabled={snapshot.level < 3 || snapshot.cash < snapshot.nextExpansionCost}
+                disabled={configurationLocked || snapshot.level < 3 || snapshot.cashCents < legacySgdCents(snapshot.nextExpansionCost)}
                 onClick={() => {
                   if (controllerRef.current?.expandMap()) audioRef.current?.play("reward");
                 }}
               >
                 <span>Expand hall · plot {snapshot.expansionCount + 1}</span>
                 <strong>
-                  {snapshot.level < 3 ? "Unlocks at level 3" : money(snapshot.nextExpansionCost)}
+                  {snapshot.level < 3 ? "Unlocks at level 3" : <SgdAmount cents={legacySgdCents(snapshot.nextExpansionCost)} />}
                 </strong>
                 <small>Add 4 × 2 buildable tiles</small>
               </button>
@@ -2172,7 +2646,10 @@ export function HawkerSimulator() {
                         <strong>
                           {entry.kind === "success" ? "Completed" : entry.kind === "warning" ? "Attention" : entry.kind === "error" ? "Problem" : "Update"}
                         </strong>
-                        <p>{activityEntryMessage(entry)}</p>
+                        <p>
+                          <span aria-hidden="true">{activityEntryMessage(entry)}</span>
+                          <span className="sr-only">{activityEntryAccessibleMessage(entry)}</span>
+                        </p>
                       </div>
                       {entry.count > 1 ? <em>×{entry.count}</em> : null}
                     </article>
@@ -2186,7 +2663,9 @@ export function HawkerSimulator() {
             <CustomerNutritionInspector
               customer={selectedCustomerNutrition}
               dishLabel={dishLabel}
-              starRating={dishStarRating}
+              starRating={(dishId) => snapshot.activePreparations.find(
+                (preparation) => preparation.dishId === dishId,
+              )?.terms.starAppeal ?? dishStarRating(dishId)}
               personaLabel={personaLabel}
               variantLabel={(dishId, variantId) =>
                 customerVariantLabel(nutritionFamilies, dishId, variantId)}
@@ -2212,8 +2691,11 @@ export function HawkerSimulator() {
               <p>{localize(selectedContent.descriptionKey)}</p>
               <dl>
                 <div><dt>Footprint</dt><dd>{selectedContent.footprint.width} × {selectedContent.footprint.height}</dd></div>
-                <div><dt>Price</dt><dd>{money(getContentPrice(selectedContent))}</dd></div>
+                <div><dt>Price</dt><dd><SgdAmount cents={getContentPriceCents(selectedContent)} /></dd></div>
               </dl>
+              <small className="sgd-disclaimer">
+                Simplified in-game SGD balance value; not a factual hawker price, operating-cost estimate, or business recommendation.
+              </small>
               {"category" in selectedContent ? (
                 <div className="utility-card">
                   <strong>In-game utility</strong>
@@ -2235,6 +2717,16 @@ export function HawkerSimulator() {
           ) : null}
         </aside>
       </section>
+
+      {snapshot.servicePeriod.phase === "debrief" ? (
+        <PeriodDebrief
+          dialogRef={periodDebriefDialogRef}
+          period={snapshot.servicePeriod}
+          ledger={snapshot.periodLedger}
+          debrief={snapshot.periodDebrief}
+          onContinue={toggleCentre}
+        />
+      ) : null}
 
       <nav className="bottom-dock" aria-label="Game sections" inert={interfaceInert} aria-hidden={interfaceInert}>
         {(
@@ -2315,7 +2807,7 @@ export function HawkerSimulator() {
             </div>
             <div className="tutorial-copy">
               <span>{tutorialCopy.eyebrow}</span>
-              <h2 id="tutorial-title">{tutorialCopy.title}</h2>
+              <h2 id="tutorial-title" tabIndex={-1} data-modal-initial-focus>{tutorialCopy.title}</h2>
               <p>{tutorialCopy.body}</p>
               <div className="tutorial-dots" aria-label={`Tutorial step ${tutorialStep + 1} of 5`}>
                 {TUTORIAL_COPY.map((_, index) => (
@@ -2329,7 +2821,6 @@ export function HawkerSimulator() {
                 <button
                   type="button"
                   className="primary-button"
-                  autoFocus
                   onClick={() => {
                     if (tutorialStep === 4) void finishTutorial(true);
                     else setTutorialStep((tutorialStep + 1) as TutorialStep);
@@ -2344,7 +2835,7 @@ export function HawkerSimulator() {
       ) : null}
 
       {tutorialStep === 5 && nutritionTourStep < 2 ? (
-        <div className="modal-backdrop" role="presentation">
+        <div className="modal-backdrop nutrition-tour-backdrop" role="presentation">
           <section
             ref={nutritionTourDialogRef}
             className="nutrition-tour-modal"
@@ -2358,28 +2849,31 @@ export function HawkerSimulator() {
             </div>
             <div className="nutrition-tour-copy">
               <span>Nutrition tour · {nutritionTourStep + 1} of 2</span>
-              <h2 id="nutrition-tour-title">
-                {nutritionTourStep === 0 ? "Two ratings, one serving" : "Meet each guest’s health needs"}
+              <h2 id="nutrition-tour-title" tabIndex={-1} data-modal-initial-focus>
+                {nutritionTourStep === 0 ? "Two ratings, one serving" : "Read this visit’s needs"}
               </h2>
               <p>
                 {nutritionTourStep === 0
-                  ? "Open Menu planning to compare every listed nutrient. Health ratings show in-game balance; Star ratings separately show taste and popularity. Variants can change nutrition and health without changing popularity."
-                  : "Some guests fictionally manage a chronic condition. Select one to see their personal health fit, the nutrients considered, and the small satisfaction effect. Taste, price, queues, and distance still matter."}
+                  ? "Open Menu planning to compare every listed nutrient and preparation term. Health ratings show in-game balance; Star appeal separately represents taste and popularity and can change by preparation."
+                  : "Some visits include a simulated condition-aware need. Select a guest to compare the serving, the nutrients considered, and the small fictional game-stat effect. Taste, price, queues, and distance still matter."}
               </p>
               <div className="tutorial-actions">
-                <button type="button" className="text-button" onClick={() => void finishNutritionTour()}>
-                  Skip tour
+                <button type="button" className="text-button" onClick={() => void finishNutritionTour(false)}>
+                  {startAfterNutritionTour ? "Skip and keep planning" : "Skip tour"}
                 </button>
                 <button
                   type="button"
                   className="primary-button"
-                  autoFocus
                   onClick={() => {
-                    if (nutritionTourStep === 1) void finishNutritionTour();
+                    if (nutritionTourStep === 1) void finishNutritionTour(startAfterNutritionTour);
                     else setNutritionTourStep(1);
                   }}
                 >
-                  {nutritionTourStep === 1 ? "Start balancing" : "Show guest health needs"}
+                  {nutritionTourStep === 1
+                    ? startAfterNutritionTour
+                      ? "Start breakfast"
+                      : "Return to centre"
+                    : "Show guest health needs"}
                   <span aria-hidden="true"> →</span>
                 </button>
               </div>
@@ -2388,11 +2882,15 @@ export function HawkerSimulator() {
         </div>
       ) : null}
 
-      {variantLabFamily ? (
+      {variantLabFamily && !configurationLocked ? (
         <VariantLabDialog
           dishName={dishLabel(variantLabFamily.dishId)}
           family={variantLabFamily}
           onChoose={(variantId) => {
+            if (configurationLocked) {
+              explainConfigurationLock();
+              return;
+            }
             controllerRef.current?.setDishVariant(variantLabFamily.dishId, variantId);
           }}
           onClose={() => setVariantLabDishId(undefined)}
@@ -2429,7 +2927,7 @@ export function HawkerSimulator() {
                 <legend>Readability</legend>
                 <label>
                   Text size <strong>{Math.round(settings.textScale * 100)}%</strong>
-                  <input type="range" min="1" max="1.35" step="0.05" value={settings.textScale} onChange={(event) => setSettings((current) => ({ ...current, textScale: Number(event.target.value) }))} />
+                  <input type="range" min="1" max="2" step="0.05" value={settings.textScale} onChange={(event) => setSettings((current) => ({ ...current, textScale: Number(event.target.value) }))} />
                 </label>
                 <label className="switch-row">
                   <span><strong>High contrast</strong><small>Deeper outlines and stronger status patterns</small></span>
@@ -2470,12 +2968,12 @@ export function HawkerSimulator() {
               <article><kbd>Space</kbd><strong>Pause</strong><p>The simulation clamps time after a suspended tab.</p></article>
               <article><kbd>U</kbd><strong>Undo</strong><p>Restore the most recent build change safely.</p></article>
               <article><kbd>Menu</kbd><strong>Compare two ratings</strong><p>Health reflects nutrition balance; Stars reflect taste and popularity.</p></article>
-              <article><kbd>Guest</kbd><strong>Inspect a visit</strong><p>See fictional health needs, personal fit, reasons, and stat effects.</p></article>
+              <article><kbd>Guest</kbd><strong>Inspect a visit</strong><p>See simulated visit needs, condition-aware game fit, reasons, and fictional stat effects.</p></article>
             </div>
             <NutritionDisclosure />
             <footer>
-              <button type="button" onClick={() => { setHelpOpen(false); setTutorialStep(0); }}>Replay tutorial</button>
-              <button type="button" onClick={() => { setHelpOpen(false); setNutritionTourStep(0); }}>Replay nutrition tour</button>
+              <button type="button" onClick={() => { setHelpOpen(false); setStartAfterNutritionTour(false); setTutorialStep(0); }}>Replay tutorial</button>
+              <button type="button" onClick={() => { setHelpOpen(false); setStartAfterNutritionTour(false); setNutritionTourStep(0); }}>Replay nutrition tour</button>
               <button type="button" className="primary-button" onClick={() => setHelpOpen(false)}>Back to centre</button>
             </footer>
           </section>
@@ -2501,14 +2999,20 @@ export function HawkerSimulator() {
               <code>{snapshot.fps.toFixed(0)} FPS · {snapshot.simulationMs.toFixed(2)} ms sim</code>
               <button type="button" onClick={() => controllerRef.current?.setDebugOverlay(true)}>Show grid data</button>
               <button type="button" onClick={() => controllerRef.current?.spawnCustomer()}>Spawn customer</button>
-              <button type="button" onClick={() => controllerRef.current?.addCash(1_000)}>+ $1,000</button>
+              <button
+                type="button"
+                aria-label={`Add ${describeSgd(100_000)}`}
+                onClick={() => controllerRef.current?.addCash(100_000)}
+              >
+                + <SgdAmount cents={100_000} />
+              </button>
             </div>
           ) : null}
         </section>
       ) : null}
 
       <p className="sr-only" aria-live="polite">
-        {snapshot.activeCustomers} guests active. {snapshot.freeSeats} seats free. Cash {money(snapshot.cash)}.
+        {snapshot.activeCustomers} guests active. {snapshot.freeSeats} seats free. Cash {describeSgd(snapshot.cashCents)}. {snapshot.servicePeriod.label}, {SERVICE_PHASE_LABELS[snapshot.servicePeriod.phase]}, {snapshot.servicePeriod.clockLabel}.
       </p>
     </main>
   );

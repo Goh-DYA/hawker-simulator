@@ -1,10 +1,13 @@
-import { getUnlockedDefinitionIds } from "./economy";
+import { createEconomyState, createPeriodLedger, getUnlockedDefinitionIds } from "./economy";
 import { getBlockedTileKeys, getTile, pointKey, validatePlacement } from "./grid";
 import { isReachable, validateWorldNavigationAccess } from "./pathfinding";
 import { validateConfiguredQueuePath } from "./queueing";
 import { hashSeed } from "./rng";
 import { compareIds } from "./ordering";
 import { createDailyObjectives } from "./progression";
+import { asMoneyCents, sgdToCents } from "./money";
+import { createInitialServicePeriod } from "./servicePeriods";
+import { snapshotOrderLine } from "./servingTerms";
 import {
   cloneNutritionMetrics,
   cloneNutritionProfile,
@@ -157,6 +160,9 @@ export function createNewGame(options: NewGameOptions): GameState {
   if (!Number.isFinite(options.startingCurrency ?? 1_000) || (options.startingCurrency ?? 1_000) < 0) {
     throw new RangeError("Starting currency must be non-negative");
   }
+  const startingCashCents = options.startingCashCents === undefined
+    ? sgdToCents(options.startingCurrency ?? 1_000, "Starting cash")
+    : asMoneyCents(options.startingCashCents, "Starting cash");
 
   const objects: Record<string, PlacedObject> = {};
   for (const source of options.initialObjects ?? []) {
@@ -193,7 +199,7 @@ export function createNewGame(options: NewGameOptions): GameState {
 
   const initialLevel = 1;
   const state: GameState = {
-    schemaVersion: 4,
+    schemaVersion: 5,
     map: cloneMap(options.map),
     accessPoints,
     routeGuidePoints,
@@ -210,13 +216,7 @@ export function createNewGame(options: NewGameOptions): GameState {
         .map((object) => [object.id, []]),
     ),
     seatReservations: {},
-    economy: {
-      currency: options.startingCurrency ?? 1_000,
-      lifetimeRevenue: 0,
-      lifetimeSpend: 0,
-      completedVisits: 0,
-      abandonedVisits: 0,
-    },
+    economy: createEconomyState(startingCashCents),
     progression: {
       xp: 0,
       level: initialLevel,
@@ -230,8 +230,13 @@ export function createNewGame(options: NewGameOptions): GameState {
       focusDay: 0,
       dailyObjectives: [],
       claimedMilestoneIds: [],
+      milestoneBaselinePending: false,
       stallMastery: {},
+      firstServedPreparationIds: [],
     },
+    servicePeriod: createInitialServicePeriod(),
+    periodLedgers: { 1: createPeriodLedger(1, startingCashCents) },
+    recovery: { resolvedEpisodeIds: [], zeroResaleObjectIds: [] },
     rngState: hashSeed(options.seed ?? "hawker-simulator"),
     nextCustomerSequence: 1,
     spawnCountdownMs: 0,
@@ -272,6 +277,9 @@ export function cloneCustomer(customer: Customer): Customer {
     path: customer.path.map((point) => ({ ...point })),
     healthConditions: [...customer.healthConditions],
     orderedNutritionProfile: cloneNutritionProfile(customer.orderedNutritionProfile),
+    orderLineSnapshot: customer.orderLineSnapshot
+      ? snapshotOrderLine(customer.orderLineSnapshot)
+      : undefined,
   };
 }
 
@@ -286,6 +294,10 @@ export function captureUndoSnapshot(state: GameState): UndoSnapshot {
     economy: { ...state.economy },
     expansionCount: state.progression.expansionCount,
     xp: state.progression.xp,
+    recovery: {
+      resolvedEpisodeIds: [...state.recovery.resolvedEpisodeIds],
+      zeroResaleObjectIds: [...state.recovery.zeroResaleObjectIds],
+    },
   };
 }
 
@@ -293,7 +305,7 @@ export function createSnapshot(state: GameState): GameSnapshot {
   const objects = Object.values(state.objects).map(clonePlacedObject).sort((a, b) => compareIds(a.id, b.id));
   const customers = Object.values(state.customers).map(cloneCustomer).sort((a, b) => compareIds(a.id, b.id));
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
     tick: state.tick,
     elapsedMs: state.elapsedMs,
     map: cloneMap(state.map),
@@ -313,6 +325,20 @@ export function createSnapshot(state: GameState): GameSnapshot {
       dailyObjectives: state.progression.dailyObjectives.map((objective) => ({ ...objective })),
       claimedMilestoneIds: [...state.progression.claimedMilestoneIds],
       stallMastery: Object.fromEntries(Object.entries(state.progression.stallMastery).map(([id, mastery]) => [id, { ...mastery }])),
+      firstServedPreparationIds: [...state.progression.firstServedPreparationIds],
+    },
+    servicePeriod: {
+      ...state.servicePeriod,
+      cohortCustomerIds: [...state.servicePeriod.cohortCustomerIds],
+      stallOpenElapsedMs: { ...state.servicePeriod.stallOpenElapsedMs },
+    },
+    periodLedgers: Object.fromEntries(Object.entries(state.periodLedgers).map(([sequenceId, ledger]) => [
+      sequenceId,
+      { ...ledger, entries: ledger.entries.map((entry) => ({ ...entry })) },
+    ])),
+    recovery: {
+      resolvedEpisodeIds: [...state.recovery.resolvedEpisodeIds],
+      zeroResaleObjectIds: [...state.recovery.zeroResaleObjectIds],
     },
     metrics: {
       ...state.metrics,

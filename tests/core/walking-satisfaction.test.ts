@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createGridMap,
   createNewGame,
+  startServicePeriod,
   stepSimulation,
   walkingSatisfactionScore,
   withTile,
@@ -58,7 +59,7 @@ function makeRouteGame(serpentine: boolean): GameState {
       }
     }
   }
-  return createNewGame({
+  const game = createNewGame({
     map,
     entrance: { x: 0, y: 7 },
     exit: { x: 29, y: 7 },
@@ -74,6 +75,7 @@ function makeRouteGame(serpentine: boolean): GameState {
       maxVisitMs: 300_000,
     },
   });
+  return { ...game, servicePeriod: startServicePeriod(game.servicePeriod) };
 }
 
 function completeRouteJourney(serpentine: boolean): { readonly distance: number; readonly score: number } {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   assertSimulationInvariants,
+  asMoneyCents,
   createGridMap,
   createNewGame,
   deserializeGameState,
@@ -11,6 +12,7 @@ import {
   pointKey,
   serializeGameState,
   stepSimulation,
+  startServicePeriod,
   withTile,
   type Customer,
   type GameState,
@@ -19,6 +21,16 @@ import {
   type SimulationCatalog,
 } from "../../src/game/core";
 import { TEST_CATALOG } from "./fixtures";
+
+function duringArrivals(game: GameState): GameState {
+  return game.servicePeriod.phase === "planning"
+    ? { ...game, servicePeriod: startServicePeriod(game.servicePeriod) }
+    : game;
+}
+
+function duringPlanning(game: GameState): GameState {
+  return { ...game, servicePeriod: { ...game.servicePeriod, phase: "planning" } };
+}
 
 function withSlowBalancedStall(): SimulationCatalog {
   return {
@@ -44,7 +56,7 @@ function withSlowBalancedStall(): SimulationCatalog {
 }
 
 function makeTwoStallGame(catalog = withSlowBalancedStall()): GameState {
-  return createNewGame({
+  return duringArrivals(createNewGame({
     map: createGridMap(14, 8),
     entrance: { x: 0, y: 4 },
     exit: { x: 13, y: 4 },
@@ -56,7 +68,7 @@ function makeTwoStallGame(catalog = withSlowBalancedStall()): GameState {
       { id: "stall-b", definitionId: "stall", origin: { x: 8, y: 0 }, rotation: 0, open: true },
     ],
     config: { fixedStepMs: 100, spawnIntervalMs: 100, standard: { maxActiveCustomers: 20 } },
-  });
+  }));
 }
 
 function runSteps(state: GameState, count: number): GameState {
@@ -107,7 +119,7 @@ describe("balanced deterministic stall choice", () => {
       ],
       config: { fixedStepMs: 100, spawnIntervalMs: 10_000 },
     });
-    const selected = stepSimulation(game);
+    const selected = stepSimulation(duringArrivals(game));
     expect(Object.values(selected.customers)[0]?.targetStallId).toBe("far-stall");
   });
 });
@@ -126,7 +138,7 @@ describe("obstacle-safe configurable queues", () => {
   ];
 
   function makeQueueGame(initialObjects: readonly PlacedObject[] = objects): GameState {
-    return createNewGame({
+    return duringArrivals(createNewGame({
       map: createGridMap(10, 8),
       entrance: { x: 0, y: 5 },
       exit: { x: 9, y: 5 },
@@ -135,7 +147,7 @@ describe("obstacle-safe configurable queues", () => {
       startingCurrency: 5_000,
       initialObjects,
       config: { fixedStepMs: 100, spawnIntervalMs: 100 },
-    });
+    }));
   }
 
   it("bends the automatic route around furniture and honors a player direction", () => {
@@ -148,7 +160,7 @@ describe("obstacle-safe configurable queues", () => {
     expect(south[1]).not.toEqual({ x: 2, y: 3 });
     expect(south.every((point) => !blocked.has(pointKey(point)))).toBe(true);
 
-    const eastResult = dispatchCommand(game, {
+    const eastResult = dispatchCommand(duringPlanning(game), {
       type: "set-stall-queue-direction",
       objectId: "stall-1",
       direction: "east",
@@ -168,12 +180,12 @@ describe("obstacle-safe configurable queues", () => {
   it("accepts a bent authored route, rejects furniture intersections, and persists it", () => {
     const game = makeQueueGame();
     const points = [{ x: 2, y: 2 }, { x: 1, y: 2 }, { x: 1, y: 3 }, { x: 1, y: 4 }];
-    const configured = dispatchCommand(game, { type: "configure-queue", objectId: "stall-1", points });
+    const configured = dispatchCommand(duringPlanning(game), { type: "configure-queue", objectId: "stall-1", points });
     expect(configured.accepted).toBe(true);
     const stall = configured.state.objects["stall-1"] as PlacedObject;
     expect(getStallQueueCells(configured.state.map, configured.state.objects, configured.state.catalog, stall)).toEqual(points);
 
-    const blocked = dispatchCommand(game, {
+    const blocked = dispatchCommand(duringPlanning(game), {
       type: "configure-queue",
       objectId: "stall-1",
       points: [{ x: 2, y: 2 }, { x: 2, y: 3 }],
@@ -189,7 +201,7 @@ describe("obstacle-safe configurable queues", () => {
   it("moves a saved custom queue forward when its service anchor changes by one tile", () => {
     const game = makeQueueGame();
     const points = [{ x: 2, y: 2 }, { x: 1, y: 2 }, { x: 1, y: 3 }, { x: 1, y: 4 }];
-    const configured = dispatchCommand(game, { type: "configure-queue", objectId: "stall-1", points });
+    const configured = dispatchCommand(duringPlanning(game), { type: "configure-queue", objectId: "stall-1", points });
     expect(configured.accepted).toBe(true);
     const stallDefinition = configured.state.catalog.placeables.stall!;
     const migratedCatalog: SimulationCatalog = {
@@ -246,7 +258,7 @@ describe("obstacle-safe configurable queues", () => {
       metrics: { ...seeded.metrics, spawnedCustomers: 2 },
     };
 
-    const rerouted = dispatchCommand(active, {
+    const rerouted = dispatchCommand(duringPlanning(active), {
       type: "set-stall-queue-direction",
       objectId: "stall-1",
       direction: "east",
@@ -316,7 +328,7 @@ describe("obstacle-safe configurable queues", () => {
       spawnCountdownMs: 100_000,
       metrics: { ...seeded.metrics, spawnedCustomers: queueIds.length + 1 },
     };
-    const shortened = dispatchCommand(active, {
+    const shortened = dispatchCommand(duringPlanning(active), {
       type: "configure-queue",
       objectId: "stall-1",
       points: queueCells.slice(0, 2),
@@ -352,6 +364,8 @@ describe("obstacle-safe configurable queues", () => {
           allowedRotations: [0],
           blocksMovement: true,
           price: 1,
+          priceCents: asMoneyCents(100),
+          upkeepCents: asMoneyCents(0),
         },
       },
     };
@@ -360,7 +374,7 @@ describe("obstacle-safe configurable queues", () => {
       tightMap = withTile(tightMap, { x, y: 3 }, "wall");
     }
     const seeded = runSteps(
-      createNewGame({
+      duringArrivals(createNewGame({
         map: tightMap,
         entrance: { x: 0, y: 2 },
         exit: { x: 6, y: 2 },
@@ -372,7 +386,7 @@ describe("obstacle-safe configurable queues", () => {
           { id: "turn-blocker", definitionId: "blocker", origin: { x: 3, y: 1 }, rotation: 0, open: false },
         ],
         config: { fixedStepMs: 100, spawnIntervalMs: 100 },
-      }),
+      })),
       1,
     );
     const template = Object.values(seeded.customers)[0] as Customer;
@@ -408,7 +422,7 @@ describe("obstacle-safe configurable queues", () => {
       metrics: { ...seeded.metrics, spawnedCustomers: ids.length },
     };
 
-    const placed = dispatchCommand(active, {
+    const placed = dispatchCommand(duringPlanning(active), {
       type: "place-object",
       objectId: "stall-b",
       definitionId: "stall",
@@ -536,10 +550,12 @@ describe("coherent expansion boundaries and exits", () => {
       walkingDistanceTiles: 0,
       patienceRemainingMs: archetype.patienceMs,
       satisfaction: 3,
+      arrivalPeriodSequenceId: initial.servicePeriod.sequenceId,
       healthConditions: [],
       hasTray: false,
       served: true,
       spent: 8,
+      spentCents: asMoneyCents(800),
       stuckMs: 0,
     };
     const active: GameState = {
@@ -548,7 +564,7 @@ describe("coherent expansion boundaries and exits", () => {
       metrics: { ...initial.metrics, spawnedCustomers: 1 },
       spawnCountdownMs: 100_000,
     };
-    const expanded = dispatchCommand(active, { type: "expand-map", addColumns: 3, addRows: 0 }).state;
+    const expanded = dispatchCommand(duringPlanning(active), { type: "expand-map", addColumns: 3, addRows: 0 }).state;
     const firstStep = stepSimulation(expanded);
     expect(firstStep.customers[customer.id]).toBeDefined();
     expect(firstStep.metrics.despawnedCustomers).toBe(0);

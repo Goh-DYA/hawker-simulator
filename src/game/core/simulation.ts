@@ -1,4 +1,19 @@
-import { applySale, getUnlockedDefinitionIds } from "./economy";
+import {
+  awardCompletedVisitXp,
+  calculateLevel,
+  chargeUpkeep,
+  createPeriodLedger,
+  getUnlockedDefinitionIds,
+  economyWithCompatibilityAliases,
+  recordLedgerEntry,
+  settleServedOrder,
+} from "./economy";
+import { asMoneyCents, centsToSgd } from "./money";
+import {
+  advanceServicePeriod,
+  overtimeUpkeepChargeDue,
+  UPKEEP_INTERVAL_MS,
+} from "./servicePeriods";
 import {
   getBlockedTileKeys,
   getTile,
@@ -44,10 +59,9 @@ import {
 import {
   awardStallMastery,
   effectiveStallDefinition,
-  operatingDay,
-  operatingMinuteOfDay,
   updateProgressionSystems,
 } from "./progression";
+import { createServingTerms, snapshotOrderLine } from "./servingTerms";
 import {
   adjustedEatingDurationMs,
   getGlobalWayfinding,
@@ -81,6 +95,7 @@ interface Draft {
   seatReservations: Record<string, string>;
   economy: GameState["economy"];
   progression: GameState["progression"];
+  periodLedgers: GameState["periodLedgers"];
   rngState: number;
   nextCustomerSequence: number;
   spawnCountdownMs: number;
@@ -137,7 +152,12 @@ function createDraft(state: GameState, tick: number): Draft {
       dailyObjectives: state.progression.dailyObjectives.map((objective) => ({ ...objective })),
       claimedMilestoneIds: [...state.progression.claimedMilestoneIds],
       stallMastery: Object.fromEntries(Object.entries(state.progression.stallMastery).map(([id, mastery]) => [id, { ...mastery }])),
+      firstServedPreparationIds: [...state.progression.firstServedPreparationIds],
     },
+    periodLedgers: Object.fromEntries(Object.entries(state.periodLedgers).map(([id, ledger]) => [
+      id,
+      { ...ledger, entries: ledger.entries.map((entry) => ({ ...entry })) },
+    ])),
     rngState: state.rngState,
     nextCustomerSequence: state.nextCustomerSequence,
     spawnCountdownMs: state.spawnCountdownMs,
@@ -369,7 +389,7 @@ function settleVisitRating(draft: Draft, source: Customer, abandoned: boolean, r
     reason,
     stallDefinitionId: source.servedStallDefinitionId,
     components,
-    day: operatingDay(draft.source.elapsedMs),
+    day: draft.source.servicePeriod.day,
   };
   draft.metrics = { ...draft.metrics, visitRatings: [...draft.metrics.visitRatings, rating].slice(-50) };
   if (abandoned) draft.economy = { ...draft.economy, abandonedVisits: draft.economy.abandonedVisits + 1 };
@@ -383,6 +403,37 @@ function settleVisitRating(draft: Draft, source: Customer, abandoned: boolean, r
     );
   }
   return { ...source, satisfaction: score / 20, ratingSettled: true };
+}
+
+/** Awards normal visit XP only after all visit satisfaction factors are final. */
+function awardFinalCompletedVisitXp(draft: Draft, source: Customer): Customer {
+  if (!source.served) return source;
+  const firstServeBonusXp = source.firstServeBonusAwarded ? 2 : 0;
+  // V5 live visits always persist the handover amount. An absent amount denotes
+  // a legacy in-flight visit whose XP was already settled at handover.
+  if (source.awardedVisitXp === undefined || source.awardedVisitXp > firstServeBonusXp) {
+    return source;
+  }
+  const update = awardCompletedVisitXp(draft.progression, source.satisfaction * 20);
+  draft.progression = {
+    ...update.progression,
+    unlockedDefinitionIds: getUnlockedDefinitionIds(
+      draft.source.catalog,
+      update.progression.level,
+      update.progression.unlockedDefinitionIds,
+    ),
+  };
+  if (update.levelUp) {
+    event(draft, {
+      type: "level-up",
+      entityId: source.id,
+      message: String(update.progression.level),
+    });
+  }
+  return {
+    ...source,
+    awardedVisitXp: source.awardedVisitXp + update.xpAwarded,
+  };
 }
 
 function beginExit(draft: Draft, source: Customer, abandoned: boolean): Customer {
@@ -469,7 +520,7 @@ function eligibleHealthConditions(draft: Draft): readonly HealthCondition[] {
 function recordIntentRequest(draft: Draft, intent: NutritionIntent | undefined): void {
   if (!intent) return;
   const current = draft.metrics.nutrition;
-  const day = operatingDay(draft.source.elapsedMs);
+  const day = draft.source.servicePeriod.day;
   const today = current.today.day === day
     ? current.today
     : createEmptyNutritionDayMetrics(day);
@@ -504,7 +555,7 @@ export function customerArchetypeSpawnWeight(
   archetype: CustomerArchetype,
   level: number,
   reputation: number,
-  elapsedMs: number,
+  displayedMinute: number,
   unlockedDefinitionIds: readonly string[] = [],
 ): number {
   if (
@@ -518,7 +569,7 @@ export function customerArchetypeSpawnWeight(
   }
   if (!archetype.visitSchedule) return 1;
 
-  const hour = operatingMinuteOfDay(elapsedMs) / 60;
+  const hour = displayedMinute / 60;
   const isScheduled =
     hour >= archetype.visitSchedule.startHour &&
     hour < archetype.visitSchedule.endHour;
@@ -536,7 +587,7 @@ function spawnCustomer(draft: Draft): void {
       archetype,
       draft.progression.level,
       draft.progression.reputation,
-      draft.source.elapsedMs,
+      draft.source.servicePeriod.displayedMinute,
       draft.progression.unlockedDefinitionIds,
     ),
   }));
@@ -602,11 +653,13 @@ function spawnCustomer(draft: Draft): void {
     walkingDistanceTiles: 0,
     patienceRemainingMs: selected.archetype.patienceMs,
     satisfaction: 3,
+    arrivalPeriodSequenceId: draft.source.servicePeriod.sequenceId,
     healthConditions,
     nutritionIntentId,
     sourceEntranceId: entrance.id,
     hasTray: false,
     served: false,
+    spentCents: asMoneyCents(0),
     spent: 0,
     stuckMs: 0,
   };
@@ -616,9 +669,12 @@ function spawnCustomer(draft: Draft): void {
 
 function affordableDishes(draft: Draft, stall: StallRuntime, customer: Customer): readonly DishDefinition[] {
   const archetype = getArchetype(draft, customer);
+  const budgetCents = archetype.budgetCents;
   return (stall.definition.stall?.dishIds ?? [])
     .map((id) => draft.source.catalog.dishes[id])
-    .filter((dish): dish is DishDefinition => Boolean(dish && dish.price + customer.spent <= archetype.budget));
+    .filter((dish): dish is DishDefinition => Boolean(
+      dish && dish.priceCents + customer.spentCents <= budgetCents,
+    ));
 }
 
 export function boundedDishDemandAppeal(dish: DishDefinition) {
@@ -647,7 +703,7 @@ function chooseStall(draft: Draft, source: Customer): Customer {
           dishStarRating(dish) * archetype.qualitySensitivity +
           boundedDishDemandAppeal(dish) +
           preferenceMatches * 2.25 -
-          dish.price * archetype.priceSensitivity
+          (dish.priceCents / 100) * archetype.priceSensitivity
         );
       }),
     );
@@ -708,7 +764,7 @@ function chooseDish(draft: Draft, stall: StallRuntime, customer: Customer): Dish
       dishStarRating(dish) * archetype.qualitySensitivity +
       boundedDishDemandAppeal(dish) +
       matches * 2 -
-      dish.price * archetype.priceSensitivity +
+      (dish.priceCents / 100) * archetype.priceSensitivity +
       nutritionBonus +
       healthBonus +
       random.value * 0.001;
@@ -771,7 +827,18 @@ function activePreparationCount(draft: Draft, stallId: string): number {
 function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Customer {
   const servedStall = source.targetStallId ? draft.objects[source.targetStallId] : undefined;
   const stallDefinition = servedStall ? draft.source.catalog.placeables[servedStall.definitionId]?.stall : undefined;
-  const tasteRating = dishStarRating(dish);
+  const terms = source.orderLineSnapshot?.terms ?? createServingTerms({
+    priceCents: dish.priceCents,
+    ingredientCostCents: dish.ingredientCostCents,
+    preparationTimeMs: dish.preparationMs,
+    servingTimeMs: dish.servingMs ?? stallDefinition?.orderMs ?? 0,
+    eatingTimeMs: dish.eatingMs,
+    starAppeal: Math.max(1, Math.min(5, dishStarRating(dish))),
+    demandModifierBasisPoints: dish.demandModifierBasisPoints ?? Math.round(
+      Math.max(0, dish.baseDemand ?? 0.5) * 20_000,
+    ),
+  });
+  const tasteRating = terms.starAppeal;
   const healthRating = source.personalizedHealthRating ?? personalizedHealthRating(
     source.orderedNutritionProfile,
     source.healthConditions,
@@ -782,12 +849,19 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
   const healthPreferenceResult = source.healthConditions.length > 0
     ? healthPreferenceResultForRating(healthRating)
     : undefined;
-  const update = applySale(
+  const priceCents = asMoneyCents(terms.priceCents);
+  const ingredientCostCents = asMoneyCents(terms.ingredientCostCents);
+  const preparationId = source.orderedNutritionVariantId ?? dish.id;
+  const update = settleServedOrder(
     draft.economy,
     draft.progression,
-    dish.price,
-    dish.quality,
-    0,
+    {
+      priceCents,
+      ingredientCostCents,
+      satisfaction: source.satisfaction * 20,
+      preparationId,
+      reputationGain: 0,
+    },
   );
   draft.economy = update.economy;
   draft.progression = {
@@ -798,8 +872,36 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
       update.progression.unlockedDefinitionIds,
     ),
   };
+  const ledger = draft.periodLedgers[source.arrivalPeriodSequenceId ?? draft.source.servicePeriod.sequenceId]
+    ?? createPeriodLedger(source.arrivalPeriodSequenceId ?? draft.source.servicePeriod.sequenceId);
+  let updatedLedger = recordLedgerEntry(ledger, {
+    id: `${source.id}-sale`,
+    kind: "gross-sale",
+    amountCents: priceCents,
+    tick: draft.tick,
+    referenceId: dish.id,
+  });
+  if (ingredientCostCents !== undefined && ingredientCostCents > 0) {
+    updatedLedger = recordLedgerEntry(updatedLedger, {
+      id: `${source.id}-ingredients`,
+      kind: "ingredient-cost",
+      amountCents: ingredientCostCents,
+      tick: draft.tick,
+      referenceId: dish.id,
+    });
+  }
+  draft.periodLedgers = {
+    ...draft.periodLedgers,
+    [updatedLedger.periodSequenceId]: updatedLedger,
+  };
   removeFromAllQueues(draft, source.id);
-  event(draft, { type: "sale-completed", entityId: source.id, amount: dish.price, message: dish.id });
+  event(draft, {
+    type: "sale-completed",
+    entityId: source.id,
+    amount: priceCents,
+    amountCents: priceCents,
+    message: dish.id,
+  });
   if (update.levelUp) event(draft, { type: "level-up", entityId: source.id, message: String(update.progression.level) });
   const profile = cloneNutritionProfile(source.orderedNutritionProfile);
   const requestResult = source.nutritionIntentId
@@ -807,7 +909,7 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
     : undefined;
   recordIntentRequest(draft, source.nutritionIntentId);
   const nutrition = draft.metrics.nutrition;
-  const saleDay = operatingDay(draft.source.elapsedMs);
+  const saleDay = draft.source.servicePeriod.day;
   const today = nutrition.today.day === saleDay
     ? nutrition.today
     : createEmptyNutritionDayMetrics(saleDay);
@@ -825,12 +927,13 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
       dailyNutrientKnownCounts[metric] += 1;
     }
   }
-  const defaultVariantId = dish.defaultNutritionVariantId;
-  const usedNonDefaultVariant = Boolean(
-    source.orderedNutritionVariantId &&
-      defaultVariantId &&
-      source.orderedNutritionVariantId !== defaultVariantId,
-  );
+  const usedNonDefaultVariant = source.orderLineSnapshot
+    ? source.orderLineSnapshot.explanationCodes.includes("non-default-preparation")
+    : Boolean(
+        source.orderedNutritionVariantId &&
+        dish.defaultNutritionVariantId &&
+        source.orderedNutritionVariantId !== dish.defaultNutritionVariantId,
+      );
   const byIntent = { ...nutrition.byIntent };
   const dailyByIntent = { ...today.byIntent };
   let intentMatches = nutrition.intentMatches;
@@ -880,7 +983,7 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
         ...nutrition.recentOutcomes,
         {
           customerId: source.id,
-          day: operatingDay(draft.source.elapsedMs),
+          day: draft.source.servicePeriod.day,
           intentId: source.nutritionIntentId,
           dishId: dish.id,
           variantId: source.orderedNutritionVariantId,
@@ -915,7 +1018,10 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
     nutritionRequestResult: requestResult,
     hasTray: true,
     served: true,
-    spent: source.spent + dish.price,
+    awardedVisitXp: update.xpAwarded,
+    firstServeBonusAwarded: update.firstServeBonusAwarded,
+    spentCents: asMoneyCents(source.spentCents + priceCents),
+    spent: centsToSgd(asMoneyCents(source.spentCents + priceCents)),
     personalizedHealthRating: healthRating,
     healthImpact,
     healthPreferenceResult,
@@ -937,7 +1043,9 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
             (healthImpact ?? 0) * 20,
         ),
       ),
-      value: Math.max(25, Math.min(100, 120 - (dish.price / Math.max(1, getArchetype(draft, source).budget)) * 70)),
+      value: Math.max(25, Math.min(100, 120 - (
+        priceCents / Math.max(1, getArchetype(draft, source).budgetCents)
+      ) * 70)),
     },
   };
 }
@@ -1039,6 +1147,32 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
         orderedDishId: choice.dish.id,
         orderedNutritionVariantId: choice.variant?.id,
         orderedNutritionProfile: cloneNutritionProfile(choice.variant?.profile),
+        orderLineSnapshot: snapshotOrderLine({
+          lineId: `${customer.id}:1`,
+          dishId: choice.dish.id,
+          variantId: choice.variant?.id,
+          arrivalPeriodSequenceId: customer.arrivalPeriodSequenceId ?? draft.source.servicePeriod.sequenceId,
+          terms: createServingTerms({
+            priceCents: choice.dish.priceCents,
+            ingredientCostCents: choice.dish.ingredientCostCents,
+            preparationTimeMs: choice.dish.preparationMs,
+            servingTimeMs: choice.dish.servingMs ?? stall.definition.stall?.orderMs ?? 0,
+            eatingTimeMs: choice.dish.eatingMs,
+            starAppeal: Math.max(1, Math.min(5, dishStarRating(choice.dish))),
+            demandModifierBasisPoints: choice.dish.demandModifierBasisPoints ?? Math.round(
+              Math.max(0, choice.dish.baseDemand ?? 0.5) * 20_000,
+            ),
+          }),
+          nutritionProfile: choice.variant?.profile,
+          intentFit: nutritionIntentFit(choice.dish, customer.nutritionIntentId),
+          explanationCodes: [
+            "frozen-at-order",
+            choice.variant?.id && choice.dish.defaultNutritionVariantId &&
+              choice.variant.id !== choice.dish.defaultNutritionVariantId
+              ? "non-default-preparation"
+              : "default-preparation",
+          ],
+        }),
         nutritionRequestResult: undefined,
         personalizedHealthRating: healthRating,
         healthImpact: undefined,
@@ -1056,7 +1190,8 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
         markRecovery(draft, customer, "Order target disappeared during preparation");
         return { ...transition(draft, customer, "choosing-stall"), targetStallId: undefined, orderedDishId: undefined };
       }
-      if (customer.stateElapsedMs < dish.preparationMs) return customer;
+      const preparationMs = customer.orderLineSnapshot?.terms.preparationTimeMs ?? dish.preparationMs;
+      if (customer.stateElapsedMs < preparationMs) return customer;
       return completeSale(draft, customer, dish);
     }
 
@@ -1103,10 +1238,11 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
         draft.source.catalog,
         seat.point,
       );
-      const adjustedEatingMs = dish
-        ? adjustedEatingDurationMs(dish.eatingMs, diningUtility.eatingSpeed)
+      const frozenEatingMs = customer.orderLineSnapshot?.terms.eatingTimeMs ?? dish?.eatingMs;
+      const adjustedEatingMs = frozenEatingMs !== undefined
+        ? adjustedEatingDurationMs(frozenEatingMs, diningUtility.eatingSpeed)
         : Number.POSITIVE_INFINITY;
-      if (!dish || customer.stateElapsedMs < adjustedEatingMs) return customer;
+      if (frozenEatingMs === undefined || customer.stateElapsedMs < adjustedEatingMs) return customer;
       customer = releaseSeat(draft, customer);
       return {
         ...transition(draft, customer, "seeking-tray-return"),
@@ -1181,6 +1317,7 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
         !movement.customer.served,
         movement.customer.served ? "served" : "abandoned",
       );
+      customer = awardFinalCompletedVisitXp(draft, customer);
       removeFromAllQueues(draft, customer.id);
       releaseSeat(draft, customer);
       draft.metrics = {
@@ -1198,13 +1335,115 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
   }
 }
 
+export interface DrainWatchdogStateResult {
+  readonly state: GameState;
+  readonly servedTimeoutIds: readonly string[];
+  readonly unservedDepartureIds: readonly string[];
+}
+
+/** Atomically settles and removes the remaining cohort at the drain watchdog. */
+export function finalizeDrainWatchdogState(source: GameState): DrainWatchdogStateResult {
+  const cohort = Object.values(source.customers)
+    .filter((customer) => customer.arrivalPeriodSequenceId === source.servicePeriod.sequenceId)
+    .sort((left, right) => compareIds(left.id, right.id));
+  const served = cohort.filter((customer) => customer.served);
+  const unserved = cohort.filter((customer) => !customer.served);
+  if (cohort.length === 0) {
+    return { state: source, servedTimeoutIds: [], unservedDepartureIds: [] };
+  }
+  const removedIds = new Set(cohort.map((customer) => customer.id));
+  const customers = Object.fromEntries(
+    Object.entries(source.customers).filter(([id]) => !removedIds.has(id)),
+  );
+  const queues = Object.fromEntries(Object.entries(source.queues).map(([id, queue]) => [
+    id,
+    queue.filter((customerId) => !removedIds.has(customerId)),
+  ]));
+  const seatReservations = Object.fromEntries(
+    Object.entries(source.seatReservations).filter(([, customerId]) => !removedIds.has(customerId)),
+  );
+  const xpCorrection = served.reduce((total, customer) => {
+    const desiredXp = 3 + (customer.firstServeBonusAwarded ? 2 : 0);
+    return total + desiredXp - (customer.awardedVisitXp ?? desiredXp);
+  }, 0);
+  const xp = Math.max(0, source.progression.xp + xpCorrection);
+  const fallbackComponents = {
+    foodQuality: 50,
+    wait: 50,
+    value: 50,
+    walking: 70,
+    comfort: 50,
+    cleanliness: 50,
+    ambience: 50,
+  } as const;
+  const visitRatings = [
+    ...source.metrics.visitRatings,
+    ...cohort.map((customer) => ({
+      customerId: customer.id,
+      walkingMetricVersion: 2 as const,
+      score: Math.round(Math.max(0, Math.min(100, customer.satisfaction * 20))),
+      served: customer.served,
+      abandoned: !customer.served,
+      reason: customer.served ? "served-timeout" : "unserved-period-close",
+      stallDefinitionId: customer.servedStallDefinitionId,
+      components: { ...fallbackComponents, ...customer.ratingFactors },
+      day: source.servicePeriod.day,
+    })),
+  ].slice(-50);
+  const events: SimulationEvent[] = [
+    ...source.events,
+    ...served.map((customer) => ({
+      type: "customer-despawned" as const,
+      tick: source.tick,
+      entityId: customer.id,
+      message: "served-timeout",
+    })),
+    ...unserved.map((customer) => ({
+      type: "customer-despawned" as const,
+      tick: source.tick,
+      entityId: customer.id,
+      message: "unserved-period-close",
+    })),
+  ];
+  return {
+    state: {
+      ...source,
+      customers,
+      queues,
+      seatReservations,
+      economy: economyWithCompatibilityAliases({
+        ...source.economy,
+        abandonedVisits: source.economy.abandonedVisits + unserved.length,
+      }),
+      progression: {
+        ...source.progression,
+        xp,
+        level: Math.max(source.progression.level, calculateLevel(xp)),
+      },
+      servicePeriod: { ...source.servicePeriod, phase: "debrief", cohortCustomerIds: [] },
+      metrics: {
+        ...source.metrics,
+        despawnedCustomers: source.metrics.despawnedCustomers + cohort.length,
+        completedCustomers: source.metrics.completedCustomers + served.length,
+        visitRatings,
+      },
+      events,
+    },
+    servedTimeoutIds: served.map((customer) => customer.id),
+    unservedDepartureIds: unserved.map((customer) => customer.id),
+  };
+}
+
 export function stepSimulation(state: GameState): GameState {
   const deltaMs = state.config.fixedStepMs;
   const tick = state.tick + 1;
   const draft = createDraft(state, tick);
   draft.spawnCountdownMs -= deltaMs;
 
-  if (draft.spawnCountdownMs <= 0) {
+  if (
+    draft.spawnCountdownMs <= 0 &&
+    state.servicePeriod.phase === "arrivals"
+  ) {
     spawnCustomer(draft);
     const active = Object.keys(draft.customers).length;
     const seats = getSeatLocations(draft.objects, draft.source.catalog).length;
@@ -1217,8 +1456,10 @@ export function stepSimulation(state: GameState): GameState {
     const queuePressure = queueCount / Math.max(1, queueCapacity);
     const reputationDemand = 0.75 + (draft.progression.reputation / 5) * 1.25;
     const stallDemand = Math.max(0.6, Math.sqrt(Math.max(1, stalls.length)) * (stalls.reduce((sum, stall) => sum + (stall.definition.stall?.popularity ?? 0.5), 0) / Math.max(1, stalls.length)));
-    const minute = (draft.source.elapsedMs / 1_000) % 480;
-    const timeDemand = 0.8 + Math.sin((minute / 480) * Math.PI) * 0.55;
+    const serviceProgress = Math.max(0, Math.min(1,
+      draft.source.servicePeriod.arrivalElapsedMs / 240_000,
+    ));
+    const timeDemand = 0.8 + Math.sin(serviceProgress * Math.PI) * 0.55;
     const backpressure = 1 + occupancyPressure ** 2 * 2.5 + queuePressure ** 2 * 3 + draft.source.arrivalPerformancePressure * 4;
     const quality = state.qualityMode === "standard" ? state.config.standard : state.config.lowerEnd;
     const interval = quality.maxActiveCustomers === undefined
@@ -1240,6 +1481,73 @@ export function stepSimulation(state: GameState): GameState {
     else delete draft.customers[id];
   }
 
+  const activeCohortCustomerIds = Object.values(draft.customers)
+    .filter((customer) => customer.arrivalPeriodSequenceId === state.servicePeriod.sequenceId)
+    .map((customer) => customer.id)
+    .sort(compareIds);
+  const serviceAdvance = advanceServicePeriod(
+    state.servicePeriod,
+    deltaMs,
+    activeCohortCustomerIds,
+  );
+  let servicePeriod = serviceAdvance.state;
+  const overtimeCharge = state.servicePeriod.phase === "draining"
+    ? overtimeUpkeepChargeDue(
+        state.servicePeriod.drainElapsedMs,
+        servicePeriod.drainElapsedMs,
+        state.servicePeriod.overtimeUpkeepCharged,
+      )
+    : false;
+  let periodLedger = draft.periodLedgers[state.servicePeriod.sequenceId]
+    ?? createPeriodLedger(state.servicePeriod.sequenceId, state.economy.cashCents);
+  const stallOpenElapsedMs = { ...state.servicePeriod.stallOpenElapsedMs };
+  if (state.servicePeriod.phase === "arrivals") {
+    const openDeltaMs = servicePeriod.arrivalElapsedMs - state.servicePeriod.arrivalElapsedMs;
+    for (const stall of openStalls(draft)) {
+      const previousOpenMs = stallOpenElapsedMs[stall.object.id] ?? 0;
+      const nextOpenMs = previousOpenMs + openDeltaMs;
+      const chargesDue = Math.floor(nextOpenMs / UPKEEP_INTERVAL_MS) -
+        Math.floor(previousOpenMs / UPKEEP_INTERVAL_MS);
+      stallOpenElapsedMs[stall.object.id] = nextOpenMs;
+      const upkeepCents = stall.definition.upkeepCents;
+      for (let chargeIndex = 0; chargeIndex < chargesDue; chargeIndex += 1) {
+        const charge = chargeUpkeep(draft.economy, upkeepCents);
+        draft.economy = charge.economy;
+        periodLedger = recordLedgerEntry(periodLedger, {
+          id: `period-${state.servicePeriod.sequenceId}-upkeep-${stall.object.id}-${Math.floor(previousOpenMs / UPKEEP_INTERVAL_MS) + chargeIndex + 1}`,
+          kind: "upkeep",
+          amountCents: charge.paidCents,
+          tick,
+          referenceId: stall.object.id,
+        });
+      }
+    }
+    servicePeriod = { ...servicePeriod, stallOpenElapsedMs };
+  }
+  if (overtimeCharge) {
+    const overtimeStalls = openStalls(draft);
+    const requestedCents = asMoneyCents(overtimeStalls.reduce(
+      (total, stall) => total + stall.definition.upkeepCents,
+      0,
+    ));
+    const charge = chargeUpkeep(draft.economy, requestedCents);
+    draft.economy = charge.economy;
+    periodLedger = recordLedgerEntry(periodLedger, {
+      id: `period-${state.servicePeriod.sequenceId}-overtime-upkeep`,
+      kind: "overtime-upkeep",
+      amountCents: charge.paidCents,
+      tick,
+      referenceId: overtimeStalls.length > 0
+        ? overtimeStalls.map((stall) => stall.object.id).join(",")
+        : "no-open-stalls",
+    });
+    servicePeriod = { ...servicePeriod, overtimeUpkeepCharged: true };
+  }
+  draft.periodLedgers = {
+    ...draft.periodLedgers,
+    [state.servicePeriod.sequenceId]: periodLedger,
+  };
+
   const next = {
     ...state,
     customers: draft.customers,
@@ -1247,6 +1555,8 @@ export function stepSimulation(state: GameState): GameState {
     seatReservations: draft.seatReservations,
     economy: draft.economy,
     progression: draft.progression,
+    periodLedgers: draft.periodLedgers,
+    servicePeriod,
     rngState: draft.rngState,
     nextCustomerSequence: draft.nextCustomerSequence,
     spawnCountdownMs: draft.spawnCountdownMs,
@@ -1258,7 +1568,10 @@ export function stepSimulation(state: GameState): GameState {
     ),
     events: draft.events,
   };
-  return updateProgressionSystems(next);
+  const progressed = updateProgressionSystems(next);
+  return serviceAdvance.watchdogExpired
+    ? finalizeDrainWatchdogState(progressed).state
+    : progressed;
 }
 
 export function advanceSimulation(state: GameState, realDeltaMs: number): AdvanceResult {
@@ -1394,7 +1707,7 @@ export function simulationDigest(state: GameState): string {
       at: pointKey(customer.position),
       stall: customer.targetStallId,
       seat: customer.reservedSeatKey,
-      spent: customer.spent,
+      spentCents: customer.spentCents,
     }));
   return JSON.stringify({
     tick: state.tick,

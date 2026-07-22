@@ -277,12 +277,15 @@ export const customerArchetypeSchema = z.object({
 });
 
 export const economySchema = z.object({
+  startingCashCents: z.number().int().positive(),
   startingCash: z.number().int().positive(),
   startingReputation: z.number().int().nonnegative(),
   maxLevel: z.number().int().positive(),
   maxReputation: z.number().int().positive(),
+  minimumVisitEarningsCents: z.number().int().positive(),
   minimumVisitEarnings: z.number().int().positive(),
   starterRequiredSeats: z.number().int().positive(),
+  recoveryGrantCents: z.number().int().positive(),
   recoveryGrant: z.number().int().positive(),
   levelXpThresholds: z.array(z.number().int().nonnegative()).min(2),
 });

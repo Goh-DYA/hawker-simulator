@@ -1,12 +1,15 @@
 import type { EconomyDefinition } from "./types";
 
 export const ECONOMY = {
+  startingCashCents: 420_000,
   startingCash: 4_200,
   startingReputation: 8,
   maxLevel: 20,
   maxReputation: 100,
+  minimumVisitEarningsCents: 300,
   minimumVisitEarnings: 3,
   starterRequiredSeats: 4,
+  recoveryGrantCents: 65_000,
   recoveryGrant: 650,
   levelXpThresholds: [
     0, 120, 300, 540, 850, 1_250, 1_750, 2_360, 3_100, 3_980,

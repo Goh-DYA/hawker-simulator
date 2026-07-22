@@ -1,21 +1,44 @@
-import { calculateLevel } from "./economy";
+import {
+  calculateLevel,
+  createPeriodLedger,
+  economyWithCompatibilityAliases,
+  getUnlockedDefinitionIds,
+  objectiveRewardCashCents,
+  objectiveRewardXp,
+  recordLedgerEntry,
+} from "./economy";
+import {
+  addCents,
+  asMoneyCents,
+  centsToSgd,
+  formatSgd,
+  sgdToCents,
+  type MoneyCents,
+} from "./money";
+import { ARRIVAL_PERIOD_MS } from "./servicePeriods";
 import type {
   DailyObjective,
   GameState,
+  ObjectiveKind,
   SimulationEvent,
   StallDefinition,
   StallMasteryState,
   NutritionObjectiveCriterion,
 } from "./types";
 
+/** @deprecated Historical save/test adapter. Live gameplay uses servicePeriod.day. */
 export const OPERATING_DAY_MS = 8 * 60 * 1_000;
 const OPERATING_START_MINUTE = 10 * 60 + 30;
 const MASTERY_RANK_DIVISOR = 100;
+const MAX_PERIOD_OBJECTIVE_VISITS = 18;
+const MAX_HAPPINESS_OBJECTIVE = 85;
 
+/** @deprecated Live gameplay uses servicePeriod.day. */
 export function operatingDay(elapsedMs: number): number {
   return 1 + Math.floor(Math.max(0, elapsedMs) / OPERATING_DAY_MS);
 }
 
+/** @deprecated Live gameplay uses servicePeriod.displayedMinute. */
 export function operatingMinuteOfDay(elapsedMs: number): number {
   const operatingElapsedMs = Math.max(0, elapsedMs) % OPERATING_DAY_MS;
   return OPERATING_START_MINUTE + Math.floor(operatingElapsedMs / 1_000);
@@ -80,6 +103,7 @@ function distinctOpenStallTypes(state: GameState): number {
 function queueFlowScore(state: GameState): number {
   const counts = Object.values(state.queues).reduce((sum, queue) => sum + queue.length, 0);
   const capacity = Object.values(state.objects).reduce((sum, object) => {
+    if (!object.open) return sum;
     const stall = state.catalog.placeables[object.definitionId]?.stall;
     return sum + (stall ? effectiveStallDefinition(state, object.definitionId, stall).queueCapacity : 0);
   }, 0);
@@ -88,10 +112,18 @@ function queueFlowScore(state: GameState): number {
 
 function objective(
   day: number,
+  periodSequenceId: number,
   slot: number,
   values: Omit<DailyObjective, "id" | "day" | "progress" | "completed">,
 ): DailyObjective {
-  return { id: `day-${day}-${slot}-${values.kind}`, day, progress: 0, completed: false, ...values };
+  return {
+    id: `period-${periodSequenceId}-${slot}-${values.kind}`,
+    day,
+    progress: 0,
+    completed: false,
+    accepted: false,
+    ...values,
+  };
 }
 
 function nutritionObjectiveCriterion(
@@ -140,93 +172,404 @@ function nutritionObjectiveCriterion(
   return preferred;
 }
 
-function nutritionObjective(state: GameState, day: number, scale: number): DailyObjective {
-  const criterion = nutritionObjectiveCriterion(state, day);
+function nutritionObjective(
+  state: GameState,
+  day: number,
+  periodSequenceId: number,
+  scale: number,
+  limits: ObjectiveFeasibilityLimits,
+): DailyObjective | undefined {
+  const preferredCriterion = nutritionObjectiveCriterion(state, day);
+  const criterion = preferredCriterion === "intent-matches" && limits.intentMatchLimit < 1
+    ? "profiled-servings"
+    : preferredCriterion === "variant-servings" && limits.variantServingLimit < 1
+      ? "profiled-servings"
+      : preferredCriterion;
   const values = criterion === "intent-matches"
     ? {
         title: "Read the request",
-        description: `Match ${Math.min(6, 2 + Math.floor(scale / 3))} nutrition intents today.`,
-        target: Math.min(6, 2 + Math.floor(scale / 3)),
+        target: Math.min(limits.intentMatchLimit, Math.min(6, 2 + Math.floor(scale / 3))),
         startValue: state.metrics.nutrition.intentMatches,
       }
     : criterion === "variant-servings"
       ? {
           title: "Try another recipe",
-          description: `Serve ${Math.min(10, 3 + Math.floor(scale / 2))} reviewed non-default variants today.`,
-          target: Math.min(10, 3 + Math.floor(scale / 2)),
+          target: Math.min(limits.variantServingLimit, Math.min(10, 3 + Math.floor(scale / 2))),
           startValue: state.metrics.nutrition.nonDefaultVariantServings,
         }
       : {
           title: "Read the plate",
-          description: `Serve ${Math.min(12, 4 + scale)} meals with reviewed nutrition data today.`,
-          target: Math.min(12, 4 + scale),
+          target: Math.min(limits.profiledServingLimit, Math.min(12, 4 + scale)),
           startValue: state.metrics.nutrition.profiledServings,
         };
-  return objective(day, 3, {
+  if (values.target < 1) return undefined;
+  const description = criterion === "intent-matches"
+    ? `Match ${values.target} nutrition intents this period.`
+    : criterion === "variant-servings"
+      ? `Serve ${values.target} reviewed non-default variants this period.`
+      : `Serve ${values.target} meals with reviewed nutrition data this period.`;
+  return objective(day, periodSequenceId, 3, {
     kind: "nutrition",
     nutritionCriterion: criterion,
+    description,
     ...values,
-    rewardCash: 80 + scale * 20,
-    rewardXp: 25 + scale * 5,
+    rewardCashCents: objectiveRewardCashCents(scale),
+    rewardCash: centsToSgd(objectiveRewardCashCents(scale)),
+    rewardXp: objectiveRewardXp(scale),
   });
 }
 
-export function createDailyObjectives(state: GameState, day = operatingDay(state.elapsedMs)): readonly DailyObjective[] {
+function setupFallbackObjective(
+  state: GameState,
+  day: number,
+  periodSequenceId: number,
+  slot: number,
+  scale: number,
+  limits: ObjectiveFeasibilityLimits,
+  excludedKinds: ReadonlySet<ObjectiveKind> = new Set(),
+): DailyObjective {
+  const rewardCashCents = objectiveRewardCashCents(scale);
+  const rewardCash = centsToSgd(rewardCashCents);
+  const rewardXp = objectiveRewardXp(scale);
+  if (limits.trayReturnLimit > 0 && !excludedKinds.has("facility")) {
+    const target = Math.min(3, limits.trayReturnLimit);
+    return objective(day, periodSequenceId, slot, {
+      kind: "facility",
+      title: "Clear the tables",
+      description: `Return ${target} ${target === 1 ? "tray" : "trays"} this period.`,
+      target,
+      startValue: state.metrics.trayReturns,
+      rewardCashCents,
+      rewardCash,
+      rewardXp,
+    });
+  }
+  if (limits.serviceVisitLimit > 0 && !excludedKinds.has("serve")) {
+    const target = Math.min(3, limits.serviceVisitLimit);
+    return objective(day, periodSequenceId, slot, {
+      kind: "serve",
+      title: "Steady service",
+      description: `Complete ${target} ${target === 1 ? "served visit" : "served visits"} this period.`,
+      target,
+      startValue: state.economy.completedVisits,
+      rewardCashCents,
+      rewardCash,
+      rewardXp,
+    });
+  }
+  if (limits.revenueLimitCents > 0 && !excludedKinds.has("revenue")) {
+    const target = asMoneyCents(Math.min(limits.revenueLimitCents, sgdToCents(24)));
+    return objective(day, periodSequenceId, slot, {
+      kind: "revenue",
+      title: "Cover the basics",
+      description: `Earn ${formatSgd(target)} in gross sales this period.`,
+      target,
+      startValue: state.economy.lifetimeGrossSalesCents,
+      rewardCashCents,
+      rewardCash,
+      rewardXp,
+    });
+  }
+  if (limits.supportsFiveRatings && !excludedKinds.has("happiness")) {
+    return objective(day, periodSequenceId, slot, {
+      kind: "happiness",
+      title: "A comfortable visit",
+      description: "Reach 75% happiness after five new ratings.",
+      target: 75,
+      startValue: state.metrics.completedCustomers,
+      rewardCashCents,
+      rewardCash,
+      rewardXp,
+    });
+  }
+  if (limits.supportsFlow && !excludedKinds.has("flow")) {
+    return objective(day, periodSequenceId, slot, {
+      kind: "flow",
+      title: "Easy movement",
+      description: "Keep flow at 80% or better for 60 seconds with at least three active guests.",
+      target: 60_000,
+      startValue: 0,
+      flowQualifiedMs: 0,
+      flowRequiredMs: 60_000,
+      flowMinimumActiveGuests: 3,
+      rewardCashCents,
+      rewardCash,
+      rewardXp,
+    });
+  }
+  if (!excludedKinds.has("variety")) {
+    return objective(day, periodSequenceId, slot, {
+      kind: "variety",
+      title: "Ready to serve",
+      description: "Operate at least one reachable stall type this period.",
+      target: 1,
+      startValue: 0,
+      rewardCashCents,
+      rewardCash,
+      rewardXp,
+    });
+  }
+  throw new RangeError("The current setup cannot produce three distinct feasible objectives");
+}
+
+export interface ObjectiveFeasibilityLimits {
+  /** Conservative number of visits supported by arrivals and the available setup. */
+  readonly serviceVisitLimit: number;
+  /** Gross sales reachable by serving serviceVisitLimit copies of the cheapest viable dish. */
+  readonly revenueLimitCents: MoneyCents;
+  readonly supportsFiveRatings: boolean;
+  readonly supportsFlow: boolean;
+  readonly profiledServingLimit: number;
+  readonly intentMatchLimit: number;
+  readonly variantServingLimit: number;
+  readonly trayReturnLimit: number;
+  readonly openStallTypeCount: number;
+}
+
+/**
+ * Produces deterministic, setup-derived caps for a single 240-second arrivals
+ * period. The two-times timing margin prevents authored level scaling from
+ * outgrowing the currently available arrival and preparation throughput.
+ */
+export function objectiveFeasibilityLimits(state: GameState): ObjectiveFeasibilityLimits {
+  const placedStalls = Object.values(state.objects)
+    .filter((object) => state.catalog.placeables[object.definitionId]?.kind === "stall")
+    .sort((left, right) => left.id.localeCompare(right.id));
+  const candidateDefinitions = placedStalls.length > 0
+    ? placedStalls.map((object) => ({
+        instanceId: object.id,
+        definitionId: object.definitionId,
+      }))
+    : Object.values(state.catalog.placeables)
+        .filter((definition) => (
+          definition.kind === "stall" &&
+          (definition.unlockLevel ?? 1) <= state.progression.level
+        ))
+        // A missing starter stall can be reclaimed by the Stage 1 recovery policy.
+        .sort((left, right) => (
+          left.priceCents - right.priceCents ||
+          left.id.localeCompare(right.id)
+        ))
+        .slice(0, 1)
+        .map((definition) => ({ instanceId: definition.id, definitionId: definition.id }));
+  const maxGuestBudgetCents = Object.values(state.catalog.archetypes).reduce(
+    (maximum, archetype) => Math.max(maximum, archetype.budgetCents),
+    0,
+  );
+  let preparationLimit = 0;
+  let totalQueueCapacity = 0;
+  let cheapestDishCents: number | undefined;
+  let hasProfiledDish = false;
+  let hasIntentFit = false;
+  let hasAlternativeVariant = false;
+  for (const candidate of candidateDefinitions) {
+    const definition = state.catalog.placeables[candidate.definitionId];
+    if (!definition?.stall) continue;
+    const stall = effectiveStallDefinition(state, candidate.definitionId, definition.stall);
+    const dishes = stall.dishIds
+      .map((dishId) => state.catalog.dishes[dishId])
+      .filter((dish) => Boolean(
+        dish &&
+        state.progression.level >= (dish.unlockLevel ?? 1) &&
+        state.progression.reputation >= (dish.unlockReputation ?? 0) &&
+        dish.priceCents <= maxGuestBudgetCents,
+      ));
+    if (dishes.length === 0) continue;
+    const fastestPreparationMs = Math.min(...dishes.map((dish) => dish!.preparationMs));
+    const conservativeCycleMs = Math.max(
+      state.config.fixedStepMs,
+      2 * (stall.orderMs + fastestPreparationMs),
+    );
+    preparationLimit += Math.max(
+      1,
+      Math.floor((ARRIVAL_PERIOD_MS * stall.preparationCapacity) / conservativeCycleMs),
+    );
+    totalQueueCapacity += stall.queueCapacity;
+    const masteryRank = state.progression.stallMastery[candidate.definitionId]?.rank ?? 1;
+    for (const dish of dishes) {
+      if (!dish) continue;
+      const priceCents = dish.priceCents;
+      cheapestDishCents = Math.min(cheapestDishCents ?? priceCents, priceCents);
+      const variants = dish.nutritionVariants?.filter((variant) => variant.unlockRank <= masteryRank) ?? [];
+      hasProfiledDish ||= variants.some((variant) => variant.profile?.status === "released");
+      hasIntentFit ||= variants.some((variant) => (
+        variant.profile?.status === "released" &&
+        Object.values(variant.profile.intentFits).some((fit) => typeof fit === "number")
+      ));
+      hasAlternativeVariant ||= variants.some((variant) => (
+        variant.profile?.status === "released" && variant.id !== dish.defaultNutritionVariantId
+      ));
+    }
+  }
+  const arrivalLimit = candidateDefinitions.length === 0
+    ? 0
+    : Math.max(1, Math.floor(ARRIVAL_PERIOD_MS / (state.config.spawnIntervalMs * 2)));
+  const serviceVisitLimit = Math.max(
+    0,
+    Math.min(MAX_PERIOD_OBJECTIVE_VISITS, arrivalLimit, preparationLimit),
+  );
+  const hasSeat = Object.values(state.objects).some((object) => (
+    (state.catalog.placeables[object.definitionId]?.seatPoints?.length ?? 0) > 0
+  ));
+  const hasTrayReturn = Object.values(state.objects).some((object) => (
+    state.catalog.placeables[object.definitionId]?.kind === "tray-return"
+  ));
+  return {
+    serviceVisitLimit,
+    revenueLimitCents: asMoneyCents((cheapestDishCents ?? 0) * serviceVisitLimit),
+    supportsFiveRatings: serviceVisitLimit >= 5 && hasSeat,
+    supportsFlow: serviceVisitLimit >= 3 && totalQueueCapacity >= 3,
+    profiledServingLimit: hasProfiledDish ? serviceVisitLimit : 0,
+    intentMatchLimit: hasIntentFit
+      ? Math.min(serviceVisitLimit, Math.max(1, Math.floor(serviceVisitLimit / 4)))
+      : 0,
+    variantServingLimit: hasAlternativeVariant ? serviceVisitLimit : 0,
+    trayReturnLimit: hasSeat && hasTrayReturn ? serviceVisitLimit : 0,
+    openStallTypeCount: distinctOpenStallTypes(state),
+  };
+}
+
+export function advanceFlowQualification(
+  previousMs: number,
+  flowScore: number,
+  activePeriodGuests: number,
+  deltaMs: number,
+  minimumGuests = 3,
+): number {
+  if (![previousMs, flowScore, activePeriodGuests, deltaMs, minimumGuests].every(Number.isFinite)) {
+    throw new RangeError("Flow qualification inputs must be finite");
+  }
+  return flowScore >= 80 && activePeriodGuests >= minimumGuests
+    ? Math.max(0, previousMs) + Math.max(0, deltaMs)
+    : 0;
+}
+
+export function skipDailyObjective(
+  objectives: readonly DailyObjective[],
+  objectiveId: string,
+): readonly DailyObjective[] {
+  return objectives.map((item) => item.id === objectiveId && !item.completed
+    ? { ...item, accepted: false, skipped: true }
+    : item);
+}
+
+export function acceptDailyObjective(
+  objectives: readonly DailyObjective[],
+  objectiveId: string,
+): readonly DailyObjective[] {
+  if (!objectives.some((item) => item.id === objectiveId && !item.completed && !item.skipped)) {
+    throw new RangeError("Objective offer does not exist or is already completed");
+  }
+  return objectives.map((item) => ({ ...item, accepted: item.id === objectiveId, skipped: item.skipped ?? false }));
+}
+
+export function skipDailyObjectives(
+  objectives: readonly DailyObjective[],
+): readonly DailyObjective[] {
+  return objectives.map((item) => item.completed ? item : { ...item, accepted: false, skipped: true });
+}
+
+export function createDailyObjectives(
+  state: GameState,
+  day = state.servicePeriod.day,
+  periodSequenceId = state.servicePeriod.sequenceId,
+): readonly DailyObjective[] {
   const scale = Math.max(1, state.progression.level);
-  const rewardCash = 80 + scale * 20;
-  const rewardXp = 25 + scale * 5;
-  const service = day % 2 === 0
-    ? objective(day, 1, {
+  const limits = objectiveFeasibilityLimits(state);
+  const rewardCashCents = objectiveRewardCashCents(scale);
+  const rewardCash = centsToSgd(rewardCashCents);
+  const rewardXp = objectiveRewardXp(scale);
+  const service = limits.serviceVisitLimit < 1
+    ? setupFallbackObjective(state, day, periodSequenceId, 1, scale, limits)
+    : day % 2 === 0 && limits.revenueLimitCents > 0
+    ? objective(day, periodSequenceId, 1, {
         kind: "revenue",
         title: "A lively service",
-        description: `Earn ${Math.round(35 + scale * 8)} credits today.`,
-        target: Math.round(35 + scale * 8),
-        startValue: state.economy.lifetimeRevenue,
+        description: `Earn ${formatSgd(asMoneyCents(Math.min(
+          limits.revenueLimitCents,
+          sgdToCents(Math.round(35 + scale * 8)),
+        )))} in gross sales this period.`,
+        target: asMoneyCents(Math.min(
+          limits.revenueLimitCents,
+          sgdToCents(Math.round(35 + scale * 8)),
+        )),
+        startValue: state.economy.lifetimeGrossSalesCents,
+        rewardCashCents,
         rewardCash,
         rewardXp,
       })
-    : objective(day, 1, {
+    : objective(day, periodSequenceId, 1, {
         kind: "serve",
         title: "Warm welcome",
-        description: `Serve ${5 + scale * 2} neighbours today.`,
-        target: 5 + scale * 2,
+        description: `Serve ${Math.min(5 + scale * 2, limits.serviceVisitLimit)} neighbours this period.`,
+        target: Math.min(5 + scale * 2, limits.serviceVisitLimit),
         startValue: state.economy.completedVisits,
+        rewardCashCents,
         rewardCash,
         rewardXp,
       });
-  const quality = day % 3 === 0
-    ? objective(day, 2, {
+  const quality = day % 3 === 0 && limits.supportsFlow
+    ? objective(day, periodSequenceId, 2, {
         kind: "flow",
         title: "Easy movement",
-        description: "Keep queue flow at 80% or better.",
-        target: 80,
+        description: "Keep flow at 80% or better for 60 seconds with at least three active guests.",
+        target: 60_000,
         startValue: 0,
+        flowQualifiedMs: 0,
+        flowRequiredMs: 60_000,
+        flowMinimumActiveGuests: 3,
+        rewardCashCents,
         rewardCash,
         rewardXp,
       })
-    : objective(day, 2, {
+    : limits.supportsFiveRatings
+      ? objective(day, periodSequenceId, 2, {
         kind: "happiness",
         title: "Happy tables",
-        description: `Reach ${Math.min(92, 72 + scale)}% happiness after five new ratings.`,
-        target: Math.min(92, 72 + scale),
+        description: `Reach ${Math.min(MAX_HAPPINESS_OBJECTIVE, 72 + scale)}% happiness after five new ratings.`,
+        target: Math.min(MAX_HAPPINESS_OBJECTIVE, 72 + scale),
         startValue: state.metrics.completedCustomers,
+        rewardCashCents,
         rewardCash,
         rewardXp,
-      });
-  return [service, quality, nutritionObjective(state, day, scale)];
+      })
+      : setupFallbackObjective(
+          state,
+          day,
+          periodSequenceId,
+          2,
+          scale,
+          limits,
+          new Set([service.kind]),
+        );
+  const nutrition = nutritionObjective(state, day, periodSequenceId, scale, limits)
+    ?? setupFallbackObjective(
+      state,
+      day,
+      periodSequenceId,
+      3,
+      scale,
+      limits,
+      new Set([service.kind, quality.kind]),
+    );
+  const offers = [service, quality, nutrition] as const;
+  if (new Set(offers.map((item) => item.kind)).size !== offers.length) {
+    throw new RangeError("Objective offers must use three distinct feasible templates");
+  }
+  return offers;
 }
 
 function objectiveProgress(state: GameState, item: DailyObjective): number {
   switch (item.kind) {
     case "serve": return state.economy.completedVisits - item.startValue;
-    case "revenue": return state.economy.lifetimeRevenue - item.startValue;
+    case "revenue": return state.economy.lifetimeGrossSalesCents - item.startValue;
     case "happiness": {
       const newRatingCount = state.metrics.completedCustomers - item.startValue;
       if (newRatingCount < 5) return 0;
       const newRatings = state.metrics.visitRatings.slice(-Math.min(50, newRatingCount));
       return newRatings.reduce((sum, rating) => sum + rating.score, 0) / newRatings.length;
     }
-    case "flow": return queueFlowScore(state);
+    case "flow": return item.flowQualifiedMs ?? 0;
     case "variety": return distinctOpenStallTypes(state);
     case "facility": return state.metrics.trayReturns - item.startValue;
     case "nutrition": {
@@ -248,46 +591,132 @@ const MILESTONES = [
   ...[3, 7, 12, 20].map((target, index) => ({ id: `growth-${index + 1}`, tier: index + 1, met: (state: GameState) => state.progression.level >= target })),
 ] as const;
 
+export function metMilestoneIds(state: GameState): readonly string[] {
+  return MILESTONES.filter((milestone) => milestone.met(state)).map((milestone) => milestone.id);
+}
+
 export function updateProgressionSystems(source: GameState): GameState {
-  const day = operatingDay(source.elapsedMs);
+  const day = source.servicePeriod.day;
+  const periodSequenceId = source.servicePeriod.sequenceId;
   let state = source;
-  if (state.progression.focusDay !== day || state.progression.dailyObjectives.length !== 3) {
+  if (state.progression.focusDay !== periodSequenceId || state.progression.dailyObjectives.length !== 3) {
     state = {
       ...state,
-      progression: { ...state.progression, focusDay: day, dailyObjectives: createDailyObjectives(state, day) },
+      progression: {
+        ...state.progression,
+        focusDay: periodSequenceId,
+        dailyObjectives: createDailyObjectives(state, day, periodSequenceId),
+      },
     };
   }
-  let currency = state.economy.currency;
+  let cashCents = state.economy.cashCents;
+  let objectiveRewardsCents = state.economy.lifetimeObjectiveRewardsCents;
+  let milestoneRewardsCents = state.economy.lifetimeMilestoneRewardsCents;
   let xp = state.progression.xp;
   const events: SimulationEvent[] = [...state.events];
   const dailyObjectives = state.progression.dailyObjectives.map((item) => {
-    if (item.completed) return item;
-    const progress = Math.max(0, objectiveProgress(state, item));
-    if (progress < item.target) return { ...item, progress };
-    currency += item.rewardCash;
+    if (item.completed || item.skipped) return item;
+    if (item.accepted === false) return item;
+    const activePeriodGuests = Object.values(state.customers).filter(
+      (customer) => customer.arrivalPeriodSequenceId === state.servicePeriod.sequenceId,
+    ).length;
+    const flowCanQualify = item.kind === "flow" && state.servicePeriod.phase === "arrivals";
+    const flowQualifiedMs = item.kind === "flow"
+      ? flowCanQualify
+        ? advanceFlowQualification(
+            item.flowQualifiedMs ?? 0,
+            queueFlowScore(state),
+            activePeriodGuests,
+            state.config.fixedStepMs,
+            item.flowMinimumActiveGuests ?? 3,
+          )
+        : item.flowQualifiedMs ?? 0
+      : item.flowQualifiedMs;
+    const progress = Math.max(0, objectiveProgress(state, { ...item, flowQualifiedMs }));
+    if (item.kind === "flow" && !flowCanQualify) {
+      return { ...item, progress, flowQualifiedMs };
+    }
+    if (progress < item.target) return { ...item, progress, flowQualifiedMs };
+    cashCents = addCents(cashCents, item.rewardCashCents);
+    objectiveRewardsCents = addCents(objectiveRewardsCents, item.rewardCashCents);
     xp += item.rewardXp;
-    events.push({ type: "objective-completed", tick: state.tick, entityId: item.id, amount: item.rewardCash, message: item.title });
-    return { ...item, progress, completed: true };
+    events.push({
+      type: "objective-completed",
+      tick: state.tick,
+      entityId: item.id,
+      amount: item.rewardCashCents,
+      amountCents: item.rewardCashCents,
+      message: item.title,
+    });
+    return { ...item, progress, flowQualifiedMs, completed: true };
   });
   const claimed = new Set(state.progression.claimedMilestoneIds);
   for (const milestone of MILESTONES) {
     if (claimed.has(milestone.id) || !milestone.met(state)) continue;
     claimed.add(milestone.id);
-    const cashReward = 250 * milestone.tier;
+    const cashReward = sgdToCents(250 * milestone.tier);
     const xpReward = 100 * milestone.tier;
-    currency += cashReward;
+    cashCents = addCents(cashCents, cashReward);
+    milestoneRewardsCents = addCents(milestoneRewardsCents, cashReward);
     xp += xpReward;
-    events.push({ type: "milestone-completed", tick: state.tick, entityId: milestone.id, amount: cashReward });
+    events.push({
+      type: "milestone-completed",
+      tick: state.tick,
+      entityId: milestone.id,
+      amount: cashReward,
+      amountCents: cashReward,
+    });
   }
+  const nextLevel = Math.max(state.progression.level, calculateLevel(xp));
   return {
     ...state,
-    economy: { ...state.economy, currency },
+    economy: economyWithCompatibilityAliases({
+      ...state.economy,
+      cashCents,
+      lifetimeObjectiveRewardsCents: objectiveRewardsCents,
+      lifetimeMilestoneRewardsCents: milestoneRewardsCents,
+    }),
     progression: {
       ...state.progression,
       xp,
-      level: calculateLevel(xp),
+      level: nextLevel,
+      unlockedDefinitionIds: getUnlockedDefinitionIds(
+        state.catalog,
+        nextLevel,
+        state.progression.unlockedDefinitionIds,
+      ),
       dailyObjectives,
       claimedMilestoneIds: [...claimed],
+    },
+    periodLedgers: {
+      ...state.periodLedgers,
+      [state.servicePeriod.sequenceId]: (() => {
+        let ledger = dailyObjectives.reduce((current, item) => {
+        const original = state.progression.dailyObjectives.find((candidate) => candidate.id === item.id);
+        if (!item.completed || original?.completed) return current;
+        return recordLedgerEntry(current, {
+          id: `${item.id}-reward`,
+          kind: "objective",
+          amountCents: item.rewardCashCents,
+          tick: state.tick,
+          referenceId: item.id,
+        });
+        }, state.periodLedgers[state.servicePeriod.sequenceId] ?? createPeriodLedger(
+          state.servicePeriod.sequenceId,
+          state.economy.cashCents,
+        ));
+        for (const milestone of MILESTONES) {
+          if (state.progression.claimedMilestoneIds.includes(milestone.id) || !claimed.has(milestone.id)) continue;
+          ledger = recordLedgerEntry(ledger, {
+            id: `${milestone.id}-reward`,
+            kind: "milestone",
+            amountCents: sgdToCents(250 * milestone.tier),
+            tick: state.tick,
+            referenceId: milestone.id,
+          });
+        }
+        return ledger;
+      })(),
     },
     events,
   };

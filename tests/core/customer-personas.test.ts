@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  OPERATING_DAY_MS,
   customerArchetypeSpawnWeight,
-  operatingMinuteOfDay,
+  sgdToCents,
   stepSimulation,
   type CustomerArchetype,
   type GameState,
@@ -13,6 +12,7 @@ import { makeGame, TEST_CATALOG } from "./fixtures";
 const AFTERNOON_PERSONA: CustomerArchetype = {
   id: "afternoon",
   budget: 8,
+  budgetCents: sgdToCents(8),
   patienceMs: 44_000,
   walkingSpeed: 2.25,
   priceSensitivity: 0.78,
@@ -34,23 +34,16 @@ function runSteps(source: GameState, count: number): GameState {
 
 describe("customer persona arrivals", () => {
   it("gates personas by progression and weights their authored visit window", () => {
-    expect(customerArchetypeSpawnWeight(AFTERNOON_PERSONA, 2, 5, 270_000)).toBe(0);
-    expect(customerArchetypeSpawnWeight(AFTERNOON_PERSONA, 3, 0.5, 270_000)).toBe(0);
-    expect(customerArchetypeSpawnWeight(AFTERNOON_PERSONA, 3, 0.6, 0)).toBe(0.2);
-    expect(customerArchetypeSpawnWeight(AFTERNOON_PERSONA, 3, 0.6, 270_000)).toBe(1.55);
+    expect(customerArchetypeSpawnWeight(AFTERNOON_PERSONA, 2, 5, 14 * 60)).toBe(0);
+    expect(customerArchetypeSpawnWeight(AFTERNOON_PERSONA, 3, 0.5, 14 * 60)).toBe(0);
+    expect(customerArchetypeSpawnWeight(AFTERNOON_PERSONA, 3, 0.6, 10 * 60)).toBe(0.2);
+    expect(customerArchetypeSpawnWeight(AFTERNOON_PERSONA, 3, 0.6, 14 * 60)).toBe(1.55);
   });
 
-  it("resets persona schedules with each operating day", () => {
-    expect(operatingMinuteOfDay(0)).toBe(10 * 60 + 30);
-    expect(operatingMinuteOfDay(OPERATING_DAY_MS)).toBe(10 * 60 + 30);
-    expect(
-      customerArchetypeSpawnWeight(
-        AFTERNOON_PERSONA,
-        3,
-        0.6,
-        OPERATING_DAY_MS + 270_000,
-      ),
-    ).toBe(1.55);
+  it("uses the authored service-period clock instead of legacy elapsed-day time", () => {
+    expect(customerArchetypeSpawnWeight(AFTERNOON_PERSONA, 3, 0.6, 13 * 60 + 59)).toBe(0.2);
+    expect(customerArchetypeSpawnWeight(AFTERNOON_PERSONA, 3, 0.6, 17 * 60 + 59)).toBe(1.55);
+    expect(customerArchetypeSpawnWeight(AFTERNOON_PERSONA, 3, 0.6, 18 * 60)).toBe(0.2);
   });
 
   it("keeps prerequisite-gated personas out until every requirement is unlocked", () => {
@@ -60,14 +53,14 @@ describe("customer persona arrivals", () => {
     };
 
     expect(
-      customerArchetypeSpawnWeight(gated, 3, 0.6, 270_000, []),
+      customerArchetypeSpawnWeight(gated, 3, 0.6, 14 * 60, []),
     ).toBe(0);
     expect(
       customerArchetypeSpawnWeight(
         gated,
         3,
         0.6,
-        270_000,
+        14 * 60,
         ["stall.required"],
       ),
     ).toBe(1.55);

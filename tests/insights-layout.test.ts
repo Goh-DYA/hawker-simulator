@@ -20,10 +20,10 @@ describe("insights panel layout", () => {
   it("keeps insight typography on one shared scale", async () => {
     const cssSource = await readFile(new URL("app/globals.css", root), "utf8");
 
-    expect(cssSource).toContain("--insight-title-size: 0.69rem");
-    expect(cssSource).toContain("--insight-body-size: 0.61rem");
-    expect(cssSource).toContain("--insight-status-size: 0.63rem");
-    expect(cssSource).toContain("--insight-detail-size: 0.58rem");
+    expect(cssSource).toContain("--insight-title-size: 0.75rem");
+    expect(cssSource).toContain("--insight-body-size: 0.75rem");
+    expect(cssSource).toContain("--insight-status-size: 0.75rem");
+    expect(cssSource).toContain("--insight-detail-size: 0.75rem");
     expect(cssSource).toContain("font-size: var(--insight-detail-size)");
     expect(cssSource).toContain("font-size: var(--insight-status-size)");
   });

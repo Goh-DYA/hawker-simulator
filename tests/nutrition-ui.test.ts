@@ -10,9 +10,22 @@ import {
   NutritionProfileSummary,
   NutritionPulseCard,
   VariantLabDialog,
+  type PreparationTermsView,
 } from "../app/game/NutritionEducation";
 
 const root = new URL("../", import.meta.url);
+const preparationTerms = (
+  overrides: Partial<PreparationTermsView> = {},
+): PreparationTermsView => ({
+  priceCents: 400,
+  ingredientCostCents: 140,
+  preparationTimeMs: 20_000,
+  servingTimeMs: 4_000,
+  eatingTimeMs: 30_000,
+  starAppeal: 4.2,
+  demandModifierBasisPoints: 10_000,
+  ...overrides,
+});
 
 describe("Hawker Balance nutrition education UI", () => {
   it("traps Variant Lab Tab focus and exposes an Escape close action", () => {
@@ -132,6 +145,7 @@ describe("Hawker Balance nutrition education UI", () => {
             visualKey: "kopi-milk-sugar-standard",
             unlocked: true,
             selected: true,
+            terms: preparationTerms(),
             profile: { status: "released", servingLabel: "1 cup" },
           },
           {
@@ -141,6 +155,13 @@ describe("Hawker Balance nutrition education UI", () => {
             visualKey: "kopi-evaporated-milk-two-sugar",
             unlocked: false,
             selected: false,
+            terms: preparationTerms({
+              priceCents: 450,
+              ingredientCostCents: 180,
+              preparationTimeMs: 16_000,
+              starAppeal: 4.7,
+              demandModifierBasisPoints: 11_000,
+            }),
             profile: { status: "released", servingLabel: "1 cup" },
           },
         ],
@@ -151,6 +172,12 @@ describe("Hawker Balance nutrition education UI", () => {
     expect(lab).toContain('role="radiogroup"');
     expect(lab).toContain("Unlocks at mastery rank 4");
     expect(lab).toContain("Changes apply to future orders only");
+    expect(lab).toContain("Price, ingredient cost, timing, Star appeal");
+    expect(lab).toContain("S$4.50");
+    expect(lab).toContain("Prep 16 sec");
+    expect(lab).toContain("4.7/5");
+    expect(lab).toContain("1.10× (+10%)");
+    expect(lab).not.toContain("star rating stays the same");
 
     const inspector = renderToStaticMarkup(createElement(CustomerNutritionInspector, {
       customer: {
@@ -169,6 +196,11 @@ describe("Hawker Balance nutrition education UI", () => {
         healthDecisionReasons: [
           "Managing hypertension fit 2.8/5 is led by sodium and other nutrients",
         ],
+        servingTerms: preparationTerms({
+          priceCents: 450,
+          starAppeal: 4.7,
+          demandModifierBasisPoints: 11_000,
+        }),
       },
       dishLabel: () => "Kopi",
       starRating: () => 4.5,
@@ -180,7 +212,9 @@ describe("Hawker Balance nutrition education UI", () => {
     expect(inspector).toContain("Why this choice");
     expect(inspector).toContain("Managing hypertension");
     expect(inspector).toContain("Personal health fit");
-    expect(inspector).toContain("Star rating for taste and popularity: 4.5/5");
+    expect(inspector).toContain("Star rating for taste and popularity: 4.7/5");
+    expect(inspector).toContain("Frozen order terms");
+    expect(inspector).toContain("Captured when this order was accepted.");
     expect(inspector).toContain("Customer stat effect");
     expect(inspector).toContain("-0.02 satisfaction");
     expect(inspector).toContain("Why this personal health fit");
@@ -210,6 +244,7 @@ describe("Hawker Balance nutrition education UI", () => {
           visualKey: "kopi-milk-sugar-standard",
           unlocked: true,
           selected: true,
+          terms: preparationTerms(),
           profile: { status: "released", servingLabel: "1 cup" },
         }],
       }],
@@ -247,12 +282,18 @@ describe("Hawker Balance nutrition education UI", () => {
 
     expect(simulator).toContain("Nutrition Lens");
     expect(simulator).toContain("Compare health, popularity, and every nutrient per listed serving.");
+    expect(simulator).toContain("snapshot.activePreparations.find");
+    expect(simulator).toContain("terms={activePreparation.terms}");
+    expect(simulator).toContain("Star appeal separately represents taste and popularity and can change by preparation.");
+    expect(simulator).not.toContain("Variants can change nutrition and health without changing popularity.");
     expect(simulator).toContain("Tune recipe");
     expect(simulator).toContain("aria-labelledby={dishTitleId}");
     expect(simulator).toContain("View nutrition for");
     expect(simulator).toContain("Tune recipe for");
     expect(simulator).toContain('["focus", "◎", "Focus"]');
     expect(nutritionUi).toContain("Variant Lab");
+    expect(nutritionUi).toContain("Accepted orders keep their frozen terms.");
+    expect(nutritionUi).toContain("variant.terms.starAppeal");
     expect(nutritionUi).toContain("Nutrition pulse");
     expect(nutritionUi).toContain("Trace amount");
     expect(nutritionUi).toContain("Data under review");
@@ -285,7 +326,7 @@ describe("Hawker Balance nutrition education UI", () => {
     expect(simulator).toContain("sheet.contains(document.activeElement)");
     expect(simulator).toContain('"summary"');
     expect(css).toContain("@media (max-width: 899px)");
-    expect(css).toContain("width: 100vw");
+    expect(css).toContain("width: 100%");
     expect(css).toContain('.game-shell[data-management-open="false"] .catalogue-panel');
     expect(css).toContain(".sheet-close-button { display: grid; }");
   });

@@ -240,12 +240,18 @@ export interface CustomerArchetypeDefinition {
 }
 
 export interface EconomyDefinition {
+  readonly startingCashCents: number;
+  /** @deprecated Authored SGD compatibility value. */
   readonly startingCash: number;
   readonly startingReputation: number;
   readonly maxLevel: number;
   readonly maxReputation: number;
+  readonly minimumVisitEarningsCents: number;
+  /** @deprecated Authored SGD compatibility value. */
   readonly minimumVisitEarnings: number;
   readonly starterRequiredSeats: number;
+  readonly recoveryGrantCents: number;
+  /** @deprecated Authored SGD compatibility value. */
   readonly recoveryGrant: number;
   readonly levelXpThresholds: readonly number[];
 }

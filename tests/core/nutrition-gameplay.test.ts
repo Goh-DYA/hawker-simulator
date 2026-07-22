@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   averageRankPercentiles,
+  asMoneyCents,
   bestEnabledNutritionIntentFit,
   createDailyObjectives,
   createEmptyNutritionMetrics,
@@ -321,12 +322,14 @@ describe("nutrition education rules", () => {
       walkingDistanceTiles: 0,
       patienceRemainingMs: 10_000,
       satisfaction: 3,
+      arrivalPeriodSequenceId: state.servicePeriod.sequenceId,
       healthConditions: [],
       targetStallId: "stall-1",
       nutritionIntentId: "fibre-forward" as const,
       hasTray: false,
       served: false,
       spent: 0,
+      spentCents: asMoneyCents(0),
       stuckMs: 0,
     };
     state = {
@@ -457,11 +460,13 @@ describe("nutrition education rules", () => {
         walkingDistanceTiles: 0,
         patienceRemainingMs: 10_000,
         satisfaction: 3,
+        arrivalPeriodSequenceId: state.servicePeriod.sequenceId,
         healthConditions,
         targetStallId: "stall-1",
         hasTray: false,
         served: false,
         spent: 0,
+        spentCents: asMoneyCents(0),
         stuckMs: 0,
       };
       state = {
@@ -530,12 +535,14 @@ describe("nutrition education rules", () => {
         walkingDistanceTiles: 0,
         patienceRemainingMs: 10_000,
         satisfaction: 3,
+        arrivalPeriodSequenceId: state.servicePeriod.sequenceId,
         healthConditions: [],
         targetStallId: "stall-1",
         nutritionIntentId,
         hasTray: false,
         served: false,
         spent: 0,
+        spentCents: asMoneyCents(0),
         stuckMs: 0,
       };
       state = {
@@ -602,12 +609,19 @@ describe("nutrition education rules", () => {
     });
   });
 
-  it("migrates V3 saves with empty nutrition counters and round-trips V4 counters", () => {
+  it("migrates V3 saves with empty nutrition counters and round-trips V5 counters", () => {
     const current = makeGame();
     const v4 = persistentStateFromGame(current);
     const v3 = {
       ...v4,
       schemaVersion: 3,
+      economy: {
+        currency: current.economy.currency,
+        lifetimeRevenue: current.economy.lifetimeRevenue,
+        lifetimeSpend: current.economy.lifetimeSpend,
+        completedVisits: current.economy.completedVisits,
+        abandonedVisits: current.economy.abandonedVisits,
+      },
       metrics: {
         trayReturns: v4.metrics.trayReturns,
         visitRatings: v4.metrics.visitRatings,

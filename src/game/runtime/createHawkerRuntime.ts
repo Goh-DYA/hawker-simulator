@@ -11,15 +11,29 @@ import {
   getNutritionVariantFamily,
   type PlaceableCategory,
 } from "@/src/content";
+import { PREPARATION_GAMEPLAY_CATALOGUE } from "@/src/content/preparationGameplay";
 import {
+  ARRIVAL_PERIOD_MS,
+  AUTHORED_LEVEL_XP_THRESHOLDS,
+  DRAIN_WATCHDOG_MS,
+  SERVICE_PERIODS,
+  acceptDailyObjective,
   advanceSimulation,
+  applyRecoveryPolicy,
+  arrivalsEnabled,
+  asMoneyCents,
+  asMoneyDeltaCents,
   averageVisitRating,
   calculateExpansionCost,
+  createDailyObjectives,
   createGridMap,
   createNewGame,
+  createPeriodLedger,
   createSnapshot,
-  deserializeGameState,
+  deserializeGameStateWithReport,
+  describeSgd,
   dispatchCommand,
+  economyWithCompatibilityAliases,
   effectiveStallDefinition,
   findPath,
   getBlockedTileKeys,
@@ -28,13 +42,21 @@ import {
   getObjectQueueAnchor,
   getSeatLocations,
   getUtilityInfluence,
+  isConfigurationLocked,
+  ledgerCashMovementCents,
+  ledgerContributionCents,
+  ledgerReconciliationDeltaCents,
   mealConsumptionFraction,
-  OPERATING_DAY_MS,
-  operatingMinuteOfDay,
+  operatingMargin,
   planStallQueueLayouts,
+  planNextServicePeriod,
   persistentStateFromGame,
+  sgdToCents,
+  skipDailyObjectives,
+  startServicePeriod,
   tileToWorld,
   validatePlacement,
+  validateWorldNavigationAccess,
   worldToTile,
   xpRequiredForLevel,
   type Customer,
@@ -42,6 +64,7 @@ import {
   type GameSnapshot,
   type GameState,
   type GridPoint,
+  type MoneyCents,
   type NutritionIntent,
   type NutritionMetric,
   type NutritionProfile as CoreNutritionProfile,
@@ -49,9 +72,11 @@ import {
   type PlaceableDefinition as CorePlaceableDefinition,
   type PlacedObject,
   type QueueDirection,
+  type RecoveryReclaim,
   type Rotation,
   type SimulationCatalog,
   type SimulationEvent,
+  type ServicePeriodPhase,
 } from "@/src/game/core";
 import type {
   BuildTool,
@@ -59,8 +84,10 @@ import type {
   HealthConditionId,
   RuntimeController,
   RuntimeEvent,
+  RuntimePeriodDebrief,
   RuntimeOptions,
   RuntimeNutritionProfileSummary,
+  RuntimeServingTermsSummary,
   RuntimeSnapshot,
 } from "./types";
 import { utilityEffectsForPlaceable } from "./contentUtility";
@@ -93,6 +120,54 @@ const TILE_SIZE = 48;
 const MAP_WIDTH = 24;
 const MAP_HEIGHT = 16;
 const BUILDABLE_CONTENT = [...PLACEABLES, ...STALLS] as const;
+const DEFAULT_PREPARATION_BY_DISH_ID = new Map(
+  PREPARATION_GAMEPLAY_CATALOGUE
+    .filter((preparation) => preparation.isDefault)
+    .map((preparation) => [preparation.dishId, preparation]),
+);
+const PREPARATION_BY_DISH_AND_VARIANT = new Map(
+  PREPARATION_GAMEPLAY_CATALOGUE.map((preparation) => [
+    `${preparation.dishId}:${preparation.variantId ?? "default"}`,
+    preparation,
+  ]),
+);
+
+export function canManuallyAdvanceServicePeriod(phase: ServicePeriodPhase): boolean {
+  return phase === "planning" || phase === "debrief";
+}
+
+export function nextAuthoredLevelExperience(level: number): number | null {
+  if (!Number.isSafeInteger(level) || level < 1) {
+    throw new RangeError("Level must be a positive safe integer");
+  }
+  return level >= AUTHORED_LEVEL_XP_THRESHOLDS.length
+    ? null
+    : xpRequiredForLevel(level + 1);
+}
+
+export function reviewedPreparationFor(dishId: string, variantId?: string) {
+  return PREPARATION_BY_DISH_AND_VARIANT.get(`${dishId}:${variantId ?? "default"}`);
+}
+
+function runtimeServingTerms(terms: {
+  readonly priceCents: number;
+  readonly ingredientCostCents: number;
+  readonly preparationTimeMs: number;
+  readonly servingTimeMs: number;
+  readonly eatingTimeMs: number;
+  readonly starAppeal: number;
+  readonly demandModifierBasisPoints: number;
+}): RuntimeServingTermsSummary {
+  return {
+    priceCents: asMoneyCents(terms.priceCents),
+    ingredientCostCents: asMoneyCents(terms.ingredientCostCents),
+    preparationTimeMs: terms.preparationTimeMs,
+    servingTimeMs: terms.servingTimeMs,
+    eatingTimeMs: terms.eatingTimeMs,
+    starAppeal: terms.starAppeal,
+    demandModifierBasisPoints: terms.demandModifierBasisPoints,
+  };
+}
 const CONTENT_PLACEABLE_BY_ID = new Map(PLACEABLES.map((item) => [item.id, item]));
 const DISH_BY_ID = new Map(DISHES.map((dish) => [dish.id, dish]));
 const STALL_BY_ID = new Map(STALLS.map((stall) => [stall.id, stall]));
@@ -107,6 +182,58 @@ const CUSTOMER_VISUAL_BY_ID = new Map(
 const BUILDABLE_REQUIREMENTS = new Map(
   BUILDABLE_CONTENT.map((definition) => [definition.id, definition.unlockRequirement]),
 );
+
+export function authoredStallUpkeepCents(legacyWholeSgdPerMinute: number) {
+  return sgdToCents(legacyWholeSgdPerMinute, "Stall upkeep");
+}
+
+export interface ValidSetupRecoveryPlan {
+  readonly reclaimStarterStall: boolean;
+  readonly reclaimedSeatCount: number;
+  readonly remainingSetupCostCents: number;
+}
+
+export function planValidSetupRecovery(input: {
+  readonly cashCents: number;
+  readonly missingStallCostCents: number;
+  readonly missingSeatCount: number;
+  readonly seatCostCents: number;
+  readonly maximumGrantCents: number;
+}): ValidSetupRecoveryPlan {
+  const values = [
+    input.cashCents,
+    input.missingStallCostCents,
+    input.missingSeatCount,
+    input.seatCostCents,
+    input.maximumGrantCents,
+  ];
+  if (values.some((value) => !Number.isSafeInteger(value) || value < 0)) {
+    throw new RangeError("Recovery planning values must be non-negative safe integers");
+  }
+  let remainingSetupCostCents = input.missingStallCostCents +
+    input.missingSeatCount * input.seatCostCents;
+  let reclaimStarterStall = false;
+  let reclaimedSeatCount = 0;
+  if (
+    input.missingStallCostCents > 0 &&
+    remainingSetupCostCents - input.cashCents > input.maximumGrantCents
+  ) {
+    reclaimStarterStall = true;
+    remainingSetupCostCents -= input.missingStallCostCents;
+  }
+  while (
+    reclaimedSeatCount < input.missingSeatCount &&
+    remainingSetupCostCents - input.cashCents > input.maximumGrantCents
+  ) {
+    reclaimedSeatCount += 1;
+    remainingSetupCostCents -= input.seatCostCents;
+  }
+  return {
+    reclaimStarterStall,
+    reclaimedSeatCount,
+    remainingSetupCostCents,
+  };
+}
 
 function usesComplexUnlock(id: string) {
   const requirement = BUILDABLE_REQUIREMENTS.get(id);
@@ -322,7 +449,11 @@ export function customerHealthDecisionReasons(
 export function customerDecisionReasons(
   customer: Pick<
     Customer,
-    "archetypeId" | "nutritionIntentId" | "orderedDishId" | "orderedNutritionProfile"
+    | "archetypeId"
+    | "nutritionIntentId"
+    | "orderedDishId"
+    | "orderedNutritionProfile"
+    | "orderLineSnapshot"
   >,
   catalog: SimulationCatalog,
 ): readonly string[] {
@@ -345,7 +476,9 @@ export function customerDecisionReasons(
     }
   }
 
-  if (dish.price <= archetype.budget) reasons.push("Price within visit budget");
+  const priceCents = customer.orderLineSnapshot?.terms.priceCents ?? dish.priceCents;
+  const budgetCents = archetype.budgetCents;
+  if (priceCents <= budgetCents) reasons.push("Price within visit budget");
   if (dish.quality * archetype.qualitySensitivity > 0) reasons.push("Menu quality");
   return [...new Set(reasons)].slice(0, 2);
 }
@@ -356,6 +489,10 @@ function buildCatalog(): {
 } {
   const dishes: SimulationCatalog["dishes"] = Object.fromEntries(
     DISHES.map((dish) => {
+      const defaultPreparation = DEFAULT_PREPARATION_BY_DISH_ID.get(dish.id);
+      if (!defaultPreparation) {
+        throw new Error(`Dish ${dish.id} is missing resolved preparation terms`);
+      }
       const family = getNutritionVariantFamily(dish.id);
       const baseProfile = coreNutritionProfile(getNutritionProfile(dish.id));
       const nutritionVariants = family
@@ -381,20 +518,24 @@ function buildCatalog(): {
       return [
         dish.id,
         {
-        id: dish.id,
-        price: dish.price,
-        preparationMs: dish.preparationTimeMs,
-        eatingMs: dish.eatingTimeMs,
-        quality: dish.quality,
-        starRating: dish.starRating,
-        baseDemand: dish.baseDemand,
-        preferenceTags: dish.preferenceTags,
-        unlockLevel: dish.unlockRequirement.level,
-        unlockReputation: dish.unlockRequirement.reputation / 20,
-        nutritionVariants,
-        defaultNutritionVariantId,
-        activeNutritionVariantId: defaultNutritionVariantId,
-      },
+          id: dish.id,
+          price: dish.price,
+          priceCents: asMoneyCents(defaultPreparation.terms.priceCents),
+          ingredientCostCents: asMoneyCents(defaultPreparation.terms.ingredientCostCents),
+          preparationMs: defaultPreparation.terms.preparationTimeMs,
+          servingMs: defaultPreparation.terms.servingTimeMs,
+          eatingMs: defaultPreparation.terms.eatingTimeMs,
+          quality: dish.quality,
+          starRating: defaultPreparation.terms.starAppeal,
+          baseDemand: dish.baseDemand,
+          demandModifierBasisPoints: defaultPreparation.terms.demandModifierBasisPoints,
+          preferenceTags: dish.preferenceTags,
+          unlockLevel: dish.unlockRequirement.level,
+          unlockReputation: dish.unlockRequirement.reputation / 20,
+          nutritionVariants,
+          defaultNutritionVariantId,
+          activeNutritionVariantId: defaultNutritionVariantId,
+        },
       ];
     }),
   );
@@ -404,6 +545,7 @@ function buildCatalog(): {
 
   for (const item of PLACEABLES) {
     const returnPoint = item.interactionPoints.find((point) => point.role === "return-tray");
+    const priceCents = sgdToCents(item.price);
     placeables[item.id] = {
       id: item.id,
       kind: returnPoint ? "tray-return" : coreKind(item.category),
@@ -411,7 +553,9 @@ function buildCatalog(): {
       allowedRotations: item.rotations,
       blocksMovement: item.walkability === "blocked",
       price: item.price,
-      refundRate: item.price > 0 ? item.resaleValue / item.price : 0,
+      priceCents,
+      upkeepCents: asMoneyCents(0),
+      refundRate: priceCents > 0 ? 0.7 : 0,
       unlockLevel: usesComplexUnlock(item.id)
         ? Number.MAX_SAFE_INTEGER
         : item.unlockRequirement.level,
@@ -429,8 +573,12 @@ function buildCatalog(): {
   }
 
   for (const stall of STALLS) {
-    const averageDishPrice =
-      stall.dishIds.reduce((total, id) => total + (dishes[id]?.price ?? 5), 0) /
+    const averageDishPriceCents =
+      stall.dishIds.reduce((total, id) => {
+        const dish = dishes[id];
+        if (!dish) throw new Error(`Stall ${stall.id} references missing dish ${id}`);
+        return total + dish.priceCents;
+      }, 0) /
       Math.max(1, stall.dishIds.length);
     placeables[stall.id] = {
       id: stall.id,
@@ -439,7 +587,11 @@ function buildCatalog(): {
       allowedRotations: [0, 90, 180, 270],
       blocksMovement: true,
       price: stall.purchaseCost,
-      refundRate: 0.5,
+      priceCents: sgdToCents(stall.purchaseCost),
+      // Content still authors the legacy value in whole SGD. Convert it once at
+      // the runtime boundary so each stall keeps its reviewed operating rate.
+      upkeepCents: authoredStallUpkeepCents(stall.operatingCostPerMinute),
+      refundRate: 0.7,
       unlockLevel: usesComplexUnlock(stall.id)
         ? Number.MAX_SAFE_INTEGER
         : stall.unlockRequirement.level,
@@ -452,9 +604,12 @@ function buildCatalog(): {
         preparationCapacity: stall.preparationCapacity,
         queueCapacity: 7,
         popularity: stall.popularity,
-        quality: stall.quality + Math.min(0.05, averageDishPrice / 300),
+        quality: stall.quality + Math.min(0.05, averageDishPriceCents / 30_000),
         menuSlots: stall.menuSlots,
-        upgradeLevels: stall.upgradeLevels.map((upgrade) => ({ ...upgrade })),
+        upgradeLevels: stall.upgradeLevels.map((upgrade) => ({
+          ...upgrade,
+          costCents: sgdToCents(upgrade.cost, "Stall upgrade cost"),
+        })),
       },
     };
     visuals[stall.id] = {
@@ -466,25 +621,29 @@ function buildCatalog(): {
   }
 
   const archetypes: SimulationCatalog["archetypes"] = Object.fromEntries(
-    CUSTOMER_ARCHETYPES.map((archetype) => [
-      archetype.id,
-      {
-        id: archetype.id,
-        budget: (archetype.budgetRange[0] + archetype.budgetRange[1]) / 2,
-        patienceMs: archetype.patienceSeconds * 1_000,
-        walkingSpeed: archetype.walkingSpeedTilesPerSecond,
-        priceSensitivity: archetype.priceSensitivity,
-        qualitySensitivity: archetype.qualitySensitivity,
-        queueSensitivity: archetype.queueSensitivity,
-        distanceSensitivity: archetype.distanceSensitivity,
-        noveltyPreference: archetype.noveltyPreference,
-        preferenceTags: archetype.dishPreferenceTags,
-        unlockLevel: archetype.unlockRequirement.level,
-        unlockReputation: archetype.unlockRequirement.reputation / 20,
-        unlockPrerequisiteIds: [...archetype.unlockRequirement.prerequisiteIds],
-        visitSchedule: { ...archetype.visitSchedule },
-      },
-    ]),
+    CUSTOMER_ARCHETYPES.map((archetype) => {
+      const budget = (archetype.budgetRange[0] + archetype.budgetRange[1]) / 2;
+      return [
+        archetype.id,
+        {
+          id: archetype.id,
+          budget,
+          budgetCents: sgdToCents(budget, "Visit budget"),
+          patienceMs: archetype.patienceSeconds * 1_000,
+          walkingSpeed: archetype.walkingSpeedTilesPerSecond,
+          priceSensitivity: archetype.priceSensitivity,
+          qualitySensitivity: archetype.qualitySensitivity,
+          queueSensitivity: archetype.queueSensitivity,
+          distanceSensitivity: archetype.distanceSensitivity,
+          noveltyPreference: archetype.noveltyPreference,
+          preferenceTags: archetype.dishPreferenceTags,
+          unlockLevel: archetype.unlockRequirement.level,
+          unlockReputation: archetype.unlockRequirement.reputation / 20,
+          unlockPrerequisiteIds: [...archetype.unlockRequirement.prerequisiteIds],
+          visitSchedule: { ...archetype.visitSchedule },
+        },
+      ];
+    }),
   );
 
   return { catalog: { placeables, dishes, archetypes }, visuals };
@@ -567,7 +726,7 @@ function freshState(catalog: SimulationCatalog): GameState {
     exit: { x: MAP_WIDTH - 1, y: 7 },
     catalog,
     seed: "neighbourhood-hall-launch",
-    startingCurrency: ECONOMY.startingCash,
+    startingCashCents: asMoneyCents(ECONOMY.startingCashCents),
     initialObjects: starterObjects(catalog, map),
     initiallyUnlockedDefinitionIds: Object.values(catalog.placeables)
       .filter((definition) => (definition.unlockLevel ?? 1) <= 1)
@@ -595,8 +754,7 @@ function assertRuntimeMap(state: GameState): GameState {
   return state;
 }
 
-function timeLabel(elapsedMs: number) {
-  const minuteInDay = operatingMinuteOfDay(elapsedMs);
+function timeLabel(minuteInDay: number) {
   const hour = Math.floor(minuteInDay / 60);
   const minute = minuteInDay % 60;
   const suffix = hour >= 12 ? "PM" : "AM";
@@ -604,24 +762,116 @@ function timeLabel(elapsedMs: number) {
   return `${clockHour}:${minute.toString().padStart(2, "0")} ${suffix}`;
 }
 
-function formatSimulationEvent(event: SimulationEvent): RuntimeEvent | undefined {
+/**
+ * Keeps informational canvas labels at a readable CSS-pixel equivalent while
+ * the world camera and the player's in-game text scale change independently.
+ */
+export function canvasLabelFontSize(textScale: number, cameraZoom: number): number {
+  const safeScale = Number.isFinite(textScale)
+    ? Math.max(1, Math.min(2, textScale))
+    : 1;
+  const safeZoom = Number.isFinite(cameraZoom) && cameraZoom > 0
+    ? cameraZoom
+    : 1;
+  return Math.ceil((12 * safeScale) / safeZoom);
+}
+
+/**
+ * Development-only cash overrides are outside the player economy. Rebase the
+ * active ledger opening balance at the same boundary so the next autosave
+ * remains cent-reconciled and importable.
+ */
+export function rebaseDevelopmentCash(
+  source: GameState,
+  cashCents: MoneyCents,
+): GameState {
+  const sequenceId = source.servicePeriod.sequenceId;
+  const ledger = source.periodLedgers[sequenceId]
+    ?? createPeriodLedger(sequenceId, source.economy.cashCents);
+  const openingCashCents = cashCents - ledgerCashMovementCents(ledger);
+  if (!Number.isSafeInteger(openingCashCents) || openingCashCents < 0) {
+    throw new RangeError("Development cash cannot be lower than recorded period movement");
+  }
+  return {
+    ...source,
+    economy: economyWithCompatibilityAliases({
+      ...source.economy,
+      cashCents,
+    }),
+    periodLedgers: {
+      ...source.periodLedgers,
+      [sequenceId]: {
+        ...ledger,
+        openingCashCents: asMoneyCents(openingCashCents),
+      },
+    },
+  };
+}
+
+export function formatSimulationEvent(event: SimulationEvent): RuntimeEvent | undefined {
+  const candidateAmountCents = event.amountCents ?? event.amount;
+  const amountCents = Number.isSafeInteger(candidateAmountCents) && (candidateAmountCents ?? -1) >= 0
+    ? candidateAmountCents
+    : undefined;
   if (event.type === "sale-completed") {
     return {
       kind: "success",
-      message: `A neighbour enjoyed their meal · +$${event.amount ?? 0}`,
+      message: "A neighbour enjoyed their meal.",
       importance: "routine",
       groupKey: "sales",
-      amount: event.amount ?? 0,
+      amountCents,
     };
   }
   if (event.type === "level-up") {
     return { kind: "success", message: "Centre level increased — new catalogue entries unlocked.", importance: "important" };
   }
   if (event.type === "objective-completed") {
-    return { kind: "success", message: `${event.message ?? "Today's focus"} complete · +$${event.amount ?? 0}`, importance: "important" };
+    return {
+      kind: "success",
+      message: `${event.message ?? "Period objective"} complete.`,
+      importance: "important",
+      amountCents,
+    };
   }
   if (event.type === "milestone-completed") {
-    return { kind: "success", message: `Centre journey milestone complete · +$${event.amount ?? 0}`, importance: "important" };
+    return {
+      kind: "success",
+      message: "Centre journey milestone complete.",
+      importance: "important",
+      amountCents,
+    };
+  }
+  if (event.type === "recovery-granted") {
+    return {
+      kind: "success",
+      message: event.message ?? "Valid-setup recovery was recorded.",
+      importance: "important",
+      groupKey: "recovery",
+      amountCents,
+    };
+  }
+  if (event.type === "object-removed") {
+    return {
+      kind: "info",
+      message: "A catalogue item was resold at the reviewed 70% floor value.",
+      importance: "routine",
+      groupKey: "resales",
+      amountCents,
+    };
+  }
+  if (
+    (event.type === "object-placed" ||
+      event.type === "stall-upgraded" ||
+      event.type === "command-applied") &&
+    amountCents !== undefined
+  ) {
+    return {
+      kind: "info",
+      message: "A catalogue purchase was recorded.",
+      importance: "routine",
+      groupKey: "purchases",
+      amountCents,
+    };
   }
   if (event.type === "command-rejected") {
     return { kind: "error", message: event.message ?? "That build action is not valid.", importance: "important" };
@@ -633,11 +883,18 @@ function formatSimulationEvent(event: SimulationEvent): RuntimeEvent | undefined
 }
 
 export interface RuntimePersistentState {
-  readonly runtimeSchemaVersion: 2;
+  readonly runtimeSchemaVersion: 3;
   readonly core: unknown;
   readonly stallMenus: Readonly<Record<string, readonly string[]>>;
   readonly nutritionDataVersion: string;
   readonly activeDishVariants: Readonly<Record<string, string>>;
+  readonly periodOutcomes: Readonly<Record<number, RuntimePeriodOutcomeState>>;
+}
+
+export interface RuntimePeriodOutcomeState {
+  readonly periodSequenceId: number;
+  readonly unservedDepartures: number;
+  readonly timedOutServedVisits: number;
 }
 
 export function defaultDishVariants(): Readonly<Record<string, string>> {
@@ -660,7 +917,26 @@ function withDishVariants(
       const activeNutritionVariantId = family
         ? activeDishVariants[dishId] ?? family.defaultVariantId
         : dish.defaultNutritionVariantId;
-      return [dishId, { ...dish, activeNutritionVariantId }];
+      const preparation = reviewedPreparationFor(
+        dishId,
+        activeNutritionVariantId,
+      ) ?? DEFAULT_PREPARATION_BY_DISH_ID.get(dishId);
+      return [dishId, {
+        ...dish,
+        activeNutritionVariantId,
+        priceCents: preparation
+          ? asMoneyCents(preparation.terms.priceCents)
+          : dish.priceCents,
+        ingredientCostCents: preparation
+          ? asMoneyCents(preparation.terms.ingredientCostCents)
+          : dish.ingredientCostCents,
+        preparationMs: preparation?.terms.preparationTimeMs ?? dish.preparationMs,
+        servingMs: preparation?.terms.servingTimeMs ?? dish.servingMs,
+        eatingMs: preparation?.terms.eatingTimeMs ?? dish.eatingMs,
+        starRating: preparation?.terms.starAppeal ?? dish.starRating,
+        demandModifierBasisPoints:
+          preparation?.terms.demandModifierBasisPoints ?? dish.demandModifierBasisPoints,
+      }];
     })),
   };
 }
@@ -744,19 +1020,21 @@ function withStallMenus(
 
 export function decodeRuntimeSave(value: unknown): {
   core: unknown;
-  runtimeSchemaVersion?: 1 | 2;
+  runtimeSchemaVersion?: 1 | 2 | 3;
   menus?: Readonly<Record<string, readonly string[]>>;
   variants?: unknown;
   nutritionDataVersion?: string;
+  periodOutcomes?: unknown;
 } {
   if (
     value &&
     typeof value === "object" &&
     ((value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 1 ||
-      (value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 2)
+      (value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 2 ||
+      (value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 3)
   ) {
     const runtime = value as Partial<RuntimePersistentState> & {
-      readonly runtimeSchemaVersion?: 1 | 2;
+      readonly runtimeSchemaVersion?: 1 | 2 | 3;
     };
     return {
       core: runtime.core,
@@ -766,9 +1044,46 @@ export function decodeRuntimeSave(value: unknown): {
       nutritionDataVersion: typeof runtime.nutritionDataVersion === "string"
         ? runtime.nutritionDataVersion
         : undefined,
+      periodOutcomes: runtime.periodOutcomes,
     };
   }
   return { core: value };
+}
+
+function resolvePeriodOutcomes(
+  value: unknown,
+  currentSequenceId: number,
+): Readonly<Record<number, RuntimePeriodOutcomeState>> {
+  const resolved: Record<number, RuntimePeriodOutcomeState> = {};
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    for (const [key, candidate] of Object.entries(value)) {
+      if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) continue;
+      const source = candidate as Partial<RuntimePeriodOutcomeState>;
+      const sequenceId = Number(key);
+      if (
+        !Number.isSafeInteger(sequenceId) ||
+        sequenceId < 1 ||
+        source.periodSequenceId !== sequenceId ||
+        !Number.isSafeInteger(source.unservedDepartures) ||
+        (source.unservedDepartures ?? -1) < 0 ||
+        !Number.isSafeInteger(source.timedOutServedVisits) ||
+        (source.timedOutServedVisits ?? -1) < 0
+      ) {
+        continue;
+      }
+      resolved[sequenceId] = {
+        periodSequenceId: sequenceId,
+        unservedDepartures: source.unservedDepartures!,
+        timedOutServedVisits: source.timedOutServedVisits!,
+      };
+    }
+  }
+  resolved[currentSequenceId] ??= {
+    periodSequenceId: currentSequenceId,
+    unservedDepartures: 0,
+    timedOutServedVisits: 0,
+  };
+  return resolved;
 }
 
 function stallMenuProgression(state: GameState) {
@@ -819,6 +1134,8 @@ export async function createHawkerRuntime(
     stallMenus,
   );
   let state: GameState;
+  let loadedPeriodOutcomes: unknown;
+  let loadedCoreRecoveryWarnings: readonly string[] = [];
   let recoveredNutritionSelection = false;
   try {
     const candidates = options.initialStates ?? [];
@@ -827,9 +1144,14 @@ export async function createHawkerRuntime(
     for (let index = 0; index < candidates.length; index += 1) {
       try {
         const decoded = decodeRuntimeSave(candidates[index]);
-        const loadedCore = reconcileRuntimeUnlocks(
-          assertRuntimeMap(deserializeGameState(decoded.core, authoredCatalog)),
+        const deserialized = deserializeGameStateWithReport(
+          decoded.core,
+          authoredCatalog,
         );
+        const loadedCore = reconcileRuntimeUnlocks(
+          assertRuntimeMap(deserialized.state),
+        );
+        loadedCoreRecoveryWarnings = deserialized.recovery.warnings;
         stallMenus = resolveStallMenus(decoded.menus ?? {}, {
           ...stallMenuProgression(loadedCore),
           slotBonuses: stallMenuSlotBonuses(loadedCore),
@@ -847,6 +1169,7 @@ export async function createHawkerRuntime(
           recoveredNutritionSelection ||
           resolvedVariants.recovered ||
           incompleteRuntimeV2;
+        loadedPeriodOutcomes = decoded.periodOutcomes;
         catalog = withStallMenus(
           withDishVariants(authoredCatalog, activeDishVariants),
           stallMenus,
@@ -899,15 +1222,29 @@ export async function createHawkerRuntime(
       message: "One or more saved recipe choices were reset to reviewed defaults.",
     });
   }
+  if (loadedCoreRecoveryWarnings.length > 0) {
+    options.onEvent({
+      kind: "warning",
+      message: `The save needed ${loadedCoreRecoveryWarnings.length} safe content recovery ${
+        loadedCoreRecoveryWarnings.length === 1 ? "step" : "steps"
+      }. Review the layout before service.`,
+      importance: "important",
+    });
+  }
+
+  let periodOutcomes = resolvePeriodOutcomes(
+    loadedPeriodOutcomes,
+    state.servicePeriod.sequenceId,
+  );
 
   if (
     process.env.NODE_ENV !== "production" &&
     typeof location !== "undefined" &&
     new URLSearchParams(location.search).has("visualQa")
   ) {
+    state = rebaseDevelopmentCash(state, sgdToCents(100_000));
     state = {
       ...state,
-      economy: { ...state.economy, currency: 100_000 },
       progression: {
         ...state.progression,
         xp: xpRequiredForLevel(12),
@@ -919,11 +1256,12 @@ export async function createHawkerRuntime(
   }
 
   const persistentPayload = (): RuntimePersistentState => ({
-    runtimeSchemaVersion: 2,
+    runtimeSchemaVersion: 3,
     core: persistentStateFromGame(state),
     stallMenus,
     nutritionDataVersion: NUTRITION_CONTENT.dataVersion,
     activeDishVariants,
+    periodOutcomes,
   });
 
   const runtime = { game: undefined as Phaser.Game | undefined };
@@ -944,10 +1282,14 @@ export async function createHawkerRuntime(
   let qualityMode = options.settings.quality;
   let reducedMotion = options.settings.reducedMotion;
   let highContrast = options.settings.highContrast;
+  let canvasTextScale = Math.max(1, Math.min(2, options.settings.textScale));
   let debugOverlay = false;
   let objectSequence = Object.keys(state.objects).length + 1;
   let lastHudAt = 0;
-  let lastPersistentRevenue = state.economy.lifetimeRevenue;
+  let lastPersistentGrossSalesCents = state.economy.lifetimeGrossSalesCents;
+  let lastPersistentLedgerSignature = `${state.servicePeriod.sequenceId}:${
+    state.periodLedgers[state.servicePeriod.sequenceId]?.entries.length ?? 0
+  }`;
   let lastPeriodicSaveAt = performance.now();
   let lastRenderTick = -1;
   let lastSimulationMs = 0;
@@ -978,6 +1320,244 @@ export async function createHawkerRuntime(
     return Object.values(state.objects).some(
       (object) => catalog.placeables[object.definitionId]?.kind === "stall" && object.open,
     );
+  }
+
+  function hasValidReachableSetup(
+    objects: Readonly<Record<string, PlacedObject>> = state.objects,
+  ): boolean {
+    const hasStall = Object.values(objects).some(
+      (object) => catalog.placeables[object.definitionId]?.kind === "stall",
+    );
+    return hasStall &&
+      getSeatLocations(objects, catalog).length >= ECONOMY.starterRequiredSeats &&
+      validateWorldNavigationAccess(
+        state.map,
+        state.accessPoints,
+        objects,
+        catalog,
+      ) === undefined;
+  }
+
+  function recoveryObject(
+    definitionId: string,
+    id: string,
+    objects: Readonly<Record<string, PlacedObject>>,
+  ): PlacedObject | undefined {
+    const definition = catalog.placeables[definitionId];
+    if (!definition) return undefined;
+    for (const rotation of definition.allowedRotations) {
+      for (let y = 1; y < state.map.height - 1; y += 1) {
+        for (let x = 1; x < state.map.width - 1; x += 1) {
+          const object: PlacedObject = {
+            id,
+            definitionId,
+            origin: { x, y },
+            rotation,
+            open: false,
+          };
+          const validation = validatePlacement(state.map, objects, catalog, object, {
+            reservedPoints: [
+              ...state.accessPoints.map((point) => point.position),
+              ...state.routeGuidePoints,
+            ],
+          });
+          if (!validation.valid) continue;
+          const candidateObjects = { ...objects, [object.id]: object };
+          if (
+            validateWorldNavigationAccess(
+              state.map,
+              state.accessPoints,
+              candidateObjects,
+              catalog,
+            ) === undefined
+          ) {
+            return object;
+          }
+        }
+      }
+    }
+    return undefined;
+  }
+
+  /** Applies one transparent, guarded recovery episode for the minimum playable setup. */
+  function applyValidSetupRecovery(): boolean {
+    if (state.servicePeriod.phase !== "planning") return false;
+    const episodeId = `valid-setup-${state.servicePeriod.sequenceId}`;
+    if (state.recovery.resolvedEpisodeIds.includes(episodeId)) return false;
+
+    if (hasValidReachableSetup()) {
+      const verified = applyRecoveryPolicy(state, {
+        episodeId,
+        validSetupCostCents: asMoneyCents(0),
+        setupValidated: true,
+      });
+      state = verified.state;
+      options.onPersistentChange(persistentPayload());
+      return false;
+    }
+
+    const hasStall = Object.values(state.objects).some(
+      (object) => catalog.placeables[object.definitionId]?.kind === "stall",
+    );
+    const missingSeatCount = Math.max(
+      0,
+      ECONOMY.starterRequiredSeats - getSeatLocations(state.objects, catalog).length,
+    );
+    const starterStallDefinitionId = STALLS[0]?.id;
+    const starterSeatDefinitionId = PLACEABLES.find(
+      (placeable) => placeable.category === "seat",
+    )?.id;
+    const starterStall = starterStallDefinitionId
+      ? catalog.placeables[starterStallDefinitionId]
+      : undefined;
+    const starterSeat = starterSeatDefinitionId
+      ? catalog.placeables[starterSeatDefinitionId]
+      : undefined;
+    if ((!hasStall && !starterStall) || (missingSeatCount > 0 && !starterSeat)) {
+      return false;
+    }
+
+    const missingStallCostCents = !hasStall && starterStall
+      ? starterStall.priceCents
+      : asMoneyCents(0);
+    const seatCostCents = starterSeat ? starterSeat.priceCents : asMoneyCents(0);
+    const recoveryPlan = planValidSetupRecovery({
+      cashCents: state.economy.cashCents,
+      missingStallCostCents,
+      missingSeatCount,
+      seatCostCents,
+      maximumGrantCents: ECONOMY.recoveryGrantCents,
+    });
+    let remainingSetupCostCents =
+      missingStallCostCents + missingSeatCount * seatCostCents;
+    if (remainingSetupCostCents <= state.economy.cashCents) return false;
+
+    const reclaims: RecoveryReclaim[] = [];
+    const recoveryObjects: Record<string, PlacedObject> = { ...state.objects };
+    const reclaimIfNeeded = (
+      definitionId: string,
+      purpose: RecoveryReclaim["purpose"],
+      costCents: number,
+      preferredIndex: number,
+    ) => {
+      let index = preferredIndex;
+      while (recoveryObjects[`recovery-${state.servicePeriod.sequenceId}-${purpose}-${index}`]) {
+        index += 1;
+      }
+      const object = recoveryObject(
+        definitionId,
+        `recovery-${state.servicePeriod.sequenceId}-${purpose}-${index}`,
+        recoveryObjects,
+      );
+      if (!object) return false;
+      recoveryObjects[object.id] = object;
+      reclaims.push({ object, purpose });
+      remainingSetupCostCents = Math.max(0, remainingSetupCostCents - costCents);
+      return true;
+    };
+
+    if (
+      recoveryPlan.reclaimStarterStall &&
+      starterStallDefinitionId &&
+      starterStall
+    ) {
+      reclaimIfNeeded(
+        starterStallDefinitionId,
+        "starter-stall",
+        starterStall.priceCents,
+        1,
+      );
+    }
+    if (starterSeatDefinitionId && starterSeat) {
+      for (let index = 1; index <= recoveryPlan.reclaimedSeatCount; index += 1) {
+        reclaimIfNeeded(
+          starterSeatDefinitionId,
+          "essential",
+          starterSeat.priceCents,
+          index,
+        );
+      }
+    }
+
+    const result = applyRecoveryPolicy(state, {
+      episodeId,
+      validSetupCostCents: asMoneyCents(remainingSetupCostCents),
+      reclaimed: reclaims,
+      setupValidated: hasValidReachableSetup(recoveryObjects),
+    });
+    state = result.state;
+    for (const event of state.events) {
+      const runtimeEvent = formatSimulationEvent(event);
+      if (runtimeEvent) options.onEvent(runtimeEvent);
+    }
+    recomputeObjectSequence();
+    synchronizeStallMenus();
+    options.onPersistentChange(persistentPayload());
+    emitHud(true);
+    activeScene?.render(true);
+    if (result.resolved) {
+      options.onEvent({
+        kind: "info",
+        message: "Valid-setup recovery is complete. Review the restored layout, then start service.",
+        importance: "important",
+      });
+    } else if (result.remainingShortfallCents > 0) {
+      options.onEvent({
+        kind: "warning",
+        message: "Recovery is still incomplete. Clear floor space or add the missing essentials, then retry.",
+        importance: "important",
+      });
+    } else {
+      options.onEvent({
+        kind: "warning",
+        message: "Recovery remains open until the full setup is reachable. Review the layout and retry.",
+        importance: "important",
+      });
+    }
+    return !result.alreadyResolved;
+  }
+
+  function updatePeriodOutcome(
+    periodSequenceId: number,
+    delta: Pick<RuntimePeriodOutcomeState, "unservedDepartures" | "timedOutServedVisits">,
+  ) {
+    const current = periodOutcomes[periodSequenceId] ?? {
+      periodSequenceId,
+      unservedDepartures: 0,
+      timedOutServedVisits: 0,
+    };
+    periodOutcomes = {
+      ...periodOutcomes,
+      [periodSequenceId]: {
+        ...current,
+        unservedDepartures: current.unservedDepartures + delta.unservedDepartures,
+        timedOutServedVisits:
+          current.timedOutServedVisits + delta.timedOutServedVisits,
+      },
+    };
+  }
+
+  function recordPeriodDepartures(
+    events: readonly SimulationEvent[],
+    abandonedVisitsBefore: number,
+  ): boolean {
+    const unservedDepartures = Math.max(
+      0,
+      state.economy.abandonedVisits - abandonedVisitsBefore,
+    );
+    const timedOutServedVisits = events.filter(
+      (event) =>
+        event.type === "customer-despawned" &&
+        event.message === "served-timeout",
+    ).length;
+    if (unservedDepartures > 0 || timedOutServedVisits > 0) {
+      updatePeriodOutcome(state.servicePeriod.sequenceId, {
+        unservedDepartures,
+        timedOutServedVisits,
+      });
+      return true;
+    }
+    return false;
   }
 
   function runCommand(command: GameCommand, persist = true) {
@@ -1032,7 +1612,7 @@ export async function createHawkerRuntime(
           ]),
         ) as unknown as RuntimeSnapshot["satisfactionBreakdown"]
       : undefined;
-    const nextLevelExperience = xpRequiredForLevel(snapshot.progression.level + 1);
+    const nextLevelExperience = nextAuthoredLevelExperience(snapshot.progression.level);
     const queueLayouts = planStallQueueLayouts(
       snapshot.map,
       state.objects,
@@ -1111,8 +1691,51 @@ export async function createHawkerRuntime(
       const tier = snapshot.progression.claimedMilestoneIds.filter((id) => id.startsWith(`${track.id}-`)).length;
       return { id: track.id, title: track.title, tier, progress: track.progress, target: track.values[Math.min(3, tier)]! };
     });
-    const remainingObjectiveMinutes = Math.ceil((OPERATING_DAY_MS - (snapshot.elapsedMs % OPERATING_DAY_MS)) / 1_000);
-    const day = 1 + Math.floor(snapshot.elapsedMs / OPERATING_DAY_MS);
+    const serviceDefinition = SERVICE_PERIODS[state.servicePeriod.periodIndex]!;
+    const day = state.servicePeriod.day;
+    const periodLedger = state.periodLedgers[state.servicePeriod.sequenceId]!;
+    const recordedCashMovementCents = asMoneyDeltaCents(
+      ledgerCashMovementCents(periodLedger),
+    );
+    const actualCashMovementCents = asMoneyDeltaCents(
+      snapshot.economy.cashCents - periodLedger.openingCashCents,
+    );
+    const reconciliationDeltaCents = asMoneyDeltaCents(
+      ledgerReconciliationDeltaCents(periodLedger, snapshot.economy.cashCents),
+    );
+    const periodOutcome = periodOutcomes[state.servicePeriod.sequenceId] ?? {
+      periodSequenceId: state.servicePeriod.sequenceId,
+      unservedDepartures: 0,
+      timedOutServedVisits: 0,
+    };
+    const periodDebrief: RuntimePeriodDebrief | undefined =
+      state.servicePeriod.phase === "debrief"
+        ? {
+            periodSequenceId: state.servicePeriod.sequenceId,
+            servedVisits: periodLedger.entries.filter((entry) => entry.kind === "gross-sale").length,
+            timedOutServedVisits: periodOutcome.timedOutServedVisits,
+            unservedDepartures: periodOutcome.unservedDepartures,
+            causeCodes: [
+              "period-complete" as const,
+              ...(periodOutcome.timedOutServedVisits > 0 ? ["served-timeout" as const] : []),
+              ...(periodOutcome.unservedDepartures > 0 ? ["unserved-departure" as const] : []),
+            ],
+          }
+        : undefined;
+    const activePreparations = DISHES.map((dish) => {
+      const variantId = activeDishVariants[dish.id];
+      const preparation = reviewedPreparationFor(dish.id, variantId)
+        ?? DEFAULT_PREPARATION_BY_DISH_ID.get(dish.id);
+      if (!preparation) {
+        throw new Error(`Dish ${dish.id} is missing active preparation terms`);
+      }
+      return {
+        preparationId: preparation.id,
+        dishId: preparation.dishId,
+        variantId: preparation.variantId,
+        terms: runtimeServingTerms(preparation.terms),
+      };
+    });
     const nutritionFamilies = NUTRITION_CONTENT.variantFamilies.map((family) => {
       const rank = Math.max(
         1,
@@ -1132,6 +1755,12 @@ export async function createHawkerRuntime(
           const coreVariant = dish?.nutritionVariants?.find(
             (candidate) => candidate.id === variant.id,
           );
+          const preparation = reviewedPreparationFor(family.dishId, variant.id);
+          if (!preparation) {
+            throw new Error(
+              `Dish ${family.dishId} variant ${variant.id} is missing preparation terms`,
+            );
+          }
           return {
             id: variant.id,
             label: variant.name,
@@ -1140,6 +1769,7 @@ export async function createHawkerRuntime(
             visualKey: variant.visualKey,
             unlocked: variant.unlockRank <= rank,
             selected: variant.id === activeVariantId,
+            terms: runtimeServingTerms(preparation.terms),
             profile: runtimeNutritionProfile(coreVariant?.profile),
           };
         }),
@@ -1189,14 +1819,50 @@ export async function createHawkerRuntime(
       ? snapshot.customers.find((customer) => customer.id === selectedCustomerId)
       : undefined;
     return {
+      cashCents: snapshot.economy.cashCents,
       cash: snapshot.economy.currency,
       reputation: snapshot.progression.reputation * 20,
       level: snapshot.progression.level,
       experience: snapshot.progression.xp,
       nextLevelExperience,
       day,
-      timeLabel: timeLabel(snapshot.elapsedMs),
-      isOpen: isCentreOpen(),
+      timeLabel: timeLabel(state.servicePeriod.displayedMinute),
+      servicePeriod: {
+        sequenceId: state.servicePeriod.sequenceId,
+        day,
+        id: state.servicePeriod.periodId,
+        label: serviceDefinition.label,
+        phase: state.servicePeriod.phase,
+        startMinute: serviceDefinition.startMinute,
+        endMinute: serviceDefinition.endMinute,
+        clockLabel: timeLabel(state.servicePeriod.displayedMinute),
+        arrivalElapsedMs: state.servicePeriod.arrivalElapsedMs,
+        drainElapsedMs: state.servicePeriod.drainElapsedMs,
+        arrivalRemainingMs: Math.max(0, ARRIVAL_PERIOD_MS - state.servicePeriod.arrivalElapsedMs),
+        drainRemainingMs: Math.max(0, DRAIN_WATCHDOG_MS - state.servicePeriod.drainElapsedMs),
+        configurationLocked: isConfigurationLocked(state.servicePeriod.phase),
+        canAdvance: canManuallyAdvanceServicePeriod(state.servicePeriod.phase),
+        actionLabel: state.servicePeriod.phase === "planning"
+          ? `Start ${serviceDefinition.label}`
+          : state.servicePeriod.phase === "arrivals"
+            ? "Arrivals in progress"
+            : state.servicePeriod.phase === "draining"
+              ? "Draining current visits"
+              : `Plan ${SERVICE_PERIODS[(state.servicePeriod.periodIndex + 1) % SERVICE_PERIODS.length]!.label}`,
+      },
+      periodLedger: {
+        ...periodLedger,
+        contributionCents: asMoneyDeltaCents(ledgerContributionCents(periodLedger)),
+        operatingMargin: operatingMargin(periodLedger),
+        recordedCashMovementCents,
+        actualCashMovementCents,
+        reconciliationDeltaCents,
+        reconcilesToCash: reconciliationDeltaCents === 0,
+      },
+      periodDebrief,
+      isOpen:
+        state.servicePeriod.phase === "arrivals" ||
+        state.servicePeriod.phase === "draining",
       speed,
       quality: snapshot.qualityMode,
       activeCustomers: snapshot.customers.length,
@@ -1232,6 +1898,7 @@ export async function createHawkerRuntime(
       unlockedContentIds: snapshot.progression.unlockedDefinitionIds,
       stallMenus,
       activeDishVariants,
+      activePreparations,
       nutritionFamilies,
       nutritionPulse: {
         servedMeals: nutritionToday.servedMeals,
@@ -1269,6 +1936,9 @@ export async function createHawkerRuntime(
               healthConditions: selectedCustomer.healthConditions,
               orderedNutritionProfile: selectedCustomer.orderedNutritionProfile,
             }),
+            servingTerms: selectedCustomer.orderLineSnapshot
+              ? runtimeServingTerms(selectedCustomer.orderLineSnapshot.terms)
+              : undefined,
             profile: runtimeNutritionProfile(selectedCustomer.orderedNutritionProfile),
           }
         : undefined,
@@ -1278,15 +1948,37 @@ export async function createHawkerRuntime(
       objectiveTarget: 5,
       objectives: snapshot.progression.dailyObjectives.map((objective) => ({
         id: objective.id,
+        kind: objective.kind,
         title: objective.title,
         description: objective.description,
+        accessibleDescription: objective.kind === "revenue"
+          ? `Earn ${describeSgd(objective.target)} in gross sales this period.`
+          : objective.description,
         progress: objective.progress,
         target: objective.target,
+        rewardCashCents: objective.rewardCashCents,
         rewardCash: objective.rewardCash,
         rewardXp: objective.rewardXp,
         completed: objective.completed,
+        accepted: objective.accepted === true,
+        skipped: objective.skipped === true,
+        canAccept:
+          state.servicePeriod.phase === "planning" &&
+          objective.accepted !== true &&
+          objective.skipped !== true &&
+          !objective.completed,
+        canSkip:
+          state.servicePeriod.phase === "planning" &&
+          objective.skipped !== true &&
+          !objective.completed,
       })),
-      objectiveRefreshLabel: `${Math.floor(remainingObjectiveMinutes / 60)}h ${remainingObjectiveMinutes % 60}m`,
+      objectiveRefreshLabel: state.servicePeriod.phase === "planning"
+        ? "Choose now"
+        : state.servicePeriod.phase === "arrivals"
+          ? `${Math.ceil((ARRIVAL_PERIOD_MS - state.servicePeriod.arrivalElapsedMs) / 1_000)}s arrivals`
+          : state.servicePeriod.phase === "draining"
+            ? `${Math.ceil((DRAIN_WATCHDOG_MS - state.servicePeriod.drainElapsedMs) / 1_000)}s drain`
+            : "Review results",
       claimedMilestoneCount: snapshot.progression.claimedMilestoneIds.length,
       milestoneTracks,
       stallMastery: STALLS.map((definition) => {
@@ -1619,15 +2311,51 @@ export async function createHawkerRuntime(
       const now = performance.now();
       const frameDelta = Math.min(250, delta || now - lastFrameAt);
       lastFrameAt = now;
-      if (speed > 0 && isCentreOpen()) {
+      if (
+        speed > 0 &&
+        (arrivalsEnabled(state.servicePeriod) || state.servicePeriod.phase === "draining")
+      ) {
         const startedAt = performance.now();
+        const periodBefore = state.servicePeriod;
+        const abandonedVisitsBefore = state.economy.abandonedVisits;
         state = {
           ...state,
           arrivalPerformancePressure: Math.max(0, Math.min(1, (lastSimulationMs - 8) / 16)),
         };
-        const result = advanceSimulation(state, frameDelta * speed);
+        const periodRemainingMs = periodBefore.phase === "arrivals"
+          ? ARRIVAL_PERIOD_MS - periodBefore.arrivalElapsedMs
+          : DRAIN_WATCHDOG_MS - periodBefore.drainElapsedMs;
+        const result = advanceSimulation(
+          state,
+          Math.min(frameDelta * speed, Math.max(0, periodRemainingMs)),
+        );
         const beforeUnlockCount = state.progression.unlockedDefinitionIds.length;
         state = reconcileRuntimeUnlocks(result.state);
+        const periodOutcomeChanged = recordPeriodDepartures(
+          result.events,
+          abandonedVisitsBefore,
+        );
+        const periodEnteredDrain =
+          periodBefore.phase === "arrivals" &&
+          state.servicePeriod.phase === "draining";
+        const periodEnteredDebrief =
+          periodBefore.phase !== "debrief" &&
+          state.servicePeriod.phase === "debrief";
+        if (periodEnteredDrain) {
+          options.onEvent({
+            kind: "info",
+            message: "Arrivals have closed. The current cohort is finishing its visits.",
+            importance: "important",
+          });
+        }
+        if (periodEnteredDebrief) {
+          speed = 0;
+          options.onEvent({
+            kind: "success",
+            message: "The period is complete. Review the cause-coded debrief and ledger.",
+            importance: "important",
+          });
+        }
         if (selectedCustomerId && !state.customers[selectedCustomerId]) {
           selectedCustomerId = undefined;
           options.onEvent({
@@ -1651,11 +2379,24 @@ export async function createHawkerRuntime(
           });
         }
         const revenueChanged =
-          state.economy.lifetimeRevenue !== lastPersistentRevenue;
+          state.economy.lifetimeGrossSalesCents !== lastPersistentGrossSalesCents;
         if (revenueChanged) {
-          lastPersistentRevenue = state.economy.lifetimeRevenue;
+          lastPersistentGrossSalesCents = state.economy.lifetimeGrossSalesCents;
         }
-        if (catalogueChanged || menusChanged || revenueChanged) {
+        const ledgerSignature = `${state.servicePeriod.sequenceId}:${
+          state.periodLedgers[state.servicePeriod.sequenceId]?.entries.length ?? 0
+        }`;
+        const ledgerChanged = ledgerSignature !== lastPersistentLedgerSignature;
+        if (ledgerChanged) lastPersistentLedgerSignature = ledgerSignature;
+        if (
+          catalogueChanged ||
+          menusChanged ||
+          revenueChanged ||
+          ledgerChanged ||
+          periodOutcomeChanged ||
+          periodEnteredDrain ||
+          periodEnteredDebrief
+        ) {
           options.onPersistentChange(persistentPayload());
           lastPeriodicSaveAt = now;
         } else if (now - lastPeriodicSaveAt >= 15_000 && state.tick > 0) {
@@ -1683,11 +2424,15 @@ export async function createHawkerRuntime(
     }
 
     addLabel(x: number, y: number, text: string, colourValue = "#17352e") {
+      const fontSize = canvasLabelFontSize(
+        canvasTextScale,
+        this.cameras.main.zoom,
+      );
       const label = this.add
         .text(x, y, text, {
           color: colourValue,
           fontFamily: '"Trebuchet MS", system-ui, sans-serif',
-          fontSize: "11px",
+          fontSize: `${fontSize}px`,
           fontStyle: "bold",
           align: "center",
           backgroundColor: "#fff7e5e8",
@@ -5334,7 +6079,68 @@ export async function createHawkerRuntime(
       runCommand({ type: "undo" });
     },
     toggleOpen() {
-      const stalls = Object.values(state.objects).filter(
+      let stalls = Object.values(state.objects).filter(
+        (object) => catalog.placeables[object.definitionId]?.kind === "stall",
+      );
+      if (state.servicePeriod.phase === "draining") {
+        options.onEvent({
+          kind: "info",
+          message: "Arrivals are already closed. Let the current cohort finish.",
+        });
+        return false;
+      }
+      if (state.servicePeriod.phase === "arrivals") {
+        options.onEvent({
+          kind: "info",
+          message: "This arrivals window closes automatically at its authored four-minute limit.",
+        });
+        return false;
+      }
+      if (state.servicePeriod.phase === "debrief") {
+        const nextServicePeriod = planNextServicePeriod(state.servicePeriod);
+        const stateWithNextPeriod = {
+          ...state,
+          servicePeriod: nextServicePeriod,
+          periodLedgers: {
+            ...state.periodLedgers,
+            [nextServicePeriod.sequenceId]: createPeriodLedger(
+              nextServicePeriod.sequenceId,
+              state.economy.cashCents,
+            ),
+          },
+        };
+        state = {
+          ...stateWithNextPeriod,
+          progression: {
+            ...state.progression,
+            focusDay: nextServicePeriod.sequenceId,
+            dailyObjectives: createDailyObjectives(
+              stateWithNextPeriod,
+              nextServicePeriod.day,
+              nextServicePeriod.sequenceId,
+            ),
+          },
+          spawnCountdownMs: 0,
+        };
+        periodOutcomes = resolvePeriodOutcomes(
+          periodOutcomes,
+          nextServicePeriod.sequenceId,
+        );
+        speed = 1;
+        options.onPersistentChange(persistentPayload());
+        options.onEvent({
+          kind: "info",
+          message: `${SERVICE_PERIODS[nextServicePeriod.periodIndex]!.label} planning is ready.`,
+          importance: "important",
+        });
+        emitHud(true);
+        activeScene?.render(true);
+        return true;
+      }
+      if (state.servicePeriod.phase === "planning" && applyValidSetupRecovery()) {
+        return false;
+      }
+      stalls = Object.values(state.objects).filter(
         (object) => catalog.placeables[object.definitionId]?.kind === "stall",
       );
       if (stalls.length === 0) {
@@ -5344,18 +6150,77 @@ export async function createHawkerRuntime(
         });
         return false;
       }
-      const nextOpen = !isCentreOpen();
-      for (const object of stalls) {
-        runCommand({ type: "set-stall-open", objectId: object.id, open: nextOpen }, false);
+      if (state.servicePeriod.phase === "planning") {
+        const seatCount = getSeatLocations(state.objects, catalog).length;
+        if (seatCount < ECONOMY.starterRequiredSeats) {
+          options.onEvent({
+            kind: "warning",
+            message: `Place at least ${ECONOMY.starterRequiredSeats} usable seats before opening. ${
+              ECONOMY.starterRequiredSeats - seatCount
+            } still needed.`,
+          });
+          return false;
+        }
+        if (!isCentreOpen()) {
+          for (const object of stalls) {
+            runCommand({ type: "set-stall-open", objectId: object.id, open: true }, false);
+          }
+        }
+        if (!isCentreOpen()) {
+          options.onEvent({
+            kind: "warning",
+            message: "At least one reachable stall must be open before arrivals begin.",
+          });
+          return false;
+        }
+        const navigationIssue = validateWorldNavigationAccess(
+          state.map,
+          state.accessPoints,
+          state.objects,
+          catalog,
+        );
+        if (navigationIssue) {
+          options.onEvent({
+            kind: "warning",
+            message: `The minimum setup is not fully reachable: ${navigationIssue}.`,
+          });
+          return false;
+        }
+        state = {
+          ...state,
+          servicePeriod: startServicePeriod(state.servicePeriod),
+          spawnCountdownMs: 0,
+        };
+        speed = speed === 0 ? 1 : speed;
+        options.onPersistentChange(persistentPayload());
+        options.onEvent({
+          kind: "info",
+          message: `${SERVICE_PERIODS[state.servicePeriod.periodIndex]!.label} arrivals have started.`,
+          importance: "important",
+        });
+        emitHud(true);
+        activeScene?.render(true);
+        return true;
       }
-      options.onPersistentChange(persistentPayload());
-      options.onEvent({
-        kind: "info",
-        message: nextOpen ? "Shutters up — the lunch crowd is arriving." : "Centre closed for layout changes.",
+      return false;
+    },
+    setStallOpen(objectId, open) {
+      const stall = state.objects[objectId];
+      if (!stall || catalog.placeables[stall.definitionId]?.kind !== "stall") {
+        return false;
+      }
+      const accepted = runCommand({
+        type: "set-stall-open",
+        objectId,
+        open,
       });
-      emitHud(true);
-      activeScene?.render(true);
-      return true;
+      if (accepted) {
+        options.onEvent({
+          kind: "info",
+          message: `${visuals[stall.definitionId]?.name ?? "Stall"} is now ${open ? "open" : "closed"}.`,
+        });
+      }
+      return accepted;
     },
     setSpeed,
     setQuality(quality) {
@@ -5370,6 +6235,11 @@ export async function createHawkerRuntime(
     },
     setHighContrast(enabled) {
       highContrast = enabled;
+      activeScene?.render(true);
+    },
+    setTextScale(scale) {
+      if (!Number.isFinite(scale)) return;
+      canvasTextScale = Math.max(1, Math.min(2, scale));
       activeScene?.render(true);
     },
     setDebugOverlay(enabled) {
@@ -5388,8 +6258,12 @@ export async function createHawkerRuntime(
     },
     importState(value) {
       const decoded = decodeRuntimeSave(value);
+      const deserialized = deserializeGameStateWithReport(
+        decoded.core,
+        authoredCatalog,
+      );
       const imported = reconcileRuntimeUnlocks(
-        assertRuntimeMap(deserializeGameState(decoded.core, authoredCatalog)),
+        assertRuntimeMap(deserialized.state),
       );
       stallMenus = resolveStallMenus(decoded.menus ?? {}, {
         ...stallMenuProgression(imported),
@@ -5409,6 +6283,10 @@ export async function createHawkerRuntime(
         stallMenus,
       );
       state = { ...imported, catalog };
+      periodOutcomes = resolvePeriodOutcomes(
+        decoded.periodOutcomes,
+        state.servicePeriod.sequenceId,
+      );
       selectedCustomerId = undefined;
       if (resolvedVariants.recovered || incompleteRuntimeV2) {
         options.onEvent({
@@ -5416,8 +6294,20 @@ export async function createHawkerRuntime(
           message: "One or more imported recipe choices were reset to reviewed defaults.",
         });
       }
+      if (deserialized.recovery.warnings.length > 0) {
+        options.onEvent({
+          kind: "warning",
+          message: `The import needed ${deserialized.recovery.warnings.length} safe content recovery ${
+            deserialized.recovery.warnings.length === 1 ? "step" : "steps"
+          }. Review the layout before service.`,
+          importance: "important",
+        });
+      }
       recomputeObjectSequence();
-      lastPersistentRevenue = state.economy.lifetimeRevenue;
+      lastPersistentGrossSalesCents = state.economy.lifetimeGrossSalesCents;
+      lastPersistentLedgerSignature = `${state.servicePeriod.sequenceId}:${
+        state.periodLedgers[state.servicePeriod.sequenceId]?.entries.length ?? 0
+      }`;
       activeScene?.syncWorldBounds(true);
       activeScene?.render(true);
       emitHud(true);
@@ -5434,6 +6324,10 @@ export async function createHawkerRuntime(
       );
       state = freshState(authoredCatalog);
       state = { ...state, catalog };
+      periodOutcomes = resolvePeriodOutcomes(
+        undefined,
+        state.servicePeriod.sequenceId,
+      );
       recomputeObjectSequence();
       selectedBuildId = undefined;
       selectedObjectId = undefined;
@@ -5443,13 +6337,23 @@ export async function createHawkerRuntime(
       buildTool = "select";
       speed = 1;
       speedBeforeLayoutEdit = 1;
-      lastPersistentRevenue = 0;
+      lastPersistentGrossSalesCents = asMoneyCents(0);
+      lastPersistentLedgerSignature = `${state.servicePeriod.sequenceId}:${
+        state.periodLedgers[state.servicePeriod.sequenceId]?.entries.length ?? 0
+      }`;
       activeScene?.syncWorldBounds(true);
       activeScene?.render(true);
       emitHud(true);
       options.onPersistentChange(persistentPayload());
     },
     spawnCustomer() {
+      if (!arrivalsEnabled(state.servicePeriod)) {
+        options.onEvent({
+          kind: "warning",
+          message: "Guests can only arrive during the current arrivals window.",
+        });
+        return;
+      }
       state = { ...state, spawnCountdownMs: 0 };
       const result = advanceSimulation(state, state.config.fixedStepMs);
       state = result.state;
@@ -5457,11 +6361,21 @@ export async function createHawkerRuntime(
       activeScene?.render(true);
       emitHud(true);
     },
-    addCash(amount) {
-      state = {
-        ...state,
-        economy: { ...state.economy, currency: Math.max(0, state.economy.currency + amount) },
-      };
+    addCash(amountCents) {
+      if (!Number.isSafeInteger(amountCents)) {
+        options.onEvent({ kind: "error", message: "Cash adjustment must use integer cents." });
+        return;
+      }
+      const nextCashCents = asMoneyCents(Math.max(0, state.economy.cashCents + amountCents));
+      try {
+        state = rebaseDevelopmentCash(state, nextCashCents);
+      } catch (error) {
+        options.onEvent({
+          kind: "error",
+          message: error instanceof Error ? error.message : "Cash adjustment could not be reconciled.",
+        });
+        return;
+      }
       options.onPersistentChange(persistentPayload());
       emitHud(true);
     },
@@ -5534,6 +6448,13 @@ export async function createHawkerRuntime(
       activeScene?.render(true);
     },
     setDishEnabled(stallId, dishId, enabled) {
+      if (isConfigurationLocked(state.servicePeriod.phase)) {
+        options.onEvent({
+          kind: "warning",
+          message: "Menu changes are locked during service and drain.",
+        });
+        return false;
+      }
       const definition = STALLS.find((stall) => stall.id === stallId);
       if (!definition || !definition.dishIds.includes(dishId)) return false;
       if (enabled && !isDishIdUnlockedForMenu(dishId, stallMenuProgression(state))) {
@@ -5581,6 +6502,13 @@ export async function createHawkerRuntime(
       return true;
     },
     setDishVariant(dishId, variantId) {
+      if (isConfigurationLocked(state.servicePeriod.phase)) {
+        options.onEvent({
+          kind: "warning",
+          message: "Preparation changes are locked during service and drain.",
+        });
+        return false;
+      }
       const family = getNutritionVariantFamily(dishId);
       const variant = family?.variants.find((candidate) => candidate.id === variantId);
       if (!family || !variant) return false;
@@ -5610,6 +6538,72 @@ export async function createHawkerRuntime(
       options.onEvent({
         kind: "info",
         message: `${variant.name} will be used for future orders.`,
+      });
+      return true;
+    },
+    acceptObjective(objectiveId) {
+      if (state.servicePeriod.phase !== "planning") {
+        options.onEvent({
+          kind: "warning",
+          message: "Objectives can only be accepted during period planning.",
+        });
+        return false;
+      }
+      const requested = state.progression.dailyObjectives.find(
+        (objective) => objective.id === objectiveId && !objective.completed,
+      );
+      if (!requested) return false;
+      const alreadyAccepted = state.progression.dailyObjectives.find(
+        (objective) => objective.accepted === true && objective.id !== objectiveId,
+      );
+      if (alreadyAccepted) {
+        options.onEvent({
+          kind: "warning",
+          message: "Skip the accepted objective before choosing another.",
+        });
+        return false;
+      }
+      state = {
+        ...state,
+        progression: {
+          ...state.progression,
+          dailyObjectives: acceptDailyObjective(
+            state.progression.dailyObjectives,
+            objectiveId,
+          ),
+        },
+      };
+      options.onPersistentChange(persistentPayload());
+      emitHud(true);
+      options.onEvent({
+        kind: "info",
+        message: `${requested.title} accepted for this period.`,
+      });
+      return true;
+    },
+    skipObjective() {
+      if (state.servicePeriod.phase !== "planning") {
+        options.onEvent({
+          kind: "warning",
+          message: "Objective choices are locked after service begins.",
+        });
+        return false;
+      }
+      if (!state.progression.dailyObjectives.some((objective) => !objective.completed)) {
+        return false;
+      }
+      state = {
+        ...state,
+        progression: {
+          ...state.progression,
+          dailyObjectives: skipDailyObjectives(state.progression.dailyObjectives),
+        },
+      };
+      options.onPersistentChange(persistentPayload());
+      emitHud(true);
+      options.onEvent({
+        kind: "info",
+        message: "Period objective skipped. You can begin service without an objective.",
       });
       return true;
     },

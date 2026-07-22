@@ -61,7 +61,10 @@ describe("reservation and target recovery", () => {
     const [seatKey, customerId] = Object.entries(reserved.seatReservations)[0] ?? [];
     expect(seatKey).toBeTruthy();
     const seatObjectId = seatKey?.split(":")[0] as string;
-    const removed = dispatchCommand(reserved, { type: "remove-object", objectId: seatObjectId });
+    const removed = dispatchCommand(
+      { ...reserved, servicePeriod: { ...reserved.servicePeriod, phase: "planning" } },
+      { type: "remove-object", objectId: seatObjectId },
+    );
     expect(removed.accepted).toBe(true);
     expect(removed.state.seatReservations[seatKey as string]).toBeUndefined();
     expect(removed.state.customers[customerId as string]?.reservedSeatKey).toBeUndefined();
@@ -76,7 +79,10 @@ describe("reservation and target recovery", () => {
     );
     const affected = Object.values(queued.customers).filter((customer) => customer.targetStallId === "stall-1").map((c) => c.id);
     expect(affected.length).toBeGreaterThan(0);
-    const removed = dispatchCommand(queued, { type: "remove-object", objectId: "stall-1" });
+    const removed = dispatchCommand(
+      { ...queued, servicePeriod: { ...queued.servicePeriod, phase: "planning" } },
+      { type: "remove-object", objectId: "stall-1" },
+    );
     expect(removed.accepted).toBe(true);
     expect(removed.state.queues["stall-1"]).toBeUndefined();
     for (const id of affected) expect(removed.state.customers[id]?.targetStallId).toBeUndefined();
@@ -91,7 +97,10 @@ describe("reservation and target recovery", () => {
     );
     const customer = Object.values(returning.customers).find((value) => value.status === "walking-to-tray-return");
     expect(customer?.targetTrayReturnId).toBe("tray-1");
-    const removed = dispatchCommand(returning, { type: "remove-object", objectId: "tray-1" });
+    const removed = dispatchCommand(
+      { ...returning, servicePeriod: { ...returning.servicePeriod, phase: "planning" } },
+      { type: "remove-object", objectId: "tray-1" },
+    );
     expect(removed.state.customers[customer?.id as string]?.status).toBe("seeking-tray-return");
     expect(removed.state.customers[customer?.id as string]?.targetTrayReturnId).toBeUndefined();
     const recovered = stepSimulation(removed.state);
