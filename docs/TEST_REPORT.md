@@ -1,10 +1,45 @@
 # Test Report
 
-Report date: 2026-07-20
-Build/commit: Content `1.3.0` working source validated with bundled Node.js `v24.14.0`; commit/publication record pending
-Release verdict: **NO-GO pending exact-production browser/offline QA and required human reviews**
+Report date: 2026-07-24
+Build/commit: Independent-review Stage 4 working source has passed the comprehensive automated, build, and responsive-browser gate; commit and owner-only publication evidence remain pending
+Release verdict: **Stage 4 gate PASS; production remains NO-GO pending exact-production offline/performance QA and required human reviews**
 
-Scope note: this report records the content `1.3.0` working-source gate and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
+Scope note: this report adds the comprehensive Stage 4 people-and-events validation and retains the content `1.3.0` working-source gate and earlier content `1.2.0` evidence below as labelled historical baselines. Working-source builds and development-browser passes are not exact-production, offline, performance, clinical, cultural, assistive-technology, or human-review evidence.
+
+## Independent-review Stage 4 comprehensive validation
+
+The Stage 4 working source introduces Core V7/runtime V5 persistence, canonical parties of up to six, deterministic neighbourhood events, and recurring fictional regulars. It preserves the integer-cent SGD economy and migrates the immediately preceding Core V6/runtime V4 preview without inventing companion, event, or regular history.
+
+Completed evidence:
+
+- `npm run typecheck` passed for the integrated working source.
+- `npm run lint` passed without warnings.
+- `npm test` passed 51 files and 407 tests, covering the focused Stage 4 strategic, event, persistence, live-party, responsive, and compatibility contracts together with every prior-stage regression.
+- Live-party simulation covers deterministic member identities and needs, one visible leader and one queue footprint, Combo Board participation, at-most-two-stop settlement, in-flight save/reload equivalence, temporary capacity waiting, per-guest cent/watchdog settlement, and atomic cleanup of unserved companions.
+- Core persistence coverage verifies additive V6-to-V7 migration, unchanged money cents, canonical leader-only party round trips, regular story/event-counter persistence, and rejection of forged counters, aliased state, and serialized companion actors.
+- Runtime coverage verifies V1–V4 decoding into exact V5 writes, once-per-period and twice-per-day event caps, documented neutral dismissal, preserved pause intent, frozen resolution, and canonical party/regular UI summaries.
+- Deterministic rule coverage verifies six-member limits, no more than two stall stops, main-first Combo Board service when placed instance identifiers sort side-first, deterministic rejection of contradictory stop orders, accessible atomic seating, the exact 40% patience split threshold, path-validated table adjacency, four normalized period profiles, eight condition-neutral events, exact keyed event preference deltas, and six recurring four-step stories. Authored `+24` and `+34` preference effects remain materially distinct, consume no gameplay RNG, and never alter condition-aware incidence.
+- `npm run validate:content` passed 17 content checks.
+- `npm run test:ssr` passed 2 SSR checks.
+- `npm run build` passed with the bundled Node.js 24 runtime. The existing client chunk larger than 500 kB remains a known performance warning. Both production targets used service-worker source stamp `2e6e7bc52161`.
+- `npm run build:vercel` passed with the bundled Node.js 24 runtime.
+- `git diff --check` passed.
+- The authoritative food-source snapshot still hashes to `1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e`. Stage 4 changes no food, preparation, serving, manifest mapping, generated nutrient value, missing-value state, or trace state.
+- `tools/nutrition/manifest.mjs` and `src/content/nutrition.generated.json` remain unchanged.
+
+Responsive-browser evidence:
+
+- Clean planning layouts were inspected at 1280×720, 1024×640, 800×720, and 390×844.
+- The unresolved event modal was inspected at 1280×720, 1024×640, 390×844, and combined scale.
+- Separate checks covered 200% in-game text, effective 200% browser zoom through a 640×360 same-origin iframe scaled to a 1280×720 physical frame, and combined 200% text plus effective 200% zoom. No application-root horizontal overflow, product-UI collision, or meaningful informational text below 0.75rem was observed.
+- A same-input comparison with the supplied 1908×1072 reference confirmed that its header, action-strip, catalogue, and dock overlap is absent in the reviewed planning layout. Dynamic gameplay state differs between the reference and current capture.
+- Deterministic `visualQa` planning and `visualQaEvent` Lunch fixtures do not persist fixture state. Same-origin framing is enabled only by development response headers; production retains `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
+
+Pending before the Stage 4 publication record is complete:
+
+- Owner-only publication and deployed-artifact smoke check.
+
+The effective zoom pass is engineering emulation; actual browser-control 200% zoom remains part of the final cross-stage review. No exact-production offline, screen-reader, clinical, cultural, sensitivity, human-balance, or production-performance pass is claimed.
 
 ## Content `1.3.0` working-source validation
 

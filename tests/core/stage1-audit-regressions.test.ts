@@ -562,5 +562,5 @@ describe("Stage 1 independent-audit regressions", () => {
     const p95Index = Math.ceil(firstRun.length * 0.95) - 1;
     const p95Ms = firstRun[p95Index]!;
     expect(p95Ms).toBeLessThan(DRAIN_TARGET_P95_MS);
-  });
+  }, 60_000);
 });

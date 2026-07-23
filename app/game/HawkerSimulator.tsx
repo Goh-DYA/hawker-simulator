@@ -62,11 +62,14 @@ import type {
   RuntimeComboBoardSummary,
   RuntimeComboComponentSummary,
   RuntimeFrozenMealSummary,
+  RuntimeNeighbourhoodEventSummary,
   RuntimeEvent,
   RuntimeForecast,
   RuntimeObjective,
+  RuntimePartySummary,
   RuntimePeriodDebrief,
   RuntimePeriodLedger,
+  RuntimeRegularProgressSummary,
   RuntimeServicePeriod,
   RuntimeSettings,
   RuntimeSnapshot,
@@ -721,15 +724,213 @@ export function debriefTryNextCopy(
   return `${SATISFACTION_CAUSE_LABELS[lowestCause[0]]} was the lowest observed cause at ${Math.round(lowestCause[1])}/100. ${SATISFACTION_NEXT_ACTIONS[lowestCause[0]]}`;
 }
 
+function neighbourhoodEventResolution(
+  event: RuntimeNeighbourhoodEventSummary,
+): string {
+  if (event.requiresDecision) return "Decision needed before service";
+  const selectedChoice = event.choices.find(
+    (choice) => choice.id === event.selectedChoiceId,
+  );
+  if (selectedChoice) return `Plan chosen: ${selectedChoice.label}`;
+  if (event.choices.length === 0) return "Forecast notice applied";
+  return event.dismissed ? "Neutral outcome applied" : "Planning decision resolved";
+}
+
+function NeighbourhoodEventForecast({
+  event,
+  compact,
+}: {
+  event: RuntimeNeighbourhoodEventSummary;
+  compact: boolean;
+}) {
+  const modifierLabels = event.modifierLabels ?? [];
+  const selectedChoice = event.choices.find(
+    (choice) => choice.id === event.selectedChoiceId,
+  );
+  const body = (
+    <>
+      <p>{event.description}</p>
+      {selectedChoice ? (
+        <p>
+          <strong>{selectedChoice.label}.</strong>{" "}
+          {selectedChoice.resultingOutcome}
+        </p>
+      ) : null}
+      {event.dismissed && event.choices.length > 0 ? (
+        <p><strong>Neutral outcome.</strong> {event.neutralOutcome}</p>
+      ) : null}
+      <div className="forecast-event-modifiers">
+        <strong>Forecast modifiers</strong>
+        {modifierLabels.length > 0 ? (
+          <ul>
+            {modifierLabels.map((label) => <li key={label}>{label}</li>)}
+          </ul>
+        ) : (
+          <span>No operational change.</span>
+        )}
+      </div>
+    </>
+  );
+
+  if (compact) {
+    return (
+      <details className="forecast-event is-compact" data-decision={event.requiresDecision}>
+        <summary>
+          <span>Neighbourhood event</span>
+          <strong>{event.name}</strong>
+          <em>{neighbourhoodEventResolution(event)}</em>
+        </summary>
+        <div>{body}</div>
+      </details>
+    );
+  }
+
+  return (
+    <section className="forecast-event" data-decision={event.requiresDecision} aria-label={`${event.name} neighbourhood event`}>
+      <header>
+        <div>
+          <span>Neighbourhood event</span>
+          <h3>{event.name}</h3>
+        </div>
+        <strong>{neighbourhoodEventResolution(event)}</strong>
+      </header>
+      {body}
+    </section>
+  );
+}
+
+function partyPhaseLabel(party: RuntimePartySummary): string {
+  if (party.phase === "forming") return "Finding a workable order";
+  if (party.phase === "routing") {
+    return party.servingStopCount > 0
+      ? `Travelling to stop ${Math.min(party.nextStopIndex + 1, party.servingStopCount)} of ${party.servingStopCount}`
+      : "Travelling together";
+  }
+  if (party.phase === "queueing") {
+    return party.servingStopCount > 0
+      ? `Queueing at stop ${Math.min(party.nextStopIndex + 1, party.servingStopCount)} of ${party.servingStopCount}`
+      : "Queueing together";
+  }
+  if (party.phase === "seeking-seat") return "Finding suitable seats";
+  if (party.phase === "seated") {
+    return party.splitExplained ? "Seated at adjacent tables after an explained split" : "Seated together";
+  }
+  return "Leaving together";
+}
+
+function PartyServiceCard({
+  parties,
+}: {
+  parties: readonly RuntimePartySummary[];
+}) {
+  const totalGuests = parties.reduce((total, party) => total + party.guestCount, 0);
+  const servedGuests = parties.reduce((total, party) => total + party.servedGuestCount, 0);
+
+  return (
+    <section className="party-service-card" aria-labelledby="party-service-title">
+      <header>
+        <div>
+          <span>Coordinated visits</span>
+          <h3 id="party-service-title">Party service</h3>
+        </div>
+        <strong>{parties.length} active · {totalGuests} guests</strong>
+      </header>
+      {parties.length > 0 ? (
+        <>
+          <p>{servedGuests} of {totalGuests} party guests have received their planned serving so far.</p>
+          <ul>
+            {parties.map((party) => (
+              <li key={party.partyId}>
+                <div>
+                  <strong>{party.guestCount}-guest party</strong>
+                  <span>{partyPhaseLabel(party)}</span>
+                </div>
+                <small>
+                  {party.servedGuestCount}/{party.guestCount} served
+                  {" · "}
+                  {party.servingStopCount === 0
+                    ? "fallback pending"
+                    : `${party.servingStopCount} ${party.servingStopCount === 1 ? "stop" : "stops"}`}
+                  {party.reservedSeatCount > 0 ? ` · ${party.reservedSeatCount} seats held` : ""}
+                </small>
+                <details className="party-member-plans">
+                  <summary>Guest plans and budgets</summary>
+                  <ul>
+                    {party.members.map((member) => (
+                      <li key={member.memberId} data-served={member.served}>
+                        <span>
+                          {titleFromId(member.archetypeId)} · {dishLabel(member.plannedDishId)}
+                        </span>
+                        <strong><SgdAmount cents={member.budgetCents} /> · {member.served ? "served" : "in progress"}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p>Parties of up to six arrive as one visible group. They queue together while each guest keeps an individual budget, need, order, and result.</p>
+      )}
+    </section>
+  );
+}
+
+function RegularGallery({
+  regulars,
+}: {
+  regulars: readonly RuntimeRegularProgressSummary[];
+}) {
+  const metCount = regulars.filter((regular) => regular.encounterCount > 0).length;
+  return (
+    <article className="regulars-insight" data-state="neutral">
+      <span aria-hidden="true">⌁</span>
+      <div>
+        <strong>Neighbourhood regulars</strong>
+        <p>
+          {regulars.length === 0
+            ? "The regular roster is loading with the simulation."
+            : metCount > 0
+            ? `${metCount} of ${regulars.length} recurring guests met. Story beats progress through visits, while nutrition needs are resampled independently each time.`
+            : `${regulars.length} recurring fictional guests may visit. Their stories never define a health condition or nutrition need.`}
+        </p>
+        {regulars.length > 0 ? <details className="regular-gallery">
+          <summary>Open the regular gallery</summary>
+          <ul>
+            {regulars.map((regular) => (
+              <li key={regular.regularId} data-met={regular.encounterCount > 0}>
+                <div>
+                  <strong>{regular.name}</strong>
+                  <span>{regular.description}</span>
+                </div>
+                <small>
+                  {regular.encounterCount > 0
+                    ? `${regular.encounterCount} ${regular.encounterCount === 1 ? "visit" : "visits"} · story step ${regular.storyStep}`
+                    : "Not met yet"}
+                </small>
+                {regular.currentStoryBeat ? <p>{regular.currentStoryBeat}</p> : null}
+              </li>
+            ))}
+          </ul>
+        </details> : null}
+      </div>
+      <em>{metCount}/{regulars.length}</em>
+    </article>
+  );
+}
+
 function ForecastCard({
   forecast,
   periodLabel,
+  neighbourhoodEvent,
   compact = false,
   canOpenGuide,
   onOpenGuide,
 }: {
   readonly forecast: RuntimeForecast;
   readonly periodLabel: string;
+  readonly neighbourhoodEvent?: RuntimeNeighbourhoodEventSummary;
   readonly compact?: boolean;
   readonly canOpenGuide: boolean;
   onOpenGuide(): void;
@@ -791,6 +992,13 @@ function ForecastCard({
         </div> : null}
       </dl>
 
+      {neighbourhoodEvent ? (
+        <NeighbourhoodEventForecast
+          event={neighbourhoodEvent}
+          compact={compact}
+        />
+      ) : null}
+
       {!compact ? (
         <details className="forecast-breakdown">
           <summary>View crowd, budget, group, meal, and need details</summary>
@@ -806,7 +1014,7 @@ function ForecastCard({
             <section>
               <h3>Latent group-size intent</h3>
               <ul>{forecast.groupSizeMix.map((item) => <li key={item.id}><span>{titleFromId(item.id)}</span><strong>{forecastShareLabel(item.basisPoints)}</strong></li>)}</ul>
-              <p>For now, parties arrive individually, so group size remains a planning signal per visit.</p>
+              <p>Parties arrive as one visible group of up to six, route and queue together, and keep individual guest budgets, needs, orders, and results.</p>
             </section>
             <section>
               <h3>Future meal-composition intent</h3>
@@ -1073,6 +1281,9 @@ function PeriodDebrief({
   forecast,
   ledger,
   debrief,
+  neighbourhoodEvent,
+  activeParties,
+  regularProgress,
   onContinue,
 }: {
   dialogRef: RefObject<HTMLElement | null>;
@@ -1080,6 +1291,9 @@ function PeriodDebrief({
   forecast: RuntimeForecast;
   ledger: RuntimePeriodLedger;
   debrief?: RuntimePeriodDebrief;
+  neighbourhoodEvent?: RuntimeNeighbourhoodEventSummary;
+  activeParties: readonly RuntimePartySummary[];
+  regularProgress: readonly RuntimeRegularProgressSummary[];
   onContinue(): void;
 }) {
   const comparison = debrief?.forecastComparison;
@@ -1100,6 +1314,16 @@ function PeriodDebrief({
   const topObservedMeal = highestCountEntry(comparison?.mealMixCounts ?? {});
   const topObservedIntent = highestCountEntry(comparison?.nutritionIntentCounts ?? {});
   const topObservedCondition = highestCountEntry(comparison?.conditionAwareCounts ?? {});
+  const activePartyGuestCount = activeParties.reduce(
+    (total, party) => total + party.guestCount,
+    0,
+  );
+  const regularsSeenToday = regularProgress.filter(
+    (regular) => regular.lastVisitDay === period.day && regular.encounterCount > 0,
+  );
+  const selectedEventChoice = neighbourhoodEvent?.choices.find(
+    (choice) => choice.id === neighbourhoodEvent.selectedChoiceId,
+  );
   const intentResultVisits = comparison
     ? comparison.intentMatches + comparison.intentMisses + comparison.intentUnknowns
     : 0;
@@ -1156,6 +1380,61 @@ function PeriodDebrief({
             <div><dt>Completed two-item meals</dt><dd>{debrief?.completedComboVisits ?? 0}</dd></div>
             <div><dt>Partial two-item meals</dt><dd>{debrief?.partialMeals ?? 0}</dd></div>
           </dl>
+          {(neighbourhoodEvent || debrief || activeParties.length > 0 || regularsSeenToday.length > 0) ? (
+            <section className="debrief-neighbourhood-context" aria-labelledby="debrief-neighbourhood-title">
+              <div className="debrief-section-heading">
+                <span>Neighbourhood context</span>
+                <h3 id="debrief-neighbourhood-title">What shaped this period</h3>
+              </div>
+              <dl>
+                {neighbourhoodEvent ? (
+                  <div>
+                    <dt>Event</dt>
+                    <dd>
+                      <strong>{neighbourhoodEvent.name}</strong>
+                      <span>
+                        {selectedEventChoice
+                          ? selectedEventChoice.label
+                          : neighbourhoodEvent.choices.length > 0
+                            ? "Neutral outcome"
+                            : "Forecast notice"}
+                        {(neighbourhoodEvent.modifierLabels ?? []).length > 0
+                          ? ` · ${(neighbourhoodEvent.modifierLabels ?? []).join(" · ")}`
+                          : " · No operational change"}
+                      </span>
+                      {neighbourhoodEvent.resolvedOutcome ? (
+                        <span>{neighbourhoodEvent.resolvedOutcome}</span>
+                      ) : null}
+                    </dd>
+                  </div>
+                ) : null}
+                <div>
+                  <dt>Party service</dt>
+                  <dd>
+                    <strong>
+                      {debrief?.partyVisits ?? 0} parties · {debrief?.partyGuests ?? 0} guests
+                      {(debrief?.partySplits ?? 0) > 0 ? ` · ${debrief?.partySplits} explained splits` : ""}
+                      {(debrief?.partialPartyVisits ?? 0) > 0 ? ` · ${debrief?.partialPartyVisits} partial` : ""}
+                    </strong>
+                    <span>
+                      Party members kept separate budgets, orders, and results while moving as one group.
+                      {activeParties.length > 0 ? ` ${activeParties.length} groups (${activePartyGuestCount} guests) remained active in this snapshot.` : ""}
+                    </span>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Regular stories seen today</dt>
+                  <dd>
+                    <strong>
+                      {debrief?.regularStoryBeats ?? 0} new story {(debrief?.regularStoryBeats ?? 0) === 1 ? "beat" : "beats"}
+                      {regularsSeenToday.length > 0 ? ` · ${regularsSeenToday.map((regular) => regular.name).join(" · ")}` : ""}
+                    </strong>
+                    <span>Regular identity never determines a condition-aware need.</span>
+                  </dd>
+                </div>
+              </dl>
+            </section>
+          ) : null}
           {debrief?.comboOfferOutcomes.length ? (
             <div className="debrief-combo-outcomes">
               <strong>Combo Board results</strong>
@@ -1249,7 +1528,7 @@ function PeriodDebrief({
                   Observed arrival flags: {topObservedIntent ? `${titleFromId(topObservedIntent[0])} led intents with ${topObservedIntent[1]}` : "no nutrition intents"};{" "}
                   {topObservedCondition ? `${titleFromId(topObservedCondition[0])} led condition-aware flags with ${topObservedCondition[1]}` : "no condition-aware flags"}.
                 </p>
-                <small>Parties currently arrive as individual visits. Two-item Combo Board meals are scored once per served visit, while their component sales, costs, and partial-meal causes stay explicit.</small>
+                <small>Parties arrive and route as coordinated groups, while each guest keeps an individual budget, order, nutrition result, sale, cost, and satisfaction outcome. Two-item Combo Board meals are scored once per served guest.</small>
               </details>
             </section>
           ) : null}
@@ -2171,6 +2450,7 @@ export function HawkerSimulator() {
   const helpDialogRef = useRef<HTMLElement>(null);
   const resetDialogRef = useRef<HTMLElement>(null);
   const periodDebriefDialogRef = useRef<HTMLElement>(null);
+  const eventDecisionDialogRef = useRef<HTMLElement>(null);
   const managementReturnFocusRef = useRef<HTMLElement | null>(null);
   const managementFocusRestoreRequestedRef = useRef(false);
 
@@ -2201,6 +2481,16 @@ export function HawkerSimulator() {
   const [loadingError, setLoadingError] = useState<string>();
   const [debugOpen, setDebugOpen] = useState(false);
   const [serviceAnnouncement, setServiceAnnouncement] = useState("");
+  const eventDecisionOpen = Boolean(
+    snapshot.neighbourhoodEvent?.requiresDecision
+    && snapshot.servicePeriod.phase === "planning"
+    && tutorialStep === 5
+    && nutritionTourStep >= 2
+    && !settingsOpen
+    && !helpOpen
+    && !resetOpen
+    && !variantLabDishId
+  );
   const debugEnabled = useSyncExternalStore(
     subscribeToStaticValue,
     getDebugSnapshot,
@@ -2288,6 +2578,10 @@ export function HawkerSimulator() {
     async function start() {
       try {
         validateContent();
+        const qaParams = process.env.NODE_ENV !== "production"
+          ? new URLSearchParams(window.location.search)
+          : undefined;
+        const visualQa = qaParams?.has("visualQa") === true;
         let savedSettings = DEFAULT_SETTINGS;
         let completedTutorial = false;
         let completedNutritionTour = false;
@@ -2303,16 +2597,6 @@ export function HawkerSimulator() {
             await loadPreference<unknown>("settings", undefined),
             initialSettings,
           );
-          if (process.env.NODE_ENV !== "production") {
-            const qaParams = new URLSearchParams(window.location.search);
-            const requestedScale = Number(qaParams.get("textScale"));
-            if (qaParams.has("visualQa") && Number.isFinite(requestedScale)) {
-              savedSettings = {
-                ...savedSettings,
-                textScale: Math.min(2, Math.max(1, requestedScale)),
-              };
-            }
-          }
           completedTutorial =
             (await loadPreference<unknown>("tutorial-complete", false)) === true;
           completedNutritionTour =
@@ -2325,25 +2609,32 @@ export function HawkerSimulator() {
             || (guidedDecisionPreference === undefined && completedNutritionTour);
           savedNutritionLens =
             (await loadPreference<unknown>("nutrition-lens-enabled", true)) !== false;
-          if (
-            process.env.NODE_ENV !== "production"
-            && new URLSearchParams(window.location.search).has("visualQa")
-          ) {
-            completedTutorial = true;
-            completedNutritionTour = true;
-            completedGuidedDecision = true;
-          }
         } catch {
           reportStorageIssue(
             "Local preferences are unavailable. The game will continue with defaults.",
           );
         }
-        try {
-          initialStates = await loadGameCandidates();
-        } catch {
-          reportStorageIssue(
-            "Local saves are unavailable in this browser session. You can still play, but progress may not persist.",
-          );
+        if (visualQa) {
+          window.history.scrollRestoration = "manual";
+          window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+          const requestedScale = Number(qaParams?.get("textScale"));
+          savedSettings = {
+            ...savedSettings,
+            textScale: Number.isFinite(requestedScale)
+              ? Math.min(2, Math.max(1, requestedScale))
+              : 1,
+          };
+          completedTutorial = true;
+          completedNutritionTour = true;
+          completedGuidedDecision = true;
+        } else {
+          try {
+            initialStates = await loadGameCandidates();
+          } catch {
+            reportStorageIssue(
+              "Local saves are unavailable in this browser session. You can still play, but progress may not persist.",
+            );
+          }
         }
         if (disposed || !gameHostRef.current) return;
         setSettings(savedSettings);
@@ -2374,6 +2665,7 @@ export function HawkerSimulator() {
             if (event.kind === "error") audioRef.current?.play("invalid");
           },
           onPersistentChange(state) {
+            if (visualQa) return;
             pendingSaveRef.current = state;
             window.clearTimeout(saveTimerRef.current);
             setSnapshot((current) => ({ ...current, autosaveState: "saving" }));
@@ -2385,20 +2677,22 @@ export function HawkerSimulator() {
         if (disposed) controller.destroy();
         else {
           controllerRef.current = controller;
-          unregisterPwa = registerPwa({
-            onOfflineReady() {
-              setOfflineReady(true);
-            },
-            onUpdateReady() {
-              setUpdateReady(true);
-            },
-            onConnectivityChange(isOnline) {
-              setOnline(isOnline);
-            },
-            onOfflineError(message) {
-              announce({ kind: "warning", message: `Offline cache: ${message}` });
-            },
-          });
+          if (!visualQa) {
+            unregisterPwa = registerPwa({
+              onOfflineReady() {
+                setOfflineReady(true);
+              },
+              onUpdateReady() {
+                setUpdateReady(true);
+              },
+              onConnectivityChange(isOnline) {
+                setOnline(isOnline);
+              },
+              onOfflineError(message) {
+                announce({ kind: "warning", message: `Offline cache: ${message}` });
+              },
+            });
+          }
         }
       } catch (error) {
         setLoadingError(
@@ -2474,15 +2768,17 @@ export function HawkerSimulator() {
       ? resetDialogRef.current
       : settingsOpen
         ? settingsDialogRef.current
-          : helpOpen
-            ? helpDialogRef.current
-            : snapshot.servicePeriod.phase === "debrief"
-              ? periodDebriefDialogRef.current
+        : helpOpen
+          ? helpDialogRef.current
+          : snapshot.servicePeriod.phase === "debrief"
+            ? periodDebriefDialogRef.current
             : tutorialStep < 5
               ? tutorialDialogRef.current
               : nutritionTourStep < 2
                 ? nutritionTourDialogRef.current
-              : null;
+                : eventDecisionOpen
+                  ? eventDecisionDialogRef.current
+                  : null;
     if (!modal) return;
     const previousFocus = document.activeElement as HTMLElement | null;
     const focusableSelector = [
@@ -2518,7 +2814,7 @@ export function HawkerSimulator() {
           void savePreference("tutorial-complete", true).catch(() =>
             reportStorageIssue("Tutorial progress could not be saved."),
           );
-        } else {
+        } else if (nutritionTourStep < 2) {
           setNutritionTourStep(2);
           setGuidedPredictionId(undefined);
           void savePreference("forecast-guide-v1-complete", true).catch(() =>
@@ -2527,6 +2823,8 @@ export function HawkerSimulator() {
           void savePreference("nutrition-tour-v1-complete", true).catch(() =>
             reportStorageIssue("Legacy nutrition guide progress could not be saved."),
           );
+        } else if (eventDecisionOpen) {
+          controllerRef.current?.dismissNeighbourhoodEvent();
         }
         return;
       }
@@ -2558,6 +2856,7 @@ export function HawkerSimulator() {
   }, [
     helpOpen,
     nutritionTourStep,
+    eventDecisionOpen,
     reportStorageIssue,
     resetOpen,
     settingsOpen,
@@ -2849,6 +3148,7 @@ export function HawkerSimulator() {
     helpOpen ||
     resetOpen ||
     snapshot.servicePeriod.phase === "debrief" ||
+    eventDecisionOpen ||
     Boolean(variantLabFamily);
   const managementBackgroundInert = interfaceInert || managementSheetOpen;
   const visiblePanelSelection = panelSelectionIsVisible(
@@ -3080,6 +3380,7 @@ export function HawkerSimulator() {
             <ForecastCard
               forecast={periodForecast}
               periodLabel={snapshot.servicePeriod.label}
+              neighbourhoodEvent={snapshot.neighbourhoodEvent}
               compact
               canOpenGuide={Boolean(guidedDecision) && snapshot.servicePeriod.phase === "planning"}
               onOpenGuide={openGuidedDecision}
@@ -3422,6 +3723,7 @@ export function HawkerSimulator() {
                 <ForecastCard
                   forecast={periodForecast}
                   periodLabel={snapshot.servicePeriod.label}
+                  neighbourhoodEvent={snapshot.neighbourhoodEvent}
                   canOpenGuide={Boolean(guidedDecision) && snapshot.servicePeriod.phase === "planning"}
                   onOpenGuide={openGuidedDecision}
                 />
@@ -3433,6 +3735,7 @@ export function HawkerSimulator() {
                 onSkip={skipObjective}
               />
               <PeriodLedgerCard ledger={snapshot.periodLedger} />
+              <PartyServiceCard parties={snapshot.activeParties ?? []} />
               <NutritionPulseCard
                 pulse={nutritionPulse}
                 dishLabel={dishLabel}
@@ -3943,6 +4246,7 @@ export function HawkerSimulator() {
                 </div>
                 <em>{unlockedCustomerCount}/{CUSTOMER_ARCHETYPES.length}</em>
               </article>
+              <RegularGallery regulars={snapshot.regularProgress ?? []} />
               <button
                 type="button"
                 className="expansion-button"
@@ -4076,6 +4380,9 @@ export function HawkerSimulator() {
           forecast={snapshot.forecast}
           ledger={snapshot.periodLedger}
           debrief={snapshot.periodDebrief}
+          neighbourhoodEvent={snapshot.neighbourhoodEvent}
+          activeParties={snapshot.activeParties ?? []}
+          regularProgress={snapshot.regularProgress ?? []}
           onContinue={toggleCentre}
         />
       ) : null}
@@ -4285,6 +4592,83 @@ export function HawkerSimulator() {
                 </>
               ) : null}
             </div>
+          </section>
+        </div>
+      ) : null}
+
+      {eventDecisionOpen && snapshot.neighbourhoodEvent ? (
+        <div className="modal-backdrop event-decision-backdrop" role="presentation">
+          <section
+            ref={eventDecisionDialogRef}
+            className="event-decision-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="event-decision-title"
+            aria-describedby="event-decision-description"
+            tabIndex={-1}
+          >
+            <header>
+              <span>Untimed neighbourhood choice · planning is paused</span>
+              <h2 id="event-decision-title" tabIndex={-1} data-modal-initial-focus>
+                {snapshot.neighbourhoodEvent.name}
+              </h2>
+              <p id="event-decision-description">{snapshot.neighbourhoodEvent.description}</p>
+            </header>
+            <div className="event-decision-content">
+              <div className="event-decision-forecast">
+                <strong>Base event forecast before your choice</strong>
+                {snapshot.neighbourhoodEvent.baseModifierLabels.length > 0 ? (
+                  <ul>
+                    {snapshot.neighbourhoodEvent.baseModifierLabels.map((label) => (
+                      <li key={label}>{label}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No operational change is applied before your choice.</p>
+                )}
+              </div>
+              <fieldset className="event-choice-list">
+                <legend>{snapshot.neighbourhoodEvent.choicePrompt ?? "Choose a service response"}</legend>
+                {snapshot.neighbourhoodEvent.choices.map((choice) => (
+                  <button
+                    type="button"
+                    key={choice.id}
+                    onClick={() => controllerRef.current?.chooseNeighbourhoodEvent(choice.id)}
+                  >
+                    <strong>{choice.label}</strong>
+                    <span className="event-choice-outcome">
+                      <b>Outcome:</b> {choice.resultingOutcome}
+                    </span>
+                    <span className="event-choice-deltas">
+                      <b>Choice adjustment:</b>{" "}
+                      {choice.choiceDeltaLabels.join(" · ")}
+                    </span>
+                    <span className="event-choice-result">
+                      <b>Resulting forecast:</b>{" "}
+                      {choice.resultingModifierLabels.join(" · ")}
+                    </span>
+                  </button>
+                ))}
+              </fieldset>
+              <section className="event-neutral-copy" aria-label="Neutral event outcome">
+                <strong>Neutral outcome</strong>
+                <p>{snapshot.neighbourhoodEvent.neutralOutcome}</p>
+                <p>
+                  <b>Resulting forecast:</b>{" "}
+                  {snapshot.neighbourhoodEvent.neutralModifierLabels.join(" · ")}
+                </p>
+              </section>
+            </div>
+            <footer>
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => controllerRef.current?.dismissNeighbourhoodEvent()}
+              >
+                Apply neutral outcome
+              </button>
+              <small>Escape applies the same neutral outcome. No service timer runs while this choice is open.</small>
+            </footer>
           </section>
         </div>
       ) : null}

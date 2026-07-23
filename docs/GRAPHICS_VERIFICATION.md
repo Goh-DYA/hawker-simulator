@@ -1,9 +1,9 @@
 # Graphics and Gameplay Verification
 
 Retained evidence date: 2026-07-16 (content `1.2.0`)
-Current scope aligned: 2026-07-20 (content `1.3.0`)
+Current scope aligned: 2026-07-24 (independent-review Stage 4 reviewed working source)
 
-Status: **The content `1.3.0` layered-stall and food contracts pass automated coverage, and its nutrition surfaces pass a targeted 1280 x 720 development-browser inspection. The exact-production all-stall/all-dish gallery and human review remain open.**
+Status: **Stage 4 party, event, regular, and debrief visuals are source-integrated, pass the comprehensive automated gate, and have reviewed multi-viewport and scale evidence. The retained content `1.3.0` nutrition pass and earlier graphics evidence remain targeted rather than exact-production or human approval.**
 
 ## Evidence boundary
 
@@ -17,6 +17,17 @@ Status: **The content `1.3.0` layered-stall and food contracts pass automated co
 - The screenshots also predate the final audit fixes for globally unique queue anchors, live-order-preserving reroutes, utility-adjusted meal depletion, and the restored route overlay. They are targeted evidence, not performance, accessibility, cultural, or exhaustive graphics approval.
 - The content `1.3.0` local builds generated service-worker build ID `7d3da6d67b11`. Payload totals and a deterministic artifact-manifest hash still need to be recorded; older measurements remain explicitly historical in `PERFORMANCE_REPORT.md`.
 - The renderer still performs a full-frame redraw and recreates text during frame rendering. Automated recipe tests and the Node simulation benchmark do not measure that browser CPU/allocation path.
+
+## Stage 4 visual and interaction evidence boundary
+
+- A party has one canonical world actor and queue footprint. Deterministic companion figures render around that leader so the social group remains visible without creating duplicate pathfinding actors. Each member remains inspectable through the Party service panel with an SGD budget, planned order, serving stop, independently sampled needs, and service state.
+- Planning exposes any selected neighbourhood event and its complete operational modifiers. An unresolved service choice appears in a semantic focus-contained dialog; the background becomes inert, Escape applies the documented neutral outcome, and no event copy associates condition-aware needs with identity, appearance, persona, story, or neighbourhood.
+- Insights includes a six-regular gallery with encounter count, four-step story progression, and an explicit reminder that nutrition needs are resampled independently on every visit. The debrief separately reports party visits, guest totals, explained splits, partial parties, event resolution, and regular story beats.
+- Source, automated, and browser review covers event-dialog semantics, canonical party summaries, persisted regular/event data, responsive shell containment, modal copy height, catalogue and dock behavior, and meaningful-text sizing.
+- Clean planning layouts were inspected at 1280×720, 1024×640, 800×720, and 390×844. The event modal was inspected at 1280×720, 1024×640, 390×844, and combined scale. Separate checks covered 200% in-game text, effective 200% browser zoom through a 640×360 same-origin iframe scaled to a 1280×720 physical frame, and combined 200% text plus effective 200% zoom.
+- No checked view had application-root horizontal overflow, a product-UI collision, or meaningful informational text below 0.75rem. The responsive cascade was refined so header, clock, dock, catalogue, and modal layers remain distinct across short and narrow layouts.
+- A same-input comparison with the user’s 1908×1072 overlap reference found the prior header, action-strip, catalogue, and dock collision absent in the reviewed planning layout. Dynamic simulation state differs between the two captures.
+- `visualQa` and the `visualQaEvent` Lunch event fixture are deterministic and non-persisting. The same-origin frame allowance used for exact viewport and zoom emulation exists only in development; production continues to send `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
 
 ## Verification matrix
 
@@ -38,6 +49,11 @@ Status: **The content `1.3.0` layered-stall and food contracts pass automated co
 | Game-state UI and movement cues | Planning/open state, queue edit state, stall queue panel, expansion action, customer pose/status cues, carried food, table meals, and a Settings guide for all customer bubbles and the patience ring are connected to the simulation snapshot | Starter, live-service, custom-queue, queue-editing, and expansion captures; exact indicator-mapping regression; retained local-browser guide inspection; lifecycle/core invariant tests | **Pass retained targeted review;** exact-production responsive/accessibility review remains open |
 | Preferred guest routes and prediction | Route editor paints patterned teal, saved, undoable keep-clear tiles; weighted A* applies the same preference to actual guests, exit choice, queue insight, and the dashed predicted path while retaining obstacle-safe fallback | Seven focused core regressions plus the 1024 × 640 local-browser keyboard/clear/undo/reload pass | **Pass automated and targeted development-browser review;** fresh exact-production capture remains open |
 
+| Visible parties and companions | One canonical leader carries the route and queue footprint; companion figures communicate group size while member budgets, orders, needs, service, and tray decisions remain available in a DOM summary | Comprehensive tests cover identity, one-actor/one-queue behavior, Combo Board planning, settlement, capacity waits, reload, watchdog handling, and cleanup; renderer and Party service source are integrated | **Pass comprehensive logic/source review;** dense live-party occlusion, reduced-motion, and full lifecycle observation remain human visual gates |
+| Neighbourhood event planning choice | Forecast card presents operational modifiers; an untimed semantic dialog contains focus, makes the background inert, and provides explicit choice and neutral-dismissal paths | Runtime tests cover selection, frozen resolution, neutral dismissal, pause intent, caps, exact keyed preference effects, RNG neutrality, and condition neutrality; modal was inspected at 1280×720, 1024×640, 390×844, and combined scale | **Pass automated and reviewed browser gate;** assistive-technology and human narrative review remain external |
+| Recurring regular stories | Six fictional regulars expose encounter/story progression while copy keeps independently sampled condition-aware needs separate from identity | Deterministic content/persistence tests, integrated Insights gallery, and responsive shell inspection | **Pass automated and responsive-shell review;** qualified cultural-tone and long-session story review remain external |
+| Stage 4 debrief | Separates party guest totals, explained splits, partial outcomes, event resolution, and regular story beats while retaining the SGD ledger and forecast causes | Runtime summary contract, UI source, comprehensive regression suite, and responsive containment review | **Pass automated and responsive-shell review;** full long-period narrative playthrough remains a human gate |
+
 ## Screenshot evidence
 
 All captures are stored outside the shipped repository in a local archive.
@@ -53,7 +69,7 @@ All captures are stored outside the shipped repository in a local archive.
 | `hawker-expanded-wide.png` | Enlarged hall framing and projected boundary after further expansion |
 | `hawker-expanded-twice.png` | Repeated expansion state, live customers, and expansion control/insight context |
 
-## Exact-production checks still required
+## Further release checks still required
 
 1. Record the validated source commit plus current payload/hash, then repeat the visual smoke on that artifact at 1280 x 720 and 1024 x 640, plus required zoom/text-scaling levels.
 2. Record browser/OS/GPU, DPR, console errors/warnings, unexpected network activity, resize/suspension/WebGL recovery, and save/reload results.
@@ -64,3 +80,6 @@ All captures are stored outside the shipped repository in a local archive.
 7. Run the all-stall gallery with a representative 80-guest crowd while profiling frame-time, allocation, and memory. The renderer's full-frame redraw and text recreation require browser evidence; visual completeness alone is not a performance pass.
 8. Run repeated expansion plus queue edits through save/reload and a long crowd soak; verify customers leave only at the live exit and never traverse furniture.
 9. Complete the human visual, accessibility, and Singapore cultural reviews before production approval.
+10. Capture active multi-member party service, split seating, partial-party resolution, the regular gallery, and the expanded debrief through a complete production-artifact period flow. Stage 4 planning and event-modal shell containment have already passed the required working-source viewport review.
+11. Repeat the effective zoom evidence using an actual browser 200% zoom control during the final cross-stage review. Stage 4 used a precisely sized same-origin emulation in addition to true 200% in-game text.
+12. Observe parties of two through six during movement, queueing, seating together, explained table splitting, eating, tray return, and exit. Verify companion spacing, occlusion, non-colour differentiation, correspondence with the DOM member list, and that visual companions never appear as independent queue or pathfinding actors.

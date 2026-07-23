@@ -26,6 +26,7 @@ import type {
   SimulationConfig,
   SimulationConfigOverrides,
   SimulationMetrics,
+  StrategicGameplayState,
   UndoSnapshot,
   AccessPoint,
 } from "./types";
@@ -43,6 +44,78 @@ export const DEFAULT_SIMULATION_CONFIG: SimulationConfig = {
   standard: { maxFixedStepsPerAdvance: 40 },
   lowerEnd: { maxFixedStepsPerAdvance: 20 },
 };
+
+export function createInitialStrategicGameplayState(): StrategicGameplayState {
+  return {
+    regularProgress: {},
+    neighbourhoodEvents: {
+      history: [],
+      eventCountByDay: {},
+    },
+    parties: {},
+  };
+}
+
+export function cloneStrategicGameplayState(
+  source: StrategicGameplayState,
+): StrategicGameplayState {
+  return {
+    regularProgress: Object.fromEntries(
+      Object.entries(source.regularProgress).map(([regularId, progress]) => [
+        regularId,
+        { ...progress },
+      ]),
+    ),
+    neighbourhoodEvents: {
+      history: source.neighbourhoodEvents.history.map((occurrence) => ({
+        ...occurrence,
+      })),
+      eventCountByDay: { ...source.neighbourhoodEvents.eventCountByDay },
+      current: source.neighbourhoodEvents.current
+        ? { ...source.neighbourhoodEvents.current }
+        : undefined,
+    },
+    parties: Object.fromEntries(
+      Object.entries(source.parties).map(([partyId, party]) => [
+        partyId,
+        {
+          ...party,
+          memberCustomerIds: [...party.memberCustomerIds],
+          members: party.members.map((member) => ({
+            ...member,
+            healthConditions: [...member.healthConditions],
+            plannedStallIds: member.plannedStallIds
+              ? [...member.plannedStallIds]
+              : undefined,
+            plannedPreparationIds: member.plannedPreparationIds
+              ? [...member.plannedPreparationIds] as [string, string]
+              : undefined,
+            satisfactionModifiers: member.satisfactionModifiers
+              ? { ...member.satisfactionModifiers }
+              : undefined,
+            ratingFactors: member.ratingFactors
+              ? { ...member.ratingFactors }
+              : undefined,
+            orderLineSnapshot: member.orderLineSnapshot
+              ? snapshotOrderLine(member.orderLineSnapshot)
+              : undefined,
+            mealOrderSnapshot: member.mealOrderSnapshot
+              ? snapshotMealOrder(member.mealOrderSnapshot)
+              : undefined,
+            settledMealLineIds: member.settledMealLineIds
+              ? [...member.settledMealLineIds]
+              : undefined,
+            servedStallDefinitionIds: member.servedStallDefinitionIds
+              ? [...member.servedStallDefinitionIds]
+              : undefined,
+          })),
+          stallIds: [...party.stallIds],
+          seatKeys: [...party.seatKeys],
+        },
+      ]),
+    ),
+  };
+}
 
 function mergeConfig(config: SimulationConfigOverrides | undefined): SimulationConfig {
   const merged: SimulationConfig = {
@@ -87,6 +160,7 @@ const EMPTY_METRICS: SimulationMetrics = {
   pathRequests: 0,
   pathFailures: 0,
   recoveredTargets: 0,
+  trayReturnOpportunities: 0,
   trayReturns: 0,
   visitRatings: [],
   nutrition: createEmptyNutritionMetrics(),
@@ -220,7 +294,7 @@ export function createNewGame(options: NewGameOptions): GameState {
   };
   const initialSeed = hashSeed(options.seed ?? "hawker-simulator");
   const state: GameState = {
-    schemaVersion: 6,
+    schemaVersion: 7,
     map: cloneMap(options.map),
     accessPoints,
     routeGuidePoints,
@@ -249,6 +323,9 @@ export function createNewGame(options: NewGameOptions): GameState {
     ),
     forecastArrivals: [],
     comboBoard: options.comboBoard ?? EMPTY_COMBO_BOARD,
+    strategicGameplay: cloneStrategicGameplayState(
+      options.strategicGameplay ?? createInitialStrategicGameplayState(),
+    ),
     arrivalSamplingSeed: hashSeed(`${initialSeed}:forecast-arrivals:v1`),
     rngState: initialSeed,
     nextCustomerSequence: 1,
@@ -289,6 +366,15 @@ export function cloneCustomer(customer: Customer): Customer {
     position: { ...customer.position },
     path: customer.path.map((point) => ({ ...point })),
     healthConditions: [...customer.healthConditions],
+    visitPreferenceTags: customer.visitPreferenceTags
+      ? [...customer.visitPreferenceTags]
+      : undefined,
+    satisfactionModifiers: customer.satisfactionModifiers
+      ? { ...customer.satisfactionModifiers }
+      : undefined,
+    ratingFactors: customer.ratingFactors
+      ? { ...customer.ratingFactors }
+      : undefined,
     servedStallDefinitionIds: customer.servedStallDefinitionIds
       ? [...customer.servedStallDefinitionIds]
       : undefined,
@@ -327,7 +413,7 @@ export function createSnapshot(state: GameState): GameSnapshot {
   const objects = Object.values(state.objects).map(clonePlacedObject).sort((a, b) => compareIds(a.id, b.id));
   const customers = Object.values(state.customers).map(cloneCustomer).sort((a, b) => compareIds(a.id, b.id));
   return {
-    schemaVersion: 6,
+    schemaVersion: 7,
     tick: state.tick,
     elapsedMs: state.elapsedMs,
     map: cloneMap(state.map),
@@ -373,6 +459,7 @@ export function createSnapshot(state: GameState): GameSnapshot {
         preparationIds: [...offer.preparationIds] as [string, string],
       } : null) as unknown as typeof state.comboBoard.slots,
     },
+    strategicGameplay: cloneStrategicGameplayState(state.strategicGameplay),
     metrics: {
       ...state.metrics,
       visitRatings: state.metrics.visitRatings.map((rating) => ({

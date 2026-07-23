@@ -1,6 +1,7 @@
 import type {
   AccessPoint,
   GridPoint,
+  HealthCondition,
   MoneyCents,
   MoneyDeltaCents,
   NutritionIntent,
@@ -8,6 +9,8 @@ import type {
   NutritionRequestResult,
   NutritionValue,
   ObjectiveKind,
+  PartyLifecyclePhase,
+  PartyOrderStrategy,
   PeriodLedgerEntryKind,
   QueueDirection,
   ServicePeriodId,
@@ -127,6 +130,11 @@ export interface RuntimePeriodDebrief {
   readonly unservedDepartures: number;
   readonly partialMeals: number;
   readonly partialMealCauses: readonly RuntimePartialMealCauseSummary[];
+  readonly partyVisits: number;
+  readonly partyGuests: number;
+  readonly partySplits: number;
+  readonly partialPartyVisits: number;
+  readonly regularStoryBeats: number;
   readonly completedComboVisits: number;
   readonly comboOfferOutcomes: readonly RuntimeComboOfferOutcomeSummary[];
   readonly causeCodes: readonly RuntimeDebriefCauseCode[];
@@ -156,6 +164,73 @@ export interface RuntimeForecast {
   readonly coverage: readonly ForecastCoverage[];
   readonly menuIndependent: true;
   readonly explanation: string;
+}
+
+export interface RuntimeNeighbourhoodEventChoice {
+  readonly id: string;
+  readonly label: string;
+  readonly description: string;
+  /** Player-facing statement of what choosing this response does. */
+  readonly resultingOutcome: string;
+  /** Exact operational change added by this choice, separate from the event. */
+  readonly choiceDeltaLabels: readonly string[];
+  /** Exact combined event-and-choice forecast shown before confirmation. */
+  readonly resultingModifierLabels: readonly string[];
+}
+
+export interface RuntimeNeighbourhoodEventSummary {
+  readonly eventId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly neutralOutcome: string;
+  readonly choicePrompt?: string;
+  readonly choices: readonly RuntimeNeighbourhoodEventChoice[];
+  readonly selectedChoiceId?: string;
+  readonly dismissed: boolean;
+  /** True only while an authored untimed choice still needs a planning decision. */
+  readonly requiresDecision: boolean;
+  /** Exact event-only forecast before an optional service choice. */
+  readonly baseModifierLabels: readonly string[];
+  /** Exact forecast that results from taking the documented neutral response. */
+  readonly neutralModifierLabels: readonly string[];
+  /** Resolved player-facing outcome, absent while a choice is still open. */
+  readonly resolvedOutcome?: string;
+  /** Exact combined operational changes, suitable for the planning UI. */
+  readonly modifierLabels: readonly string[];
+  readonly preferenceTagBasisPointDeltas: Readonly<Record<string, number>>;
+}
+
+export interface RuntimePartySummary {
+  readonly partyId: string;
+  readonly leaderCustomerId: string;
+  readonly guestCount: number;
+  readonly servedGuestCount: number;
+  readonly phase: PartyLifecyclePhase;
+  readonly orderStrategy: PartyOrderStrategy;
+  readonly servingStopCount: number;
+  readonly nextStopIndex: number;
+  readonly reservedSeatCount: number;
+  readonly splitExplained: boolean;
+  readonly members: readonly {
+    readonly memberId: string;
+    readonly archetypeId: string;
+    readonly budgetCents: MoneyCents;
+    readonly plannedDishId: string;
+    readonly plannedStallId: string;
+    readonly nutritionIntentId?: NutritionIntent;
+    readonly healthConditions: readonly HealthCondition[];
+    readonly served: boolean;
+  }[];
+}
+
+export interface RuntimeRegularProgressSummary {
+  readonly regularId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly encounterCount: number;
+  readonly storyStep: number;
+  readonly lastVisitDay?: number;
+  readonly currentStoryBeat?: string;
 }
 
 export interface RuntimeNutritionProfileSummary {
@@ -380,6 +455,9 @@ export interface RuntimeSnapshot {
   timeLabel: string;
   readonly servicePeriod: RuntimeServicePeriod;
   readonly forecast: RuntimeForecast;
+  readonly neighbourhoodEvent?: RuntimeNeighbourhoodEventSummary;
+  readonly activeParties?: readonly RuntimePartySummary[];
+  readonly regularProgress?: readonly RuntimeRegularProgressSummary[];
   readonly periodLedger: RuntimePeriodLedger;
   readonly periodDebrief?: RuntimePeriodDebrief;
   isOpen: boolean;
@@ -487,6 +565,10 @@ export interface RuntimeController {
     complementPreparationId: string,
   ): boolean;
   clearComboOffer(slot: 0 | 1 | 2): boolean;
+  /** Resolves the current planning event with one authored choice. */
+  chooseNeighbourhoodEvent(choiceId: string): boolean;
+  /** Applies the event's documented neutral outcome during planning. */
+  dismissNeighbourhoodEvent(): boolean;
   acceptObjective(objectiveId: string): boolean;
   /** Declines the complete three-offer board for the current period. */
   skipObjective(): boolean;

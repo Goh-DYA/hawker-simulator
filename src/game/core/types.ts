@@ -31,6 +31,14 @@ export type Rotation = 0 | 90 | 180 | 270;
 export type TileKind = "floor" | "wall" | "void";
 export type QualityMode = "standard" | "lower-end";
 export type QueueDirection = "north" | "east" | "south" | "west";
+export type SeatPreference =
+  | "any"
+  | "quiet"
+  | "near-stall"
+  | "group-table"
+  | "accessible"
+  | "breezy"
+  | "bright";
 
 export interface Footprint {
   readonly width: number;
@@ -145,6 +153,11 @@ export interface PlaceableDefinition {
   readonly servicePoint?: GridPoint;
   readonly queueAnchor?: GridPoint;
   readonly seatPoints?: readonly GridPoint[];
+  readonly seatMetadata?: readonly {
+    readonly accessible: boolean;
+    readonly comfort: number;
+  }[];
+  readonly environmentTags?: readonly string[];
   readonly trayReturnPoint?: GridPoint;
   readonly stall?: StallDefinition;
   /** Spatial gameplay effects supplied by signs, facilities, comfort, and decor. */
@@ -167,6 +180,11 @@ export interface CustomerArchetype {
   /** How willing this archetype is to explore a less-obvious stall. Zero disables exploration. */
   readonly noveltyPreference?: number;
   readonly preferenceTags?: readonly string[];
+  readonly seatPreference?: SeatPreference;
+  readonly groupSizeRange?: readonly [number, number];
+  readonly satisfactionModifiers?: CustomerSatisfactionModifiers;
+  readonly spendMultiplier?: number;
+  readonly trayReturnChance?: number;
   /** Optional progression gates. Reputation uses the core zero-to-five scale. */
   readonly unlockLevel?: number;
   readonly unlockReputation?: number;
@@ -176,6 +194,14 @@ export interface CustomerArchetype {
     readonly endHour: number;
     readonly peakMultiplier: number;
   };
+}
+
+export interface CustomerSatisfactionModifiers {
+  readonly value: number;
+  readonly speed: number;
+  readonly comfort: number;
+  readonly variety: number;
+  readonly cleanliness: number;
 }
 
 export interface SimulationCatalog {
@@ -233,6 +259,19 @@ export interface Customer {
   readonly forecastGroupSize?: 1 | 2 | 3 | 4 | 5 | 6;
   readonly forecastMealMixId?: string;
   readonly forecastBudgetCents?: MoneyCents;
+  /** Stable identity of the canonical party lifecycle represented by this leader. */
+  readonly partyId?: string;
+  /** Fictional recurring identity; visit needs are sampled on a separate keyed stream. */
+  readonly regularId?: string;
+  readonly regularStoryStep?: number;
+  /** Per-visit authored override used by recurring fictional regulars. */
+  readonly seatPreference?: SeatPreference;
+  /** Per-visit rating weights used by recurring fictional regulars. */
+  readonly satisfactionModifiers?: CustomerSatisfactionModifiers;
+  /** Operational preferences from the current event, never condition prevalence. */
+  readonly visitPreferenceTags?: readonly string[];
+  /** Keyed at arrival so reloads cannot change whether this guest returns a tray. */
+  readonly trayReturnPlanned?: boolean;
   /** Visit-specific conditions assigned independently of customer archetype. */
   readonly healthConditions: readonly HealthCondition[];
   readonly sourceEntranceId?: string;
@@ -527,6 +566,113 @@ export interface RecoveryState {
   readonly zeroResaleObjectIds: readonly string[];
 }
 
+export interface RegularProgressState {
+  readonly encounterCount: number;
+  /** Zero means not yet met; one through four select the authored story beat. */
+  readonly storyStep: number;
+  readonly lastVisitDay?: number;
+}
+
+export interface NeighbourhoodEventOccurrenceState {
+  readonly day: number;
+  readonly periodSequenceId: number;
+  readonly periodId: ServicePeriodId;
+  readonly eventId: string;
+  /** Undefined means the documented neutral outcome was applied. */
+  readonly selectedChoiceId?: string;
+  readonly dismissed: boolean;
+}
+
+export interface NeighbourhoodEventProgressState {
+  /**
+   * Immutable occurrence history. It is also the source of truth used to
+   * validate the at-most-one-per-period and at-most-two-per-day limits.
+   */
+  readonly history: readonly NeighbourhoodEventOccurrenceState[];
+  /** Persisted, checked cache used by planning UI without rescanning history. */
+  readonly eventCountByDay: Readonly<Record<number, number>>;
+  /** The current period's occurrence while its choice/debrief remains visible. */
+  readonly current?: NeighbourhoodEventOccurrenceState;
+}
+
+export type PartyLifecyclePhase =
+  | "forming"
+  | "routing"
+  | "queueing"
+  | "seeking-seat"
+  | "seated"
+  | "departing";
+
+export type PartyOrderStrategy =
+  | "pending"
+  | "joint-two-stop"
+  | "single-stall-fallback";
+
+export interface PartyMemberVisitState {
+  readonly memberId: string;
+  readonly archetypeId: string;
+  readonly budgetCents: MoneyCents;
+  readonly nutritionIntentId?: NutritionIntent;
+  readonly healthConditions: readonly HealthCondition[];
+  readonly plannedStallId: string;
+  readonly plannedDishId: string;
+  /** Whole member route; its union across the party never exceeds two stops. */
+  readonly plannedStallIds?: readonly string[];
+  /** Present when this member selected a Combo Board offer. */
+  readonly plannedMealOfferId?: string;
+  readonly plannedPreparationIds?: readonly [string, string];
+  readonly seatPreference?: SeatPreference;
+  readonly satisfactionModifiers?: CustomerSatisfactionModifiers;
+  readonly trayReturnPlanned: boolean;
+  /** Frozen only once the party reaches this member's serving stop. */
+  readonly orderLineSnapshot?: OrderLineSnapshot;
+  readonly mealOrderSnapshot?: MealOrderSnapshot;
+  readonly settledMealLineIds?: readonly string[];
+  readonly mealSettlementCause?: MealSettlementCause;
+  readonly served: boolean;
+  readonly nutritionResult?: NutritionRequestResult;
+  /** Member-specific rating and XP inputs survive reload and watchdog settlement. */
+  readonly satisfaction?: number;
+  readonly ratingFactors?: Partial<VisitRatingComponents>;
+  readonly awardedVisitXp?: number;
+  readonly firstServeBonusXp?: number;
+  readonly spentCents?: MoneyCents;
+  readonly servedStallDefinitionIds?: readonly string[];
+}
+
+/**
+ * Canonical party coordination and per-member service state. The map contains
+ * only the leader Customer, so a party occupies one route and one queue place
+ * while every member still has an independently priced and evaluated order.
+ */
+export interface PartyLifecycleState {
+  readonly partyId: string;
+  readonly leaderCustomerId: string;
+  readonly memberCustomerIds: readonly string[];
+  readonly members: readonly PartyMemberVisitState[];
+  readonly phase: PartyLifecyclePhase;
+  readonly orderStrategy: PartyOrderStrategy;
+  /** Ordered route through no more than two serving stalls. */
+  readonly stallIds: readonly string[];
+  /** Index of the next stall stop; stallIds.length means service is complete. */
+  readonly nextStopIndex: number;
+  /** Reserved seat keys, kept atomic until an explained split is allowed. */
+  readonly seatKeys: readonly string[];
+  /** Time spent waiting for a suitable seat cluster, not total visit time. */
+  readonly seatWaitElapsedMs: number;
+  readonly splitExplained: boolean;
+  /** Idempotency guard for one terminal partial or zero-served outcome. */
+  readonly terminalServiceOutcome?:
+    | "partial-second-stop"
+    | "zero-served-unavailable";
+}
+
+export interface StrategicGameplayState {
+  readonly regularProgress: Readonly<Record<string, RegularProgressState>>;
+  readonly neighbourhoodEvents: NeighbourhoodEventProgressState;
+  readonly parties: Readonly<Record<string, PartyLifecycleState>>;
+}
+
 export interface EconomyState {
   readonly cashCents: MoneyCents;
   readonly lifetimeGrossSalesCents: MoneyCents;
@@ -571,6 +717,7 @@ export interface SimulationMetrics {
   readonly pathRequests: number;
   readonly pathFailures: number;
   readonly recoveredTargets: number;
+  readonly trayReturnOpportunities: number;
   readonly trayReturns: number;
   readonly visitRatings: readonly VisitRating[];
   readonly nutrition: NutritionMetrics;
@@ -612,6 +759,11 @@ export interface SimulationEvent {
     | "customer-despawned"
     | "sale-completed"
     | "meal-partial"
+    | "party-created"
+    | "party-partial"
+    | "party-unserved"
+    | "party-seated"
+    | "regular-story"
     | "level-up"
     | "target-recovered"
     | "objective-completed"
@@ -652,7 +804,7 @@ export interface UndoEntry {
 }
 
 export interface GameState {
-  readonly schemaVersion: 6;
+  readonly schemaVersion: 7;
   readonly map: GridMap;
   readonly accessPoints: readonly AccessPoint[];
   readonly routeGuidePoints: readonly GridPoint[];
@@ -674,6 +826,7 @@ export interface GameState {
   readonly forecast: PeriodForecast;
   readonly forecastArrivals: readonly ForecastArrivalObservation[];
   readonly comboBoard: ComboBoard;
+  readonly strategicGameplay: StrategicGameplayState;
   /** Immutable keyed stream seed for menu-neutral forecast arrival attributes. */
   readonly arrivalSamplingSeed: number;
   readonly rngState: number;
@@ -704,6 +857,7 @@ export interface NewGameOptions {
   readonly initiallyUnlockedDefinitionIds?: readonly string[];
   readonly forecastProfiles?: readonly PeriodDemandProfile[];
   readonly comboBoard?: ComboBoard;
+  readonly strategicGameplay?: StrategicGameplayState;
 }
 
 export interface PlaceObjectCommand {
@@ -818,7 +972,7 @@ export interface AdvanceResult {
 }
 
 export interface GameSnapshot {
-  readonly schemaVersion: 6;
+  readonly schemaVersion: 7;
   readonly tick: number;
   readonly elapsedMs: number;
   readonly map: GridMap;
@@ -839,6 +993,7 @@ export interface GameSnapshot {
   readonly forecast: PeriodForecast;
   readonly forecastArrivals: readonly ForecastArrivalObservation[];
   readonly comboBoard: ComboBoard;
+  readonly strategicGameplay: StrategicGameplayState;
   readonly metrics: SimulationMetrics;
   readonly canUndo: boolean;
   readonly events: readonly SimulationEvent[];
@@ -952,6 +1107,11 @@ export type PersistentGameStateV6 = Omit<PersistentGameStateV5, "schemaVersion">
   readonly comboBoard: ComboBoard;
 };
 
+export type PersistentGameStateV7 = Omit<PersistentGameStateV6, "schemaVersion"> & {
+  readonly schemaVersion: 7;
+  readonly strategicGameplay: StrategicGameplayState;
+};
+
 export interface PersistentGameStateV1 {
   readonly schemaVersion: 1;
   readonly map: GridMap;
@@ -970,4 +1130,5 @@ export type AnyPersistentGameState =
   | PersistentGameStateV3
   | PersistentGameStateV4
   | PersistentGameStateV5
-  | PersistentGameStateV6;
+  | PersistentGameStateV6
+  | PersistentGameStateV7;

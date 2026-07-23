@@ -201,3 +201,70 @@ The Stage 3 large-text Combo Board layout is covered by focused 200% regression 
 Automated accessibility and browser evidence remains engineering validation rather than qualified screen-reader, clinical-language, cultural, sensitivity, human-balance, or production-performance approval.
 
 Private preview: pending.
+
+## Stage 4 — parties, regulars, and neighbourhood events
+
+Status: implementation, comprehensive validation, critical review, and responsive browser review complete; owner-only private preview publication remains pending.
+
+### Implemented contracts
+
+- Core V7/runtime V5 persists the people-and-events layer without changing canonical integer-cent SGD money. The immediately preceding Core V6/runtime V4 preview migrates additively: existing active visits remain single guests, existing periods, ledgers, objectives, forecasts, variants, and Combo Board state are retained, and no companion or regular history is invented.
+- Authored demand uses the four established period profiles, eight deterministic neighbourhood events, and six recurring fictional regulars. At most one event may occur in a period and two in a day. Event selection and resolution are seed-stable, and event modifiers may affect volume, SGD budgets, preferences, party mix, or meal composition but never condition-aware incidence.
+- An event with a service choice pauses planning, exposes the complete forecast modifier in plain language, accepts one untimed response, and freezes that response for the period. Dismissing the choice applies its documented neutral result and preserves the player’s prior speed intent.
+- Parties of up to six are represented by one canonical visible leader with rendered companions, one route, and one queue footprint. Each member retains an independently sampled SGD budget, visit needs, order, frozen serving terms, nutrition result, service state, and tray-return decision; preparation load, sale, ingredient cost, nutrition, experience, and service outcomes remain per guest.
+- Whole-party order planning is deterministic, atomic, and limited to two stall stops. An invalid joint plan falls back deterministically to feasible single meals. If a later stop becomes unreachable, already served members settle normally while unserved components create no sale or experience and the debrief records an explicit partial-party cause.
+- Seating first reserves a suitable cluster atomically. Accessibility requirements are hard constraints. Only after exactly 40% of party patience has elapsed may the nearest valid adjacent-table split be used, and production adjacency is path-validated so a wall cannot make geometrically close tables a valid split.
+- Regular encounter count and four-step story progress persist independently from each visit’s resampled condition-aware needs. Regular identity, story, appearance, persona, event, and neighbourhood theme never assign a health condition.
+- The player-facing layer adds a focus-contained event dialog with an explicit neutral action, full event modifiers in the forecast, party member budgets and orders in Focus, a regular story gallery in Insights, companion rendering in the world, and party/event/regular causes in the debrief.
+
+### Critical code, gameplay, and experience review
+
+The Stage 4 implementation review corrected several high-risk integration details before the comprehensive gate:
+
+- Canonical party persistence stores one live customer entity plus the party lifecycle rather than serializing companion customers as duplicate simulation actors. Strict V7 parsing rejects forged event counters, aliased seats, contradictory party states, and non-canonical companion entities.
+- A party that cannot yet form a valid current-menu plan remains a deterministic pending party and exits through an explicit unserved path; save/reload cannot silently remove it or award money or experience.
+- Party watchdog settlement expands the leader outcome across every member. Each served guest receives the documented timeout result and cents settlement, every unserved guest receives no sale or experience, and the entire party is then cleaned up atomically.
+- Table splitting now consumes path-validated mutual adjacency supplied by production seating geometry. This closes the visual-versus-routing mismatch in which two tables could appear nearby in coordinates while being separated by an obstacle.
+- Active-guest totals count party members rather than only visible leaders, while route and queue occupancy remain atomic. This keeps forecast, debrief, and capacity explanations aligned with the player’s visible party.
+- Event UI uses a semantic modal, contains keyboard focus, makes the game background inert, offers Escape as the documented neutral resolution, and presents operational effects without linking a story or identity to health status.
+- Authored event preference changes previously risked collapsing into the same broad scoring tier. The reviewed implementation applies exact keyed deltas, so `+24` and `+34` produce materially distinct deterministic choice pressure. The calculation consumes no gameplay random-number draws and never changes condition-aware incidence.
+- Party Combo Board routing previously sorted placed stall-instance identifiers instead of preserving the frozen main-to-complement sequence. The planner now evaluates both two-stop orientations, accepts only orders compatible with one shared sequence, preserves main-first service even when instance identifiers sort side-first, and deterministically rejects mutually contradictory two-stop plans.
+- The responsive cascade could allow header, clock, dock, catalogue, and modal layers to compete for the same short-viewport space. Breakpoint-specific containment, wrapping, stacking, and internal scrolling now keep those regions distinct at desktop, tablet, phone, enlarged-text, and combined-scale layouts.
+- Browser fixtures are deterministic and non-persisting. `visualQa` establishes a stable planning view, while `visualQaEvent` establishes a stable Lunch event-decision view without writing fixture state into a player save.
+- Same-origin framing is permitted only by the development response headers used for exact viewport and zoom emulation. Production retains `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
+
+The reviewed interaction arc remains legible: planning first explains the event and its operational consequence, service shows a party as one social group while retaining member-level decisions, recurring guests reveal story progress without turning health needs into identity, and the debrief connects those outcomes to service causes. The responsive review found no remaining shell overlap or containment blocker. Qualified human review of narrative tone, cultural detail, assistive-technology behavior, and long-session engagement remains an external release gate.
+
+### Comprehensive validation completed
+
+- `npm run typecheck`: passed for the integrated Stage 4 working source.
+- `npm run lint`: passed with no warnings.
+- `npm test`: 51 files and 407 tests passed, including the focused strategic, event, persistence, live-party, responsive, compatibility, and all prior-stage regressions.
+- Live-party simulation coverage includes seed stability, one-leader/one-queue representation, Combo Board participation, two-stop settlement, in-flight save/reload equivalence, per-guest cent and watchdog settlement, temporarily full-queue waiting, and complete cleanup of unserved companions.
+- Persistence coverage verifies Core V6 to V7 and runtime V1–V4 to V5 migration, unchanged SGD cents, exact V5 writes, canonical regular/event/party round trips, and rejection of forged states.
+- Deterministic coverage verifies six-member limits, at-most-two-stop order plans, reversed-ID main-first Combo Board service, rejection of contradictory stop orders, atomic accessible seating, the exact 40% split threshold, path-validated adjacency, four normalized period profiles, eight condition-neutral events, exact keyed preference deltas, and six independent recurring stories.
+- `npm run validate:content`: 17 content checks passed.
+- `npm run test:ssr`: 2 SSR checks passed.
+- `npm run build`: passed under the supported bundled Node.js 24 runtime. The recorded client chunk larger than 500 kB remains a known performance warning rather than a build failure. Both production targets used service-worker source stamp `2e6e7bc52161`.
+- `npm run build:vercel`: passed under the supported bundled Node.js 24 runtime.
+- `git diff --check`: passed.
+
+### Responsive, graphical, and accessibility evidence
+
+The DOM and renderer contracts for the event decision, visible companions, party-service detail, regular gallery, and expanded debrief are implemented. Focus containment, inert-background semantics, explicit neutral dismissal, and human-readable modifier labels received both source/test review and browser inspection.
+
+The reviewed planning interface is clean at 1280×720, 1024×640, 800×720, and 390×844. The event modal was inspected at 1280×720, 1024×640, 390×844, and combined scale. Separate passes covered 200% in-game text, effective 200% browser zoom through a 640×360 same-origin iframe scaled to a 1280×720 physical frame, and combined 200% text plus effective 200% zoom. Across these checks there was no application-root horizontal overflow, no observed product-UI collision, and no meaningful informational text below 0.75rem.
+
+The effective zoom technique is deterministic engineering emulation, not a substitute for the final actual-browser 200% zoom pass. A same-input comparison with the user’s 1908×1072 overlap reference confirmed that the prior header, action-strip, catalogue, and dock collision is absent in the reviewed planning layout; dynamic simulation state necessarily differs between captures. The development-only frame allowance used for these checks is not shipped: production continues to deny framing.
+
+### Food and nutrition provenance
+
+Stage 4 adds, removes, renames, substitutes, or materially changes no food or preparation, and no event or regular story requires a new dish. The working diff leaves `tools/nutrition/manifest.mjs` and `src/content/nutrition.generated.json` unchanged. The authoritative read-only CSV remains unchanged at SHA-256 `1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e`; all existing serving mappings, missing values, and trace values retain their Stage 3 interpretation.
+
+### Remaining publication and external gates
+
+- Publish the reviewed artifact as an owner-only preview and record its version, source commit, access restriction, URL, and smoke result.
+- Repeat zoom with an actual browser 200% control during the final cross-stage review; the Stage 4 pass used a precisely sized same-origin emulation.
+- Retain qualified screen-reader, clinical-language, Singapore cultural, sensitivity, human-balance, and production-performance review as external release gates.
+
+Private preview: pending.

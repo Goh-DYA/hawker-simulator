@@ -259,7 +259,7 @@ describe("core V6 persistence", () => {
       comboCatalog(),
       { config: source.config },
     );
-    expect(loaded.schemaVersion).toBe(6);
+    expect(loaded.schemaVersion).toBe(7);
     expect(loaded.comboBoard).toEqual(board);
     expect(() => assertSimulationInvariants(loaded)).not.toThrow();
 
@@ -268,7 +268,7 @@ describe("core V6 persistence", () => {
       Object.entries(v6).filter(([key]) => key !== "comboBoard"),
     );
     const migrated = migratePersistentState({ ...withoutBoard, schemaVersion: 5 });
-    expect(migrated.schemaVersion).toBe(6);
+    expect(migrated.schemaVersion).toBe(7);
     expect(migrated.comboBoard).toEqual(EMPTY_COMBO_BOARD);
   });
 

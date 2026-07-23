@@ -48,9 +48,19 @@ describe("dual-target hosting configuration", () => {
     const developmentCsp = createNextSecurityHeaders(true).find(
       ({ key }) => key === "Content-Security-Policy",
     )?.value;
+    const productionFrameOptions = createNextSecurityHeaders().find(
+      ({ key }) => key === "X-Frame-Options",
+    )?.value;
+    const developmentFrameOptions = createNextSecurityHeaders(true).find(
+      ({ key }) => key === "X-Frame-Options",
+    )?.value;
 
     expect(productionCsp).not.toContain("'unsafe-eval'");
+    expect(productionCsp).toContain("frame-ancestors 'none'");
+    expect(productionFrameOptions).toBe("DENY");
     expect(developmentCsp).toContain("'unsafe-eval'");
+    expect(developmentCsp).toContain("frame-ancestors 'self'");
+    expect(developmentFrameOptions).toBe("SAMEORIGIN");
   });
 
   it("tolerates browser-injected body attributes during hydration", async () => {

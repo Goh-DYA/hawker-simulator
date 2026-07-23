@@ -164,7 +164,7 @@ describe("multiple movable access points", () => {
       elapsedMs: current.elapsedMs,
     };
     const loaded = deserializeGameState(legacy, TEST_CATALOG, { config: current.config });
-    expect(loaded.schemaVersion).toBe(6);
+    expect(loaded.schemaVersion).toBe(7);
     expect(loaded.accessPoints.map((point) => point.kind)).toEqual(["entrance", "exit"]);
   });
 });

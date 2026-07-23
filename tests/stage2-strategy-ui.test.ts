@@ -113,7 +113,7 @@ describe("Stage 2 player-facing strategy UI", () => {
     expect(simulator).toContain("of visits may carry a nutrition intent");
     expect(simulator).toContain("among those flagged visits");
     expect(simulator).toContain("Menu changes update coverage only");
-    expect(simulator).toContain("For now, parties arrive individually");
+    expect(simulator).toContain("Parties arrive and route as coordinated groups");
     expect(simulator).toContain("Service can use one exact preparation or a validated two-item Combo Board meal");
     expect(simulator).not.toContain("Stage 2 does not yet");
     expect(simulator).toContain("events, appearance, persona, regular identity, and neighbourhood theme never set these needs");
@@ -344,8 +344,8 @@ describe("Stage 2 player-facing strategy UI", () => {
     expect(simulator).toContain("Contribution");
     expect(simulator).toContain("Lowest-scoring parts of the visit");
     expect(simulator).toContain("Compare expected and observed mixes");
-    expect(simulator).toContain("Parties currently arrive as individual visits");
-    expect(simulator).toContain("Two-item Combo Board meals are scored once per served visit");
+    expect(simulator).toContain("Party members kept separate budgets, orders, and results while moving as one group");
+    expect(simulator).toContain("Two-item Combo Board meals are scored once per served guest");
     expect(simulator).toContain('id="period-debrief-title" tabIndex={-1} data-modal-initial-focus');
     expect(simulator).toContain("Try next.");
     expect(simulator).not.toContain('className="period-hud" data-phase={snapshot.servicePeriod.phase} aria-live');

@@ -192,6 +192,61 @@ describe("Stage 1 responsive and scale contracts", () => {
     expect(css).toContain("grid-template-columns: minmax(0, 1fr) minmax(170px, max-content);");
   });
 
+  it("keeps medium and large text single-column after the compact breakpoint", async () => {
+    const css = await readFile(new URL("app/globals.css", root), "utf8");
+    const mediumDesktopRule = css.indexOf(
+      '.game-shell[data-text-scale="medium"] .play-layout',
+    );
+    const safeguardStart = css.indexOf("/* Responsive collision safeguards.");
+    const compactStart = css.indexOf("@media (max-width: 899px)", safeguardStart);
+    const compactEnd = css.indexOf("@media (max-width: 600px)", compactStart);
+    const compactRules = css.slice(compactStart, compactEnd);
+
+    expect(mediumDesktopRule).toBeGreaterThanOrEqual(0);
+    expect(safeguardStart).toBeGreaterThan(mediumDesktopRule);
+    expect(compactStart).toBeGreaterThan(safeguardStart);
+    expect(compactRules).toContain(
+      '.game-shell[data-text-scale="medium"] .play-layout',
+    );
+    expect(compactRules).toContain(
+      '.game-shell[data-text-scale="large"] .play-layout',
+    );
+    expect(compactRules).toContain(
+      "grid-template-columns: minmax(0, 1fr);",
+    );
+    expect(compactRules).toMatch(
+      /data-text-scale="large"[^}]*\.catalogue-grid\s*\{[^}]*repeat\(2,/,
+    );
+  });
+
+  it("prevents scaled header, toolbar, catalogue, and dock collisions", async () => {
+    const css = await readFile(new URL("app/globals.css", root), "utf8");
+    const safeguardStart = css.indexOf("/* Responsive collision safeguards.");
+    const safeguardRules = css.slice(safeguardStart);
+
+    expect(safeguardRules).toContain(
+      '.game-shell[data-text-scale="medium"] .topbar',
+    );
+    expect(safeguardRules).toContain(
+      '.game-shell[data-text-scale="medium"] :is(.speed-group button, .icon-button)',
+    );
+    expect(safeguardRules).toMatch(
+      /data-text-scale="medium"[^}]*\.toast-stack\s*\{[^}]*top:\s*auto;[^}]*bottom:\s*calc\(96px/,
+    );
+    expect(safeguardRules).toMatch(
+      /data-text-scale="large"[^}]*\.toast-stack\s*\{[^}]*top:\s*auto;[^}]*bottom:\s*calc\(114px/,
+    );
+    expect(safeguardRules).toMatch(
+      /\.bottom-dock button\s*\{[^}]*grid-template-rows:\s*auto auto;/,
+    );
+    expect(safeguardRules).toMatch(
+      /@media \(max-width: 1400px\)[\s\S]*?\.tool-segment\s*\{[^}]*grid-column:\s*1 \/ -1;/,
+    );
+    expect(safeguardRules).toMatch(
+      /\.game-shell:not\(\[data-text-scale="large"\]\) \.catalogue-grid\s*\{[^}]*repeat\(2,/,
+    );
+  });
+
   it("presents the debrief as a modal dialog outside the inert play area", async () => {
     const simulator = await readFile(
       new URL("app/game/HawkerSimulator.tsx", root),

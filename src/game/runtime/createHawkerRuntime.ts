@@ -16,6 +16,13 @@ import {
   derivePreparationForecastResponses,
 } from "@/src/content/preparationGameplay";
 import {
+  NEIGHBOURHOOD_EVENTS,
+  REGULARS,
+  projectEventModifiers,
+  type EventModifier,
+  type NeighbourhoodEventDefinition,
+} from "@/src/content/strategicGameplay";
+import {
   ARRIVAL_PERIOD_MS,
   assessForecastCoverage,
   AUTHORED_LEVEL_XP_THRESHOLDS,
@@ -84,6 +91,7 @@ import {
   type GridPoint,
   type MoneyCents,
   type MealComponent,
+  type NeighbourhoodEventOccurrenceState,
   type NutritionIntent,
   type NutritionMetric,
   type NutritionProfile as CoreNutritionProfile,
@@ -98,6 +106,14 @@ import {
   type ServicePeriodPhase,
   type VisitRatingComponents,
 } from "@/src/game/core";
+import {
+  selectNeighbourhoodEvent,
+} from "@/src/game/core/strategicProgression";
+import {
+  createRuntimeSaveEnvelopeV5,
+  decodeRuntimeSaveEnvelope,
+  type RuntimePersistentStateV5,
+} from "@/src/game/persistence/runtimeEnvelope";
 import type {
   BuildTool,
   GameSpeed,
@@ -112,6 +128,9 @@ import type {
   RuntimeForecastComparison,
   RuntimeOptions,
   RuntimeNutritionProfileSummary,
+  RuntimeNeighbourhoodEventSummary,
+  RuntimePartySummary,
+  RuntimeRegularProgressSummary,
   RuntimeServingTermsSummary,
   RuntimeSnapshot,
 } from "./types";
@@ -876,6 +895,11 @@ export function buildCatalog(): {
         ? Number.MAX_SAFE_INTEGER
         : item.unlockRequirement.level,
       seatPoints: item.seatPoints.map((point) => ({ x: point.x, y: point.y })),
+      seatMetadata: item.seatPoints.map((point) => ({
+        accessible: point.accessible,
+        comfort: point.comfort,
+      })),
+      environmentTags: [...item.tags],
       trayReturnPoint: returnPoint ? { x: returnPoint.x, y: returnPoint.y } : undefined,
       utility: utilityEffectsForPlaceable(item),
     };
@@ -953,6 +977,11 @@ export function buildCatalog(): {
           distanceSensitivity: archetype.distanceSensitivity,
           noveltyPreference: archetype.noveltyPreference,
           preferenceTags: archetype.dishPreferenceTags,
+          seatPreference: archetype.seatPreference,
+          groupSizeRange: [...archetype.groupSizeRange],
+          satisfactionModifiers: { ...archetype.satisfactionModifiers },
+          spendMultiplier: archetype.spendMultiplier,
+          trayReturnChance: archetype.trayReturnChance,
           unlockLevel: archetype.unlockRequirement.level,
           unlockReputation: archetype.unlockRequirement.reputation / 20,
           unlockPrerequisiteIds: [...archetype.unlockRequirement.prerequisiteIds],
@@ -1255,6 +1284,64 @@ export function formatSimulationEvent(event: SimulationEvent): RuntimeEvent | un
       amountCents,
     };
   }
+  if (event.type === "party-created") {
+    const guestCount = Number(event.message);
+    return {
+      kind: "info",
+      message:
+        Number.isSafeInteger(guestCount) && guestCount >= 2
+          ? `A ${guestCount}-guest party arrived and will move through service together.`
+          : "A party arrived and will move through service together.",
+      importance: "routine",
+      groupKey: "party-arrivals",
+    };
+  }
+  if (event.type === "party-partial") {
+    return {
+      kind: "warning",
+      message:
+        event.message === "second-stall-unavailable" ||
+        event.message === "serving-stall-unavailable-during-preparation"
+          ? "A party received only its served orders; unavailable orders were cancelled without charge."
+          : event.message === "drain-watchdog-partial"
+            ? "A party reached closing with a mix of served and unserved guests; only served orders were charged."
+            : "A party could not complete its joint service plan. No unserved order was charged.",
+      importance: "important",
+      groupKey: `party-partial:${event.message ?? "unknown"}`,
+    };
+  }
+  if (
+    event.type === "party-seated" &&
+    event.message === "party-split-after-patience-threshold"
+  ) {
+    return {
+      kind: "info",
+      message:
+        "After waiting through 40% of its seating patience, a party split across the nearest valid adjacent tables.",
+      importance: "important",
+      groupKey: "party-seating-splits",
+    };
+  }
+  if (event.type === "regular-story") {
+    const [regularId, rawStep] = event.message?.split(":") ?? [];
+    const regular = REGULARS.find((candidate) => candidate.id === regularId);
+    const storyStep = Number(rawStep);
+    const storyBeat =
+      regular &&
+      Number.isSafeInteger(storyStep) &&
+      storyStep >= 1
+        ? regular.storyBeats[Math.min(regular.storyBeats.length, storyStep) - 1]
+        : undefined;
+    return {
+      kind: "info",
+      message:
+        regular && storyBeat
+          ? `${regular.name}: ${storyBeat}`
+          : "A returning neighbour shared a new chapter in their centre story.",
+      importance: "important",
+      groupKey: regular ? `regular-story:${regular.id}` : "regular-story",
+    };
+  }
   if (event.type === "recovery-granted") {
     return {
       kind: "success",
@@ -1296,14 +1383,7 @@ export function formatSimulationEvent(event: SimulationEvent): RuntimeEvent | un
   return undefined;
 }
 
-export interface RuntimePersistentState {
-  readonly runtimeSchemaVersion: 4;
-  readonly core: unknown;
-  readonly stallMenus: Readonly<Record<string, readonly string[]>>;
-  readonly nutritionDataVersion: string;
-  readonly activeDishVariants: Readonly<Record<string, string>>;
-  readonly periodOutcomes: Readonly<Record<number, RuntimePeriodOutcomeState>>;
-}
+export type RuntimePersistentState = RuntimePersistentStateV5;
 
 export interface RuntimePeriodOutcomeState {
   readonly periodSequenceId: number;
@@ -1311,9 +1391,46 @@ export interface RuntimePeriodOutcomeState {
   readonly timedOutServedVisits: number;
   readonly partialMealSecondStallUnavailable: number;
   readonly partialMealServedTimeout: number;
+  readonly partyVisits: number;
+  readonly partyGuests: number;
+  readonly partySplits: number;
+  readonly partialPartyVisits: number;
+  /** Stable terminal party ids prevent duplicate partial counts after reload. */
+  readonly partialPartyOutcomeIds: readonly string[];
+  readonly regularStoryBeats: number;
   readonly comboOfferOutcomes: Readonly<Record<string, RuntimeComboOfferOutcomeState>>;
   readonly forecastComparison?: RuntimeForecastComparison;
   readonly forecastCoverage?: readonly ForecastCoverage[];
+}
+
+type RuntimePartyStates = GameState["strategicGameplay"]["parties"];
+
+/**
+ * Returns only newly observed terminal partial-party outcomes. A partial visit
+ * must contain both served and unserved members; a zero-served departure is an
+ * unserved outcome, not a partial one. Entity ids are required so duplicate
+ * core events cannot inflate the debrief, including after a persisted reload.
+ */
+export function deduplicatedPartialPartyOutcomeIds(
+  events: readonly SimulationEvent[],
+  partiesBefore: RuntimePartyStates,
+  partiesAfter: RuntimePartyStates,
+  previouslyRecordedIds: readonly string[] = [],
+): readonly string[] {
+  const seen = new Set(previouslyRecordedIds);
+  const newlyObserved: string[] = [];
+  for (const event of events) {
+    if (event.type !== "party-partial") continue;
+    const partyId = event.entityId;
+    if (!partyId || seen.has(partyId)) continue;
+    const party = partiesAfter[partyId] ?? partiesBefore[partyId];
+    if (!party || party.members.length < 2) continue;
+    const servedCount = party.members.filter((member) => member.served).length;
+    if (servedCount === 0 || servedCount === party.members.length) continue;
+    seen.add(partyId);
+    newlyObserved.push(partyId);
+  }
+  return newlyObserved;
 }
 
 export interface RuntimeComboOfferOutcomeState {
@@ -1453,35 +1570,520 @@ function withStallMenus(
 
 export function decodeRuntimeSave(value: unknown): {
   core: unknown;
-  runtimeSchemaVersion?: 1 | 2 | 3 | 4;
+  runtimeSchemaVersion?: 1 | 2 | 3 | 4 | 5;
   menus?: Readonly<Record<string, readonly string[]>>;
   variants?: unknown;
   nutritionDataVersion?: string;
   periodOutcomes?: unknown;
 } {
+  const decoded = decodeRuntimeSaveEnvelope(value);
+  if (decoded.runtimeSchemaVersion === undefined) return { core: decoded.core };
+  return {
+    core: decoded.core,
+    runtimeSchemaVersion: decoded.runtimeSchemaVersion,
+    menus: normalizeStallMenuSelection(decoded.menus),
+    variants: decoded.variants,
+    nutritionDataVersion: decoded.nutritionDataVersion,
+    periodOutcomes: decoded.periodOutcomes,
+  };
+}
+
+const NEIGHBOURHOOD_EVENT_BY_ID = new Map(
+  NEIGHBOURHOOD_EVENTS.map((event) => [event.id, event]),
+);
+
+function runtimeEventDefinition(
+  occurrence: NeighbourhoodEventOccurrenceState | undefined,
+): NeighbourhoodEventDefinition | undefined {
+  return occurrence
+    ? NEIGHBOURHOOD_EVENT_BY_ID.get(
+        occurrence.eventId as NeighbourhoodEventDefinition["id"],
+      )
+    : undefined;
+}
+
+function validateRuntimeEventOccurrence(
+  occurrence: NeighbourhoodEventOccurrenceState,
+): NeighbourhoodEventDefinition {
+  const event = runtimeEventDefinition(occurrence);
+  if (!event) {
+    throw new Error(`Saved neighbourhood event ${occurrence.eventId} is not authored`);
+  }
+  if (!event.eligiblePeriods.includes(occurrence.periodId)) {
+    throw new Error(
+      `Saved neighbourhood event ${occurrence.eventId} is not eligible for ${occurrence.periodId}`,
+    );
+  }
+  const selectedChoice = occurrence.selectedChoiceId
+    ? event.choices?.find((choice) => choice.id === occurrence.selectedChoiceId)
+    : undefined;
+  if (occurrence.selectedChoiceId && !selectedChoice) {
+    throw new Error(
+      `Saved neighbourhood event choice ${occurrence.selectedChoiceId} is not authored`,
+    );
+  }
+  if (occurrence.dismissed && occurrence.selectedChoiceId) {
+    throw new Error("A dismissed neighbourhood event cannot retain a selected choice");
+  }
+  if (!event.choices?.length && !occurrence.dismissed) {
+    throw new Error(
+      `Saved neighbourhood event ${occurrence.eventId} is missing its neutral resolution`,
+    );
+  }
+  return event;
+}
+
+function eventCountByDay(
+  history: readonly NeighbourhoodEventOccurrenceState[],
+): Readonly<Record<number, number>> {
+  return history.reduce<Record<number, number>>((counts, occurrence) => {
+    counts[occurrence.day] = (counts[occurrence.day] ?? 0) + 1;
+    return counts;
+  }, {});
+}
+
+function lockRuntimeEventForecast(
+  state: GameState,
+  occurrence: NeighbourhoodEventOccurrenceState | undefined,
+): GameState {
+  const event = occurrence ? validateRuntimeEventOccurrence(occurrence) : undefined;
+  const projected = event
+    ? projectEventModifiers(event, occurrence?.selectedChoiceId)
+    : undefined;
+  return {
+    ...state,
+    forecast: lockPeriodForecast(
+      forecastForServicePeriod(
+        state.servicePeriod,
+        undefined,
+        projected?.forecast,
+      ),
+      state.catalog,
+      state.progression,
+    ),
+  };
+}
+
+/**
+ * Builds the one deterministic, choice-bearing Stage 4 browser-QA fixture.
+ * The caller supplies a fresh state and invokes this only behind the
+ * non-production `visualQa` gate, so no player save or authored event odds are
+ * changed merely to make the modal inspectable.
+ */
+export function prepareRuntimeVisualQaEventState(
+  state: GameState,
+  fixture: string | null | undefined,
+): GameState {
+  if (fixture !== "office-lunch-wave") return state;
+  const servicePeriod: GameState["servicePeriod"] = {
+    day: 1,
+    periodIndex: 1,
+    periodId: "lunch",
+    sequenceId: 2,
+    phase: "planning",
+    arrivalElapsedMs: 0,
+    drainElapsedMs: 0,
+    displayedMinute: SERVICE_PERIODS[1]!.startMinute,
+    cohortCustomerIds: [],
+    overtimeUpkeepCharged: false,
+    stallOpenElapsedMs: {},
+  };
+  const occurrence: NeighbourhoodEventOccurrenceState = {
+    day: servicePeriod.day,
+    periodSequenceId: servicePeriod.sequenceId,
+    periodId: servicePeriod.periodId,
+    eventId: "event.office-lunch-wave",
+    selectedChoiceId: undefined,
+    dismissed: false,
+  };
+  const progression = {
+    ...state.progression,
+    focusDay: servicePeriod.sequenceId,
+    dailyObjectives: [],
+  };
+  let prepared: GameState = {
+    ...state,
+    servicePeriod,
+    progression,
+    forecast: lockPeriodForecast(
+      forecastForServicePeriod(servicePeriod),
+      state.catalog,
+      progression,
+    ),
+    forecastArrivals: [],
+    periodLedgers: {
+      ...state.periodLedgers,
+      [servicePeriod.sequenceId]: createPeriodLedger(
+        servicePeriod.sequenceId,
+        state.economy.cashCents,
+      ),
+    },
+    strategicGameplay: {
+      ...state.strategicGameplay,
+      neighbourhoodEvents: {
+        history: [occurrence],
+        eventCountByDay: { [servicePeriod.day]: 1 },
+        current: occurrence,
+      },
+    },
+  };
+  prepared = {
+    ...prepared,
+    progression: {
+      ...prepared.progression,
+      dailyObjectives: createDailyObjectives(
+        prepared,
+        servicePeriod.day,
+        servicePeriod.sequenceId,
+      ),
+    },
+  };
+  return lockRuntimeEventForecast(prepared, occurrence);
+}
+
+/**
+ * Selects at most one deterministic event for the current planning period,
+ * then rebuilds the menu-neutral forecast with operational modifiers only.
+ * Event selection and projection never receive condition-incidence inputs.
+ */
+export function prepareRuntimeNeighbourhoodEvent(state: GameState): GameState {
+  if (state.servicePeriod.phase !== "planning") return state;
+  const progress = state.strategicGameplay.neighbourhoodEvents;
+  const existing = progress.history.find(
+    (occurrence) => (
+      occurrence.periodSequenceId === state.servicePeriod.sequenceId
+    ),
+  );
+  let current = existing;
+  let history = progress.history;
+  if (!current) {
+    const selected = selectNeighbourhoodEvent({
+      seed: state.arrivalSamplingSeed,
+      day: state.servicePeriod.day,
+      periodId: state.servicePeriod.periodId,
+      periodSequenceId: state.servicePeriod.sequenceId,
+      history,
+    });
+    if (selected) {
+      current = {
+        day: state.servicePeriod.day,
+        periodSequenceId: state.servicePeriod.sequenceId,
+        periodId: state.servicePeriod.periodId,
+        eventId: selected.id,
+        selectedChoiceId: undefined,
+        dismissed: !selected.choices?.length,
+      };
+      history = [...history, current];
+    }
+  }
+  const withProgress: GameState = {
+    ...state,
+    strategicGameplay: {
+      ...state.strategicGameplay,
+      neighbourhoodEvents: {
+        history,
+        eventCountByDay: eventCountByDay(history),
+        current,
+      },
+    },
+  };
+  return lockRuntimeEventForecast(withProgress, current);
+}
+
+export type RuntimeNeighbourhoodEventDecision =
+  | { readonly kind: "choose"; readonly choiceId: string }
+  | { readonly kind: "dismiss" };
+
+/**
+ * Resolves an untimed event only during planning. The immutable history entry
+ * is replaced with its resolved form, so service and later reloads keep the
+ * same choice and forecast.
+ */
+export function resolveRuntimeNeighbourhoodEvent(
+  state: GameState,
+  decision: RuntimeNeighbourhoodEventDecision,
+): GameState | undefined {
+  if (state.servicePeriod.phase !== "planning") return undefined;
+  const progress = state.strategicGameplay.neighbourhoodEvents;
+  const current = progress.current;
   if (
-    value &&
-    typeof value === "object" &&
-    ((value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 1 ||
-      (value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 2 ||
-      (value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 3 ||
-      (value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 4)
+    !current ||
+    current.periodSequenceId !== state.servicePeriod.sequenceId ||
+    current.dismissed ||
+    current.selectedChoiceId !== undefined
   ) {
-    const runtime = value as Partial<RuntimePersistentState> & {
-      readonly runtimeSchemaVersion?: 1 | 2 | 3 | 4;
+    return undefined;
+  }
+  const event = validateRuntimeEventOccurrence(current);
+  if (!event.choices?.length) return undefined;
+  const selectedChoice = decision.kind === "choose"
+    ? event.choices.find((choice) => choice.id === decision.choiceId)
+    : undefined;
+  if (decision.kind === "choose" && !selectedChoice) return undefined;
+  const resolved: NeighbourhoodEventOccurrenceState = {
+    ...current,
+    selectedChoiceId: selectedChoice?.id,
+    dismissed: decision.kind === "dismiss",
+  };
+  const history = progress.history.map((occurrence) => (
+    occurrence.periodSequenceId === resolved.periodSequenceId
+      ? resolved
+      : occurrence
+  ));
+  return lockRuntimeEventForecast({
+    ...state,
+    strategicGameplay: {
+      ...state.strategicGameplay,
+      neighbourhoodEvents: {
+        history,
+        eventCountByDay: eventCountByDay(history),
+        current: resolved,
+      },
+    },
+  }, resolved);
+}
+
+export function runtimeEventRequiresDecision(
+  state: Pick<GameState, "servicePeriod" | "strategicGameplay">,
+): boolean {
+  if (state.servicePeriod.phase !== "planning") return false;
+  const current = state.strategicGameplay.neighbourhoodEvents.current;
+  const event = runtimeEventDefinition(current);
+  return Boolean(
+    current &&
+      current.periodSequenceId === state.servicePeriod.sequenceId &&
+      event?.choices?.length &&
+      !current.dismissed &&
+      current.selectedChoiceId === undefined,
+  );
+}
+
+function basisPointPercentage(value: number): string {
+  return (Math.abs(value) / 100)
+    .toFixed(2)
+    .replace(/\.?0+$/, "");
+}
+
+function signedBasisPointPercentage(value: number): string {
+  return `${value >= 0 ? "+" : "-"}${basisPointPercentage(value)}%`;
+}
+
+function signedBasisPointPercentagePoints(value: number): string {
+  return `${value >= 0 ? "+" : "-"}${basisPointPercentage(value)} percentage points`;
+}
+
+function humanizeStrategicId(value: string): string {
+  const tail = value.includes(".") ? value.slice(value.lastIndexOf(".") + 1) : value;
+  const words = tail.replaceAll("-", " ");
+  return `${words.charAt(0).toUpperCase()}${words.slice(1)}`;
+}
+
+const EVENT_GROUP_LABELS: Readonly<Record<string, string>> = {
+  solo: "Solo visits",
+  pair: "Pairs",
+  "small-group": "Groups of 3",
+  "group-four": "Groups of 4",
+  "group-five": "Groups of 5",
+  "group-six": "Groups of 6",
+};
+
+export function runtimeEventModifierLabels(
+  projected: ReturnType<typeof projectEventModifiers>,
+): readonly string[] {
+  const labels: string[] = [];
+  const demandDelta = (projected.forecast.demandBasisPoints ?? 10_000) - 10_000;
+  const budgetDelta = (projected.forecast.budgetBasisPoints ?? 10_000) - 10_000;
+  if (demandDelta !== 0) {
+    labels.push(`Arrival volume ${signedBasisPointPercentage(demandDelta)}`);
+  }
+  if (budgetDelta !== 0) {
+    labels.push(`Budget bands ${signedBasisPointPercentage(budgetDelta)}`);
+  }
+  for (const [id, delta] of Object.entries(
+    projected.forecast.crowdProfileBasisPointDeltas ?? {},
+  ).sort(([left], [right]) => left.localeCompare(right))) {
+    if (delta !== 0) {
+      labels.push(
+        `${humanizeStrategicId(id)} profile ${
+          signedBasisPointPercentagePoints(delta)
+        }`,
+      );
+    }
+  }
+  for (const [id, delta] of Object.entries(
+    projected.forecast.groupSizeBasisPointDeltas ?? {},
+  ).sort(([left], [right]) => left.localeCompare(right))) {
+    if (delta !== 0) {
+      labels.push(
+        `${EVENT_GROUP_LABELS[id] ?? humanizeStrategicId(id)} ${
+          signedBasisPointPercentagePoints(delta)
+        }`,
+      );
+    }
+  }
+  for (const [id, delta] of Object.entries(
+    projected.forecast.mealMixBasisPointDeltas ?? {},
+  ).sort(([left], [right]) => left.localeCompare(right))) {
+    if (delta !== 0) {
+      labels.push(
+        `${humanizeStrategicId(id)} meals ${
+          signedBasisPointPercentagePoints(delta)
+        }`,
+      );
+    }
+  }
+  for (const [tag, delta] of Object.entries(
+    projected.preferenceTagBasisPointDeltas,
+  ).sort(([left], [right]) => left.localeCompare(right))) {
+    if (delta !== 0) {
+      labels.push(
+        `${humanizeStrategicId(tag)} interest ${
+          signedBasisPointPercentagePoints(delta)
+        }`,
+      );
+    }
+  }
+  return labels;
+}
+
+function projectAuthoredEventModifiers(
+  event: NeighbourhoodEventDefinition,
+  modifiers: readonly EventModifier[],
+): ReturnType<typeof projectEventModifiers> {
+  return projectEventModifiers({
+    id: event.id,
+    name: event.name,
+    description: event.description,
+    seedSalt: event.seedSalt,
+    eligiblePeriods: event.eligiblePeriods,
+    forecastModifiers: modifiers,
+    neutralOutcome: event.neutralOutcome,
+  });
+}
+
+function exactOperationalLabels(
+  projected: ReturnType<typeof projectEventModifiers>,
+  zeroLabel: string,
+): readonly string[] {
+  const labels = runtimeEventModifierLabels(projected);
+  return labels.length > 0 ? labels : [zeroLabel];
+}
+
+export function runtimeNeighbourhoodEventSummary(
+  state: Pick<GameState, "servicePeriod" | "strategicGameplay">,
+): RuntimeNeighbourhoodEventSummary | undefined {
+  const current = state.strategicGameplay.neighbourhoodEvents.current;
+  if (!current || current.periodSequenceId !== state.servicePeriod.sequenceId) {
+    return undefined;
+  }
+  const event = runtimeEventDefinition(current);
+  if (!event) return undefined;
+  const baseProjection = projectEventModifiers(event);
+  const projection = projectEventModifiers(event, current.selectedChoiceId);
+  const selectedChoice = current.selectedChoiceId
+    ? event.choices?.find((choice) => choice.id === current.selectedChoiceId)
+    : undefined;
+  const choices = (event.choices ?? []).map((choice) => {
+    const choiceProjection = projectEventModifiers(event, choice.id);
+    const choiceOnlyProjection = projectAuthoredEventModifiers(
+      event,
+      choice.modifiers,
+    );
+    return {
+      id: choice.id,
+      label: choice.label,
+      description: choice.description,
+      resultingOutcome: choice.description,
+      choiceDeltaLabels: exactOperationalLabels(
+        choiceOnlyProjection,
+        "No additional operational change (0%)",
+      ),
+      resultingModifierLabels: exactOperationalLabels(
+        choiceProjection,
+        "No resulting operational change (0%)",
+      ),
+    };
+  });
+  return {
+    eventId: event.id,
+    name: event.name,
+    description: event.description,
+    neutralOutcome: event.neutralOutcome,
+    choicePrompt: event.choicePrompt,
+    choices,
+    selectedChoiceId: current.selectedChoiceId,
+    dismissed: current.dismissed,
+    requiresDecision: runtimeEventRequiresDecision(state),
+    baseModifierLabels: exactOperationalLabels(
+      baseProjection,
+      "No base operational change (0%)",
+    ),
+    neutralModifierLabels: exactOperationalLabels(
+      baseProjection,
+      "No neutral operational change (0%)",
+    ),
+    resolvedOutcome: selectedChoice
+      ? selectedChoice.description
+      : current.dismissed
+        ? event.neutralOutcome
+        : undefined,
+    modifierLabels: exactOperationalLabels(
+      projection,
+      "No operational change (0%)",
+    ),
+    preferenceTagBasisPointDeltas: projection.preferenceTagBasisPointDeltas,
+  };
+}
+
+export function runtimePartySummaries(
+  state: Pick<GameState, "strategicGameplay">,
+): readonly RuntimePartySummary[] {
+  return Object.values(state.strategicGameplay.parties)
+    .sort((left, right) => left.partyId.localeCompare(right.partyId))
+    .map((party) => ({
+      partyId: party.partyId,
+      leaderCustomerId: party.leaderCustomerId,
+      guestCount: party.members.length,
+      servedGuestCount: party.members.filter((member) => member.served).length,
+      phase: party.phase,
+      orderStrategy: party.orderStrategy,
+      servingStopCount: party.stallIds.length,
+      nextStopIndex: party.nextStopIndex,
+      reservedSeatCount: party.seatKeys.length,
+      splitExplained: party.splitExplained,
+      members: party.members.map((member) => ({
+        memberId: member.memberId,
+        archetypeId: member.archetypeId,
+        budgetCents: member.budgetCents,
+        plannedDishId: member.plannedDishId,
+        plannedStallId: member.plannedStallId,
+        nutritionIntentId: member.nutritionIntentId,
+        healthConditions: [...member.healthConditions],
+        served: member.served,
+      })),
+    }));
+}
+
+export function runtimeRegularProgressSummaries(
+  state: Pick<GameState, "strategicGameplay">,
+): readonly RuntimeRegularProgressSummary[] {
+  return REGULARS.map((regular) => {
+    const progress = state.strategicGameplay.regularProgress[regular.id] ?? {
+      encounterCount: 0,
+      storyStep: 0,
     };
     return {
-      core: runtime.core,
-      runtimeSchemaVersion: runtime.runtimeSchemaVersion,
-      menus: normalizeStallMenuSelection(runtime.stallMenus),
-      variants: runtime.activeDishVariants,
-      nutritionDataVersion: typeof runtime.nutritionDataVersion === "string"
-        ? runtime.nutritionDataVersion
+      regularId: regular.id,
+      name: regular.name,
+      description: regular.description,
+      encounterCount: progress.encounterCount,
+      storyStep: progress.storyStep,
+      lastVisitDay: progress.lastVisitDay,
+      currentStoryBeat: progress.storyStep > 0
+        ? regular.storyBeats[Math.min(regular.storyBeats.length, progress.storyStep) - 1]
         : undefined,
-      periodOutcomes: runtime.periodOutcomes,
     };
-  }
-  return { core: value };
+  });
 }
 
 function resolveComboOfferOutcomes(
@@ -1532,6 +2134,18 @@ export function resolvePeriodOutcomes(
       ) {
         continue;
       }
+      const partialPartyOutcomeIds = Array.isArray(
+        source.partialPartyOutcomeIds,
+      )
+        ? [...new Set(source.partialPartyOutcomeIds.filter(
+            (id): id is string => typeof id === "string" && id.length > 0,
+          ))]
+        : [];
+      const savedPartialPartyVisits =
+        Number.isSafeInteger(source.partialPartyVisits) &&
+        (source.partialPartyVisits ?? -1) >= 0
+          ? source.partialPartyVisits!
+          : 0;
       resolved[sequenceId] = {
         periodSequenceId: sequenceId,
         unservedDepartures: source.unservedDepartures!,
@@ -1545,6 +2159,31 @@ export function resolvePeriodOutcomes(
           Number.isSafeInteger(source.partialMealServedTimeout) &&
           (source.partialMealServedTimeout ?? -1) >= 0
             ? source.partialMealServedTimeout!
+            : 0,
+        partyVisits:
+          Number.isSafeInteger(source.partyVisits) &&
+          (source.partyVisits ?? -1) >= 0
+            ? source.partyVisits!
+            : 0,
+        partyGuests:
+          Number.isSafeInteger(source.partyGuests) &&
+          (source.partyGuests ?? -1) >= 0
+            ? source.partyGuests!
+            : 0,
+        partySplits:
+          Number.isSafeInteger(source.partySplits) &&
+          (source.partySplits ?? -1) >= 0
+            ? source.partySplits!
+            : 0,
+        partialPartyVisits: Math.max(
+          savedPartialPartyVisits,
+          partialPartyOutcomeIds.length,
+        ),
+        partialPartyOutcomeIds,
+        regularStoryBeats:
+          Number.isSafeInteger(source.regularStoryBeats) &&
+          (source.regularStoryBeats ?? -1) >= 0
+            ? source.regularStoryBeats!
             : 0,
         comboOfferOutcomes: resolveComboOfferOutcomes(source.comboOfferOutcomes),
         ...(isRuntimeForecastComparison(source.forecastComparison)
@@ -1562,6 +2201,12 @@ export function resolvePeriodOutcomes(
     timedOutServedVisits: 0,
     partialMealSecondStallUnavailable: 0,
     partialMealServedTimeout: 0,
+    partyVisits: 0,
+    partyGuests: 0,
+    partySplits: 0,
+    partialPartyVisits: 0,
+    partialPartyOutcomeIds: [],
+    regularStoryBeats: 0,
     comboOfferOutcomes: {},
   };
   return resolved;
@@ -1581,6 +2226,12 @@ export function freezeRuntimePeriodForecastCoverage(
     timedOutServedVisits: 0,
     partialMealSecondStallUnavailable: 0,
     partialMealServedTimeout: 0,
+    partyVisits: 0,
+    partyGuests: 0,
+    partySplits: 0,
+    partialPartyVisits: 0,
+    partialPartyOutcomeIds: [],
+    regularStoryBeats: 0,
     comboOfferOutcomes: {},
   };
   if (current.forecastCoverage) return { outcomes, changed: false };
@@ -1719,6 +2370,8 @@ export interface RestoredRuntimeEnvelope {
   readonly periodOutcomes: unknown;
   readonly coreRecoveryWarnings: readonly string[];
   readonly recoveredNutritionSelection: boolean;
+  readonly incompleteLegacyRuntime: boolean;
+  /** @deprecated Compatibility alias for the earlier V2-only recovery flag. */
   readonly incompleteRuntimeV2: boolean;
 }
 
@@ -1731,18 +2384,21 @@ export function restoreRuntimeEnvelope(
   value: unknown,
   authoredCatalog: SimulationCatalog,
 ): RestoredRuntimeEnvelope {
-  const decoded = decodeRuntimeSave(value);
+  const decoded = decodeRuntimeSaveEnvelope(value);
+  const decodedMenus = decoded.menus
+    ? normalizeStallMenuSelection(decoded.menus)
+    : undefined;
   const provisionalCatalog = withStallMenus(
     withDishVariants(
       authoredCatalog,
       provisionalDishVariants(decoded.variants, decoded.nutritionDataVersion),
     ),
-    provisionalStallMenus(decoded.menus),
+    provisionalStallMenus(decodedMenus),
   );
   const provisional = reconcileRuntimeUnlocks(assertRuntimeMap(
     deserializeGameStateWithReport(decoded.core, provisionalCatalog).state,
   ));
-  const stallMenus = resolveStallMenus(decoded.menus ?? {}, {
+  const stallMenus = resolveStallMenus(decodedMenus ?? {}, {
     ...stallMenuProgression(provisional),
     slotBonuses: stallMenuSlotBonuses(provisional),
   });
@@ -1762,9 +2418,10 @@ export function restoreRuntimeEnvelope(
     ...reconcileRuntimeUnlocks(assertRuntimeMap(deserialized.state)),
     catalog,
   };
-  const incompleteRuntimeV2 =
-    decoded.runtimeSchemaVersion === 2 &&
-    (decoded.variants === undefined || decoded.nutritionDataVersion === undefined);
+  for (const occurrence of state.strategicGameplay.neighbourhoodEvents.history) {
+    validateRuntimeEventOccurrence(occurrence);
+  }
+  const incompleteRuntimeV2 = decoded.incompleteLegacyRuntime;
   return {
     state,
     catalog,
@@ -1772,7 +2429,9 @@ export function restoreRuntimeEnvelope(
     activeDishVariants: resolvedVariants.selections,
     periodOutcomes: decoded.periodOutcomes,
     coreRecoveryWarnings: deserialized.recovery.warnings,
-    recoveredNutritionSelection: resolvedVariants.recovered || incompleteRuntimeV2,
+    recoveredNutritionSelection:
+      resolvedVariants.recovered || decoded.incompleteLegacyRuntime,
+    incompleteLegacyRuntime: decoded.incompleteLegacyRuntime,
     incompleteRuntimeV2,
   };
 }
@@ -1923,6 +2582,7 @@ export async function createHawkerRuntime(
     typeof location !== "undefined" &&
     new URLSearchParams(location.search).has("visualQa")
   ) {
+    const qaParams = new URLSearchParams(location.search);
     state = rebaseDevelopmentCash(state, sgdToCents(100_000));
     state = {
       ...state,
@@ -1934,17 +2594,29 @@ export async function createHawkerRuntime(
         unlockedDefinitionIds: Object.keys(catalog.placeables).sort(),
       },
     };
+    state = prepareRuntimeVisualQaEventState(
+      state,
+      qaParams.get("visualQaEvent"),
+    );
+    periodOutcomes = resolvePeriodOutcomes(
+      undefined,
+      state.servicePeriod.sequenceId,
+    );
   }
 
-  const persistentPayload = (): RuntimePersistentState => ({
-    runtimeSchemaVersion: 4,
-    core: persistentStateFromGame(state),
-    stallMenus,
-    nutritionDataVersion: NUTRITION_CONTENT.dataVersion,
-    activeDishVariants,
-    periodOutcomes,
-  });
-  if (restoredCoverageNormalized) {
+  const preparedStrategicState = prepareRuntimeNeighbourhoodEvent(state);
+  const strategicPlanningPrepared = preparedStrategicState !== state;
+  state = preparedStrategicState;
+
+  const persistentPayload = (): RuntimePersistentState =>
+    createRuntimeSaveEnvelopeV5({
+      core: persistentStateFromGame(state),
+      stallMenus,
+      nutritionDataVersion: NUTRITION_CONTENT.dataVersion,
+      activeDishVariants,
+      periodOutcomes,
+    });
+  if (restoredCoverageNormalized || strategicPlanningPrepared) {
     options.onPersistentChange(persistentPayload());
   }
 
@@ -1961,7 +2633,9 @@ export async function createHawkerRuntime(
   let pendingAccessKind: "entrance" | "exit" | undefined;
   let accessSequence = state.accessPoints.length + 1;
   let selectedRotation: Rotation = 0;
-  let speed: GameSpeed = 1;
+  let speedBeforeEventPrompt: GameSpeed = 1;
+  let eventPromptPauseActive = runtimeEventRequiresDecision(state);
+  let speed: GameSpeed = eventPromptPauseActive ? 0 : 1;
   let speedBeforeLayoutEdit: GameSpeed = 1;
   let qualityMode = options.settings.quality;
   let reducedMotion = options.settings.reducedMotion;
@@ -2209,7 +2883,13 @@ export async function createHawkerRuntime(
       | "timedOutServedVisits"
       | "partialMealSecondStallUnavailable"
       | "partialMealServedTimeout"
-    >,
+      | "partyVisits"
+      | "partyGuests"
+      | "partySplits"
+      | "regularStoryBeats"
+    > & {
+      readonly partialPartyOutcomeIds: readonly string[];
+    },
   ) {
     const current = periodOutcomes[periodSequenceId] ?? {
       periodSequenceId,
@@ -2217,8 +2897,22 @@ export async function createHawkerRuntime(
       timedOutServedVisits: 0,
       partialMealSecondStallUnavailable: 0,
       partialMealServedTimeout: 0,
+      partyVisits: 0,
+      partyGuests: 0,
+      partySplits: 0,
+      partialPartyVisits: 0,
+      partialPartyOutcomeIds: [],
+      regularStoryBeats: 0,
       comboOfferOutcomes: {},
     };
+    const partialPartyOutcomeIds = [
+      ...new Set([
+        ...current.partialPartyOutcomeIds,
+        ...delta.partialPartyOutcomeIds,
+      ]),
+    ];
+    const newlyRecordedPartialParties =
+      partialPartyOutcomeIds.length - current.partialPartyOutcomeIds.length;
     periodOutcomes = {
       ...periodOutcomes,
       [periodSequenceId]: {
@@ -2231,6 +2925,14 @@ export async function createHawkerRuntime(
           delta.partialMealSecondStallUnavailable,
         partialMealServedTimeout:
           current.partialMealServedTimeout + delta.partialMealServedTimeout,
+        partyVisits: current.partyVisits + delta.partyVisits,
+        partyGuests: current.partyGuests + delta.partyGuests,
+        partySplits: current.partySplits + delta.partySplits,
+        partialPartyVisits:
+          current.partialPartyVisits + newlyRecordedPartialParties,
+        partialPartyOutcomeIds,
+        regularStoryBeats:
+          current.regularStoryBeats + delta.regularStoryBeats,
       },
     };
   }
@@ -2242,6 +2944,12 @@ export async function createHawkerRuntime(
       timedOutServedVisits: 0,
       partialMealSecondStallUnavailable: 0,
       partialMealServedTimeout: 0,
+      partyVisits: 0,
+      partyGuests: 0,
+      partySplits: 0,
+      partialPartyVisits: 0,
+      partialPartyOutcomeIds: [],
+      regularStoryBeats: 0,
       comboOfferOutcomes: {},
     };
     const currentOffer = currentPeriod.comboOfferOutcomes[observation.offerId] ?? {
@@ -2277,6 +2985,7 @@ export async function createHawkerRuntime(
     events: readonly SimulationEvent[],
     abandonedVisitsBefore: number,
     customersBefore: Readonly<Record<string, Customer>>,
+    partiesBefore: RuntimePartyStates,
   ): boolean {
     const unservedDepartures = Math.max(
       0,
@@ -2295,18 +3004,55 @@ export async function createHawkerRuntime(
       (event) => event.type === "meal-partial" &&
         event.message === "served-timeout",
     ).length;
+    const createdParties = events.filter(
+      (event) => event.type === "party-created",
+    );
+    const partyVisits = createdParties.length;
+    const partyGuests = createdParties.reduce((sum, event) => {
+      const count = Number(event.message);
+      return sum + (
+        Number.isSafeInteger(count) && count >= 2 && count <= 6
+          ? count
+          : 0
+      );
+    }, 0);
+    const partySplits = events.filter(
+      (event) =>
+        event.type === "party-seated" &&
+        event.message === "party-split-after-patience-threshold",
+    ).length;
+    const currentPeriodOutcome =
+      periodOutcomes[state.servicePeriod.sequenceId];
+    const partialPartyOutcomeIds = deduplicatedPartialPartyOutcomeIds(
+      events,
+      partiesBefore,
+      state.strategicGameplay.parties,
+      currentPeriodOutcome?.partialPartyOutcomeIds ?? [],
+    );
+    const regularStoryBeats = events.filter(
+      (event) => event.type === "regular-story",
+    ).length;
     const comboObservations = comboOutcomeObservations(events, customersBefore);
     if (
       unservedDepartures > 0 ||
       timedOutServedVisits > 0 ||
       partialMealSecondStallUnavailable > 0 ||
-      partialMealServedTimeout > 0
+      partialMealServedTimeout > 0 ||
+      partyVisits > 0 ||
+      partySplits > 0 ||
+      partialPartyOutcomeIds.length > 0 ||
+      regularStoryBeats > 0
     ) {
       updatePeriodOutcome(state.servicePeriod.sequenceId, {
         unservedDepartures,
         timedOutServedVisits,
         partialMealSecondStallUnavailable,
         partialMealServedTimeout,
+        partyVisits,
+        partyGuests,
+        partySplits,
+        partialPartyOutcomeIds,
+        regularStoryBeats,
       });
     }
     for (const observation of comboObservations) recordComboOutcome(observation);
@@ -2315,6 +3061,10 @@ export async function createHawkerRuntime(
       timedOutServedVisits > 0 ||
       partialMealSecondStallUnavailable > 0 ||
       partialMealServedTimeout > 0 ||
+      partyVisits > 0 ||
+      partySplits > 0 ||
+      partialPartyOutcomeIds.length > 0 ||
+      regularStoryBeats > 0 ||
       comboObservations.length > 0
     );
   }
@@ -2513,6 +3263,12 @@ export async function createHawkerRuntime(
       timedOutServedVisits: 0,
       partialMealSecondStallUnavailable: 0,
       partialMealServedTimeout: 0,
+      partyVisits: 0,
+      partyGuests: 0,
+      partySplits: 0,
+      partialPartyVisits: 0,
+      partialPartyOutcomeIds: [],
+      regularStoryBeats: 0,
       comboOfferOutcomes: {},
     };
     const periodRatings = snapshot.metrics.visitRatings.filter(
@@ -2597,6 +3353,11 @@ export async function createHawkerRuntime(
                   }]
                 : []),
             ],
+            partyVisits: periodOutcome.partyVisits,
+            partyGuests: periodOutcome.partyGuests,
+            partySplits: periodOutcome.partySplits,
+            partialPartyVisits: periodOutcome.partialPartyVisits,
+            regularStoryBeats: periodOutcome.regularStoryBeats,
             completedComboVisits: comboOfferOutcomes.reduce(
               (sum, outcome) => sum + outcome.completedVisits,
               0,
@@ -2880,6 +3641,12 @@ export async function createHawkerRuntime(
     const selectedCustomer = selectedCustomerId
       ? snapshot.customers.find((customer) => customer.id === selectedCustomerId)
       : undefined;
+    const activeGuestCount = snapshot.customers.reduce((total, customer) => {
+      const party = customer.partyId
+        ? snapshot.strategicGameplay.parties[customer.partyId]
+        : undefined;
+      return total + (party ? party.members.length : 1);
+    }, 0);
     return {
       cashCents: snapshot.economy.cashCents,
       cash: snapshot.economy.currency,
@@ -2903,16 +3670,23 @@ export async function createHawkerRuntime(
         arrivalRemainingMs: Math.max(0, ARRIVAL_PERIOD_MS - state.servicePeriod.arrivalElapsedMs),
         drainRemainingMs: Math.max(0, DRAIN_WATCHDOG_MS - state.servicePeriod.drainElapsedMs),
         configurationLocked: isConfigurationLocked(state.servicePeriod.phase),
-        canAdvance: canManuallyAdvanceServicePeriod(state.servicePeriod.phase),
-        actionLabel: state.servicePeriod.phase === "planning"
-          ? `Start ${serviceDefinition.label}`
-          : state.servicePeriod.phase === "arrivals"
-            ? "Arrivals in progress"
-            : state.servicePeriod.phase === "draining"
-              ? "Draining current visits"
-              : `Plan ${SERVICE_PERIODS[(state.servicePeriod.periodIndex + 1) % SERVICE_PERIODS.length]!.label}`,
+        canAdvance:
+          canManuallyAdvanceServicePeriod(state.servicePeriod.phase) &&
+          !runtimeEventRequiresDecision(state),
+        actionLabel: runtimeEventRequiresDecision(state)
+          ? "Resolve neighbourhood event"
+          : state.servicePeriod.phase === "planning"
+            ? `Start ${serviceDefinition.label}`
+            : state.servicePeriod.phase === "arrivals"
+              ? "Arrivals in progress"
+              : state.servicePeriod.phase === "draining"
+                ? "Draining current visits"
+                : `Plan ${SERVICE_PERIODS[(state.servicePeriod.periodIndex + 1) % SERVICE_PERIODS.length]!.label}`,
       },
       forecast: runtimeForecast,
+      neighbourhoodEvent: runtimeNeighbourhoodEventSummary(state),
+      activeParties: runtimePartySummaries(state),
+      regularProgress: runtimeRegularProgressSummaries(state),
       periodLedger: {
         ...periodLedger,
         contributionCents: asMoneyDeltaCents(ledgerContributionCents(periodLedger)),
@@ -2928,7 +3702,7 @@ export async function createHawkerRuntime(
         state.servicePeriod.phase === "draining",
       speed,
       quality: snapshot.qualityMode,
-      activeCustomers: snapshot.customers.length,
+      activeCustomers: activeGuestCount,
       servedCustomers: snapshot.economy.completedVisits,
       averageSatisfaction: Math.max(0, Math.min(100, averageSatisfaction ?? 0)),
       hasSatisfactionRatings: averageSatisfaction !== undefined,
@@ -2946,8 +3720,8 @@ export async function createHawkerRuntime(
           86 +
             cleanlinessSupport * 4 +
             trayReturnStations * 4 -
-            (trayReturnStations === 0 && snapshot.customers.length > 0 ? 28 : 0) -
-            snapshot.customers.length * 0.5 -
+            (trayReturnStations === 0 && activeGuestCount > 0 ? 28 : 0) -
+            activeGuestCount * 0.5 -
             queueCount * 1.2,
         ),
       ),
@@ -3071,6 +3845,9 @@ export async function createHawkerRuntime(
       fps: runtime.game?.loop.actualFps || 60,
       simulationMs: lastSimulationMs,
       autosaveState: "saved",
+      pausedReason: eventPromptPauseActive
+        ? "Neighbourhood event response required"
+        : undefined,
     };
   }
 
@@ -3385,6 +4162,7 @@ export async function createHawkerRuntime(
         const periodBefore = state.servicePeriod;
         const abandonedVisitsBefore = state.economy.abandonedVisits;
         const customersBefore = state.customers;
+        const partiesBefore = state.strategicGameplay.parties;
         state = {
           ...state,
           arrivalPerformancePressure: Math.max(0, Math.min(1, (lastSimulationMs - 8) / 16)),
@@ -3402,6 +4180,7 @@ export async function createHawkerRuntime(
           result.events,
           abandonedVisitsBefore,
           customersBefore,
+          partiesBefore,
         );
         const periodEnteredDrain =
           periodBefore.phase === "arrivals" &&
@@ -6805,6 +7584,94 @@ export async function createHawkerRuntime(
     }
   }
 
+  function drawPartyCompanions(
+    graphics: Phaser.GameObjects.Graphics,
+    snapshot: GameSnapshot,
+    customer: GameSnapshot["customers"][number],
+    x: number,
+    y: number,
+    pose: ReturnType<typeof animationPoseForCustomer>,
+  ) {
+    const party = customer.partyId
+      ? snapshot.strategicGameplay.parties[customer.partyId]
+      : undefined;
+    if (!party || party.leaderCustomerId !== customer.id) return;
+    const offsets = [
+      { x: -16, y: 7 },
+      { x: 16, y: 7 },
+      { x: -23, y: -4 },
+      { x: 23, y: -4 },
+      { x: 0, y: 13 },
+    ] as const;
+    for (const [index, member] of party.members.slice(1).entries()) {
+      const offset = offsets[index];
+      if (!offset) break;
+      const appearance = customerAppearanceForId(member.memberId);
+      const archetype =
+        CUSTOMER_BY_ID.get(member.archetypeId) ?? CUSTOMER_ARCHETYPES[0];
+      if (!archetype) continue;
+      const visual =
+        CUSTOMER_VISUAL_BY_ID.get(archetype.id) ??
+        visualRecipeForCustomer(archetype);
+      const outfit = customerOutfitDimensions(
+        visual.outfitSilhouette,
+        pose.pose === "eat",
+      );
+      const scale = 0.72;
+      const companionX = x + offset.x;
+      const companionY = y + offset.y;
+      const width = outfit.width * scale;
+      const height = outfit.height * scale;
+      graphics.fillStyle(0x17352e, 0.13);
+      graphics.fillEllipse(
+        companionX,
+        companionY + 10,
+        width + 7,
+        7,
+      );
+      if (pose.stride !== 0) {
+        graphics.lineStyle(3, appearance.clothing, 1);
+        graphics.lineBetween(
+          companionX - 3,
+          companionY + 5,
+          companionX - 4 + pose.stride * 0.65,
+          companionY + 11,
+        );
+        graphics.lineBetween(
+          companionX + 3,
+          companionY + 5,
+          companionX + 4 - pose.stride * 0.65,
+          companionY + 11,
+        );
+      }
+      graphics.fillStyle(appearance.clothing, 1);
+      graphics.fillRoundedRect(
+        companionX - width / 2,
+        companionY - 4,
+        width,
+        height,
+        Math.max(3, outfit.radius * scale),
+      );
+      graphics.fillStyle(appearance.skin, 1);
+      graphics.fillCircle(companionX, companionY - 8, 5.5);
+      graphics.lineStyle(1.5, 0x17352e, 0.72);
+      graphics.strokeCircle(companionX, companionY - 8, 5.5);
+      graphics.lineStyle(2.5, appearance.skin, 1);
+      graphics.lineBetween(
+        companionX - width / 2 + 2,
+        companionY,
+        companionX - width / 2 - 2 + pose.armSwing * 0.55,
+        companionY + 6,
+      );
+      graphics.lineBetween(
+        companionX + width / 2 - 2,
+        companionY,
+        companionX + width / 2 + 2 - pose.armSwing * 0.55,
+        companionY + 6,
+      );
+    }
+  }
+
   function drawCustomers(graphics: Phaser.GameObjects.Graphics, snapshot: GameSnapshot) {
     for (const customer of snapshot.customers) {
       const archetype = CUSTOMER_BY_ID.get(customer.archetypeId) ?? CUSTOMER_ARCHETYPES[0];
@@ -6822,6 +7689,8 @@ export async function createHawkerRuntime(
       const outfit = customerOutfitDimensions(visual.outfitSilhouette, pose.pose === "eat");
       const bodyWidth = outfit.width;
       const bodyHeight = outfit.height;
+
+      drawPartyCompanions(graphics, snapshot, customer, x, y, pose);
 
       if (customer.id === selectedCustomerId) {
         graphics.lineStyle(4, highContrast ? 0xffffff : 0x2d6ea8, 1);
@@ -7111,7 +7980,9 @@ export async function createHawkerRuntime(
       selectedAccessPointId = undefined;
       pendingAccessKind = undefined;
     }
-    if (editingLayout && !willEditLayout) speed = speedBeforeLayoutEdit;
+    if (editingLayout && !willEditLayout) {
+      speed = eventPromptPauseActive ? 0 : speedBeforeLayoutEdit;
+    }
     emitHud(true);
     activeScene?.render(true);
   }
@@ -7125,8 +7996,25 @@ export async function createHawkerRuntime(
     activeScene?.render(true);
   }
 
+  function synchronizeEventPromptPause() {
+    const requiresDecision = runtimeEventRequiresDecision(state);
+    if (requiresDecision && !eventPromptPauseActive) {
+      speedBeforeEventPrompt = speed;
+      speed = 0;
+      eventPromptPauseActive = true;
+    } else if (!requiresDecision && eventPromptPauseActive) {
+      speed = speedBeforeEventPrompt;
+      eventPromptPauseActive = false;
+    }
+  }
+
   function setSpeed(next: GameSpeed) {
-    speed = next;
+    if (eventPromptPauseActive) {
+      speedBeforeEventPrompt = next;
+      speed = 0;
+    } else {
+      speed = next;
+    }
     emitHud(true);
   }
 
@@ -7212,6 +8100,12 @@ export async function createHawkerRuntime(
           timedOutServedVisits: 0,
           partialMealSecondStallUnavailable: 0,
           partialMealServedTimeout: 0,
+          partyVisits: 0,
+          partyGuests: 0,
+          partySplits: 0,
+          partialPartyVisits: 0,
+          partialPartyOutcomeIds: [],
+          regularStoryBeats: 0,
           comboOfferOutcomes: {},
         };
         periodOutcomes = {
@@ -7222,7 +8116,7 @@ export async function createHawkerRuntime(
           },
         };
         const nextServicePeriod = planNextServicePeriod(state.servicePeriod);
-        const stateWithNextPeriod = {
+        const unpreparedNextPeriod = {
           ...state,
           servicePeriod: nextServicePeriod,
           forecast: lockPeriodForecast(
@@ -7238,7 +8132,17 @@ export async function createHawkerRuntime(
               state.economy.cashCents,
             ),
           },
+          strategicGameplay: {
+            ...state.strategicGameplay,
+            neighbourhoodEvents: {
+              ...state.strategicGameplay.neighbourhoodEvents,
+              current: undefined,
+            },
+          },
         };
+        const stateWithNextPeriod = prepareRuntimeNeighbourhoodEvent(
+          unpreparedNextPeriod,
+        );
         state = {
           ...stateWithNextPeriod,
           progression: {
@@ -7257,12 +8161,23 @@ export async function createHawkerRuntime(
           nextServicePeriod.sequenceId,
         );
         speed = 1;
+        synchronizeEventPromptPause();
         options.onPersistentChange(persistentPayload());
         options.onEvent({
           kind: "info",
           message: `${SERVICE_PERIODS[nextServicePeriod.periodIndex]!.label} planning is ready.`,
           importance: "important",
         });
+        const neighbourhoodEvent = runtimeNeighbourhoodEventSummary(state);
+        if (neighbourhoodEvent) {
+          options.onEvent({
+            kind: "info",
+            message: neighbourhoodEvent.requiresDecision
+              ? `${neighbourhoodEvent.name}: review the untimed service choice before opening.`
+              : `${neighbourhoodEvent.name}: ${neighbourhoodEvent.description}`,
+            importance: "important",
+          });
+        }
         emitHud(true);
         activeScene?.render(true);
         return true;
@@ -7271,6 +8186,15 @@ export async function createHawkerRuntime(
         return false;
       }
       if (state.servicePeriod.phase === "planning") {
+        if (runtimeEventRequiresDecision(state)) {
+          options.onEvent({
+            kind: "warning",
+            message:
+              "Choose a neighbourhood event response or use its documented neutral outcome before service.",
+            importance: "important",
+          });
+          return false;
+        }
         const comboIssue = validateComboBoardForState(state, state.comboBoard, true)[0];
         if (comboIssue) {
           options.onEvent({
@@ -7416,6 +8340,9 @@ export async function createHawkerRuntime(
       activeDishVariants = restored.activeDishVariants;
       catalog = restored.catalog;
       state = restored.state;
+      const importedStrategicState = prepareRuntimeNeighbourhoodEvent(state);
+      const importedStrategicPrepared = importedStrategicState !== state;
+      state = importedStrategicState;
       periodOutcomes = resolvePeriodOutcomes(
         restored.periodOutcomes,
         state.servicePeriod.sequenceId,
@@ -7446,11 +8373,15 @@ export async function createHawkerRuntime(
       if (importedCoverageNormalized) {
         options.onPersistentChange(persistentPayload());
       }
+      if (importedStrategicPrepared && !importedCoverageNormalized) {
+        options.onPersistentChange(persistentPayload());
+      }
       recomputeObjectSequence();
       lastPersistentGrossSalesCents = state.economy.lifetimeGrossSalesCents;
       lastPersistentLedgerSignature = `${state.servicePeriod.sequenceId}:${
         state.periodLedgers[state.servicePeriod.sequenceId]?.entries.length ?? 0
       }`;
+      synchronizeEventPromptPause();
       activeScene?.syncWorldBounds(true);
       activeScene?.render(true);
       emitHud(true);
@@ -7467,6 +8398,7 @@ export async function createHawkerRuntime(
       );
       state = freshState(authoredCatalog);
       state = { ...state, catalog };
+      state = prepareRuntimeNeighbourhoodEvent(state);
       periodOutcomes = resolvePeriodOutcomes(
         undefined,
         state.servicePeriod.sequenceId,
@@ -7479,6 +8411,9 @@ export async function createHawkerRuntime(
       pendingAccessKind = undefined;
       buildTool = "select";
       speed = 1;
+      speedBeforeEventPrompt = 1;
+      eventPromptPauseActive = false;
+      synchronizeEventPromptPause();
       speedBeforeLayoutEdit = 1;
       lastPersistentGrossSalesCents = asMoneyCents(0);
       lastPersistentLedgerSignature = `${state.servicePeriod.sequenceId}:${
@@ -7786,6 +8721,56 @@ export async function createHawkerRuntime(
         });
       }
       return accepted;
+    },
+    chooseNeighbourhoodEvent(choiceId) {
+      const current = state.strategicGameplay.neighbourhoodEvents.current;
+      const event = runtimeEventDefinition(current);
+      const choice = event?.choices?.find((candidate) => candidate.id === choiceId);
+      const next = resolveRuntimeNeighbourhoodEvent(state, {
+        kind: "choose",
+        choiceId,
+      });
+      if (!next || !event || !choice) {
+        options.onEvent({
+          kind: "warning",
+          message: "That neighbourhood event choice is no longer available.",
+        });
+        return false;
+      }
+      state = next;
+      synchronizeEventPromptPause();
+      options.onPersistentChange(persistentPayload());
+      options.onEvent({
+        kind: "info",
+        message: `${event.name}: ${choice.label}. The response is now fixed for this period.`,
+        importance: "important",
+      });
+      emitHud(true);
+      activeScene?.render(true);
+      return true;
+    },
+    dismissNeighbourhoodEvent() {
+      const current = state.strategicGameplay.neighbourhoodEvents.current;
+      const event = runtimeEventDefinition(current);
+      const next = resolveRuntimeNeighbourhoodEvent(state, { kind: "dismiss" });
+      if (!next || !event) {
+        options.onEvent({
+          kind: "warning",
+          message: "There is no unresolved neighbourhood event to dismiss.",
+        });
+        return false;
+      }
+      state = next;
+      synchronizeEventPromptPause();
+      options.onPersistentChange(persistentPayload());
+      options.onEvent({
+        kind: "info",
+        message: `${event.name}: ${event.neutralOutcome}`,
+        importance: "important",
+      });
+      emitHud(true);
+      activeScene?.render(true);
+      return true;
     },
     acceptObjective(objectiveId) {
       if (state.servicePeriod.phase !== "planning") {

@@ -23,12 +23,15 @@ export const SECURITY_HEADERS = {
 export function createNextSecurityHeaders(development = false) {
   return Object.entries(SECURITY_HEADERS).map(([key, value]) => ({
     key,
-    value:
-      development && key === "Content-Security-Policy"
-        ? value.replace(
+    value: development && key === "Content-Security-Policy"
+      ? value
+          .replace(
             "script-src 'self' 'unsafe-inline'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
           )
+          .replace("frame-ancestors 'none'", "frame-ancestors 'self'")
+      : development && key === "X-Frame-Options"
+        ? "SAMEORIGIN"
         : value,
   }));
 }

@@ -27,6 +27,7 @@ import {
   type ComboOffer,
   type MealFitSnapshot,
   type MealRole,
+  type MealSettlementCause,
   type ServingPlan,
 } from "./mealComposition";
 import { assertSimulationInvariants, finalizeDrainWatchdogState } from "./simulation";
@@ -36,9 +37,14 @@ import {
   samePoint,
   validatePlacement,
 } from "./grid";
-import { createNewGame } from "./state";
+import {
+  cloneStrategicGameplayState,
+  createInitialStrategicGameplayState,
+  createNewGame,
+} from "./state";
 import { compareIds } from "./ordering";
 import { hashSeed } from "./rng";
+import { isValidSimulationId } from "./validation";
 import {
   cloneNutritionMetrics,
   createEmptyNutritionMetrics,
@@ -56,6 +62,7 @@ import type {
   PersistentGameStateV4,
   PersistentGameStateV5,
   PersistentGameStateV6,
+  PersistentGameStateV7,
   PlacedObject,
   QualityMode,
   SimulationCatalog,
@@ -77,10 +84,18 @@ import type {
   ServicePeriodState,
   Customer,
   CustomerStatus,
+  NeighbourhoodEventOccurrenceState,
+  PartyLifecyclePhase,
+  PartyLifecycleState,
+  PartyOrderStrategy,
+  SeatPreference,
+  ServicePeriodId,
+  StrategicGameplayState,
+  CustomerSatisfactionModifiers,
 } from "./types";
 import type { ForecastArrivalObservation, PeriodForecast } from "./forecast";
 
-export const PERSISTENT_SCHEMA_VERSION = 6 as const;
+export const PERSISTENT_SCHEMA_VERSION = 7 as const;
 
 export class PersistenceError extends Error {
   constructor(message: string, options?: ErrorOptions) {
@@ -692,6 +707,46 @@ function optionalString(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+const SEAT_PREFERENCES: readonly SeatPreference[] = [
+  "any",
+  "quiet",
+  "near-stall",
+  "group-table",
+  "accessible",
+  "breezy",
+  "bright",
+];
+
+function parseSeatPreference(
+  value: unknown,
+  path: string,
+): SeatPreference | undefined {
+  if (value === undefined) return undefined;
+  if (!SEAT_PREFERENCES.includes(value as SeatPreference)) {
+    throw new PersistenceError(`${path} is invalid`);
+  }
+  return value as SeatPreference;
+}
+
+function parseSatisfactionModifiers(
+  value: unknown,
+  path: string,
+): CustomerSatisfactionModifiers | undefined {
+  if (value === undefined) return undefined;
+  if (!isRecord(value)) {
+    throw new PersistenceError(`${path} must be an object`);
+  }
+  return Object.fromEntries(
+    ["value", "speed", "comfort", "variety", "cleanliness"].map((key) => {
+      const parsed = finite(value[key], `${path}.${key}`);
+      if (parsed < -1 || parsed > 1) {
+        throw new PersistenceError(`${path}.${key} must be between -1 and 1`);
+      }
+      return [key, parsed];
+    }),
+  ) as unknown as CustomerSatisfactionModifiers;
+}
+
 function parseMealRole(value: unknown, path: string): MealRole {
   if (value !== "main" && value !== "side" && value !== "drink") {
     throw new PersistenceError(`${path} is invalid`);
@@ -921,6 +976,41 @@ function parseCustomer(
   if (intent !== undefined && !NUTRITION_INTENTS.includes(intent as NutritionIntent)) {
     throw new PersistenceError(`${path}.nutritionIntentId is invalid`);
   }
+  const partyId = value.partyId === undefined
+    ? undefined
+    : strategicId(value.partyId, `${path}.partyId`);
+  const regularId = value.regularId === undefined
+    ? undefined
+    : strategicId(value.regularId, `${path}.regularId`, "regular.");
+  const regularStoryStep = value.regularStoryStep === undefined
+    ? undefined
+    : safeInteger(value.regularStoryStep, `${path}.regularStoryStep`, 0, 4);
+  if ((regularId === undefined) !== (regularStoryStep === undefined)) {
+    throw new PersistenceError(
+      `${path}.regularId and regularStoryStep must be persisted together`,
+    );
+  }
+  const seatPreference = parseSeatPreference(
+    value.seatPreference,
+    `${path}.seatPreference`,
+  );
+  const satisfactionModifiers = parseSatisfactionModifiers(
+    value.satisfactionModifiers,
+    `${path}.satisfactionModifiers`,
+  );
+  const visitPreferenceTags = value.visitPreferenceTags === undefined
+    ? undefined
+    : uniqueStrategicIds(
+        value.visitPreferenceTags,
+        `${path}.visitPreferenceTags`,
+        16,
+      );
+  if (
+    value.trayReturnPlanned !== undefined &&
+    typeof value.trayReturnPlanned !== "boolean"
+  ) {
+    throw new PersistenceError(`${path}.trayReturnPlanned must be boolean`);
+  }
   const ratingSource = isRecord(value.ratingFactors) ? value.ratingFactors : undefined;
   const ratingFactors = ratingSource
     ? Object.fromEntries([
@@ -1112,6 +1202,13 @@ function parseCustomer(
         `${path}.forecastBudgetCents`,
       )),
     }),
+    partyId,
+    regularId,
+    regularStoryStep,
+    seatPreference,
+    satisfactionModifiers,
+    visitPreferenceTags,
+    trayReturnPlanned: value.trayReturnPlanned as boolean | undefined,
     healthConditions,
     sourceEntranceId: optionalString(value.sourceEntranceId),
     targetExitId: optionalString(value.targetExitId),
@@ -1469,7 +1566,11 @@ function parseForecastArrivals(
   });
 }
 
-function parseV5(value: Record<string, unknown>, strictV6 = false): PersistentGameStateV5 {
+function parseV5(
+  value: Record<string, unknown>,
+  strictV6 = false,
+  strictV7 = false,
+): PersistentGameStateV5 {
   const economy = parsePersistentEconomyV5(value.economy);
   const old = parseV4({
     ...value,
@@ -1559,20 +1660,38 @@ function parseV5(value: Record<string, unknown>, strictV6 = false): PersistentGa
     economy.completedVisits - activeServedCustomers,
   );
   const completedCustomers = safeInteger(
-    metricsSource.completedCustomers ?? reconstructedCompletedCustomers,
+    strictV7
+      ? metricsSource.completedCustomers
+      : metricsSource.completedCustomers ?? reconstructedCompletedCustomers,
     "metrics.completedCustomers",
     0,
   );
   const despawnedCustomers = safeInteger(
-    metricsSource.despawnedCustomers ?? completedCustomers + economy.abandonedVisits,
+    strictV7
+      ? metricsSource.despawnedCustomers
+      : metricsSource.despawnedCustomers ??
+        completedCustomers + economy.abandonedVisits,
     "metrics.despawnedCustomers",
     0,
   );
   const spawnedCustomers = safeInteger(
-    metricsSource.spawnedCustomers ?? despawnedCustomers + customers.length,
+    strictV7
+      ? metricsSource.spawnedCustomers
+      : metricsSource.spawnedCustomers ?? despawnedCustomers + customers.length,
     "metrics.spawnedCustomers",
     0,
   );
+  const trayReturnOpportunities = strictV7
+    ? safeInteger(
+        metricsSource.trayReturnOpportunities,
+        "metrics.trayReturnOpportunities",
+        old.metrics.trayReturns,
+      )
+    : safeInteger(
+        metricsSource.trayReturnOpportunities ?? old.metrics.trayReturns,
+        "metrics.trayReturnOpportunities",
+        old.metrics.trayReturns,
+      );
   return {
     ...old,
     schemaVersion: 5,
@@ -1609,14 +1728,25 @@ function parseV5(value: Record<string, unknown>, strictV6 = false): PersistentGa
       spawnedCustomers,
       despawnedCustomers,
       completedCustomers,
-      pathRequests: safeInteger(metricsSource.pathRequests ?? 0, "metrics.pathRequests", 0),
-      pathFailures: safeInteger(metricsSource.pathFailures ?? 0, "metrics.pathFailures", 0),
+      pathRequests: safeInteger(
+        strictV7 ? metricsSource.pathRequests : metricsSource.pathRequests ?? 0,
+        "metrics.pathRequests",
+        0,
+      ),
+      pathFailures: safeInteger(
+        strictV7 ? metricsSource.pathFailures : metricsSource.pathFailures ?? 0,
+        "metrics.pathFailures",
+        0,
+      ),
       recoveredTargets: safeInteger(
-        metricsSource.recoveredTargets ?? 0,
+        strictV7
+          ? metricsSource.recoveredTargets
+          : metricsSource.recoveredTargets ?? 0,
         "metrics.recoveredTargets",
         0,
       ),
       trayReturns: old.metrics.trayReturns,
+      trayReturnOpportunities,
       visitRatings: old.metrics.visitRatings,
       nutrition: old.metrics.nutrition,
     },
@@ -1631,12 +1761,782 @@ function migrateV5ToV6(old: PersistentGameStateV5): PersistentGameStateV6 {
   };
 }
 
-function parseV6(value: Record<string, unknown>): PersistentGameStateV6 {
-  const old = parseV5({ ...value, schemaVersion: 5 }, true);
+function parseV6(
+  value: Record<string, unknown>,
+  strictV7 = false,
+): PersistentGameStateV6 {
+  const old = parseV5({ ...value, schemaVersion: 5 }, true, strictV7);
   return {
     ...old,
     schemaVersion: 6,
     comboBoard: parseComboBoard(value.comboBoard),
+  };
+}
+
+const PARTY_LIFECYCLE_PHASES: readonly PartyLifecyclePhase[] = [
+  "forming",
+  "routing",
+  "queueing",
+  "seeking-seat",
+  "seated",
+  "departing",
+];
+
+const PARTY_ORDER_STRATEGIES: readonly PartyOrderStrategy[] = [
+  "pending",
+  "joint-two-stop",
+  "single-stall-fallback",
+];
+
+const SERVICE_PERIOD_IDS: readonly ServicePeriodId[] = [
+  "breakfast",
+  "lunch",
+  "tea",
+  "evening",
+];
+
+function strategicId(value: unknown, path: string, prefix?: string): string {
+  const parsed = stringValue(value, path);
+  if (!isValidSimulationId(parsed) || (prefix !== undefined && !parsed.startsWith(prefix))) {
+    throw new PersistenceError(
+      `${path} must be a safe${prefix ? ` ${prefix}*` : ""} identifier`,
+    );
+  }
+  return parsed;
+}
+
+function uniqueStrategicIds(
+  value: unknown,
+  path: string,
+  maximum: number,
+): readonly string[] {
+  if (!Array.isArray(value) || value.length > maximum) {
+    throw new PersistenceError(`${path} must be an array with at most ${maximum} entries`);
+  }
+  const ids = value.map((id, index) => strategicId(id, `${path}[${index}]`));
+  if (new Set(ids).size !== ids.length) {
+    throw new PersistenceError(`${path} must not contain duplicate identifiers`);
+  }
+  return ids;
+}
+
+function uniqueNonEmptyStrings(
+  value: unknown,
+  path: string,
+  maximum: number,
+): readonly string[] {
+  if (!Array.isArray(value) || value.length > maximum) {
+    throw new PersistenceError(`${path} must be an array with at most ${maximum} entries`);
+  }
+  const strings = value.map((entry, index) =>
+    stringValue(entry, `${path}[${index}]`));
+  if (new Set(strings).size !== strings.length) {
+    throw new PersistenceError(`${path} must not contain duplicate values`);
+  }
+  return strings;
+}
+
+function parseEventOccurrence(
+  value: unknown,
+  path: string,
+): NeighbourhoodEventOccurrenceState {
+  if (!isRecord(value)) throw new PersistenceError(`${path} must be an object`);
+  if (!SERVICE_PERIOD_IDS.includes(value.periodId as ServicePeriodId)) {
+    throw new PersistenceError(`${path}.periodId is invalid`);
+  }
+  if (typeof value.dismissed !== "boolean") {
+    throw new PersistenceError(`${path}.dismissed must be boolean`);
+  }
+  const selectedChoiceId = value.selectedChoiceId === undefined
+    ? undefined
+    : strategicId(value.selectedChoiceId, `${path}.selectedChoiceId`, "event-choice.");
+  if (value.dismissed && selectedChoiceId !== undefined) {
+    throw new PersistenceError(`${path} cannot be dismissed and have a selected choice`);
+  }
+  return {
+    day: safeInteger(value.day, `${path}.day`, 1),
+    periodSequenceId: safeInteger(
+      value.periodSequenceId,
+      `${path}.periodSequenceId`,
+      1,
+    ),
+    periodId: value.periodId as ServicePeriodId,
+    eventId: strategicId(value.eventId, `${path}.eventId`, "event."),
+    selectedChoiceId,
+    dismissed: value.dismissed,
+  };
+}
+
+function sameEventOccurrence(
+  left: NeighbourhoodEventOccurrenceState,
+  right: NeighbourhoodEventOccurrenceState,
+): boolean {
+  return left.day === right.day &&
+    left.periodSequenceId === right.periodSequenceId &&
+    left.periodId === right.periodId &&
+    left.eventId === right.eventId &&
+    left.selectedChoiceId === right.selectedChoiceId &&
+    left.dismissed === right.dismissed;
+}
+
+function parseStrategicGameplay(
+  value: unknown,
+  customers: readonly Customer[],
+  seatReservations: Readonly<Record<string, string>>,
+  servicePeriod: ServicePeriodState,
+): StrategicGameplayState {
+  if (!isRecord(value)) {
+    throw new PersistenceError("strategicGameplay must be an object");
+  }
+  if (!isRecord(value.regularProgress)) {
+    throw new PersistenceError("strategicGameplay.regularProgress must be an object");
+  }
+  const regularProgress = Object.fromEntries(
+    Object.entries(value.regularProgress).map(([regularId, progress]) => {
+      const path = `strategicGameplay.regularProgress.${regularId}`;
+      strategicId(regularId, path, "regular.");
+      if (!isRecord(progress)) throw new PersistenceError(`${path} must be an object`);
+      const encounterCount = safeInteger(progress.encounterCount, `${path}.encounterCount`);
+      const storyStep = safeInteger(progress.storyStep, `${path}.storyStep`, 0, 4);
+      if (storyStep > encounterCount) {
+        throw new PersistenceError(`${path}.storyStep cannot exceed encounterCount`);
+      }
+      const lastVisitDay = progress.lastVisitDay === undefined
+        ? undefined
+        : safeInteger(progress.lastVisitDay, `${path}.lastVisitDay`, 1);
+      if ((encounterCount === 0) !== (lastVisitDay === undefined)) {
+        throw new PersistenceError(
+          `${path}.lastVisitDay must exist exactly when an encounter has been recorded`,
+        );
+      }
+      return [regularId, { encounterCount, storyStep, lastVisitDay }];
+    }),
+  );
+  for (const customer of customers) {
+    if (customer.regularId === undefined) continue;
+    const progress = regularProgress[customer.regularId];
+    if (
+      !progress ||
+      customer.regularStoryStep === undefined ||
+      customer.regularStoryStep > progress.storyStep
+    ) {
+      throw new PersistenceError(
+        `Customer ${customer.id} has inconsistent recurring-regular progress`,
+      );
+    }
+  }
+
+  if (!isRecord(value.neighbourhoodEvents)) {
+    throw new PersistenceError("strategicGameplay.neighbourhoodEvents must be an object");
+  }
+  const eventSource = value.neighbourhoodEvents;
+  if (!Array.isArray(eventSource.history)) {
+    throw new PersistenceError("strategicGameplay.neighbourhoodEvents.history must be an array");
+  }
+  const history = eventSource.history.map((occurrence, index) =>
+    parseEventOccurrence(
+      occurrence,
+      `strategicGameplay.neighbourhoodEvents.history[${index}]`,
+    ));
+  const seenPeriods = new Set<number>();
+  const derivedCountByDay: Record<number, number> = {};
+  let previousSequenceId = 0;
+  for (const occurrence of history) {
+    if (
+      occurrence.periodSequenceId <= previousSequenceId ||
+      seenPeriods.has(occurrence.periodSequenceId)
+    ) {
+      throw new PersistenceError(
+        "strategicGameplay.neighbourhoodEvents.history must use increasing unique period sequences",
+      );
+    }
+    previousSequenceId = occurrence.periodSequenceId;
+    seenPeriods.add(occurrence.periodSequenceId);
+    const expectedDay = Math.floor((occurrence.periodSequenceId - 1) / 4) + 1;
+    const expectedPeriodId = SERVICE_PERIODS[
+      (occurrence.periodSequenceId - 1) % SERVICE_PERIODS.length
+    ]!.id;
+    if (
+      occurrence.day !== expectedDay ||
+      occurrence.periodId !== expectedPeriodId ||
+      occurrence.periodSequenceId > servicePeriod.sequenceId
+    ) {
+      throw new PersistenceError(
+        "strategicGameplay.neighbourhoodEvents.history has inconsistent period attribution",
+      );
+    }
+    const nextCount = (derivedCountByDay[occurrence.day] ?? 0) + 1;
+    if (nextCount > 2) {
+      throw new PersistenceError(
+        `strategicGameplay.neighbourhoodEvents exceeds two events on day ${occurrence.day}`,
+      );
+    }
+    derivedCountByDay[occurrence.day] = nextCount;
+  }
+  if (!isRecord(eventSource.eventCountByDay)) {
+    throw new PersistenceError(
+      "strategicGameplay.neighbourhoodEvents.eventCountByDay must be an object",
+    );
+  }
+  const eventCountByDay = Object.fromEntries(
+    Object.entries(eventSource.eventCountByDay).map(([dayKey, count]) => {
+      const day = safeInteger(Number(dayKey), `eventCountByDay.${dayKey}.day`, 1);
+      if (String(day) !== dayKey) {
+        throw new PersistenceError(`eventCountByDay.${dayKey} must use a canonical day key`);
+      }
+      return [
+        day,
+        safeInteger(count, `eventCountByDay.${dayKey}`, 1, 2),
+      ];
+    }),
+  ) as Readonly<Record<number, number>>;
+  const countDays = new Set([
+    ...Object.keys(derivedCountByDay),
+    ...Object.keys(eventCountByDay),
+  ]);
+  for (const day of countDays) {
+    if (derivedCountByDay[Number(day)] !== eventCountByDay[Number(day)]) {
+      throw new PersistenceError(
+        "strategicGameplay.neighbourhoodEvents.eventCountByDay does not match history",
+      );
+    }
+  }
+  const current = eventSource.current === undefined
+    ? undefined
+    : parseEventOccurrence(
+        eventSource.current,
+        "strategicGameplay.neighbourhoodEvents.current",
+      );
+  if (current) {
+    const matchingOccurrence = history.find(
+      (occurrence) => occurrence.periodSequenceId === current.periodSequenceId,
+    );
+    if (
+      !matchingOccurrence ||
+      !sameEventOccurrence(matchingOccurrence, current) ||
+      current.periodSequenceId !== history.at(-1)?.periodSequenceId ||
+      current.periodSequenceId !== servicePeriod.sequenceId
+    ) {
+      throw new PersistenceError(
+        "strategicGameplay.neighbourhoodEvents.current must match the latest history entry",
+      );
+    }
+  }
+
+  if (!isRecord(value.parties)) {
+    throw new PersistenceError("strategicGameplay.parties must be an object");
+  }
+  const customerById = new Map(customers.map((customer) => [customer.id, customer]));
+  const assignedLeaderIds = new Set<string>();
+  const assignedMemberIds = new Set<string>();
+  const parties = Object.fromEntries(
+    Object.entries(value.parties).map(([partyId, partySource]) => {
+      const path = `strategicGameplay.parties.${partyId}`;
+      strategicId(partyId, path);
+      if (!isRecord(partySource)) throw new PersistenceError(`${path} must be an object`);
+      if (strategicId(partySource.partyId, `${path}.partyId`) !== partyId) {
+        throw new PersistenceError(`${path}.partyId must match its record key`);
+      }
+      const memberCustomerIds = uniqueStrategicIds(
+        partySource.memberCustomerIds,
+        `${path}.memberCustomerIds`,
+        6,
+      );
+      if (memberCustomerIds.length < 2) {
+        throw new PersistenceError(`${path}.memberCustomerIds must contain two to six guests`);
+      }
+      for (const memberId of memberCustomerIds) {
+        if (assignedMemberIds.has(memberId)) {
+          throw new PersistenceError(`Party member ${memberId} belongs to more than one party`);
+        }
+        assignedMemberIds.add(memberId);
+      }
+      const leaderCustomerId = strategicId(
+        partySource.leaderCustomerId,
+        `${path}.leaderCustomerId`,
+      );
+      if (!memberCustomerIds.includes(leaderCustomerId)) {
+        throw new PersistenceError(`${path}.leaderCustomerId must be a party member`);
+      }
+      const leader = customerById.get(leaderCustomerId);
+      if (!leader || leader.partyId !== partyId) {
+        throw new PersistenceError(
+          `${path}.leaderCustomerId must reference the one active customer carrying this partyId`,
+        );
+      }
+      if (assignedLeaderIds.has(leaderCustomerId)) {
+        throw new PersistenceError(`Customer ${leaderCustomerId} leads more than one party`);
+      }
+      assignedLeaderIds.add(leaderCustomerId);
+      for (const memberId of memberCustomerIds) {
+        if (memberId !== leaderCustomerId && customerById.has(memberId)) {
+          throw new PersistenceError(
+            `${path} must persist companions inside the canonical party, not as map customers`,
+          );
+        }
+      }
+      if (!Array.isArray(partySource.members) ||
+        partySource.members.length !== memberCustomerIds.length) {
+        throw new PersistenceError(`${path}.members must match memberCustomerIds exactly`);
+      }
+      const memberLineIds = new Set<string>();
+      const members = partySource.members.map((memberSource, memberIndex) => {
+        const memberPath = `${path}.members[${memberIndex}]`;
+        if (!isRecord(memberSource)) {
+          throw new PersistenceError(`${memberPath} must be an object`);
+        }
+        const memberId = strategicId(memberSource.memberId, `${memberPath}.memberId`);
+        if (memberId !== memberCustomerIds[memberIndex]) {
+          throw new PersistenceError(
+            `${path}.members must use the same deterministic order as memberCustomerIds`,
+          );
+        }
+        const nutritionIntentId = memberSource.nutritionIntentId;
+        if (
+          nutritionIntentId !== undefined &&
+          !NUTRITION_INTENTS.includes(nutritionIntentId as NutritionIntent)
+        ) {
+          throw new PersistenceError(`${memberPath}.nutritionIntentId is invalid`);
+        }
+        if (!Array.isArray(memberSource.healthConditions)) {
+          throw new PersistenceError(`${memberPath}.healthConditions must be an array`);
+        }
+        const memberHealthConditions = memberSource.healthConditions.map(
+          (condition, conditionIndex) => {
+            if (!HEALTH_CONDITIONS.includes(condition as HealthCondition)) {
+              throw new PersistenceError(
+                `${memberPath}.healthConditions[${conditionIndex}] is invalid`,
+              );
+            }
+            return condition as HealthCondition;
+          },
+        );
+        if (new Set(memberHealthConditions).size !== memberHealthConditions.length) {
+          throw new PersistenceError(
+            `${memberPath}.healthConditions must not contain duplicates`,
+          );
+        }
+        const budgetCents = asMoneyCents(
+          safeInteger(memberSource.budgetCents, `${memberPath}.budgetCents`),
+        );
+        const plannedStallId = strategicId(
+          memberSource.plannedStallId,
+          `${memberPath}.plannedStallId`,
+        );
+        const plannedDishId = strategicId(
+          memberSource.plannedDishId,
+          `${memberPath}.plannedDishId`,
+        );
+        const plannedStallIds = memberSource.plannedStallIds === undefined
+          ? undefined
+          : uniqueStrategicIds(
+              memberSource.plannedStallIds,
+              `${memberPath}.plannedStallIds`,
+              2,
+            );
+        if (
+          plannedStallIds &&
+          (
+            plannedStallIds.length < 1 ||
+            plannedStallIds[0] !== plannedStallId
+          )
+        ) {
+          throw new PersistenceError(
+            `${memberPath}.plannedStallIds must start with plannedStallId`,
+          );
+        }
+        const plannedMealOfferId = memberSource.plannedMealOfferId === undefined
+          ? undefined
+          : strategicId(
+              memberSource.plannedMealOfferId,
+              `${memberPath}.plannedMealOfferId`,
+            );
+        const plannedPreparationIds =
+          memberSource.plannedPreparationIds === undefined
+            ? undefined
+            : uniqueStrategicIds(
+                memberSource.plannedPreparationIds,
+                `${memberPath}.plannedPreparationIds`,
+                2,
+              );
+        if (
+          (plannedMealOfferId === undefined) !==
+            (plannedPreparationIds === undefined) ||
+          (plannedPreparationIds && plannedPreparationIds.length !== 2)
+        ) {
+          throw new PersistenceError(
+            `${memberPath} must persist complete Combo Board planning metadata`,
+          );
+        }
+        const orderLineSnapshot = memberSource.orderLineSnapshot === undefined
+          ? undefined
+          : parseOrderLineSnapshot(
+              memberSource.orderLineSnapshot,
+              `${memberPath}.orderLineSnapshot`,
+              leader.arrivalPeriodSequenceId,
+              true,
+            );
+        const mealOrderSnapshot = memberSource.mealOrderSnapshot === undefined
+          ? undefined
+          : parseMealOrderSnapshot(
+              memberSource.mealOrderSnapshot,
+              `${memberPath}.mealOrderSnapshot`,
+              leader.arrivalPeriodSequenceId,
+              true,
+            );
+        if (orderLineSnapshot && mealOrderSnapshot) {
+          throw new PersistenceError(
+            `${memberPath} cannot contain both single and Combo Board snapshots`,
+          );
+        }
+        if (
+          mealOrderSnapshot &&
+          (
+            mealOrderSnapshot.offerId !== plannedMealOfferId ||
+            mealOrderSnapshot.lines
+              .map((line) => line.orderLine.preparationId)
+              .join("|") !== plannedPreparationIds?.join("|") ||
+            mealOrderSnapshot.servingPlan.stops
+              .map((stop) => stop.stallInstanceId)
+              .join("|") !==
+              (plannedStallIds ?? [plannedStallId]).join("|")
+          )
+        ) {
+          throw new PersistenceError(
+            `${memberPath}.mealOrderSnapshot must match its frozen Combo Board plan`,
+          );
+        }
+        if (
+          orderLineSnapshot &&
+          (
+            orderLineSnapshot.dishId !== plannedDishId ||
+            orderLineSnapshot.terms.priceCents > budgetCents ||
+            memberLineIds.has(orderLineSnapshot.lineId)
+          )
+        ) {
+          throw new PersistenceError(
+            `${memberPath}.orderLineSnapshot must match its plan, budget, and unique line`,
+          );
+        }
+        if (orderLineSnapshot) memberLineIds.add(orderLineSnapshot.lineId);
+        for (const line of mealOrderSnapshot?.lines ?? []) {
+          if (memberLineIds.has(line.orderLine.lineId)) {
+            throw new PersistenceError(
+              `${memberPath}.mealOrderSnapshot line ids must be unique`,
+            );
+          }
+          memberLineIds.add(line.orderLine.lineId);
+        }
+        const settledMealLineIds =
+          memberSource.settledMealLineIds === undefined
+            ? undefined
+            : uniqueStrategicIds(
+                memberSource.settledMealLineIds,
+                `${memberPath}.settledMealLineIds`,
+                2,
+              );
+        if (
+          settledMealLineIds &&
+          (
+            !mealOrderSnapshot ||
+            settledMealLineIds.some((lineId) =>
+              !mealOrderSnapshot.lines.some(
+                (line) => line.orderLine.lineId === lineId,
+              )
+            )
+          )
+        ) {
+          throw new PersistenceError(
+            `${memberPath}.settledMealLineIds do not match the frozen meal`,
+          );
+        }
+        const mealSettlementCause = memberSource.mealSettlementCause;
+        if (
+          mealSettlementCause !== undefined &&
+          mealSettlementCause !== "complete" &&
+          mealSettlementCause !== "second-stall-unavailable" &&
+          mealSettlementCause !== "served-timeout" &&
+          mealSettlementCause !== "cancelled-before-service"
+        ) {
+          throw new PersistenceError(
+            `${memberPath}.mealSettlementCause is invalid`,
+          );
+        }
+        if (typeof memberSource.served !== "boolean") {
+          throw new PersistenceError(`${memberPath}.served must be boolean`);
+        }
+        if (typeof memberSource.trayReturnPlanned !== "boolean") {
+          throw new PersistenceError(
+            `${memberPath}.trayReturnPlanned must be boolean`,
+          );
+        }
+        if (
+          memberSource.served &&
+          !orderLineSnapshot &&
+          !(
+            mealOrderSnapshot &&
+            settledMealLineIds?.includes(
+              mealOrderSnapshot.lines[0].orderLine.lineId,
+            )
+          )
+        ) {
+          throw new PersistenceError(
+            `${memberPath}.served requires a frozen served main component`,
+          );
+        }
+        const nutritionResult = memberSource.nutritionResult;
+        if (
+          nutritionResult !== undefined &&
+          nutritionResult !== "matched" &&
+          nutritionResult !== "missed" &&
+          nutritionResult !== "unknown"
+        ) {
+          throw new PersistenceError(`${memberPath}.nutritionResult is invalid`);
+        }
+        const ratingSource = isRecord(memberSource.ratingFactors)
+          ? memberSource.ratingFactors
+          : undefined;
+        const ratingFactors = ratingSource
+          ? Object.fromEntries([
+              "foodQuality",
+              "wait",
+              "value",
+              "walking",
+              "comfort",
+              "cleanliness",
+              "ambience",
+            ].flatMap((key) =>
+              ratingSource[key] === undefined
+                ? []
+                : [[
+                    key,
+                    boundedPercentage(
+                      ratingSource[key],
+                      `${memberPath}.ratingFactors.${key}`,
+                    ),
+                  ]]
+            ))
+          : undefined;
+        return {
+          memberId,
+          archetypeId: strategicId(
+            memberSource.archetypeId,
+            `${memberPath}.archetypeId`,
+          ),
+          budgetCents,
+          nutritionIntentId: nutritionIntentId as NutritionIntent | undefined,
+          healthConditions: memberHealthConditions,
+          plannedStallId,
+          plannedDishId,
+          plannedStallIds,
+          plannedMealOfferId,
+          plannedPreparationIds: plannedPreparationIds as
+            | [string, string]
+            | undefined,
+          seatPreference: parseSeatPreference(
+            memberSource.seatPreference,
+            `${memberPath}.seatPreference`,
+          ),
+          satisfactionModifiers: parseSatisfactionModifiers(
+            memberSource.satisfactionModifiers,
+            `${memberPath}.satisfactionModifiers`,
+          ),
+          trayReturnPlanned: memberSource.trayReturnPlanned,
+          orderLineSnapshot,
+          mealOrderSnapshot,
+          settledMealLineIds,
+          mealSettlementCause: mealSettlementCause as
+            | MealSettlementCause
+            | undefined,
+          served: memberSource.served,
+          nutritionResult: nutritionResult as NutritionRequestResult | undefined,
+          satisfaction: memberSource.satisfaction === undefined
+            ? undefined
+            : finite(
+                memberSource.satisfaction,
+                `${memberPath}.satisfaction`,
+                0,
+              ),
+          ratingFactors,
+          awardedVisitXp: memberSource.awardedVisitXp === undefined
+            ? undefined
+            : safeInteger(
+                memberSource.awardedVisitXp,
+                `${memberPath}.awardedVisitXp`,
+              ),
+          firstServeBonusXp: memberSource.firstServeBonusXp === undefined
+            ? undefined
+            : safeInteger(
+                memberSource.firstServeBonusXp,
+                `${memberPath}.firstServeBonusXp`,
+              ),
+          spentCents: memberSource.spentCents === undefined
+            ? undefined
+            : asMoneyCents(
+                safeInteger(
+                  memberSource.spentCents,
+                  `${memberPath}.spentCents`,
+                ),
+              ),
+          servedStallDefinitionIds:
+            memberSource.servedStallDefinitionIds === undefined
+              ? undefined
+              : uniqueStrategicIds(
+                  memberSource.servedStallDefinitionIds,
+                  `${memberPath}.servedStallDefinitionIds`,
+                  2,
+                ),
+        };
+      });
+      if (!PARTY_LIFECYCLE_PHASES.includes(partySource.phase as PartyLifecyclePhase)) {
+        throw new PersistenceError(`${path}.phase is invalid`);
+      }
+      if (!PARTY_ORDER_STRATEGIES.includes(partySource.orderStrategy as PartyOrderStrategy)) {
+        throw new PersistenceError(`${path}.orderStrategy is invalid`);
+      }
+      const phase = partySource.phase as PartyLifecyclePhase;
+      const orderStrategy = partySource.orderStrategy as PartyOrderStrategy;
+      const stallIds = uniqueStrategicIds(partySource.stallIds, `${path}.stallIds`, 2);
+      if (
+        (orderStrategy === "pending" && stallIds.length !== 0) ||
+        (orderStrategy === "joint-two-stop" && stallIds.length !== 2) ||
+        (orderStrategy === "single-stall-fallback" && stallIds.length !== 1)
+      ) {
+        throw new PersistenceError(`${path}.stallIds do not match orderStrategy`);
+      }
+      if (
+        orderStrategy !== "pending" &&
+        (
+          new Set(
+            members.flatMap(
+              (member) =>
+                member.plannedStallIds ?? [member.plannedStallId],
+            ),
+          ).size !==
+            stallIds.length ||
+          members.some((member) =>
+            (member.plannedStallIds ?? [member.plannedStallId]).some(
+              (stallId) => !stallIds.includes(stallId),
+            )
+          )
+        )
+      ) {
+        throw new PersistenceError(`${path}.members must use exactly the planned stall stops`);
+      }
+      if (
+        orderStrategy === "pending" &&
+        phase !== "forming" &&
+        phase !== "departing"
+      ) {
+        throw new PersistenceError(
+          `${path}.pending strategy is only valid while forming or leaving unserved`,
+        );
+      }
+      const nextStopIndex = safeInteger(
+        partySource.nextStopIndex,
+        `${path}.nextStopIndex`,
+        0,
+        stallIds.length,
+      );
+      if (
+        (phase === "seeking-seat" || phase === "seated" || phase === "departing") &&
+        nextStopIndex !== stallIds.length
+      ) {
+        throw new PersistenceError(`${path}.service must finish before seating or departure`);
+      }
+      const seatKeys = uniqueNonEmptyStrings(
+        partySource.seatKeys,
+        `${path}.seatKeys`,
+        memberCustomerIds.length,
+      );
+      for (const seatKey of seatKeys) {
+        const reservedFor = seatReservations[seatKey];
+        if (reservedFor !== undefined && !memberCustomerIds.includes(reservedFor)) {
+          throw new PersistenceError(`${path}.seatKeys contains another party's reservation`);
+        }
+      }
+      if (typeof partySource.splitExplained !== "boolean") {
+        throw new PersistenceError(`${path}.splitExplained must be boolean`);
+      }
+      const party: PartyLifecycleState = {
+        partyId,
+        leaderCustomerId,
+        memberCustomerIds,
+        members,
+        phase,
+        orderStrategy,
+        stallIds,
+        nextStopIndex,
+        seatKeys,
+        seatWaitElapsedMs: safeInteger(
+          partySource.seatWaitElapsedMs,
+          `${path}.seatWaitElapsedMs`,
+        ),
+        splitExplained: partySource.splitExplained,
+        terminalServiceOutcome:
+          partySource.terminalServiceOutcome === undefined
+            ? undefined
+            : partySource.terminalServiceOutcome ===
+                  "partial-second-stop" ||
+                partySource.terminalServiceOutcome ===
+                  "zero-served-unavailable"
+              ? partySource.terminalServiceOutcome
+              : (() => {
+                  throw new PersistenceError(
+                    `${path}.terminalServiceOutcome is invalid`,
+                  );
+                })(),
+      };
+      return [partyId, party];
+    }),
+  );
+  for (const customer of customers) {
+    if (customer.partyId !== undefined && !parties[customer.partyId]) {
+      throw new PersistenceError(
+        `Customer ${customer.id} references missing strategic party ${customer.partyId}`,
+      );
+    }
+  }
+
+  return {
+    regularProgress,
+    neighbourhoodEvents: {
+      history,
+      eventCountByDay,
+      current,
+    },
+    parties,
+  };
+}
+
+function migrateV6ToV7(old: PersistentGameStateV6): PersistentGameStateV7 {
+  return {
+    ...old,
+    schemaVersion: 7,
+    customers: old.customers.map((customer) => {
+      const precedingPreviewCustomer = { ...customer };
+      delete precedingPreviewCustomer.partyId;
+      delete precedingPreviewCustomer.regularId;
+      delete precedingPreviewCustomer.regularStoryStep;
+      delete precedingPreviewCustomer.visitPreferenceTags;
+      delete precedingPreviewCustomer.trayReturnPlanned;
+      return precedingPreviewCustomer;
+    }),
+    strategicGameplay: createInitialStrategicGameplayState(),
+  };
+}
+
+function parseV7(value: Record<string, unknown>): PersistentGameStateV7 {
+  const old = parseV6({ ...value, schemaVersion: 6 }, true);
+  return {
+    ...old,
+    schemaVersion: 7,
+    strategicGameplay: parseStrategicGameplay(
+      value.strategicGameplay,
+      old.customers,
+      old.seatReservations,
+      old.servicePeriod,
+    ),
   };
 }
 
@@ -1695,6 +2595,7 @@ function migrateV4ToV5(old: PersistentGameStateV4): PersistentGameStateV5 {
       pathFailures: 0,
       recoveredTargets: 0,
       trayReturns: old.metrics.trayReturns,
+      trayReturnOpportunities: old.metrics.trayReturns,
       visitRatings: old.metrics.visitRatings,
       nutrition: old.metrics.nutrition,
     },
@@ -1716,22 +2617,25 @@ function parseV1(value: Record<string, unknown>): PersistentGameStateV1 {
   };
 }
 
-export function migratePersistentState(value: unknown): PersistentGameStateV6 {
+export function migratePersistentState(value: unknown): PersistentGameStateV7 {
   if (!isRecord(value)) throw new PersistenceError("Save data must be an object");
-  if (value.schemaVersion === 6) return parseV6(value);
-  if (value.schemaVersion === 5) return migrateV5ToV6(parseV5(value));
-  if (value.schemaVersion === 4) return migrateV5ToV6(migrateV4ToV5(parseV4(value)));
+  if (value.schemaVersion === 7) return parseV7(value);
+  if (value.schemaVersion === 6) return migrateV6ToV7(parseV6(value));
+  if (value.schemaVersion === 5) return migrateV6ToV7(migrateV5ToV6(parseV5(value)));
+  if (value.schemaVersion === 4) {
+    return migrateV6ToV7(migrateV5ToV6(migrateV4ToV5(parseV4(value))));
+  }
   if (value.schemaVersion === 3) {
     const old = parseV3(value);
-    return migrateV5ToV6(migrateV4ToV5({
+    return migrateV6ToV7(migrateV5ToV6(migrateV4ToV5({
       ...old,
       schemaVersion: 4,
       metrics: { ...old.metrics, nutrition: createEmptyNutritionMetrics() },
-    }));
+    })));
   }
   if (value.schemaVersion === 2) {
     const old = parseV2(value);
-    return migrateV5ToV6(migrateV4ToV5({
+    return migrateV6ToV7(migrateV5ToV6(migrateV4ToV5({
       schemaVersion: 4,
       savedAtTick: old.savedAtTick,
       map: old.map,
@@ -1752,7 +2656,7 @@ export function migratePersistentState(value: unknown): PersistentGameStateV6 {
       rngState: old.rngState,
       nextCustomerSequence: old.nextCustomerSequence,
       elapsedMs: old.elapsedMs,
-    }));
+    })));
   }
   if (value.schemaVersion !== 1) throw new PersistenceError(`Unsupported save version: ${String(value.schemaVersion)}`);
   const old = parseV1(value);
@@ -1791,9 +2695,9 @@ export function migratePersistentState(value: unknown): PersistentGameStateV6 {
   });
 }
 
-export function persistentStateFromGame(state: GameState): PersistentGameStateV6 {
+export function persistentStateFromGame(state: GameState): PersistentGameStateV7 {
   return {
-    schemaVersion: 6,
+    schemaVersion: 7,
     savedAtTick: state.tick,
     map: {
       ...state.map,
@@ -1883,6 +2787,7 @@ export function persistentStateFromGame(state: GameState): PersistentGameStateV6
           }
         : null) as unknown as ComboBoard["slots"],
     },
+    strategicGameplay: cloneStrategicGameplayState(state.strategicGameplay),
     metrics: {
       spawnedCustomers: state.metrics.spawnedCustomers,
       despawnedCustomers: state.metrics.despawnedCustomers,
@@ -1891,6 +2796,7 @@ export function persistentStateFromGame(state: GameState): PersistentGameStateV6
       pathFailures: state.metrics.pathFailures,
       recoveredTargets: state.metrics.recoveredTargets,
       trayReturns: state.metrics.trayReturns,
+      trayReturnOpportunities: state.metrics.trayReturnOpportunities,
       visitRatings: state.metrics.visitRatings.map((rating) => ({
         ...rating,
         components: { ...rating.components },
@@ -1914,7 +2820,7 @@ export function serializeGameState(state: GameState): string {
 }
 
 function normalizeObjects(
-  save: PersistentGameStateV6,
+  save: PersistentGameStateV7,
   catalog: SimulationCatalog,
   options: DeserializeOptions,
 ): { readonly objects: readonly PlacedObject[]; readonly recovery: PersistenceRecoveryReport } {
@@ -2072,6 +2978,7 @@ export function deserializeGameStateWithReport(
       initialObjects: normalized.objects,
       initiallyUnlockedDefinitionIds: normalizedUnlocks.ids,
       comboBoard: save.comboBoard,
+      strategicGameplay: save.strategicGameplay,
     });
   } catch (error) {
     throw new PersistenceError("Save data could not be normalized into a playable map", { cause: error });
@@ -2092,6 +2999,52 @@ export function deserializeGameStateWithReport(
     (customer) => customer.arrivalPeriodSequenceId !== save.servicePeriod.sequenceId,
   )) {
     throw new PersistenceError("An active visit belongs to a different service-period cohort");
+  }
+  for (const party of Object.values(save.strategicGameplay.parties)) {
+    if (restoredCustomers[party.leaderCustomerId]?.partyId !== party.partyId) {
+      throw new PersistenceError(
+        `Strategic party ${party.partyId} has no matching active leader`,
+      );
+    }
+    for (const stallId of party.stallIds) {
+      const stallObject = base.objects[stallId];
+      if (
+        !stallObject ||
+        !catalog.placeables[stallObject.definitionId]?.stall
+      ) {
+        throw new PersistenceError(
+          `Strategic party ${party.partyId} references unavailable stall ${stallId}`,
+        );
+      }
+    }
+    for (const member of party.members) {
+      if (!catalog.archetypes[member.archetypeId]) {
+        throw new PersistenceError(
+          `Strategic party ${party.partyId} references unknown archetype ${member.archetypeId}`,
+        );
+      }
+      const plannedStallIds =
+        member.plannedStallIds ?? [member.plannedStallId];
+      const plannedStalls = plannedStallIds.map((stallId) => {
+        const stallObject = base.objects[stallId];
+        return stallObject
+          ? catalog.placeables[stallObject.definitionId]?.stall
+          : undefined;
+      });
+      const primaryStall = plannedStalls[0];
+      const allowedDishIds = party.orderStrategy === "pending"
+        ? primaryStall?.allDishIds ?? primaryStall?.dishIds
+        : primaryStall?.dishIds;
+      if (
+        plannedStalls.some((stall) => !stall) ||
+        !catalog.dishes[member.plannedDishId] ||
+        !allowedDishIds?.includes(member.plannedDishId)
+      ) {
+        throw new PersistenceError(
+          `Strategic party ${party.partyId} has an unavailable planned order`,
+        );
+      }
+    }
   }
   const restoredQueues = Object.fromEntries(Object.values(base.objects)
     .filter((object) => catalog.placeables[object.definitionId]?.kind === "stall")
@@ -2128,6 +3081,7 @@ export function deserializeGameStateWithReport(
     forecastArrivals: restoredForecastArrivals,
     arrivalSamplingSeed: save.arrivalSamplingSeed,
     comboBoard: save.comboBoard,
+    strategicGameplay: cloneStrategicGameplayState(save.strategicGameplay),
     rngState: save.rngState,
     nextCustomerSequence: save.nextCustomerSequence,
     tick: save.savedAtTick,
@@ -2140,6 +3094,7 @@ export function deserializeGameStateWithReport(
       pathFailures: save.metrics.pathFailures,
       recoveredTargets: save.metrics.recoveredTargets,
       trayReturns: save.metrics.trayReturns,
+      trayReturnOpportunities: save.metrics.trayReturnOpportunities,
       visitRatings: save.metrics.visitRatings,
       nutrition: cloneNutritionMetrics(save.metrics.nutrition),
     },

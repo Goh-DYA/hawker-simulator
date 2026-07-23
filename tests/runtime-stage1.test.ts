@@ -368,6 +368,11 @@ describe("Stage 1 runtime boundaries", () => {
     expect(outcomes[3]).toMatchObject({
       partialMealSecondStallUnavailable: 0,
       partialMealServedTimeout: 0,
+      partyVisits: 0,
+      partyGuests: 0,
+      partySplits: 0,
+      partialPartyVisits: 0,
+      regularStoryBeats: 0,
       comboOfferOutcomes: {},
     });
   });

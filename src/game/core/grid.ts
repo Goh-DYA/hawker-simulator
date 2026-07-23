@@ -27,6 +27,9 @@ export interface SeatLocation {
   readonly objectId: string;
   readonly index: number;
   readonly point: GridPoint;
+  readonly accessible: boolean;
+  readonly comfort: number;
+  readonly environmentTags: readonly string[];
 }
 
 export function pointKey(point: GridPoint): string {
@@ -213,6 +216,9 @@ export function getSeatLocations(
         objectId: object.id,
         index,
         point: resolveRelativePoint(object, definition, point),
+        accessible: definition.seatMetadata?.[index]?.accessible ?? false,
+        comfort: definition.seatMetadata?.[index]?.comfort ?? 0,
+        environmentTags: [...(definition.environmentTags ?? [])],
       });
     });
   }

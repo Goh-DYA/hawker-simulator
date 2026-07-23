@@ -226,7 +226,7 @@ describe("Stage 3 Combo Board UI", () => {
     expect(simulator).toContain("Combo Board results");
     expect(simulator).toContain("Each two-item meal counts once here");
     expect(simulator).toContain("Only served components were charged");
-    expect(simulator).toContain("scored once per served visit");
+    expect(simulator).toContain("Each served visit scores once");
     expect(simulator).not.toContain("composed meals are not scored");
     expect(simulator).not.toContain("next programme stage");
   });
