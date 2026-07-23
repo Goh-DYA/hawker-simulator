@@ -47,6 +47,8 @@ export const NUTRITION_STALL_CHOICE_WEIGHT = 2;
 export const NUTRITION_DISH_CHOICE_WEIGHT = 1.75;
 export const HEALTH_STALL_CHOICE_WEIGHT = 2.5;
 export const HEALTH_DISH_CHOICE_WEIGHT = 2.25;
+export const NUTRITION_INTENT_MATCH_THRESHOLD = 0.67;
+export const HEALTH_PREFERENCE_MATCH_THRESHOLD = 3.5;
 
 function weightedIntentFit(fit: number | undefined, weight: number): number {
   if (typeof fit !== "number" || !Number.isFinite(fit)) return 0;
@@ -348,7 +350,7 @@ export function healthPreferenceResultForRating(
 ): HealthPreferenceResult {
   const bounded = boundedHealthRating(rating);
   if (bounded === undefined) return "unknown";
-  return bounded >= 3.5 ? "matched" : "missed";
+  return bounded >= HEALTH_PREFERENCE_MATCH_THRESHOLD ? "matched" : "missed";
 }
 
 /** Signed satisfaction delta on the core zero-to-five satisfaction scale. */
@@ -392,7 +394,7 @@ export function nutritionRequestResult(
   if (!intent || !profile || profile.status !== "released") return "unknown";
   const fit = profile.intentFits[intent];
   if (typeof fit !== "number" || !Number.isFinite(fit)) return "unknown";
-  return fit >= 0.67 ? "matched" : "missed";
+  return fit >= NUTRITION_INTENT_MATCH_THRESHOLD ? "matched" : "missed";
 }
 
 /**

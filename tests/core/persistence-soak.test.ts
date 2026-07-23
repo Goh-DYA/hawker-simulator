@@ -46,7 +46,7 @@ describe("versioned persistence", () => {
     expect(Object.keys(active.customers).length).toBeGreaterThan(0);
     const serialized = serializeGameState(active);
     const loaded = deserializeGameState(serialized, TEST_CATALOG, { config: active.config });
-    expect(loaded.schemaVersion).toBe(5);
+    expect(loaded.schemaVersion).toBe(6);
     expect(loaded.economy).toEqual(active.economy);
     expect(loaded.progression).toEqual(active.progression);
     expect(loaded.objects).toEqual(active.objects);
@@ -113,6 +113,8 @@ describe("versioned persistence", () => {
     );
     const serialized = serializeGameState(ordered);
     const transitional = JSON.parse(serialized) as {
+      schemaVersion: number;
+      comboBoard?: unknown;
       servicePeriod: { sequenceId: number };
       customers: Array<{
         arrivalPeriodSequenceId?: unknown;
@@ -123,6 +125,8 @@ describe("versioned persistence", () => {
       (customer) => customer.orderLineSnapshot !== undefined,
     );
     expect(orderedCustomer).toBeDefined();
+    transitional.schemaVersion = 5;
+    delete transitional.comboBoard;
     delete orderedCustomer!.arrivalPeriodSequenceId;
     orderedCustomer!.orderLineSnapshot!.arrivalPeriodSequenceId = "preview-period-id";
     const normalized = deserializeGameState(transitional, TEST_CATALOG, {
@@ -162,7 +166,7 @@ describe("versioned persistence", () => {
       reputation: 4,
       seed: 123,
     });
-    expect(migrated.schemaVersion).toBe(5);
+    expect(migrated.schemaVersion).toBe(6);
     expect(migrated.economy.cashCents).toBe(32_100);
     expect(migrated.progression).toMatchObject({ xp: 450, level: 3, reputation: 4 });
   });

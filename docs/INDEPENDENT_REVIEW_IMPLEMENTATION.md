@@ -28,7 +28,7 @@ Each stage must record automated validation, save migration coverage, determinis
 
 ## Stage 1 — service rhythm, SGD economy, progression, and objectives
 
-Status: implementation, exact-source validation, and critical stage review complete; private preview pending.
+Status: complete and published as an owner-only private preview.
 
 ### Implemented contracts
 
@@ -83,5 +83,121 @@ Stage 1 adds no food, preparation name, serving, or nutrient value. Operational 
 ### Known external gates
 
 Automated browser and accessibility evidence is not qualified screen-reader, clinical-language, cultural, sensitivity, human balance, or production-performance approval. Those reviews remain external release gates.
+
+Private preview: Hawker Simulator — Stage 1. The access gate is restricted to the configured owner; the preview was built from reviewed commit `4b2e56574d970b2486ad2fe66a5f001bb039cc9e`.
+
+## Stage 2 — forecast, preparation trade-offs, and guided learning
+
+Status: implementation, critical remediation, and integrated validation complete; private preview packaging pending.
+
+### Implemented contracts
+
+- Every period now receives an immutable deterministic forecast with a sampled arrival target, crowd mix, SGD budget bands, group-size mix, latent meal mix, nutrition-intent incidence, independently sampled condition-aware incidence, and menu-dependent coverage. Forecast generation is pure and does not consume or perturb gameplay random-number state.
+- The audience is frozen by arrival-period sequence and persists through save/reload. Menu edits and stall shutters change only the displayed coverage calculation; they cannot rewrite the expected crowd, budgets, latent needs, or sampled target. Planning coverage counts preparations on currently open placed stalls, while the closing snapshot is frozen through drain and debrief. A preceding-preview save already in drain or debrief freezes its best reconstructable saved open-stall coverage once on load and immediately checkpoints that additive normalization.
+- Arrival tuples use persisted sequence keys and the forecast budget bands. The live Breakfast starter profile is 48–60 visits with every sampled budget able to afford at least one unlocked active starter preparation.
+- Fresh centres use the reviewed nine-seat starter layout. Earlier saves preserve their exact six-seat or customized layouts; no furniture is injected during migration. When a restored layout has fewer seats than the reviewed starter, a load-time warning reports its actual seat count, the current forecast range, and the precise planning shortfall.
+- Required need references are guarded by two distinct unlocked, released, viable responses. Progression, placement, and prerequisite checks prevent inaccessible preparations from making an objective or guide appear feasible.
+- Every preparation has immutable SGD price, ingredient cost, preparation time, handover time, eating time, Star appeal, demand modifier, nutrition fit, and an explicit operational rationale. In-flight order snapshots preserve those terms and outcome explanations across later content or menu changes.
+- All 64 preparations in nutrition variant families use explicit semantic operational mappings instead of list-position arithmetic. Price premiums are bounded, ingredient rates remain within the reviewed band, and the deterministic context matrix gives every preparation at least one plausible winning context across the full comparison axes.
+- The optional What’s new guide presents two real unlocked preparations against one forecast need, records a no-penalty prediction, and reveals one strict benefit and one strict trade-off for either choice. Existing tutorial completion remains preserved.
+- The debrief follows forecast → result → causes → ledger, separating nutrition-intent and condition-aware denominators and reporting unknown data without imputation. It gives one deterministic next-period action from the leading menu gap, wait issue, or satisfaction cause.
+- Compact and expanded forecast language distinguishes actionable current signals from future meal composition. Continuously changing HUD values are not live regions; a single atomic announcer is reserved for meaningful period transitions and objective outcomes.
+
+### Critical code, balance, and experience review
+
+The end-of-stage review rejected two superficially green implementations before preview:
+
+- The first balance fixture overrode its own demand and budgets while production still used an unaffordable 84–100-visit Breakfast. The test now exercises production defaults directly and proves each arrival has an affordable active response.
+- Drain tuning initially shortened food timings without explaining the actual tail. State-duration instrumentation showed late visits spent up to 48.8 seconds seeking one of only six seats. Three reachable starter stools were added around the existing table clusters; no hidden pre-closing blackout or weakened target was used.
+- The legacy 120-second visit cap interrupted already served guests while eating or returning trays, even though the programme assigns served incomplete outcomes to the 180-second drain watchdog. The cap now applies only while unserved; served visits finish normally or receive the explicit watchdog result.
+- Index-derived preparation terms had made later-listed dishes automatically pricier, faster, and more attractive, including implausible rice-only, prata, and vegetable comparisons. A reviewed semantic mapping replaced that pattern, with bounded terms and authored rationales.
+- The guided reveal could call an equal fit a benefit and lacked benefit explanations for ingredient cost and demand. Pair selection and copy now require strict, explainable advantages for both choices.
+- Continuously changing service clocks, guest totals, seats, and cash were exposed as polite live regions. They are now ordinary status data so screen-reader users receive deliberate transition announcements rather than a stream of competing updates.
+- Forecast coverage initially treated every placed stall as active even while its shutter was closed. Planning coverage now distinguishes unlocked viability from currently open responses, and closing coverage freezes once for drain and debrief. The same one-time normalization runs for both startup restoration and explicit import of preceding-preview drain/debrief saves.
+- The first 1024-pixel production capture clipped Access and hid Route. The map toolbar now grows to two rows at that breakpoint, while narrow and enlarged interfaces retain all five controls with visible overflow or a wrapped large-text grid.
+- Camera-edge labels could leave a single clipped letter at 800 and 390 pixels. Informational canvas labels are now drawn only when their complete measured bounds remain inside the camera with a scale-aware gap.
+- Compact management originally looked selected while its sheet was closed and declared itself modal while background controls remained operable. It is now a true focus-contained dialog with an internal six-section switcher, inert background chrome, explicit launcher state, Escape/close focus restoration, and no hidden current selection.
+- Production browser review exposed root and backdrop scroll ranges derived from nested catalogue and settings scrollers. The viewport, game shell, and modal layers now contain overflow at the correct boundary; Help and Settings each have one intended internal scroller, short viewports scroll inside the game shell, and large-text headers keep their close controls fully inside.
+
+On the 30 fixed production Breakfast seeds, the reviewed starter setup records a median 53 arrivals and 53 completions, median peak 20 active guests, median peak queue depth 3, all ledgers reconciled to the cent, and drain p95 117.1 seconds with a maximum of 118.1 seconds. This is below the 120-second target without watchdog completions.
+
+### Food and nutrition provenance
+
+Stage 2 changes operational serving terms but adds, removes, renames, substitutes, or remaps no food and changes no nutrient value or serving interpretation. Every existing mapping was rechecked against the exact case-sensitive authoritative CSV row. The source CSV, `tools/nutrition/manifest.mjs`, and `src/content/nutrition.generated.json` remain byte-for-byte unchanged; the authoritative snapshot SHA-256 remains `1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e`. Missing and trace values remain distinct.
+
+### Validation, responsive evidence, and known limits
+
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with no warnings.
+- `npm test`: 42 files and 316 tests passed, including deterministic forecast purity, production-default balance, frozen order terms and coverage, preceding-preview import parity, watchdog progression, responsive modal behavior, and canvas label containment.
+- `npm run validate:content`: 17 content checks passed.
+- `npm run test:ssr`: 2 SSR checks passed.
+- Vinext and native Next.js/Vercel production builds passed. The Cloudflare Worker build retains the recorded large-client-chunk warning; no build failed. The final service-worker source stamp is `cbd69370265e`.
+- `git diff --check` passed. The authoritative CSV hash remained `1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e`, and the CSV, curated manifest, and generated nutrition artifact have zero diff.
+
+Production-browser review covered 1280×720, 1024×640, 800×720, and 390×844 planning; predict and reveal guidance; compact management; true 200% in-game text in Settings, Help, and Reset; and an effective combined 200% browser/text-scale viewport. It found the toolbar clipping, camera-edge fragment, hidden-sheet semantics, focus-return failure, root overflow, double modal scrollbars, and clipped large-text Help close control described above; each was corrected with a focused regression before the release gate passed. Evidence is stored under `work/evidence/stage2/` and is intentionally not committed as application source.
+
+The development browser security layer refused the final fresh localhost origin after those last containment changes, so the exact post-remediation multi-viewport recapture could not be repeated in that browser session. The final CSS/interaction contracts are covered by 38 focused responsive tests and the full suite, and the private preview render will be inspected after publication. This is recorded as an evidence limitation rather than presented as qualified visual or accessibility approval. Actual browser zoom at 200% remains part of the final cross-stage review; Stage 2 used the 640×360 effective-viewport check in addition to true 200% in-game text.
+
+Canvas portal and fixture labels use collision-aware placement at enlarged text, and the Next.js development badge is disabled so it cannot obscure the compact dock or contaminate evidence.
+
+Automated accessibility and browser evidence remains engineering validation rather than qualified screen-reader, clinical-language, cultural, sensitivity, human-balance, or production-performance approval.
+
+Private preview: pending.
+
+## Stage 3 — Combo Board and meal composition
+
+Status: implementation, independent remediation, and integrated validation complete; private preview packaging pending.
+
+### Implemented contracts
+
+- Core V6/runtime V4 introduces a persisted three-slot Combo Board at level 5. Each valid offer freezes exactly one reviewed main and one reviewed drink, dessert, or add-on, with no discount and no more than two reachable stall stops.
+- Offer validation rejects missing releases, incompatible meal roles, duplicate components, unavailable stalls, unreachable stops, and service-time edits. A referenced dish cannot be removed from its menu, while losing a compatible stall leaves an explicit repairable warning instead of silently deleting the offer.
+- Frozen combo orders preserve each component's preparation, service, price, ingredient cost, nutrition snapshot, meal-balance score, intent fit, and explanation codes. Later menu, variant, content, or board changes cannot rewrite an in-flight order or its ledger result.
+- Two-stall service selects reachable stall instances deterministically. A temporarily full second queue is retried; a genuinely unavailable second stall settles the served main only, cancels the unserved component without charge, and records a cause-coded partial meal.
+- Combined nutrients are conservative. A component with unavailable data makes the combined metric unavailable, and trace values remain trace rather than becoming fabricated zeroes. Meal balance compares against the fixed universe of unlocked feasible singles and valid pairs, using the same reviewed directions and weights as the generated Health-rating pipeline.
+- The planner keeps Meal balance, component change, intent fit, and condition-aware game fit as separate concepts. Copy explicitly avoids universal-health or treatment claims, and every component keeps its own listed-serving context.
+- One visit awards visit XP and reputation once, while every distinct serving stall receives its valid mastery credit. Same-stall offers do not duplicate stall mastery.
+- Planning, service inspection, customer detail, partial-meal causes, and debrief summaries expose the frozen composition without allowing service-time mutation.
+
+### Critical code, gameplay, and experience review
+
+The independent Stage 3 review found and corrected the following material issues before preview:
+
+- A valid Combo Board could persist but never participate in ordinary meal selection. Deterministic order selection now considers eligible offers and is covered through the real spawned-customer path.
+- A full second queue was incorrectly treated as a missing stall and immediately produced a partial meal. Capacity pressure now defers and retries; only an actual reachability or availability loss cancels the second component.
+- Nutrition comparison code converted trace measurements to numeric zero. The importer and meal-composition pipeline now rank only known values and preserve trace/unavailable states through generated content.
+- Runtime restoration applied the saved Combo Board before restoring saved preparation variants, so a valid non-default combination could fail startup or import validation. Runtime envelopes now restore and validate variants and menus before the board, with startup/import parity regressions.
+- Empty saved stall menus could invalidate the authored core catalogue. Runtime catalogue projection now falls back to the stall's authored dish set when a saved menu is absent or empty, without inventing unlocks.
+- Two-stall offers credited mastery only to the main stall. The frozen visit now records unique served stall-definition identifiers and awards each exactly once while preserving one visit-level XP result.
+- Persisted combo lifecycles accepted contradictory served/cancelled states and duplicate mastery identifiers. V6 parsing now rejects impossible lifecycle, spend, and duplicate-set combinations.
+- Debrief completion initially counted partial offers as completed. Full and partial combo outcomes now use separate frozen causes and totals.
+- Live shutter warnings did not explain that a configured second stop had become unavailable. The planner and debrief now report the affected offer and repair action explicitly.
+- The phone header retained a one-pixel-clipped brand title after the wider layout collision was removed. The 480-pixel breakpoint now hides secondary brand copy and fits the complete primary title beside compact speed and help controls.
+
+The resulting planning story is coherent: forecast need leads to an exact two-item offer, the player sees cost, fit, and route consequences before service, the visit preserves those terms, and the debrief explains full or partial fulfilment without turning nutrition into a universal score.
+
+### Food and nutrition provenance
+
+Stage 3 reviews every meal-role assignment and changes one serving interpretation: `Siew Mai` is presented as `Three Siew Mai` and maps to the unique case-sensitive authoritative row `Siew mai` (row 1803) using a documented three-serving, 90 g curated multiplier. Its game visual now renders three recognisable pieces. No nutrient value is invented.
+
+The read-only authoritative CSV is unchanged at SHA-256 `1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e`. The curated manifest records the source name, mapping kind, serving multiplier/label, and review rationale. Regenerated `src/content/nutrition.generated.json` hashes to `d69662acf1e462abd9b7db4f96a1977a3cdc7c4f87daed072fc23dd8809a046b`; unique-row, serving, quarantine, provenance, trace, unavailable, and generated-diff checks pass.
+
+### Validation, responsive evidence, and known limits
+
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with no warnings.
+- `npm test`: 46 files and 358 tests passed sequentially. Focused Stage 3 coverage passed 76 tests across meal composition, selection, settlement, persistence, responsive UI, and runtime-envelope restoration.
+- The production-default level-one balance fixture and forecast-integration matrix passed in isolation after their deliberate long-running timeouts were raised to match the measured deterministic workload; no gameplay threshold was weakened.
+- `npm run validate:content`: 17 content checks passed.
+- `npm run test:ssr`: 2 SSR checks passed.
+- Vinext and native Next.js/Vercel builds passed. The recorded large-client-chunk warning remains a known production-performance review item, not a build failure. The service-worker source stamp is `98420145d6c1`.
+- `git diff --check` passed, and the authoritative source CSV remained byte-for-byte unchanged.
+
+Fresh browser evidence covered the unlocked Combo Board at 1280×720, 1024×640, 800×720, and 390×844. The original and current 1280×720 views were reviewed side by side: the current header, period state, map tools, objectives, management sheet, action strip, and dock no longer collide. All four current viewports reported no application horizontal overflow and no visible informational text below 0.75rem; the compact sheet owns its vertical scroll and the narrow dock deliberately exposes horizontal scrolling. The browser console reported no warnings or errors.
+
+The Stage 3 large-text Combo Board layout is covered by focused 200% regression tests and reuses the Stage 2 shell that received a true 200% browser pass. During this final Stage 3 recapture, the browser automation layer focused the native range control but did not change its value, so this pass does not falsely claim a second successful native-slider interaction. True 200% in-game text, true 200% browser zoom, and the combined containment spot-check remain mandatory in the final cross-stage browser gate.
+
+Automated accessibility and browser evidence remains engineering validation rather than qualified screen-reader, clinical-language, cultural, sensitivity, human-balance, or production-performance approval.
 
 Private preview: pending.

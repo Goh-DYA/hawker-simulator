@@ -11,6 +11,8 @@ export * from "./progression";
 export * from "./servicePeriods";
 export * from "./recovery";
 export * from "./servingTerms";
+export * from "./mealComposition";
+export * from "./forecast";
 export * from "./validation";
 export * from "./state";
 export * from "./commands";

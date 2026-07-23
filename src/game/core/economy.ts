@@ -46,6 +46,8 @@ export interface ServedOrderSettlement extends EconomyUpdate {
   /** The only XP granted at handover: the one-time preparation discovery bonus. */
   readonly xpAwarded: number;
   readonly firstServeBonusAwarded: boolean;
+  readonly firstServeBonusCount: number;
+  readonly firstServedPreparationIds: readonly string[];
 }
 
 export interface CompletedVisitAward {
@@ -53,8 +55,23 @@ export interface CompletedVisitAward {
   readonly ingredientCostCents: MoneyCents;
   readonly satisfaction: number;
   readonly preparationId?: string;
+  /** Legacy ids that represented this exact preparation before core V6. */
+  readonly legacyPreparationIds?: readonly string[];
   readonly reputationGain?: number;
   readonly watchdogTimeout?: boolean;
+}
+
+export interface ServedComponentAward {
+  readonly priceCents: MoneyCents;
+  readonly ingredientCostCents: MoneyCents;
+  readonly preparationId?: string;
+  readonly legacyPreparationIds?: readonly string[];
+}
+
+export interface ServedComponentsOptions {
+  /** Increment the visit counter and apply reputation exactly once per visit. */
+  readonly countVisit?: boolean;
+  readonly reputationGain?: number;
 }
 
 /** Rebuilds compatibility views from canonical cents; callers never mutate aliases. */
@@ -231,26 +248,61 @@ export function settleServedOrder(
   progression: ProgressionState,
   award: CompletedVisitAward,
 ): ServedOrderSettlement {
-  const ingredientCostCents = award.ingredientCostCents;
-  if (ingredientCostCents > award.priceCents) {
-    throw new RangeError("Ingredient cost cannot exceed the settled sale price");
-  }
+  return settleServedComponents(
+    economy,
+    progression,
+    [{
+      priceCents: award.priceCents,
+      ingredientCostCents: award.ingredientCostCents,
+      preparationId: award.preparationId,
+      legacyPreparationIds: award.legacyPreparationIds,
+    }],
+    { countVisit: true, reputationGain: award.reputationGain },
+  );
+}
+
+/**
+ * Atomically settles one or more served components. Discovery XP is evaluated
+ * per exact preparation, while visit accounting is explicitly applied once.
+ */
+export function settleServedComponents(
+  economy: EconomyState,
+  progression: ProgressionState,
+  components: readonly ServedComponentAward[],
+  options: ServedComponentsOptions = {},
+): ServedOrderSettlement {
+  if (components.length === 0) throw new RangeError("At least one served component is required");
   const firstServed = new Set(progression.firstServedPreparationIds);
-  const earnsFirstServeBonus = Boolean(award.preparationId && !firstServed.has(award.preparationId));
-  if (award.preparationId) firstServed.add(award.preparationId);
-  const xpAwarded = earnsFirstServeBonus ? 2 : 0;
+  const newlyServedPreparationIds: string[] = [];
+  let priceCents = ZERO_CENTS;
+  let ingredientCostCents = ZERO_CENTS;
+  for (const component of components) {
+    if (component.ingredientCostCents > component.priceCents) {
+      throw new RangeError("Ingredient cost cannot exceed the settled sale price");
+    }
+    priceCents = addCents(priceCents, component.priceCents);
+    ingredientCostCents = addCents(ingredientCostCents, component.ingredientCostCents);
+    if (!component.preparationId) continue;
+    const legacyIds = component.legacyPreparationIds ?? [];
+    const wasAlreadyServed = firstServed.has(component.preparationId) ||
+      legacyIds.some((id) => firstServed.has(id));
+    if (!wasAlreadyServed) newlyServedPreparationIds.push(component.preparationId);
+    firstServed.add(component.preparationId);
+  }
+  const xpAwarded = newlyServedPreparationIds.length * 2;
   const nextXp = progression.xp + xpAwarded;
   const nextLevel = Math.max(progression.level, calculateLevel(nextXp));
+  const countVisit = options.countVisit ?? true;
   return {
     economy: economyWithCompatibilityAliases({
       ...economy,
-      cashCents: asMoneyCents(economy.cashCents + award.priceCents - ingredientCostCents),
-      lifetimeGrossSalesCents: addCents(economy.lifetimeGrossSalesCents, award.priceCents),
+      cashCents: asMoneyCents(economy.cashCents + priceCents - ingredientCostCents),
+      lifetimeGrossSalesCents: addCents(economy.lifetimeGrossSalesCents, priceCents),
       lifetimeIngredientCostsCents: addCents(
         economy.lifetimeIngredientCostsCents,
         ingredientCostCents,
       ),
-      completedVisits: economy.completedVisits + 1,
+      completedVisits: economy.completedVisits + (countVisit ? 1 : 0),
     }),
     progression: {
       ...progression,
@@ -258,13 +310,15 @@ export function settleServedOrder(
       level: nextLevel,
       reputation: Math.max(
         0,
-        Math.min(5, progression.reputation + (award.reputationGain ?? 0.02)),
+        Math.min(5, progression.reputation + (countVisit ? options.reputationGain ?? 0.02 : 0)),
       ),
       firstServedPreparationIds: [...firstServed].sort(),
     },
     levelUp: nextLevel > progression.level,
     xpAwarded,
-    firstServeBonusAwarded: earnsFirstServeBonus,
+    firstServeBonusAwarded: newlyServedPreparationIds.length > 0,
+    firstServeBonusCount: newlyServedPreparationIds.length,
+    firstServedPreparationIds: [...newlyServedPreparationIds].sort(),
   };
 }
 

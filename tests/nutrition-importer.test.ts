@@ -305,19 +305,14 @@ describe("nutrition CSV importer", () => {
     assert.equal(lower.get("only"), 1);
   });
 
-  it("ranks trace amounts as zero without changing their source state", () => {
+  it("excludes trace amounts from numeric rankings without changing their source state", () => {
     const trace = { status: "trace" as const };
     const known = { status: "known" as const, value: 1 };
     const unavailableValue = { status: "unavailable" as const, reason: "not-reported" };
-    const comparisons = [
-      { id: "trace", value: nutritionValueForComparison(trace) },
-      { id: "known", value: nutritionValueForComparison(known) },
-    ];
 
-    assert.equal(nutritionValueForComparison(trace), 0);
+    assert.equal(nutritionValueForComparison(trace), undefined);
+    assert.equal(nutritionValueForComparison(known), 1);
     assert.equal(nutritionValueForComparison(unavailableValue), undefined);
-    assert.equal(computeRelativeFits(comparisons, "lower").get("trace"), 1);
-    assert.equal(computeRelativeFits(comparisons, "higher").get("trace"), 0);
     assert.deepEqual(trace, { status: "trace" });
   });
 

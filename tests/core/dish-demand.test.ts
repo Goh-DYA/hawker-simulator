@@ -53,6 +53,13 @@ describe("dish base demand", () => {
     expect(boundedDishDemandAppeal({ ...dish, baseDemand: 7 })).toBe(0.4);
   });
 
+  it("treats preparation demand terms as multipliers of authored base demand", () => {
+    const dish = { ...TEST_CATALOG.dishes.rice, baseDemand: 0.8 };
+
+    expect(boundedDishDemandAppeal({ ...dish, demandModifierBasisPoints: 10_000 })).toBeCloseTo(0.24);
+    expect(boundedDishDemandAppeal({ ...dish, demandModifierBasisPoints: 10_800 })).toBeCloseTo(0.2912);
+  });
+
   it("breaks otherwise equal menu choices in favour of the authored demand", () => {
     let state: GameState = makeGame({
       catalog: demandCatalog(),

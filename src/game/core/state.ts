@@ -7,7 +7,9 @@ import { compareIds } from "./ordering";
 import { createDailyObjectives } from "./progression";
 import { asMoneyCents, sgdToCents } from "./money";
 import { createInitialServicePeriod } from "./servicePeriods";
-import { snapshotOrderLine } from "./servingTerms";
+import { forecastForServicePeriod, lockPeriodForecast } from "./forecast";
+import { snapshotMealOrder, snapshotOrderLine } from "./servingTerms";
+import { EMPTY_COMBO_BOARD } from "./mealComposition";
 import {
   cloneNutritionMetrics,
   cloneNutritionProfile,
@@ -198,8 +200,27 @@ export function createNewGame(options: NewGameOptions): GameState {
   if (navigationError) throw new RangeError(`Invalid initial world navigation: ${navigationError}`);
 
   const initialLevel = 1;
+  const initialServicePeriod = createInitialServicePeriod();
+  const initialProgression = {
+    xp: 0,
+    level: initialLevel,
+    reputation: 2.5,
+    unlockedDefinitionIds: getUnlockedDefinitionIds(
+      options.catalog,
+      initialLevel,
+      options.initiallyUnlockedDefinitionIds,
+    ),
+    expansionCount: 0,
+    focusDay: 0,
+    dailyObjectives: [],
+    claimedMilestoneIds: [],
+    milestoneBaselinePending: false,
+    stallMastery: {},
+    firstServedPreparationIds: [],
+  };
+  const initialSeed = hashSeed(options.seed ?? "hawker-simulator");
   const state: GameState = {
-    schemaVersion: 5,
+    schemaVersion: 6,
     map: cloneMap(options.map),
     accessPoints,
     routeGuidePoints,
@@ -217,27 +238,19 @@ export function createNewGame(options: NewGameOptions): GameState {
     ),
     seatReservations: {},
     economy: createEconomyState(startingCashCents),
-    progression: {
-      xp: 0,
-      level: initialLevel,
-      reputation: 2.5,
-      unlockedDefinitionIds: getUnlockedDefinitionIds(
-        options.catalog,
-        initialLevel,
-        options.initiallyUnlockedDefinitionIds,
-      ),
-      expansionCount: 0,
-      focusDay: 0,
-      dailyObjectives: [],
-      claimedMilestoneIds: [],
-      milestoneBaselinePending: false,
-      stallMastery: {},
-      firstServedPreparationIds: [],
-    },
-    servicePeriod: createInitialServicePeriod(),
+    progression: initialProgression,
+    servicePeriod: initialServicePeriod,
     periodLedgers: { 1: createPeriodLedger(1, startingCashCents) },
     recovery: { resolvedEpisodeIds: [], zeroResaleObjectIds: [] },
-    rngState: hashSeed(options.seed ?? "hawker-simulator"),
+    forecast: lockPeriodForecast(
+      forecastForServicePeriod(initialServicePeriod, options.forecastProfiles),
+      options.catalog,
+      initialProgression,
+    ),
+    forecastArrivals: [],
+    comboBoard: options.comboBoard ?? EMPTY_COMBO_BOARD,
+    arrivalSamplingSeed: hashSeed(`${initialSeed}:forecast-arrivals:v1`),
+    rngState: initialSeed,
     nextCustomerSequence: 1,
     spawnCountdownMs: 0,
     accumulatorMs: 0,
@@ -276,9 +289,18 @@ export function cloneCustomer(customer: Customer): Customer {
     position: { ...customer.position },
     path: customer.path.map((point) => ({ ...point })),
     healthConditions: [...customer.healthConditions],
+    servedStallDefinitionIds: customer.servedStallDefinitionIds
+      ? [...customer.servedStallDefinitionIds]
+      : undefined,
     orderedNutritionProfile: cloneNutritionProfile(customer.orderedNutritionProfile),
     orderLineSnapshot: customer.orderLineSnapshot
       ? snapshotOrderLine(customer.orderLineSnapshot)
+      : undefined,
+    mealOrderSnapshot: customer.mealOrderSnapshot
+      ? snapshotMealOrder(customer.mealOrderSnapshot)
+      : undefined,
+    settledMealLineIds: customer.settledMealLineIds
+      ? [...customer.settledMealLineIds]
       : undefined,
   };
 }
@@ -305,7 +327,7 @@ export function createSnapshot(state: GameState): GameSnapshot {
   const objects = Object.values(state.objects).map(clonePlacedObject).sort((a, b) => compareIds(a.id, b.id));
   const customers = Object.values(state.customers).map(cloneCustomer).sort((a, b) => compareIds(a.id, b.id));
   return {
-    schemaVersion: 5,
+    schemaVersion: 6,
     tick: state.tick,
     elapsedMs: state.elapsedMs,
     map: cloneMap(state.map),
@@ -339,6 +361,17 @@ export function createSnapshot(state: GameState): GameSnapshot {
     recovery: {
       resolvedEpisodeIds: [...state.recovery.resolvedEpisodeIds],
       zeroResaleObjectIds: [...state.recovery.zeroResaleObjectIds],
+    },
+    forecast: state.forecast,
+    forecastArrivals: state.forecastArrivals.map((arrival) => ({
+      ...arrival,
+      healthConditions: [...arrival.healthConditions],
+    })),
+    comboBoard: {
+      slots: state.comboBoard.slots.map((offer) => offer ? {
+        ...offer,
+        preparationIds: [...offer.preparationIds] as [string, string],
+      } : null) as unknown as typeof state.comboBoard.slots,
     },
     metrics: {
       ...state.metrics,

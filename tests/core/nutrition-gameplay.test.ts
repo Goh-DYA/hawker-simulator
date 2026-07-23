@@ -183,7 +183,7 @@ describe("nutrition education rules", () => {
     expect(nutritionRequestResult("fibre-forward", undefined)).toBe("unknown");
   });
 
-  it("uses independent deterministic 40% gates for conditions and nutrition intents", () => {
+  it("uses independent deterministic 40% gates without consuming gameplay RNG", () => {
     const eligible: readonly NutritionIntent[] = [
       "lighter-energy",
       "protein-forward",
@@ -217,7 +217,7 @@ describe("nutrition education rules", () => {
       seed: "rng-compat",
       catalog: nutritionCatalog(),
     }));
-    expect(levelOneWithNutrition.rngState).not.toBe(levelOneWithoutNutrition.rngState);
+    expect(levelOneWithNutrition.rngState).toBe(levelOneWithoutNutrition.rngState);
     expect(repeatedLevelOneWithNutrition.rngState).toBe(levelOneWithNutrition.rngState);
     expect(repeatedLevelOneWithNutrition.customers).toEqual(levelOneWithNutrition.customers);
     expect(
@@ -258,7 +258,7 @@ describe("nutrition education rules", () => {
         level: 2,
       },
     });
-    expect(levelTwoFull.rngState).not.toBe(levelTwoHealthOnly.rngState);
+    expect(levelTwoFull.rngState).toBe(levelTwoHealthOnly.rngState);
   });
 
   it("uses authored condition ratings and nutrient-derived legacy fallbacks", () => {

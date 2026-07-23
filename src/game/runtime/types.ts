@@ -13,6 +13,12 @@ import type {
   ServicePeriodId,
   ServicePeriodPhase,
   VisitRatingComponents,
+  ForecastComparison,
+  ForecastCoverage,
+  ForecastBudgetBand,
+  ForecastGroupSize,
+  ForecastNeed,
+  ForecastShare,
 } from "@/src/game/core";
 import type { SatisfactionTip } from "./satisfactionInsight";
 import type { QueueFlowState } from "./queueInsight";
@@ -98,14 +104,58 @@ export interface RuntimePeriodLedger {
 export type RuntimeDebriefCauseCode =
   | "period-complete"
   | "served-timeout"
-  | "unserved-departure";
+  | "unserved-departure"
+  | "partial-meal-second-stall-unavailable"
+  | "partial-meal-served-timeout";
+
+export interface RuntimePartialMealCauseSummary {
+  readonly cause: "second-stall-unavailable" | "served-timeout";
+  readonly count: number;
+}
+
+export interface RuntimeComboOfferOutcomeSummary {
+  readonly offerId: string;
+  readonly completedVisits: number;
+  readonly partialVisits: number;
+  readonly partialMealCauses: readonly RuntimePartialMealCauseSummary[];
+}
 
 export interface RuntimePeriodDebrief {
   readonly periodSequenceId: number;
   readonly servedVisits: number;
   readonly timedOutServedVisits: number;
   readonly unservedDepartures: number;
+  readonly partialMeals: number;
+  readonly partialMealCauses: readonly RuntimePartialMealCauseSummary[];
+  readonly completedComboVisits: number;
+  readonly comboOfferOutcomes: readonly RuntimeComboOfferOutcomeSummary[];
   readonly causeCodes: readonly RuntimeDebriefCauseCode[];
+  readonly forecastComparison: RuntimeForecastComparison;
+}
+
+export interface RuntimeForecastComparison extends ForecastComparison {
+  readonly averageWaitScore?: number;
+  readonly contributionCents: MoneyDeltaCents;
+  readonly satisfactionCauseScores: Partial<VisitRatingComponents>;
+}
+
+export interface RuntimeForecast {
+  readonly periodSequenceId: number;
+  readonly periodId: ServicePeriodId;
+  readonly day: number;
+  readonly demandRange: readonly [number, number];
+  readonly crowdProfiles: readonly ForecastShare[];
+  readonly budgetBands: readonly ForecastBudgetBand[];
+  readonly groupSizeMix: readonly ForecastGroupSize[];
+  readonly mealMix: readonly ForecastShare[];
+  readonly nutritionIntents: readonly ForecastNeed[];
+  readonly conditionAwareNeeds: readonly ForecastNeed[];
+  readonly nutritionIntentIncidenceBasisPoints: number;
+  readonly conditionAwareIncidenceBasisPoints: number;
+  readonly needShareBasis: "among-flagged-needs";
+  readonly coverage: readonly ForecastCoverage[];
+  readonly menuIndependent: true;
+  readonly explanation: string;
 }
 
 export interface RuntimeNutritionProfileSummary {
@@ -146,6 +196,81 @@ export interface RuntimePreparationSummary {
   readonly dishId: string;
   readonly variantId?: string;
   readonly terms: RuntimeServingTermsSummary;
+}
+
+export type RuntimeMealRole = "main" | "side" | "drink";
+
+export interface RuntimeComboComponentSummary {
+  readonly preparationId: string;
+  readonly dishId: string;
+  readonly variantId?: string;
+  readonly label: string;
+  readonly variantLabel?: string;
+  readonly servingLabel?: string;
+  readonly role: RuntimeMealRole;
+  readonly componentLabel: "Main" | "Drink" | "Dessert" | "Add-on";
+  readonly terms: RuntimeServingTermsSummary;
+  readonly availableStallCount: number;
+}
+
+export interface RuntimeComboRatingSummary {
+  readonly value?: number;
+  readonly dataState: "known" | "trace" | "unavailable";
+  readonly explanation: string;
+}
+
+export interface RuntimeComboOfferSummary {
+  readonly id: string;
+  readonly slot: number;
+  readonly preparationIds: readonly [string, string];
+  readonly components?: readonly [RuntimeComboComponentSummary, RuntimeComboComponentSummary];
+  readonly priceCents?: MoneyCents;
+  readonly ingredientCostCents?: MoneyCents;
+  readonly servingStopCount?: number;
+  readonly routeDistanceTiles?: number;
+  readonly valid: boolean;
+  readonly issues: readonly string[];
+  /** Comparative in-game balance among the fixed unlocked feasible meal universe. */
+  readonly mealBalance: RuntimeComboRatingSummary;
+  /** Fit for the leading current forecast intent, kept separate from Meal balance. */
+  readonly intentFit: RuntimeComboRatingSummary & { readonly needId?: string };
+  /** Visit-specific fit is frozen only after a guest with a condition-aware need orders. */
+  readonly conditionAwareFit: RuntimeComboRatingSummary;
+  readonly dataExplanation: string;
+}
+
+export interface RuntimeComboBoardSummary {
+  readonly unlockLevel: 5;
+  readonly unlocked: boolean;
+  readonly slots: readonly [
+    RuntimeComboOfferSummary | null,
+    RuntimeComboOfferSummary | null,
+    RuntimeComboOfferSummary | null,
+  ];
+  readonly candidates: readonly RuntimeComboComponentSummary[];
+  readonly valid: boolean;
+  readonly issues: readonly string[];
+  readonly configuredOfferCount: number;
+  readonly compatibilityWarning?: string;
+  /** Temporary service-time status; saved offers remain intact while a needed stall is closed. */
+  readonly liveAvailabilityWarning?: string;
+}
+
+export interface RuntimeFrozenMealSummary {
+  readonly offerId: string;
+  readonly components: readonly [RuntimeComboComponentSummary, RuntimeComboComponentSummary];
+  readonly priceCents: MoneyCents;
+  readonly ingredientCostCents: MoneyCents;
+  readonly chargedPriceCents: MoneyCents;
+  readonly chargedIngredientCostCents: MoneyCents;
+  readonly servingStopCount: number;
+  readonly mealBalance: RuntimeComboRatingSummary;
+  readonly intentFit: RuntimeComboRatingSummary & { readonly needId?: string };
+  readonly conditionAwareFit: RuntimeComboRatingSummary;
+  readonly explanationCodes: readonly string[];
+  readonly settlementCause?: "complete" | "second-stall-unavailable" | "served-timeout" | "cancelled-before-service";
+  readonly servedPreparationIds: readonly string[];
+  readonly cancelledPreparationIds: readonly string[];
 }
 
 export interface RuntimeNutritionVariantSummary {
@@ -210,6 +335,8 @@ export interface RuntimeCustomerNutritionSummary {
   /** Immutable serving terms captured when this order was accepted. */
   readonly servingTerms?: RuntimeServingTermsSummary;
   readonly profile?: RuntimeNutritionProfileSummary;
+  /** Immutable two-component order terms, fit, routing, and settlement state. */
+  readonly frozenMeal?: RuntimeFrozenMealSummary;
 }
 
 export interface RuntimeStallMastery {
@@ -252,6 +379,7 @@ export interface RuntimeSnapshot {
   day: number;
   timeLabel: string;
   readonly servicePeriod: RuntimeServicePeriod;
+  readonly forecast: RuntimeForecast;
   readonly periodLedger: RuntimePeriodLedger;
   readonly periodDebrief?: RuntimePeriodDebrief;
   isOpen: boolean;
@@ -278,6 +406,7 @@ export interface RuntimeSnapshot {
   stallMenus: Readonly<Record<string, readonly string[]>>;
   activeDishVariants: Readonly<Record<string, string>>;
   activePreparations: readonly RuntimePreparationSummary[];
+  comboBoard: RuntimeComboBoardSummary;
   nutritionFamilies: readonly RuntimeNutritionFamilySummary[];
   nutritionPulse: RuntimeNutritionPulse;
   selectedCustomerId?: string;
@@ -352,6 +481,12 @@ export interface RuntimeController {
   finishQueueEdit(): void;
   setDishEnabled(stallId: string, dishId: string, enabled: boolean): boolean;
   setDishVariant(dishId: string, variantId: string): boolean;
+  setComboOffer(
+    slot: 0 | 1 | 2,
+    mainPreparationId: string,
+    complementPreparationId: string,
+  ): boolean;
+  clearComboOffer(slot: 0 | 1 | 2): boolean;
   acceptObjective(objectiveId: string): boolean;
   /** Declines the complete three-offer board for the current period. */
   skipObjective(): boolean;

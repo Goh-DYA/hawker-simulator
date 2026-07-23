@@ -352,7 +352,7 @@ const DISH_PRESENTATIONS: Readonly<Record<string, DishPresentationSeed>> = {
   "beef-satay-set": dishProfile("ten-beef-satay-skewers-with-peanut-sauce", "skewers", ["ten-beef-satay", "cucumber", "rice-cake"], ["bamboo-skewers", "peanut-sauce"]),
   "sambal-grilled-squid": dishProfile("salted-egg-squid-pieces", "whole-seafood", ["squid", "salted-egg-sauce"], ["golden-crumb", "curry-leaf"]),
   "har-gow": dishProfile("four-prawn-dumplings-with-vegetables-in-light-soup", "broth", ["four-prawn-dumplings", "bamboo-shoot", "vegetables"], ["light-soup", "pleated-wrapper", "ceramic-bowl"]),
-  "siew-mai": dishProfile("open-topped-siew-mai-in-bamboo-basket", "dumplings", ["pork-dumpling", "prawn"], ["open-wrapper", "diced-carrot", "bamboo-steamer"]),
+  "siew-mai": dishProfile("three-open-topped-siew-mai-in-bamboo-basket", "dumplings", ["three-seasoned-pork-dumplings", "prawn"], ["open-wrapper", "diced-carrot", "bamboo-steamer"]),
   "char-siew-bao": dishProfile("white-char-siew-buns-in-bamboo-basket", "buns", ["steamed-bun", "char-siew"], ["split-top", "bamboo-steamer"]),
   "lotus-leaf-rice": dishProfile("opened-lotus-leaf-rice-parcel", "leaf-parcel", ["glutinous-rice", "lap-cheong", "char-siew", "mushroom"], ["lotus-leaf-wrap", "parcel-folds"]),
   chendol: dishProfile("green-chendol-jelly-in-coconut-ice", "shaved-ice", ["chendol-jelly", "coconut-milk", "shaved-ice"], ["palm-sugar", "red-bean"]),

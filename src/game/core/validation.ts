@@ -205,6 +205,19 @@ function validateCatalogInternal(catalog: SimulationCatalog): readonly Validatio
     ) {
       issues.push({ path: `${path}.starRating`, message: "must be between one and five" });
     }
+    if (dish.unlockPrerequisiteIds !== undefined) {
+      if (new Set(dish.unlockPrerequisiteIds).size !== dish.unlockPrerequisiteIds.length) {
+        issues.push({ path: `${path}.unlockPrerequisiteIds`, message: "must not contain duplicates" });
+      }
+      for (const prerequisiteId of dish.unlockPrerequisiteIds) {
+        if (!catalog.placeables[prerequisiteId]) {
+          issues.push({
+            path: `${path}.unlockPrerequisiteIds`,
+            message: `references unknown placeable ${prerequisiteId}`,
+          });
+        }
+      }
+    }
     for (const [variantIndex, variant] of (dish.nutritionVariants ?? []).entries()) {
       const profile = variant.profile;
       if (!profile) continue;

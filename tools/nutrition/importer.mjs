@@ -409,12 +409,12 @@ export const computeRelativeFits = (entries, direction) => {
 };
 
 /**
- * Keeps the source-facing `trace` state intact while giving it the lowest
- * numeric amount for relative comparisons. Unavailable values stay excluded.
+ * Only measured or reported numeric values participate in relative
+ * comparisons. A source-reported trace is not a measured zero, so it stays
+ * visible as `trace` but is excluded alongside unavailable values.
  */
 export const nutritionValueForComparison = (nutrient) => {
   if (nutrient.status === "known") return nutrient.value;
-  if (nutrient.status === "trace") return 0;
   return undefined;
 };
 

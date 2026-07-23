@@ -34,6 +34,11 @@ import {
 } from "@/src/game/persistence/saveStore";
 import { registerPwa } from "@/src/game/pwa/registerPwa";
 import { asMoneyCents, asMoneyDeltaCents } from "@/src/game/core/money";
+import {
+  derivePeriodForecast,
+  lockForecastAudience,
+  profileForPeriod,
+} from "@/src/game/core/forecast";
 import { utilityEffectsForPlaceable } from "@/src/game/runtime/contentUtility";
 import { describeSgd, formatSgd } from "@/src/game/runtime/money";
 import { defaultStallMenusForProgression } from "@/src/game/runtime/stallMenus";
@@ -54,7 +59,11 @@ import type {
   BuildTool,
   GameSpeed,
   RuntimeController,
+  RuntimeComboBoardSummary,
+  RuntimeComboComponentSummary,
+  RuntimeFrozenMealSummary,
   RuntimeEvent,
+  RuntimeForecast,
   RuntimeObjective,
   RuntimePeriodDebrief,
   RuntimePeriodLedger,
@@ -70,12 +79,13 @@ import {
   NutritionDisclosure,
   NutritionProfileSummary,
   NutritionPulseCard,
+  preparationDurationLabel,
   PreparationTermsSummary,
   VariantLabDialog,
-  type CustomerNutritionView,
   type NutritionFamilyView,
   type NutritionProfileView,
   type NutritionPulseView,
+  type PreparationTermsView,
 } from "./NutritionEducation";
 
 const INITIAL_LEVEL = 1;
@@ -83,6 +93,49 @@ const INITIAL_REPUTATION = 8;
 const INITIAL_CASH_CENTS = asMoneyCents(420_000);
 const ZERO_CENTS = asMoneyCents(0);
 const ZERO_DELTA_CENTS = asMoneyDeltaCents(0);
+const INITIAL_UNLOCKED_CONTENT_IDS = [...new Set(
+  [...PLACEABLES, ...STALLS]
+    .filter((definition) => definition.unlockRequirement.level <= INITIAL_LEVEL)
+    .map((definition) => definition.id),
+)].sort();
+const INITIAL_ELIGIBLE_FORECAST_PERSONA_IDS = CUSTOMER_ARCHETYPES
+  .filter((persona) => (
+    persona.unlockRequirement.level <= INITIAL_LEVEL
+    && persona.unlockRequirement.reputation <= INITIAL_REPUTATION
+    && persona.unlockRequirement.prerequisiteIds.every((id) => (
+      INITIAL_UNLOCKED_CONTENT_IDS.includes(id)
+    ))
+  ))
+  .map((persona) => persona.id);
+const INITIAL_CORE_FORECAST = lockForecastAudience(
+  derivePeriodForecast(profileForPeriod("breakfast"), 1, 1),
+  INITIAL_ELIGIBLE_FORECAST_PERSONA_IDS,
+);
+export const INITIAL_RUNTIME_FORECAST: RuntimeForecast = {
+  periodSequenceId: INITIAL_CORE_FORECAST.periodSequenceId,
+  periodId: INITIAL_CORE_FORECAST.periodId,
+  day: INITIAL_CORE_FORECAST.day,
+  demandRange: INITIAL_CORE_FORECAST.demandRange,
+  crowdProfiles: INITIAL_CORE_FORECAST.crowdProfiles,
+  budgetBands: INITIAL_CORE_FORECAST.budgetBands,
+  groupSizeMix: INITIAL_CORE_FORECAST.groupSizeMix,
+  mealMix: INITIAL_CORE_FORECAST.mealMix,
+  nutritionIntents: INITIAL_CORE_FORECAST.nutritionNeeds.filter(
+    (need) => need.kind === "nutrition-intent",
+  ),
+  conditionAwareNeeds: INITIAL_CORE_FORECAST.nutritionNeeds.filter(
+    (need) => need.kind === "condition-aware",
+  ),
+  nutritionIntentIncidenceBasisPoints:
+    INITIAL_CORE_FORECAST.nutritionIntentIncidenceBasisPoints,
+  conditionAwareIncidenceBasisPoints:
+    INITIAL_CORE_FORECAST.conditionAwareIncidenceBasisPoints,
+  needShareBasis: INITIAL_CORE_FORECAST.needShareBasis,
+  coverage: [],
+  menuIndependent: true,
+  explanation:
+    "Needs are forecast independently of the menu. Coverage reflects active preparations.",
+};
 
 export function latestRuntimeSavePayload(
   controller: Pick<RuntimeController, "exportState"> | undefined,
@@ -118,6 +171,7 @@ const INITIAL_SNAPSHOT: RuntimeSnapshot = {
     canAdvance: true,
     actionLabel: "Start breakfast",
   },
+  forecast: INITIAL_RUNTIME_FORECAST,
   periodLedger: {
     periodSequenceId: 1,
     openingCashCents: INITIAL_CASH_CENTS,
@@ -155,13 +209,22 @@ const INITIAL_SNAPSHOT: RuntimeSnapshot = {
   trayReturnStations: 1,
   buildTool: "select",
   routeGuidePoints: [],
-  unlockedContentIds: [],
+  unlockedContentIds: INITIAL_UNLOCKED_CONTENT_IDS,
   stallMenus: defaultStallMenusForProgression({
     level: INITIAL_LEVEL,
     reputation: INITIAL_REPUTATION,
   }),
   activeDishVariants: {},
   activePreparations: [],
+  comboBoard: {
+    unlockLevel: 5,
+    unlocked: false,
+    slots: [null, null, null],
+    candidates: [],
+    valid: true,
+    issues: [],
+    configuredOfferCount: 0,
+  },
   nutritionFamilies: [],
   nutritionPulse: {
     servedMeals: 0,
@@ -240,6 +303,64 @@ function normalizeSettings(
 type Panel = "focus" | "build" | "stalls" | "dishes" | "insights" | "activity";
 type TutorialStep = 0 | 1 | 2 | 3 | 4 | 5;
 type NutritionTourStep = 0 | 1 | 2;
+
+const MANAGEMENT_SECTIONS = [
+  { value: "focus", label: "Focus" },
+  { value: "build", label: "Build" },
+  { value: "stalls", label: "Stalls" },
+  { value: "dishes", label: "Dishes" },
+  { value: "insights", label: "Insights" },
+  { value: "activity", label: "Activity" },
+] as const satisfies readonly { readonly value: Panel; readonly label: string }[];
+
+export function panelSelectionIsVisible(
+  overlayManagement: boolean,
+  managementSheetOpen: boolean,
+): boolean {
+  return !overlayManagement || managementSheetOpen;
+}
+
+export function shouldRestoreManagementFocus(
+  closeRequested: boolean,
+  focusWasInsideSheet: boolean,
+  returnFocusConnected: boolean,
+  anotherModalOpen: boolean,
+): boolean {
+  return (
+    (closeRequested || focusWasInsideSheet)
+    && returnFocusConnected
+    && !anotherModalOpen
+  );
+}
+
+export function revealScrollableControl(
+  control: Pick<HTMLElement, "scrollIntoView">,
+  reducedMotion: boolean,
+) {
+  control.scrollIntoView({
+    behavior: reducedMotion ? "auto" : "smooth",
+    block: "nearest",
+    inline: "nearest",
+  });
+}
+
+type ForecastNeedView = RuntimeForecast["nutritionIntents"][number];
+
+export interface GuidedDecisionOption {
+  readonly dishId: string;
+  readonly responseId: string;
+  readonly label: string;
+  readonly variantLabel?: string;
+  readonly terms: PreparationTermsView;
+  readonly profile?: NutritionProfileView;
+  readonly intentFit?: number;
+}
+
+interface GuidedDecision {
+  readonly needId: string;
+  readonly needLabel: string;
+  readonly options: readonly [GuidedDecisionOption, GuidedDecisionOption];
+}
 
 const PANEL_COPY: Readonly<Record<Panel, { kicker: string; title: string }>> = {
   focus: { kicker: "Today at a glance", title: "Focus" },
@@ -498,13 +619,294 @@ const DEBRIEF_CAUSE_LABELS: Readonly<Record<RuntimePeriodDebrief["causeCodes"][n
   "period-complete": "The period cohort finished service.",
   "served-timeout": "A served visit reached the drain watchdog and received the explicit timeout result.",
   "unserved-departure": "An unserved guest departed with no sale or experience awarded.",
+  "partial-meal-second-stall-unavailable": "A two-item meal became partial after its second stall became unavailable. Only the served component was charged.",
+  "partial-meal-served-timeout": "A two-item meal became partial at the drain watchdog. Only the served component was charged.",
 };
+
+const FORECAST_LABELS: Readonly<Record<string, string>> = {
+  value: "Value budgets",
+  everyday: "Everyday budgets",
+  flexible: "Flexible budgets",
+  solo: "Solo visits",
+  pair: "Pairs",
+  "small-group": "Groups of three",
+  "group-four": "Groups of four",
+  "group-five": "Groups of five",
+  "group-six": "Groups of six",
+  "main-only": "Main only",
+  "main-and-drink": "Main and drink",
+  "main-and-side": "Main and side",
+  "light-bite": "Light bite",
+  "drink-led": "Drink-led visit",
+  "lighter-energy": "Lighter energy",
+  "protein-forward": "Protein-forward",
+  "fibre-forward": "Fibre-forward",
+  "sodium-aware": "Sodium-aware",
+  "lower-total-sugar-drink": "Lower total sugar drink",
+  diabetes: "Diabetes-aware visit need",
+  hypertension: "Hypertension-aware visit need",
+  "high-cholesterol": "Cholesterol-aware visit need",
+  obesity: "Weight-management-aware visit need",
+};
+
+const SATISFACTION_CAUSE_LABELS = {
+  foodQuality: "Food quality",
+  wait: "Waiting experience",
+  value: "Value for the visit budget",
+  walking: "Walking distance",
+  comfort: "Seating comfort",
+  cleanliness: "Cleanliness",
+  ambience: "Ambience",
+} as const;
+
+function highestCountEntry(values: Readonly<Record<string, number>>) {
+  return Object.entries(values).sort(
+    (left, right) => right[1] - left[1] || left[0].localeCompare(right[0]),
+  )[0];
+}
+
+function titleFromId(id: string) {
+  const bare = id.replace(/^(customer|intent|condition)\./, "");
+  return FORECAST_LABELS[bare]
+    ?? bare.replaceAll("-", " ").replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function forecastShareLabel(basisPoints: number) {
+  const percentage = basisPoints / 100;
+  return `${percentage.toFixed(Number.isInteger(percentage) ? 0 : 1)}%`;
+}
+
+function forecastNeedLabel(need: ForecastNeedView | string) {
+  if (typeof need === "string") return titleFromId(need);
+  return titleFromId(need.nutritionIntent ?? need.healthCondition ?? need.id);
+}
+
+type SatisfactionCause = keyof typeof SATISFACTION_CAUSE_LABELS;
+
+const SATISFACTION_NEXT_ACTIONS: Readonly<Record<SatisfactionCause, string>> = {
+  foodQuality: "Compare the available preparation trade-offs before the next service.",
+  wait: "Inspect queue pressure and preparation times before the next service.",
+  value: "Compare the forecast budget bands with menu prices before the next service.",
+  walking: "Inspect guest routes and stall-to-seat distance before the next service.",
+  comfort: "Review the available seating and comfort signals before the next service.",
+  cleanliness: "Review the cleanliness result before the next service.",
+  ambience: "Review the ambience result during the next planning period.",
+};
+
+export function debriefTryNextCopy(
+  forecast: Pick<RuntimeForecast, "coverage" | "nutritionIntents" | "conditionAwareNeeds">,
+  comparison: RuntimePeriodDebrief["forecastComparison"] | undefined,
+  lowestSatisfactionCauses: readonly (readonly [SatisfactionCause, number])[],
+): string | undefined {
+  const needsById = new Map(
+    [...forecast.nutritionIntents, ...forecast.conditionAwareNeeds].map((need) => [need.id, need]),
+  );
+  const leadingGap = forecast.coverage
+    .filter((coverage) => !coverage.covered)
+    .sort((left, right) => (
+      (needsById.get(right.needId)?.basisPoints ?? 0)
+      - (needsById.get(left.needId)?.basisPoints ?? 0)
+      || left.needId.localeCompare(right.needId)
+    ))[0];
+  if (leadingGap) {
+    return `${forecastNeedLabel(leadingGap.needId)} had no active viable preparation in this period’s menu. Review that in-game coverage gap before the next service.`;
+  }
+
+  const lowestCause = lowestSatisfactionCauses[0];
+  const waitScore = comparison?.averageWaitScore;
+  if (waitScore !== undefined && (!lowestCause || waitScore <= lowestCause[1])) {
+    return `Waiting experience was the lowest observed result at ${Math.round(waitScore)}/100. Inspect queue pressure and preparation times before the next service.`;
+  }
+  if (!lowestCause) return undefined;
+  return `${SATISFACTION_CAUSE_LABELS[lowestCause[0]]} was the lowest observed cause at ${Math.round(lowestCause[1])}/100. ${SATISFACTION_NEXT_ACTIONS[lowestCause[0]]}`;
+}
+
+function ForecastCard({
+  forecast,
+  periodLabel,
+  compact = false,
+  canOpenGuide,
+  onOpenGuide,
+}: {
+  readonly forecast: RuntimeForecast;
+  readonly periodLabel: string;
+  readonly compact?: boolean;
+  readonly canOpenGuide: boolean;
+  onOpenGuide(): void;
+}) {
+  const topCrowd = [...forecast.crowdProfiles].sort((left, right) => right.basisPoints - left.basisPoints)[0];
+  const topBudget = [...forecast.budgetBands].sort((left, right) => right.basisPoints - left.basisPoints)[0];
+  const topGroup = [...forecast.groupSizeMix].sort((left, right) => right.basisPoints - left.basisPoints)[0];
+  const topMeal = [...forecast.mealMix].sort((left, right) => right.basisPoints - left.basisPoints)[0];
+  const topIntent = [...forecast.nutritionIntents].sort((left, right) => right.basisPoints - left.basisPoints)[0];
+  const topCondition = [...forecast.conditionAwareNeeds].sort((left, right) => right.basisPoints - left.basisPoints)[0];
+  const coverageReady = forecast.coverage.length > 0;
+  const coveredCount = forecast.coverage.filter((need) => need.covered).length;
+  const coverageGaps = forecast.coverage.filter((need) => !need.covered);
+
+  return (
+    <section className={`forecast-card${compact ? " is-compact" : ""}`} aria-label={`${periodLabel} planning forecast`}>
+      <div className="forecast-heading">
+        <div>
+          <span>{compact ? "Forecast" : "Period forecast"}</span>
+          <h2>{compact ? `${periodLabel} forecast` : `${periodLabel}: plan for the range`}</h2>
+        </div>
+        <strong>{forecast.demandRange[0]}–{forecast.demandRange[1]} visits</strong>
+      </div>
+
+      <dl className="forecast-overview">
+        <div>
+          <dt>Crowd</dt>
+          <dd>{topCrowd ? (compact ? personaLabel(topCrowd.id) : `${personaLabel(topCrowd.id)} · ${forecastShareLabel(topCrowd.basisPoints)}`) : "Not available"}</dd>
+        </div>
+        <div>
+          <dt>Budget</dt>
+          <dd>{topBudget ? <><SgdAmount cents={topBudget.minimumCents} />–<SgdAmount cents={topBudget.maximumCents} /></> : "Not available"}</dd>
+        </div>
+        {!compact ? <div>
+          <dt>Group-size intent</dt>
+          <dd>{topGroup ? `${titleFromId(topGroup.id)} · ${forecastShareLabel(topGroup.basisPoints)}` : "Not available"}</dd>
+        </div> : null}
+        <div>
+          <dt>{compact ? "Actionable need" : "Future meal intent"}</dt>
+          <dd>{compact
+            ? topIntent
+              ? `${forecastNeedLabel(topIntent)} · ${forecastShareLabel(forecast.nutritionIntentIncidenceBasisPoints)} of visits`
+              : "Not available"
+            : topMeal
+              ? `${titleFromId(topMeal.id)} · ${forecastShareLabel(topMeal.basisPoints)}`
+              : "Not available"}</dd>
+        </div>
+        {!compact ? <div>
+          <dt>Nutrition intent</dt>
+          <dd>{topIntent ? `${forecastShareLabel(forecast.nutritionIntentIncidenceBasisPoints)} of visits · ${forecastNeedLabel(topIntent)} leads flagged mix` : "Not available"}</dd>
+        </div> : null}
+        {!compact ? <div>
+          <dt>Condition-aware</dt>
+          <dd>{topCondition ? `${forecastShareLabel(forecast.conditionAwareIncidenceBasisPoints)} of visits · ${forecastNeedLabel(topCondition)} leads flagged mix` : "Not available"}</dd>
+        </div> : null}
+        {!compact ? <div>
+          <dt>Menu coverage</dt>
+          <dd>{coveredCount}/{forecast.coverage.length || 0} needs covered</dd>
+        </div> : null}
+      </dl>
+
+      {!compact ? (
+        <details className="forecast-breakdown">
+          <summary>View crowd, budget, group, meal, and need details</summary>
+          <div className="forecast-distributions">
+            <section>
+              <h3>Crowd profiles</h3>
+              <ul>{forecast.crowdProfiles.map((item) => <li key={item.id}><span>{personaLabel(item.id)}</span><strong>{forecastShareLabel(item.basisPoints)}</strong></li>)}</ul>
+            </section>
+            <section>
+              <h3>Budget bands</h3>
+              <ul>{forecast.budgetBands.map((item) => <li key={item.id}><span>{titleFromId(item.id)} · <SgdAmount cents={item.minimumCents} />–<SgdAmount cents={item.maximumCents} /></span><strong>{forecastShareLabel(item.basisPoints)}</strong></li>)}</ul>
+            </section>
+            <section>
+              <h3>Latent group-size intent</h3>
+              <ul>{forecast.groupSizeMix.map((item) => <li key={item.id}><span>{titleFromId(item.id)}</span><strong>{forecastShareLabel(item.basisPoints)}</strong></li>)}</ul>
+              <p>For now, parties arrive individually, so group size remains a planning signal per visit.</p>
+            </section>
+            <section>
+              <h3>Future meal-composition intent</h3>
+              <ul>{forecast.mealMix.map((item) => <li key={item.id}><span>{titleFromId(item.id)}</span><strong>{forecastShareLabel(item.basisPoints)}</strong></li>)}</ul>
+              <p>Service can use one exact preparation or a validated two-item Combo Board meal. Each served visit scores once while component sales and costs remain explicit.</p>
+            </section>
+            <section className="forecast-needs">
+              <h3>Nutrition intents</h3>
+              <p>{forecastShareLabel(forecast.nutritionIntentIncidenceBasisPoints)} of visits may carry a nutrition intent. Each share below is among those flagged visits.</p>
+              <ul>{forecast.nutritionIntents.map((item) => <li key={item.id}><span>{forecastNeedLabel(item)}</span><strong>{forecastShareLabel(item.basisPoints)} of flagged</strong></li>)}</ul>
+            </section>
+            <section className="forecast-needs">
+              <h3>Condition-aware needs</h3>
+              <p>{forecastShareLabel(forecast.conditionAwareIncidenceBasisPoints)} of visits may carry a condition-aware need. Each share below is among those independently flagged visits.</p>
+              <ul>{forecast.conditionAwareNeeds.map((item) => <li key={item.id}><span>{forecastNeedLabel(item)}</span><strong>{forecastShareLabel(item.basisPoints)} of flagged</strong></li>)}</ul>
+              <p>Sampled independently for every visit; events, appearance, persona, regular identity, and neighbourhood theme never set these needs.</p>
+            </section>
+          </div>
+        </details>
+      ) : null}
+
+      <div className="forecast-coverage" data-gaps={coverageReady && coverageGaps.length > 0}>
+        <strong>{!coverageReady
+          ? "Checking menu coverage"
+          : coverageGaps.length > 0
+            ? `${coverageGaps.length} menu ${coverageGaps.length === 1 ? "gap" : "gaps"}`
+            : compact
+              ? "Menu: all forecast needs covered"
+              : "Current menu covers every forecast need"}</strong>
+        {coverageGaps.length > 0 ? <span>{coverageGaps.slice(0, compact ? 2 : 4).map((need) => forecastNeedLabel(need.needId)).join(" · ")}</span> : null}
+      </div>
+      {!compact ? (
+        <p className="forecast-independence-note">
+          Crowd, budget, group-size, and meal percentages are conditional mixes among expected visits. {forecast.explanation} Menu changes update coverage only; they never rewrite who is expected or what visitors need.
+          Validated main-and-complement signals can become two-item Combo Board meals; every other percentage remains a forecast, not a guarantee.
+        </p>
+      ) : null}
+      <button type="button" className="forecast-guide-button" disabled={!canOpenGuide} onClick={onOpenGuide}>
+        {canOpenGuide
+          ? compact ? "Open What’s new guide" : "Try the What’s new decision"
+          : compact ? "Guide available in planning" : "Guide available in planning with two unlocked options"}
+      </button>
+    </section>
+  );
+}
 
 function formatCountdown(milliseconds: number) {
   const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1_000));
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+export function meaningfulServiceAnnouncement(
+  period: Pick<
+    RuntimeServicePeriod,
+    "sequenceId" | "day" | "label" | "phase" | "arrivalRemainingMs" | "drainRemainingMs"
+  >,
+): { readonly key: string; readonly message: string } {
+  const prefix = `Day ${period.day}, ${period.label}`;
+  if (period.phase === "planning") {
+    return {
+      key: `${period.sequenceId}:planning`,
+      message: `${prefix} planning is ready. Review the forecast before starting service.`,
+    };
+  }
+  if (period.phase === "arrivals") {
+    if (period.arrivalRemainingMs <= 30_000) {
+      return {
+        key: `${period.sequenceId}:arrivals-30-seconds`,
+        message: `${prefix} arrivals close in 30 seconds.`,
+      };
+    }
+    if (period.arrivalRemainingMs <= 60_000) {
+      return {
+        key: `${period.sequenceId}:arrivals-60-seconds`,
+        message: `${prefix} arrivals close in one minute.`,
+      };
+    }
+    return {
+      key: `${period.sequenceId}:arrivals-open`,
+      message: `${prefix} arrivals are open.`,
+    };
+  }
+  if (period.phase === "draining") {
+    if (period.drainRemainingMs <= 60_000) {
+      return {
+        key: `${period.sequenceId}:drain-60-seconds`,
+        message: `${prefix} drain watchdog has one minute remaining.`,
+      };
+    }
+    return {
+      key: `${period.sequenceId}:draining`,
+      message: `${prefix} arrivals are closed. Finishing current visits.`,
+    };
+  }
+  return {
+    key: `${period.sequenceId}:debrief`,
+    message: `${prefix} service is complete. Review the period debrief.`,
+  };
 }
 
 function ObjectiveBoard({
@@ -668,16 +1070,71 @@ function PeriodLedgerCard({
 function PeriodDebrief({
   dialogRef,
   period,
+  forecast,
   ledger,
   debrief,
   onContinue,
 }: {
   dialogRef: RefObject<HTMLElement | null>;
   period: RuntimeServicePeriod;
+  forecast: RuntimeForecast;
   ledger: RuntimePeriodLedger;
   debrief?: RuntimePeriodDebrief;
   onContinue(): void;
 }) {
+  const comparison = debrief?.forecastComparison;
+  const demandResultCopy = comparison?.demandResult === "within-range"
+    ? "Arrivals landed inside the forecast range."
+    : comparison?.demandResult === "below-range"
+      ? "Arrivals landed below the forecast range."
+      : comparison?.demandResult === "above-range"
+        ? "Arrivals exceeded the forecast range."
+        : "No arrival comparison is available.";
+  const topExpectedCrowd = [...forecast.crowdProfiles].sort((left, right) => right.basisPoints - left.basisPoints)[0];
+  const topExpectedBudget = [...forecast.budgetBands].sort((left, right) => right.basisPoints - left.basisPoints)[0];
+  const topExpectedGroup = [...forecast.groupSizeMix].sort((left, right) => right.basisPoints - left.basisPoints)[0];
+  const topExpectedMeal = [...forecast.mealMix].sort((left, right) => right.basisPoints - left.basisPoints)[0];
+  const topObservedCrowd = highestCountEntry(comparison?.crowdProfileCounts ?? {});
+  const topObservedBudget = highestCountEntry(comparison?.budgetBandCounts ?? {});
+  const topObservedGroup = highestCountEntry(comparison?.groupSizeCounts ?? {});
+  const topObservedMeal = highestCountEntry(comparison?.mealMixCounts ?? {});
+  const topObservedIntent = highestCountEntry(comparison?.nutritionIntentCounts ?? {});
+  const topObservedCondition = highestCountEntry(comparison?.conditionAwareCounts ?? {});
+  const intentResultVisits = comparison
+    ? comparison.intentMatches + comparison.intentMisses + comparison.intentUnknowns
+    : 0;
+  const conditionResultVisits = comparison
+    ? comparison.conditionMatches + comparison.conditionMisses + comparison.conditionUnknowns
+    : 0;
+  const lowestSatisfactionCauses = Object.entries(comparison?.satisfactionCauseScores ?? {})
+    .filter((entry): entry is [keyof typeof SATISFACTION_CAUSE_LABELS, number] => (
+      entry[0] in SATISFACTION_CAUSE_LABELS && typeof entry[1] === "number"
+    ))
+    .sort((left, right) => left[1] - right[1] || left[0].localeCompare(right[0]))
+    .slice(0, 3);
+  const tryNextCopy = debriefTryNextCopy(forecast, comparison, lowestSatisfactionCauses);
+  const mixRows = [
+    {
+      label: "Crowd profile",
+      expected: topExpectedCrowd ? `${personaLabel(topExpectedCrowd.id)} · ${forecastShareLabel(topExpectedCrowd.basisPoints)} of mix` : "Not available",
+      observed: topObservedCrowd ? `${personaLabel(topObservedCrowd[0])} · ${topObservedCrowd[1]} visits` : "No observed visits",
+    },
+    {
+      label: "Budget band",
+      expected: topExpectedBudget ? `${titleFromId(topExpectedBudget.id)} · ${forecastShareLabel(topExpectedBudget.basisPoints)} of mix` : "Not available",
+      observed: topObservedBudget ? `${titleFromId(topObservedBudget[0])} · ${topObservedBudget[1]} visits` : "No observed visits",
+    },
+    {
+      label: "Group-size intent",
+      expected: topExpectedGroup ? `${titleFromId(topExpectedGroup.id)} · ${forecastShareLabel(topExpectedGroup.basisPoints)} of mix` : "Not available",
+      observed: topObservedGroup ? `${topObservedGroup[0]} ${topObservedGroup[0] === "1" ? "person" : "people"} · ${topObservedGroup[1]} visits` : "No observed visits",
+    },
+    {
+      label: "Future meal intent",
+      expected: topExpectedMeal ? `${titleFromId(topExpectedMeal.id)} · ${forecastShareLabel(topExpectedMeal.basisPoints)} of arrival mix` : "Not available",
+      observed: topObservedMeal ? `${titleFromId(topObservedMeal[0])} · ${topObservedMeal[1]} arrival intents` : "No observed arrivals",
+    },
+  ];
   return (
     <section
       ref={dialogRef}
@@ -690,18 +1147,125 @@ function PeriodDebrief({
       <div className="period-debrief-card">
         <div className="period-debrief-scroll">
           <span className="period-debrief-kicker">Day {period.day} · {period.label} complete</span>
-          <h2 id="period-debrief-title">Service debrief</h2>
-          <p>The displayed clock is frozen while you reconcile this period&apos;s original arrival cohort.</p>
+          <h2 id="period-debrief-title" tabIndex={-1} data-modal-initial-focus>Service debrief</h2>
+          <p>The clock is frozen. Read the result from forecast to causes, then use the ledger to plan the next period.</p>
           <dl className="debrief-outcomes" aria-label="Visit outcomes">
             <div><dt>Served visits</dt><dd>{debrief?.servedVisits ?? 0}</dd></div>
             <div><dt>Served timeouts</dt><dd>{debrief?.timedOutServedVisits ?? 0}</dd></div>
             <div><dt>Unserved departures</dt><dd>{debrief?.unservedDepartures ?? 0}</dd></div>
+            <div><dt>Completed two-item meals</dt><dd>{debrief?.completedComboVisits ?? 0}</dd></div>
+            <div><dt>Partial two-item meals</dt><dd>{debrief?.partialMeals ?? 0}</dd></div>
           </dl>
+          {debrief?.comboOfferOutcomes.length ? (
+            <div className="debrief-combo-outcomes">
+              <strong>Combo Board results</strong>
+              <p>Each two-item meal counts once here; its component sales and costs remain separate in the ledger.</p>
+              <ul>
+                {debrief.comboOfferOutcomes.map((outcome) => (
+                  <li key={outcome.offerId}>
+                    <span>{outcome.offerId.replace(/^combo-slot-/, "Offer ")}</span>
+                    <b>{outcome.completedVisits} complete · {outcome.partialVisits} partial</b>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {debrief?.partialMealCauses.length ? (
+            <div className="debrief-partial-meals" role="status">
+              <strong>Partial-meal settlement</strong>
+              <ul>
+                {debrief.partialMealCauses.map((entry) => (
+                  <li key={entry.cause}>
+                    <span>{entry.cause === "second-stall-unavailable"
+                      ? "Second stall unavailable"
+                      : "Second component timed out"}</span>
+                    <b>{entry.count}</b>
+                  </li>
+                ))}
+              </ul>
+              <p>Only served components were charged; cancelled components produced no sale or ingredient cost.</p>
+            </div>
+          ) : null}
           {debrief?.causeCodes.length ? (
             <p className="debrief-cause-summary">
               <strong>{debrief.causeCodes.length} recorded {debrief.causeCodes.length === 1 ? "cause" : "causes"}.</strong>{" "}
               {DEBRIEF_CAUSE_LABELS[debrief.causeCodes[0]!]}
             </p>
+          ) : null}
+          {tryNextCopy ? (
+            <p className="debrief-cause-summary">
+              <strong>Try next.</strong> {tryNextCopy}
+            </p>
+          ) : null}
+          {comparison ? (
+            <section className="debrief-forecast-check" aria-labelledby="debrief-forecast-title">
+              <div className="debrief-section-heading">
+                <span>Forecast → result</span>
+                <h3 id="debrief-forecast-title">What matched, and what did not</h3>
+              </div>
+              <p className="debrief-demand-result" data-result={comparison.demandResult}>
+                <strong>{comparison.observedArrivals} arrivals</strong>
+                <span>Forecast {forecast.demandRange[0]}–{forecast.demandRange[1]} · {demandResultCopy}</span>
+              </p>
+              <dl className="debrief-strategy-outcomes">
+                <div><dt>Wait experience</dt><dd>{comparison.averageWaitScore === undefined ? "Not available" : `${Math.round(comparison.averageWaitScore)}/100`}</dd></div>
+                <div><dt>Contribution</dt><dd><SgdAmount cents={comparison.contributionCents} ledger /></dd></div>
+              </dl>
+              <div className="debrief-need-results">
+                <section aria-labelledby="debrief-intent-results-title">
+                  <div>
+                    <h4 id="debrief-intent-results-title">Nutrition-intent results</h4>
+                    <p>{intentResultVisits} served intent-flagged {intentResultVisits === 1 ? "visit" : "visits"} scored</p>
+                  </div>
+                  <dl>
+                    <div><dt>Matched</dt><dd>{comparison.intentMatches}</dd></div>
+                    <div><dt>Missed</dt><dd>{comparison.intentMisses}</dd></div>
+                    <div><dt>Unknown</dt><dd>{comparison.intentUnknowns}</dd></div>
+                  </dl>
+                </section>
+                <section aria-labelledby="debrief-condition-results-title">
+                  <div>
+                    <h4 id="debrief-condition-results-title">Condition-aware results</h4>
+                    <p>{conditionResultVisits} served condition-flagged {conditionResultVisits === 1 ? "visit" : "visits"} scored once each</p>
+                  </div>
+                  <dl>
+                    <div><dt>Matched</dt><dd>{comparison.conditionMatches}</dd></div>
+                    <div><dt>Missed</dt><dd>{comparison.conditionMisses}</dd></div>
+                    <div><dt>Unknown</dt><dd>{comparison.conditionUnknowns}</dd></div>
+                  </dl>
+                </section>
+              </div>
+              <details className="debrief-mix-comparison">
+                <summary>Compare expected and observed mixes</summary>
+                <dl>
+                  {mixRows.map((row) => (
+                    <div key={row.label}>
+                      <dt>{row.label}</dt>
+                      <dd><span>Expected: {row.expected}</span><strong>Observed: {row.observed}</strong></dd>
+                    </div>
+                  ))}
+                </dl>
+                <p>
+                  Observed arrival flags: {topObservedIntent ? `${titleFromId(topObservedIntent[0])} led intents with ${topObservedIntent[1]}` : "no nutrition intents"};{" "}
+                  {topObservedCondition ? `${titleFromId(topObservedCondition[0])} led condition-aware flags with ${topObservedCondition[1]}` : "no condition-aware flags"}.
+                </p>
+                <small>Parties currently arrive as individual visits. Two-item Combo Board meals are scored once per served visit, while their component sales, costs, and partial-meal causes stay explicit.</small>
+              </details>
+            </section>
+          ) : null}
+          {lowestSatisfactionCauses.length > 0 ? (
+            <section className="debrief-satisfaction-causes" aria-labelledby="debrief-satisfaction-title">
+              <div className="debrief-section-heading">
+                <span>Satisfaction causes</span>
+                <h3 id="debrief-satisfaction-title">Lowest-scoring parts of the visit</h3>
+              </div>
+              <ol>
+                {lowestSatisfactionCauses.map(([cause, score]) => (
+                  <li key={cause}><span>{SATISFACTION_CAUSE_LABELS[cause]}</span><strong>{Math.round(score)}/100</strong></li>
+                ))}
+              </ol>
+              <p>These are cause scores, not diagnoses. Improve the lowest operational cause that fits your next forecast.</p>
+            </section>
           ) : null}
           <PeriodLedgerCard ledger={ledger} />
           {debrief?.causeCodes.length ? (
@@ -719,6 +1283,437 @@ function PeriodDebrief({
           </button>
         </footer>
       </div>
+    </section>
+  );
+}
+
+function comboComponentName(component: RuntimeComboComponentSummary): string {
+  return [component.label, component.variantLabel, component.servingLabel]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function comboRatingValue(
+  rating: { readonly value?: number },
+  scale: "five" | "percent",
+): string {
+  if (rating.value === undefined) return "Unavailable";
+  return scale === "five"
+    ? `${rating.value.toFixed(1)}/5`
+    : `${Math.round(rating.value * 100)}%`;
+}
+
+function ComboOfferEditor({
+  slot,
+  board,
+  locked,
+  onSave,
+  onClear,
+}: {
+  slot: 0 | 1 | 2;
+  board: RuntimeComboBoardSummary;
+  locked: boolean;
+  onSave(slot: 0 | 1 | 2, mainId: string, complementId: string): boolean;
+  onClear(slot: 0 | 1 | 2): boolean;
+}) {
+  const offer = board.slots[slot];
+  const savedMain = offer?.components?.find((component) => component.role === "main");
+  const savedComplement = offer?.components?.find((component) => component.role !== "main");
+  const mainCandidates = board.candidates
+    .filter((candidate) => candidate.role === "main")
+    .concat(savedMain && !board.candidates.some(
+      (candidate) => candidate.preparationId === savedMain.preparationId,
+    ) ? [savedMain] : []);
+  const complementCandidates = board.candidates
+    .filter((candidate) => candidate.role !== "main")
+    .concat(savedComplement && !board.candidates.some(
+      (candidate) => candidate.preparationId === savedComplement.preparationId,
+    ) ? [savedComplement] : []);
+  const [mainId, setMainId] = useState(offer?.components?.find(
+    (component) => component.role === "main",
+  )?.preparationId ?? "");
+  const [complementId, setComplementId] = useState(offer?.components?.find(
+    (component) => component.role !== "main",
+  )?.preparationId ?? "");
+  const [feedback, setFeedback] = useState("");
+
+  const main = mainCandidates.find((candidate) => candidate.preparationId === mainId);
+  const complement = complementCandidates.find(
+    (candidate) => candidate.preparationId === complementId,
+  );
+  const draftPriceCents = (main?.terms.priceCents ?? 0) +
+    (complement?.terms.priceCents ?? 0);
+  const draftIngredientCostCents = (main?.terms.ingredientCostCents ?? 0) +
+    (complement?.terms.ingredientCostCents ?? 0);
+  const unchanged = Boolean(
+    offer?.components &&
+    offer.components.some((component) => component.preparationId === mainId) &&
+    offer.components.some((component) => component.preparationId === complementId),
+  );
+  const mainSelectId = `combo-main-${slot}`;
+  const complementSelectId = `combo-complement-${slot}`;
+  const statusId = `combo-status-${slot}`;
+
+  return (
+    <article className="combo-offer-editor" data-valid={offer?.valid ?? true}>
+      <header>
+        <div>
+          <span>Board slot {slot + 1}</span>
+          <h4>{offer ? "Two-item meal" : "Open slot"}</h4>
+        </div>
+        {offer ? (
+          <button
+            type="button"
+            className="combo-clear-button"
+            disabled={locked}
+            onClick={() => {
+              const cleared = onClear(slot);
+              setFeedback(cleared ? `Offer ${slot + 1} cleared.` : "Offer could not be cleared.");
+            }}
+          >
+            Clear
+          </button>
+        ) : null}
+      </header>
+
+      {offer && !offer.components ? (
+        <div className="combo-offer-error" role="alert">
+          <strong>Saved offer needs attention</strong>
+          <p>{offer.dataExplanation}</p>
+          <code>{offer.preparationIds.join(" + ")}</code>
+        </div>
+      ) : null}
+
+      <div className="combo-offer-fields">
+        <label htmlFor={mainSelectId}>
+          <span>Main</span>
+          <select
+            id={mainSelectId}
+            value={mainId}
+            disabled={locked}
+            onChange={(event) => {
+              setMainId(event.target.value);
+              setFeedback("");
+            }}
+          >
+            <option value="">Choose an exact main serving</option>
+            {mainCandidates.map((candidate) => (
+              <option
+                key={candidate.preparationId}
+                value={candidate.preparationId}
+                disabled={candidate.availableStallCount === 0}
+              >
+                {comboComponentName(candidate)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label htmlFor={complementSelectId}>
+          <span>Drink, dessert, or add-on</span>
+          <select
+            id={complementSelectId}
+            value={complementId}
+            disabled={locked}
+            onChange={(event) => {
+              setComplementId(event.target.value);
+              setFeedback("");
+            }}
+          >
+            <option value="">Choose an exact second serving</option>
+            {complementCandidates.map((candidate) => (
+              <option
+                key={candidate.preparationId}
+                value={candidate.preparationId}
+                disabled={candidate.availableStallCount === 0}
+              >
+                {candidate.componentLabel} · {comboComponentName(candidate)}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      {mainCandidates.length === 0 || complementCandidates.length === 0 ? (
+        <p className="combo-candidate-empty" role="status">
+          More exact serving options appear when a compatible stall and dish are active in the centre.
+        </p>
+      ) : null}
+
+      {main || complement ? (
+        <div className="combo-draft-summary">
+          {main ? (
+            <p><strong>Main</strong><span>{comboComponentName(main)}</span></p>
+          ) : null}
+          {complement ? (
+            <p><strong>{complement.componentLabel}</strong><span>{comboComponentName(complement)}</span></p>
+          ) : null}
+          {main && complement ? (
+            <p className="combo-price-equation">
+              <strong>No discount</strong>
+              <span>
+                <SgdAmount cents={main.terms.priceCents} />
+                <span aria-hidden="true"> + </span>
+                <span className="sr-only"> plus </span>
+                <SgdAmount cents={complement.terms.priceCents} />
+                <span aria-hidden="true"> = </span>
+                <span className="sr-only"> equals </span>
+                <SgdAmount cents={draftPriceCents} />
+              </span>
+              <small>Both component prices add in full.</small>
+              <small>
+                Ingredient cost <SgdAmount cents={draftIngredientCostCents} />
+                <span aria-hidden="true"> · </span>
+                <span className="sr-only">. </span>
+                contribution <SgdAmount cents={draftPriceCents - draftIngredientCostCents} />
+              </small>
+            </p>
+          ) : null}
+          {main || complement ? (
+            <details className="combo-term-details">
+              <summary>Compare component timing, Star appeal, and demand</summary>
+              {[main, complement]
+                .filter((component): component is RuntimeComboComponentSummary => Boolean(component))
+                .map((component) => (
+                  <section key={component.preparationId}>
+                    <strong>{component.componentLabel} · {component.label}</strong>
+                    <PreparationTermsSummary
+                      terms={component.terms}
+                      label={`${component.label} exact serving terms`}
+                      compact
+                    />
+                  </section>
+                ))}
+            </details>
+          ) : null}
+        </div>
+      ) : null}
+
+      <button
+        type="button"
+        className="combo-save-button"
+        disabled={locked || !main || !complement || unchanged}
+        aria-describedby={statusId}
+        onClick={() => {
+          if (!main || !complement) return;
+          const saved = onSave(slot, main.preparationId, complement.preparationId);
+          setFeedback(saved
+            ? `Offer ${slot + 1} saved. Both component prices apply with no discount.`
+            : "Offer could not be saved. Review the highlighted board issue.");
+        }}
+      >
+        {unchanged ? "Offer saved" : "Save two-item meal"}
+      </button>
+      <p id={statusId} className="combo-slot-status" role="status">{feedback}</p>
+
+      {offer?.components ? (
+        <div className="combo-saved-summary">
+          <p className="combo-route-summary">
+            <strong><SgdAmount cents={offer.priceCents ?? 0} /> total · no discount</strong>
+            <span>
+              Ingredient cost <SgdAmount cents={offer.ingredientCostCents ?? 0} /> · contribution{" "}
+              <SgdAmount cents={(offer.priceCents ?? 0) - (offer.ingredientCostCents ?? 0)} />
+            </span>
+            <span>{offer.servingStopCount ?? "—"} stall {offer.servingStopCount === 1 ? "stop" : "stops"}{offer.routeDistanceTiles === undefined ? "" : ` · ${offer.routeDistanceTiles} route tiles`}</span>
+          </p>
+          <details className="combo-term-details">
+            <summary>Review frozen offer terms</summary>
+            {offer.components.map((component) => (
+              <section key={component.preparationId}>
+                <strong>{component.componentLabel} · {comboComponentName(component)}</strong>
+                <PreparationTermsSummary
+                  terms={component.terms}
+                  label={`${component.label} saved offer terms`}
+                  compact
+                />
+              </section>
+            ))}
+          </details>
+          <dl className="combo-fit-grid">
+            <div>
+              <dt>Meal balance</dt>
+              <dd>{comboRatingValue(offer.mealBalance, "five")}</dd>
+              <small>Among unlocked feasible options</small>
+            </div>
+            <div>
+              <dt>Forecast intent fit</dt>
+              <dd>{comboRatingValue(offer.intentFit, "percent")}</dd>
+              <small>{offer.intentFit.needId ? titleFromId(offer.intentFit.needId) : "No leading intent"}</small>
+            </div>
+            <div>
+              <dt>Condition-aware game fit</dt>
+              <dd>At order</dd>
+              <small>Visit-specific; not treatment advice</small>
+            </div>
+          </dl>
+          <p className="combo-data-note" data-state={offer.mealBalance.dataState}>
+            {offer.dataExplanation}
+          </p>
+        </div>
+      ) : null}
+      {offer?.issues.length ? (
+        <ul className="combo-offer-issues" role="alert">
+          {offer.issues.map((issue) => <li key={issue}>{issue}</li>)}
+        </ul>
+      ) : null}
+    </article>
+  );
+}
+
+export function ComboBoardPlanner({
+  board,
+  locked,
+  onSave,
+  onClear,
+}: {
+  board: RuntimeComboBoardSummary;
+  locked: boolean;
+  onSave(slot: 0 | 1 | 2, mainId: string, complementId: string): boolean;
+  onClear(slot: 0 | 1 | 2): boolean;
+}) {
+  const firstInvalidSlot = board.slots.findIndex((offer) => offer?.valid === false);
+  const [activeSlot, setActiveSlot] = useState<0 | 1 | 2>(
+    firstInvalidSlot >= 0 ? firstInvalidSlot as 0 | 1 | 2 : 0,
+  );
+
+  return (
+    <section className="combo-board" aria-labelledby="combo-board-title">
+      <div className="combo-board-heading">
+        <div>
+          <span>Level 5 planning</span>
+          <h3 id="combo-board-title">Combo Board</h3>
+        </div>
+        <em>{board.configuredOfferCount}/3 offers</em>
+      </div>
+      {!board.unlocked ? (
+        <div className="combo-board-locked">
+          <strong>Build trust across the centre</strong>
+          <p>
+            At level 5, pair an exact main with a drink, dessert, or add-on to answer forecast needs across at most two reachable stall stops.
+          </p>
+        </div>
+      ) : (
+        <>
+          {locked ? (
+            <p className="configuration-lock-notice" role="status">
+              Combo offers are frozen for this service cohort. Frozen orders keep the terms captured at acceptance.
+            </p>
+          ) : null}
+          {board.compatibilityWarning ? (
+            <p className="combo-board-warning" role="alert">{board.compatibilityWarning}</p>
+          ) : null}
+          {board.liveAvailabilityWarning ? (
+            <p className="combo-board-live-warning" role="status">
+              <strong>Live availability</strong>
+              <span>{board.liveAvailabilityWarning}</span>
+            </p>
+          ) : null}
+          {!board.valid && board.issues.length > 0 ? (
+            <div className="combo-board-errors" role="alert">
+              <strong>Resolve before starting service</strong>
+              <ul>{[...new Set(board.issues)].map((issue) => <li key={issue}>{issue}</li>)}</ul>
+            </div>
+          ) : null}
+          <details className="combo-board-workspace">
+            <summary>
+              <span>Plan two-item offers</span>
+              <small>Compare forecast fit, contribution, and route stops</small>
+            </summary>
+            <p className="combo-board-intro">
+              Pair across stalls when the forecast makes the trade-off worthwhile. Each component keeps its exact serving, full price, cost, timing, and nutrition data; prices add with no combo discount.
+            </p>
+            <div className="combo-slot-switcher" role="group" aria-label="Choose a Combo Board slot to edit">
+              {([0, 1, 2] as const).map((slot) => {
+                const offer = board.slots[slot];
+                return (
+                  <button
+                    key={slot}
+                    type="button"
+                    aria-pressed={activeSlot === slot}
+                    aria-controls="combo-active-editor"
+                    data-valid={offer?.valid ?? true}
+                    onClick={() => setActiveSlot(slot)}
+                  >
+                    <strong>Offer {slot + 1}</strong>
+                    <span>{offer?.valid === false
+                      ? "Needs attention"
+                      : offer
+                        ? "Saved"
+                        : "Open"}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div id="combo-active-editor">
+              <ComboOfferEditor
+                key={`${activeSlot}:${board.slots[activeSlot]?.preparationIds.join("+") ?? "empty"}`}
+                slot={activeSlot}
+                board={board}
+                locked={locked}
+                onSave={onSave}
+                onClear={onClear}
+              />
+            </div>
+            <p className="combo-board-disclaimer">
+              Meal balance is a comparative in-game score among unlocked feasible options. Forecast intent fit and visit-specific condition-aware game fit are separate views. None is a universal health claim or medical advice.
+            </p>
+          </details>
+        </>
+      )}
+    </section>
+  );
+}
+
+export function FrozenMealInspector({ meal }: { meal: RuntimeFrozenMealSummary }) {
+  const causeCopy = meal.settlementCause === "second-stall-unavailable"
+    ? "The main was served; the second stall became unavailable, so that component was cancelled without charge."
+    : meal.settlementCause === "served-timeout"
+      ? "The main was served; the second component timed out and was cancelled without charge."
+      : meal.settlementCause === "cancelled-before-service"
+        ? "No component was served or charged."
+        : meal.settlementCause === "complete"
+          ? "Both components were served and charged."
+          : meal.servedPreparationIds.length === 1
+            ? "The main is served. The guest is heading to the second stall or waiting for temporary queue space; the second component remains pending and uncharged."
+            : "This two-item meal is still in progress; no component has been charged yet.";
+  const combinedDataState = meal.explanationCodes.some((code) => code.startsWith("unavailable:"))
+    ? "unavailable"
+    : meal.explanationCodes.some((code) => code.startsWith("trace-component:"))
+      ? "trace"
+      : "known";
+  const combinedDataCopy = combinedDataState === "unavailable"
+    ? "At least one combined nutrient is unavailable because a component lacks a reported value; missing values were not imputed."
+    : combinedDataState === "trace"
+      ? "At least one component contains a source-reported trace value; trace was preserved rather than converted to zero."
+      : "The combined nutrition inputs and fit explanations were frozen when this visit ordered.";
+  return (
+    <section className="frozen-meal-inspector" aria-labelledby="frozen-meal-title">
+      <div>
+        <span>Frozen two-item meal</span>
+        <h4 id="frozen-meal-title">{meal.offerId}</h4>
+      </div>
+      <ul className="frozen-meal-components">
+        {meal.components.map((component) => {
+          const served = meal.servedPreparationIds.includes(component.preparationId);
+          const cancelled = meal.cancelledPreparationIds.includes(component.preparationId);
+          return (
+            <li key={component.preparationId} data-state={served ? "served" : cancelled ? "cancelled" : "pending"}>
+              <strong>{component.componentLabel} · {component.label}</strong>
+              <span>{[component.variantLabel, component.servingLabel].filter(Boolean).join(" · ")}</span>
+              <small>{served ? "Served and charged" : cancelled ? "Cancelled · no charge" : "Pending"}</small>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="frozen-meal-charge">
+        <strong>Charged subtotal: <SgdAmount cents={meal.chargedPriceCents} /></strong>
+        <span>Full two-item price: <SgdAmount cents={meal.priceCents} /> · no discount if both are served</span>
+      </p>
+      <p className="frozen-meal-cause" role="status">{causeCopy}</p>
+      <dl className="combo-fit-grid is-frozen">
+        <div><dt>Meal balance</dt><dd>{comboRatingValue(meal.mealBalance, "five")}</dd><small>Among unlocked feasible options at order</small></div>
+        <div><dt>Intent fit</dt><dd>{comboRatingValue(meal.intentFit, "percent")}</dd><small>{meal.intentFit.needId ? titleFromId(meal.intentFit.needId) : "No visit intent"}</small></div>
+        <div><dt>Condition-aware game fit</dt><dd>{comboRatingValue(meal.conditionAwareFit, "percent")}</dd><small>Visit-specific; not treatment advice</small></div>
+      </dl>
+      <p className="combo-data-note" data-state={combinedDataState}>{combinedDataCopy}</p>
     </section>
   );
 }
@@ -838,6 +1833,212 @@ function personaLabel(archetypeId: string) {
     : archetypeId.replace(/^customer\./, "").replaceAll("-", " ");
 }
 
+function isDishAvailableForGuide(
+  dish: DishDefinition,
+  snapshot: Pick<RuntimeSnapshot, "level" | "reputation" | "unlockedContentIds">,
+) {
+  return (
+    dish.unlockRequirement.level <= snapshot.level
+    && dish.unlockRequirement.reputation <= snapshot.reputation
+    && dish.unlockRequirement.prerequisiteIds.every((id) => snapshot.unlockedContentIds.includes(id))
+  );
+}
+
+export function guidedOptionAdvantageCount(
+  option: GuidedDecisionOption,
+  other: GuidedDecisionOption,
+) {
+  return [
+    option.terms.priceCents < other.terms.priceCents,
+    option.terms.ingredientCostCents < other.terms.ingredientCostCents,
+    option.terms.preparationTimeMs < other.terms.preparationTimeMs,
+    option.terms.starAppeal > other.terms.starAppeal,
+    option.terms.demandModifierBasisPoints > other.terms.demandModifierBasisPoints,
+    option.intentFit !== undefined && other.intentFit !== undefined && option.intentFit > other.intentFit,
+  ].filter(Boolean).length;
+}
+
+export function guidedPairScore(
+  left: GuidedDecisionOption,
+  right: GuidedDecisionOption,
+) {
+  const leftAdvantages = guidedOptionAdvantageCount(left, right);
+  const rightAdvantages = guidedOptionAdvantageCount(right, left);
+  if (leftAdvantages === 0 || rightAdvantages === 0) return Number.NEGATIVE_INFINITY;
+  const distinctDishBonus = left.dishId !== right.dishId ? 100 : 0;
+  const fitDifference = left.intentFit !== undefined && right.intentFit !== undefined
+    ? Math.round(Math.abs(left.intentFit - right.intentFit) * 100)
+    : 0;
+  return 1_000 + distinctDishBonus + Math.min(leftAdvantages, rightAdvantages) * 20 + fitDifference;
+}
+
+export function selectGuidedTradeoffPair(
+  candidates: readonly GuidedDecisionOption[],
+): readonly [GuidedDecisionOption, GuidedDecisionOption] | undefined {
+  let bestPair: readonly [GuidedDecisionOption, GuidedDecisionOption] | undefined;
+  let bestScore = Number.NEGATIVE_INFINITY;
+  for (let leftIndex = 0; leftIndex < candidates.length - 1; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < candidates.length; rightIndex += 1) {
+      const pair = [candidates[leftIndex]!, candidates[rightIndex]!] as const;
+      const score = guidedPairScore(pair[0], pair[1]);
+      if (Number.isFinite(score) && score > bestScore) {
+        bestPair = pair;
+        bestScore = score;
+      }
+    }
+  }
+  return bestPair;
+}
+
+function buildGuidedDecision(
+  snapshot: RuntimeSnapshot,
+  forecast: RuntimeForecast | undefined,
+  nutritionFamilies: readonly NutritionFamilyView[],
+): GuidedDecision | undefined {
+  if (!forecast) return undefined;
+  const needsById = new Map(forecast.nutritionIntents.map((need) => [need.id, need]));
+  const eligibleCoverage = forecast.coverage
+    .filter((coverage) => coverage.eligibleForRequiredContent && needsById.has(coverage.needId))
+    .sort((left, right) => (
+      (needsById.get(right.needId)?.basisPoints ?? 0) - (needsById.get(left.needId)?.basisPoints ?? 0)
+      || left.needId.localeCompare(right.needId)
+    ));
+  const selectedCoverage = eligibleCoverage[0];
+  const selectedNeed = selectedCoverage
+    ? needsById.get(selectedCoverage.needId)
+    : [...forecast.nutritionIntents].sort(
+        (left, right) => right.basisPoints - left.basisPoints || left.id.localeCompare(right.id),
+      )[0];
+  if (!selectedNeed) return undefined;
+  const intentId = selectedNeed.nutritionIntent ?? selectedNeed.id.replace(/^intent\./, "");
+  const viableIds = new Set(selectedCoverage?.unlockedViableResponseIds ?? []);
+  const restrictToViableResponses = Boolean(selectedCoverage);
+  const candidates: GuidedDecisionOption[] = [];
+
+  for (const preparation of snapshot.activePreparations) {
+    const dish = DISHES.find((candidate) => candidate.id === preparation.dishId);
+    if (!dish || !isDishAvailableForGuide(dish, snapshot)) continue;
+    const family = nutritionFamilies.find((candidate) => candidate.dishId === dish.id);
+    const variant = family?.variants.find((candidate) => candidate.id === preparation.variantId)
+      ?? family?.variants.find((candidate) => candidate.id === family.activeVariantId);
+    if (family && (!variant || !variant.unlocked)) continue;
+    const profile = variant?.profile ?? nutritionProfileView(dish.id, preparation.variantId);
+    const responseMatches = viableIds.has(preparation.preparationId)
+      || viableIds.has(preparation.dishId)
+      || (preparation.variantId ? viableIds.has(preparation.variantId) : false);
+    if (restrictToViableResponses && !responseMatches) continue;
+    if (!profile || profile.status !== "released") continue;
+    candidates.push({
+      dishId: dish.id,
+      responseId: [...viableIds].find((id) => (
+        id === preparation.preparationId || id === preparation.dishId || id === preparation.variantId
+      )) ?? preparation.preparationId,
+      label: dishLabel(dish.id),
+      variantLabel: variant && variant.label !== dishLabel(dish.id) ? variant.label : undefined,
+      terms: preparation.terms,
+      profile,
+      intentFit: profile?.intentFits?.[intentId],
+    });
+  }
+
+  for (const family of nutritionFamilies) {
+    const dish = DISHES.find((candidate) => candidate.id === family.dishId);
+    if (!dish || !isDishAvailableForGuide(dish, snapshot)) continue;
+    for (const variant of family.variants) {
+      if (!variant.unlocked) continue;
+      const variantPreparationId = `${family.dishId}::${variant.id}`;
+      const responseId = [...viableIds].find((id) => id === variantPreparationId)
+        ?? variantPreparationId;
+      if (restrictToViableResponses && !viableIds.has(responseId)) continue;
+      if (!variant.profile || variant.profile.status !== "released") continue;
+      const duplicate = candidates.some((candidate) => candidate.responseId === responseId);
+      if (duplicate) continue;
+      candidates.push({
+        dishId: family.dishId,
+        responseId,
+        label: dishLabel(family.dishId),
+        variantLabel: variant.label !== dishLabel(family.dishId) ? variant.label : undefined,
+        terms: variant.terms,
+        profile: variant.profile,
+        intentFit: variant.profile?.intentFits?.[intentId],
+      });
+    }
+  }
+
+  const bestPair = selectGuidedTradeoffPair(candidates);
+  if (!bestPair) return undefined;
+  return {
+    needId: selectedNeed.id,
+    needLabel: forecastNeedLabel(selectedNeed),
+    options: bestPair,
+  };
+}
+
+export function guidedRevealCopy(
+  selected: GuidedDecisionOption,
+  other: GuidedDecisionOption,
+  needLabel: string,
+) {
+  if (
+    guidedOptionAdvantageCount(selected, other) === 0
+    || guidedOptionAdvantageCount(other, selected) === 0
+  ) {
+    throw new Error("Guided decisions require at least one strict advantage for each option.");
+  }
+
+  let benefit: string | undefined;
+  let benefitAccessible: string | undefined;
+  if (selected.intentFit !== undefined && other.intentFit !== undefined && selected.intentFit > other.intentFit) {
+    benefit = `${Math.round(selected.intentFit * 100)}% in-game ${needLabel.toLocaleLowerCase("en-SG")} fit, compared with ${Math.round(other.intentFit * 100)}% for the other option.`;
+    benefitAccessible = benefit;
+  } else if (selected.terms.priceCents < other.terms.priceCents) {
+    const difference = other.terms.priceCents - selected.terms.priceCents;
+    benefit = `${formatSgd(difference)} less for the guest.`;
+    benefitAccessible = `${describeSgd(difference)} less for the guest.`;
+  } else if (selected.terms.ingredientCostCents < other.terms.ingredientCostCents) {
+    const difference = other.terms.ingredientCostCents - selected.terms.ingredientCostCents;
+    benefit = `${formatSgd(difference)} less ingredient cost per serving.`;
+    benefitAccessible = `${describeSgd(difference)} less ingredient cost per serving.`;
+  } else if (selected.terms.preparationTimeMs < other.terms.preparationTimeMs) {
+    benefit = `${preparationDurationLabel(other.terms.preparationTimeMs - selected.terms.preparationTimeMs)} faster to prepare.`;
+    benefitAccessible = benefit;
+  } else if (selected.terms.starAppeal > other.terms.starAppeal) {
+    benefit = `${(selected.terms.starAppeal - other.terms.starAppeal).toFixed(1)} more Star appeal in this comparison.`;
+    benefitAccessible = benefit;
+  } else if (selected.terms.demandModifierBasisPoints > other.terms.demandModifierBasisPoints) {
+    benefit = `${forecastShareLabel(selected.terms.demandModifierBasisPoints - other.terms.demandModifierBasisPoints)} more relative demand pull.`;
+    benefitAccessible = benefit;
+  }
+
+  let tradeoff: string | undefined;
+  let tradeoffAccessible: string | undefined;
+  if (selected.intentFit !== undefined && other.intentFit !== undefined && selected.intentFit < other.intentFit) {
+    tradeoff = `${Math.round((other.intentFit - selected.intentFit) * 100)} percentage points less in-game fit for this forecast need.`;
+    tradeoffAccessible = tradeoff;
+  } else if (selected.terms.ingredientCostCents > other.terms.ingredientCostCents) {
+    const difference = selected.terms.ingredientCostCents - other.terms.ingredientCostCents;
+    tradeoff = `${formatSgd(difference)} more ingredient cost per serving.`;
+    tradeoffAccessible = `${describeSgd(difference)} more ingredient cost per serving.`;
+  } else if (selected.terms.preparationTimeMs > other.terms.preparationTimeMs) {
+    tradeoff = `${preparationDurationLabel(selected.terms.preparationTimeMs - other.terms.preparationTimeMs)} longer to prepare.`;
+    tradeoffAccessible = tradeoff;
+  } else if (selected.terms.priceCents > other.terms.priceCents) {
+    const difference = selected.terms.priceCents - other.terms.priceCents;
+    tradeoff = `${formatSgd(difference)} higher guest price.`;
+    tradeoffAccessible = `${describeSgd(difference)} higher guest price.`;
+  } else if (selected.terms.starAppeal < other.terms.starAppeal) {
+    tradeoff = `${(other.terms.starAppeal - selected.terms.starAppeal).toFixed(1)} less Star appeal.`;
+    tradeoffAccessible = tradeoff;
+  } else if (selected.terms.demandModifierBasisPoints < other.terms.demandModifierBasisPoints) {
+    tradeoff = `${forecastShareLabel(other.terms.demandModifierBasisPoints - selected.terms.demandModifierBasisPoints)} less relative demand pull.`;
+    tradeoffAccessible = tradeoff;
+  }
+  if (!benefit || !benefitAccessible || !tradeoff || !tradeoffAccessible) {
+    throw new Error("Guided decision copy must resolve one specific benefit and trade-off.");
+  }
+  return { benefit, benefitAccessible, tradeoff, tradeoffAccessible };
+}
+
 function signedEffect(value: number, suffix = "") {
   return `${value > 0 ? "+" : ""}${Math.round(value)}${suffix}`;
 }
@@ -943,9 +2144,9 @@ const TUTORIAL_COPY = [
   },
   {
     eyebrow: "Step 4 of 4",
-    title: "Start breakfast when you are ready",
-    body: "Each period opens for a fixed four-minute arrival cohort, then drains the same guests before a debrief. You can pause or change speed; arrivals close automatically.",
-    action: "Start breakfast",
+    title: "Check the breakfast forecast",
+    body: "Each period opens for a fixed four-minute arrival cohort, then drains the same guests before a debrief. First, compare two unlocked options against one expected visit need. You will still choose when service starts.",
+    action: "Compare two options",
   },
 ] as const;
 
@@ -971,6 +2172,7 @@ export function HawkerSimulator() {
   const resetDialogRef = useRef<HTMLElement>(null);
   const periodDebriefDialogRef = useRef<HTMLElement>(null);
   const managementReturnFocusRef = useRef<HTMLElement | null>(null);
+  const managementFocusRestoreRequestedRef = useRef(false);
 
   const [snapshot, setSnapshot] = useState(INITIAL_SNAPSHOT);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -984,7 +2186,7 @@ export function HawkerSimulator() {
   const [resetOpen, setResetOpen] = useState(false);
   const [tutorialStep, setTutorialStep] = useState<TutorialStep>(0);
   const [nutritionTourStep, setNutritionTourStep] = useState<NutritionTourStep>(2);
-  const [startAfterNutritionTour, setStartAfterNutritionTour] = useState(false);
+  const [guidedPredictionId, setGuidedPredictionId] = useState<string>();
   const [nutritionLens, setNutritionLens] = useState(true);
   const [variantLabDishId, setVariantLabDishId] = useState<string>();
   const [managementOpen, setManagementOpen] = useState(false);
@@ -998,6 +2200,7 @@ export function HawkerSimulator() {
   const [loading, setLoading] = useState(true);
   const [loadingError, setLoadingError] = useState<string>();
   const [debugOpen, setDebugOpen] = useState(false);
+  const [serviceAnnouncement, setServiceAnnouncement] = useState("");
   const debugEnabled = useSyncExternalStore(
     subscribeToStaticValue,
     getDebugSnapshot,
@@ -1088,6 +2291,7 @@ export function HawkerSimulator() {
         let savedSettings = DEFAULT_SETTINGS;
         let completedTutorial = false;
         let completedNutritionTour = false;
+        let completedGuidedDecision = false;
         let savedNutritionLens = true;
         let initialStates: readonly unknown[] = [];
         try {
@@ -1113,6 +2317,12 @@ export function HawkerSimulator() {
             (await loadPreference<unknown>("tutorial-complete", false)) === true;
           completedNutritionTour =
             (await loadPreference<unknown>("nutrition-tour-v1-complete", false)) === true;
+          const guidedDecisionPreference = await loadPreference<unknown>(
+            "forecast-guide-v1-complete",
+            undefined,
+          );
+          completedGuidedDecision = guidedDecisionPreference === true
+            || (guidedDecisionPreference === undefined && completedNutritionTour);
           savedNutritionLens =
             (await loadPreference<unknown>("nutrition-lens-enabled", true)) !== false;
           if (
@@ -1121,6 +2331,7 @@ export function HawkerSimulator() {
           ) {
             completedTutorial = true;
             completedNutritionTour = true;
+            completedGuidedDecision = true;
           }
         } catch {
           reportStorageIssue(
@@ -1137,7 +2348,7 @@ export function HawkerSimulator() {
         if (disposed || !gameHostRef.current) return;
         setSettings(savedSettings);
         setTutorialStep(completedTutorial ? 5 : 0);
-        setNutritionTourStep(completedNutritionTour ? 2 : 0);
+        setNutritionTourStep(completedGuidedDecision ? 2 : 0);
         setNutritionLens(savedNutritionLens);
         const { createHawkerRuntime } = await import(
           "@/src/game/runtime/createHawkerRuntime"
@@ -1249,6 +2460,15 @@ export function HawkerSimulator() {
     return () => mediaQuery.removeEventListener("change", updateCompactManagement);
   }, []);
 
+  const serviceAnnouncementMoment = meaningfulServiceAnnouncement(snapshot.servicePeriod);
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => setServiceAnnouncement(serviceAnnouncementMoment.message),
+      300,
+    );
+    return () => window.clearTimeout(timer);
+  }, [serviceAnnouncementMoment.key, serviceAnnouncementMoment.message]);
+
   useEffect(() => {
     const modal = resetOpen
       ? resetDialogRef.current
@@ -1271,6 +2491,7 @@ export function HawkerSimulator() {
       "select:not([disabled])",
       "textarea:not([disabled])",
       "[href]",
+      "summary",
       "[tabindex]:not([tabindex='-1'])",
     ].join(",");
     const focusables = () =>
@@ -1294,15 +2515,17 @@ export function HawkerSimulator() {
         }
         else if (tutorialStep < 5) {
           setTutorialStep(5);
-          setStartAfterNutritionTour(false);
           void savePreference("tutorial-complete", true).catch(() =>
             reportStorageIssue("Tutorial progress could not be saved."),
           );
         } else {
           setNutritionTourStep(2);
-          setStartAfterNutritionTour(false);
+          setGuidedPredictionId(undefined);
+          void savePreference("forecast-guide-v1-complete", true).catch(() =>
+            reportStorageIssue("What’s new guide progress could not be saved."),
+          );
           void savePreference("nutrition-tour-v1-complete", true).catch(() =>
-            reportStorageIssue("Nutrition tour progress could not be saved."),
+            reportStorageIssue("Legacy nutrition guide progress could not be saved."),
           );
         }
         return;
@@ -1332,7 +2555,17 @@ export function HawkerSimulator() {
       document.removeEventListener("keydown", handleModalKeys);
       window.requestAnimationFrame(() => previousFocus?.focus());
     };
-  }, [helpOpen, nutritionTourStep, reportStorageIssue, resetOpen, settingsOpen, snapshot.servicePeriod.phase, tutorialStep]);
+  }, [
+    helpOpen,
+    nutritionTourStep,
+    reportStorageIssue,
+    resetOpen,
+    settingsOpen,
+    snapshot.activePreparations.length,
+    snapshot.nutritionFamilies.length,
+    snapshot.servicePeriod.phase,
+    tutorialStep,
+  ]);
 
   const buildCategories = useMemo(
     () => ["all", ...new Set(PLACEABLES.map((item) => item.category))],
@@ -1453,32 +2686,37 @@ export function HawkerSimulator() {
     }
   }
 
-  async function finishTutorial(openCentre: boolean) {
+  async function finishTutorial() {
     setTutorialStep(5);
     await savePreference("tutorial-complete", true).catch(() =>
       reportStorageIssue("Tutorial progress could not be saved."),
     );
-    if (!openCentre || snapshot.servicePeriod.phase !== "planning") return;
-    if (nutritionTourStep < 2) {
-      setStartAfterNutritionTour(true);
-      return;
-    }
-    toggleCentre();
   }
 
-  async function finishNutritionTour(openCentre = false) {
+  async function finishNutritionTour() {
     setNutritionTourStep(2);
-    setStartAfterNutritionTour(false);
-    await savePreference("nutrition-tour-v1-complete", true).catch(() =>
-      reportStorageIssue("Nutrition tour progress could not be saved."),
+    setGuidedPredictionId(undefined);
+    await savePreference("forecast-guide-v1-complete", true).catch(() =>
+      reportStorageIssue("What’s new guide progress could not be saved."),
     );
-    if (openCentre && snapshot.servicePeriod.phase === "planning") toggleCentre();
+    await savePreference("nutrition-tour-v1-complete", true).catch(() =>
+      reportStorageIssue("Legacy nutrition guide progress could not be saved."),
+    );
+  }
+
+  function openGuidedDecision() {
+    setGuidedPredictionId(undefined);
+    setNutritionTourStep(0);
   }
 
   function openPanel(nextPanel: Panel, returnFocus?: HTMLElement) {
     if (
       !managementOpen &&
-      window.matchMedia("(max-width: 899px)").matches
+      !managementReturnFocusRef.current &&
+      (
+        window.matchMedia("(max-width: 899px)").matches ||
+        settings.textScale >= 1.75
+      )
     ) {
       managementReturnFocusRef.current =
         returnFocus ?? document.activeElement as HTMLElement | null;
@@ -1489,6 +2727,7 @@ export function HawkerSimulator() {
   }
 
   function closeManagementSheet() {
+    managementFocusRestoreRequestedRef.current = true;
     setManagementOpen(false);
     controllerRef.current?.selectCustomer(undefined);
   }
@@ -1565,26 +2804,39 @@ export function HawkerSimulator() {
     setResetOpen(false);
     setTutorialStep(0);
     setNutritionTourStep(0);
-    setStartAfterNutritionTour(false);
+    setGuidedPredictionId(undefined);
     await savePreference("tutorial-complete", false).catch(() =>
       reportStorageIssue("Tutorial progress could not be reset."),
     );
     await savePreference("nutrition-tour-v1-complete", false).catch(() =>
       reportStorageIssue("Nutrition tour progress could not be reset."),
     );
+    await savePreference("forecast-guide-v1-complete", false).catch(() =>
+      reportStorageIssue("What’s new guide progress could not be reset."),
+    );
     announce({ kind: "info", message: "A fresh centre is ready." });
   }
 
   const tutorialCopy = TUTORIAL_COPY[Math.min(tutorialStep, 4)]!;
-  const nutritionRuntime = snapshot as RuntimeSnapshot & {
-    readonly nutritionFamilies?: readonly NutritionFamilyView[];
-    readonly nutritionPulse?: NutritionPulseView;
-    readonly selectedCustomerNutrition?: CustomerNutritionView;
-  };
-  const nutritionFamilies = nutritionRuntime.nutritionFamilies ?? [];
-  const nutritionPulse = nutritionRuntime.nutritionPulse ?? EMPTY_NUTRITION_PULSE;
-  const selectedCustomerNutrition = nutritionRuntime.selectedCustomerNutrition;
-  const managementSheetOpen = compactManagement && (
+  const nutritionFamilies: readonly NutritionFamilyView[] = snapshot.nutritionFamilies;
+  const nutritionPulse: NutritionPulseView = snapshot.nutritionPulse ?? EMPTY_NUTRITION_PULSE;
+  const selectedCustomerNutrition = snapshot.selectedCustomerNutrition;
+  const periodForecast = snapshot.forecast;
+  const guidedDecision = useMemo(
+    () => buildGuidedDecision(snapshot, periodForecast, nutritionFamilies),
+    [nutritionFamilies, periodForecast, snapshot],
+  );
+  const guidedSelectedOption = guidedDecision?.options.find(
+    (option) => option.responseId === guidedPredictionId,
+  );
+  const guidedOtherOption = guidedDecision?.options.find(
+    (option) => option.responseId !== guidedPredictionId,
+  );
+  const guidedResult = guidedSelectedOption && guidedOtherOption && guidedDecision
+    ? guidedRevealCopy(guidedSelectedOption, guidedOtherOption, guidedDecision.needLabel)
+    : undefined;
+  const overlayManagement = compactManagement || settings.textScale >= 1.75;
+  const managementSheetOpen = overlayManagement && (
     managementOpen || Boolean(selectedCustomerNutrition)
   );
   const variantLabFamily = variantLabDishId
@@ -1592,12 +2844,17 @@ export function HawkerSimulator() {
     : undefined;
   const interfaceInert =
     tutorialStep < 5 ||
-    nutritionTourStep < 2 ||
+    (nutritionTourStep < 2 && Boolean(guidedDecision)) ||
     settingsOpen ||
     helpOpen ||
     resetOpen ||
     snapshot.servicePeriod.phase === "debrief" ||
     Boolean(variantLabFamily);
+  const managementBackgroundInert = interfaceInert || managementSheetOpen;
+  const visiblePanelSelection = panelSelectionIsVisible(
+    overlayManagement,
+    managementSheetOpen,
+  );
 
   useEffect(() => {
     if (!managementSheetOpen) return;
@@ -1606,6 +2863,7 @@ export function HawkerSimulator() {
     if (!managementReturnFocusRef.current) {
       managementReturnFocusRef.current = document.activeElement as HTMLElement | null;
     }
+    managementFocusRestoreRequestedRef.current = false;
     const focusableSelector = [
       "button:not([disabled])",
       "input:not([disabled])",
@@ -1643,8 +2901,7 @@ export function HawkerSimulator() {
       );
       if (action === "close") {
         event.preventDefault();
-        setManagementOpen(false);
-        controllerRef.current?.selectCustomer(undefined);
+        closeManagementSheet();
       } else if (action === "container") {
         event.preventDefault();
         sheet.focus();
@@ -1660,11 +2917,26 @@ export function HawkerSimulator() {
     return () => {
       window.cancelAnimationFrame(initialFocusFrame);
       document.removeEventListener("keydown", handleSheetKeys);
-      const shouldRestore = sheet.contains(document.activeElement);
+      const focusWasInsideSheet = sheet.contains(document.activeElement);
+      const closeRequested = managementFocusRestoreRequestedRef.current;
       const returnFocus = managementReturnFocusRef.current;
       managementReturnFocusRef.current = null;
-      if (shouldRestore) {
-        window.requestAnimationFrame(() => returnFocus?.focus());
+      managementFocusRestoreRequestedRef.current = false;
+      const anotherModalOpen = Array.from(
+        document.querySelectorAll<HTMLElement>("[aria-modal='true']"),
+      ).some((dialog) => dialog !== sheet);
+      if (shouldRestoreManagementFocus(
+        closeRequested,
+        focusWasInsideSheet,
+        Boolean(returnFocus?.isConnected),
+        anotherModalOpen,
+      )) {
+        window.requestAnimationFrame(() => {
+          const modalNowOpen = Array.from(
+            document.querySelectorAll<HTMLElement>("[aria-modal='true']"),
+          ).some((dialog) => dialog !== sheet);
+          if (returnFocus?.isConnected && !modalNowOpen) returnFocus.focus();
+        });
       }
     };
   }, [managementSheetOpen]);
@@ -1693,7 +2965,11 @@ export function HawkerSimulator() {
       data-management-open={managementOpen || Boolean(selectedCustomerNutrition)}
       onPointerDown={unlockAudio}
     >
-      <header className="topbar" inert={interfaceInert} aria-hidden={interfaceInert}>
+      <header
+        className="topbar"
+        inert={managementBackgroundInert}
+        aria-hidden={managementBackgroundInert}
+      >
         <div className="brand-lockup" aria-label="Hawker Balance">
           <span className="brand-mark" aria-hidden="true">
             <span />
@@ -1793,8 +3069,22 @@ export function HawkerSimulator() {
         </div>
       </header>
 
-      <section className="play-layout" inert={interfaceInert} aria-hidden={interfaceInert}>
-        <aside className="left-rail" aria-label="Objectives and centre pulse">
+      <section className="play-layout">
+        <aside
+          className="left-rail"
+          aria-label="Objectives and centre pulse"
+          inert={managementBackgroundInert}
+          aria-hidden={managementBackgroundInert}
+        >
+          {periodForecast ? (
+            <ForecastCard
+              forecast={periodForecast}
+              periodLabel={snapshot.servicePeriod.label}
+              compact
+              canOpenGuide={Boolean(guidedDecision) && snapshot.servicePeriod.phase === "planning"}
+              onOpenGuide={openGuidedDecision}
+            />
+          ) : null}
           <ObjectiveBoard
             objectives={snapshot.objectives}
             refreshLabel={snapshot.objectiveRefreshLabel}
@@ -1820,7 +3110,12 @@ export function HawkerSimulator() {
           </section>
         </aside>
 
-        <section className="world-column" aria-label="Hawker centre map">
+        <section
+          className="world-column"
+          aria-label="Hawker centre map"
+          inert={managementBackgroundInert}
+          aria-hidden={managementBackgroundInert}
+        >
           <div className="world-toolbar">
             <div className="mode-pill">
               <span className={snapshot.buildTool === "place" || snapshot.buildTool === "queue" || snapshot.buildTool === "access" || snapshot.buildTool === "route" ? "amber-dot" : "green-dot"} />
@@ -1834,7 +3129,7 @@ export function HawkerSimulator() {
                       ? "Route editor"
                       : SERVICE_PHASE_LABELS[snapshot.servicePeriod.phase]}
             </div>
-            <div className="period-hud" data-phase={snapshot.servicePeriod.phase} aria-live="polite">
+            <div className="period-hud" data-phase={snapshot.servicePeriod.phase}>
               <div>
                 <span>Day {snapshot.servicePeriod.day} · {snapshot.servicePeriod.label}</span>
                 <strong>{snapshot.servicePeriod.clockLabel}</strong>
@@ -1859,7 +3154,20 @@ export function HawkerSimulator() {
                         : "Arrange the centre and menu during planning, then start the period"}
               </span>
             </div>
-            <div className="tool-segment" aria-label="Build tools">
+            <div
+              className="tool-segment"
+              role="group"
+              aria-label="Build tools"
+              aria-describedby="build-tools-overflow-hint"
+              onFocusCapture={(event) => {
+                if (event.target instanceof HTMLElement) {
+                  revealScrollableControl(event.target, settings.reducedMotion);
+                }
+              }}
+            >
+              <span id="build-tools-overflow-hint" className="sr-only">
+                At smaller text sizes, scroll horizontally to reach every build tool.
+              </span>
               {(["select", "move", "remove"] as const).map((tool) => (
                 <button
                   type="button"
@@ -2051,12 +3359,15 @@ export function HawkerSimulator() {
         </section>
 
         <aside
+          id="management-panel"
           ref={cataloguePanelRef}
           className="catalogue-panel"
           aria-label={`${PANEL_COPY[panel].title} panel`}
           aria-modal={managementSheetOpen || undefined}
+          aria-hidden={interfaceInert}
           role={managementSheetOpen ? "dialog" : undefined}
           tabIndex={managementSheetOpen ? -1 : undefined}
+          inert={interfaceInert}
         >
           <div className="catalogue-heading">
             <div>
@@ -2086,8 +3397,35 @@ export function HawkerSimulator() {
             </button>
           </div>
 
+          {managementSheetOpen ? (
+            <nav className="management-sheet-tabs" aria-label="Management sections">
+              {MANAGEMENT_SECTIONS.map(({ value, label }) => (
+                <button
+                  type="button"
+                  key={value}
+                  aria-pressed={panel === value}
+                  className={panel === value ? "is-active" : ""}
+                  onClick={() => openPanel(value)}
+                >
+                  {label}
+                  {value === "activity" && activityUnread > 0
+                    ? ` (${activityUnread} unread)`
+                    : ""}
+                </button>
+              ))}
+            </nav>
+          ) : null}
+
           {panel === "focus" ? (
             <div className="focus-panel">
+              {periodForecast ? (
+                <ForecastCard
+                  forecast={periodForecast}
+                  periodLabel={snapshot.servicePeriod.label}
+                  canOpenGuide={Boolean(guidedDecision) && snapshot.servicePeriod.phase === "planning"}
+                  onOpenGuide={openGuidedDecision}
+                />
+              ) : null}
               <ObjectiveBoard
                 objectives={snapshot.objectives}
                 refreshLabel={snapshot.objectiveRefreshLabel}
@@ -2287,6 +3625,14 @@ export function HawkerSimulator() {
 
           {panel === "dishes" ? (
             <div className="menu-manager">
+              <ComboBoardPlanner
+                board={snapshot.comboBoard}
+                locked={configurationLocked}
+                onSave={(slot, mainId, complementId) => (
+                  controllerRef.current?.setComboOffer(slot, mainId, complementId) ?? false
+                )}
+                onClear={(slot) => controllerRef.current?.clearComboOffer(slot) ?? false}
+              />
               {configurationLocked ? (
                 <p className="configuration-lock-notice" role="status">
                   Menu offers and preparation terms are frozen for this service cohort. Nutrition and recipe details remain available to inspect.
@@ -2660,18 +4006,23 @@ export function HawkerSimulator() {
           ) : null}
 
           {selectedCustomerNutrition ? (
-            <CustomerNutritionInspector
-              customer={selectedCustomerNutrition}
-              dishLabel={dishLabel}
-              starRating={(dishId) => snapshot.activePreparations.find(
-                (preparation) => preparation.dishId === dishId,
-              )?.terms.starAppeal ?? dishStarRating(dishId)}
-              personaLabel={personaLabel}
-              variantLabel={(dishId, variantId) =>
-                customerVariantLabel(nutritionFamilies, dishId, variantId)}
-              onClose={() => controllerRef.current?.selectCustomer(undefined)}
-              onRestoreFocus={() => gameHostRef.current?.focus()}
-            />
+            <>
+              <CustomerNutritionInspector
+                customer={selectedCustomerNutrition}
+                dishLabel={dishLabel}
+                starRating={(dishId) => snapshot.activePreparations.find(
+                  (preparation) => preparation.dishId === dishId,
+                )?.terms.starAppeal ?? dishStarRating(dishId)}
+                personaLabel={personaLabel}
+                variantLabel={(dishId, variantId) =>
+                  customerVariantLabel(nutritionFamilies, dishId, variantId)}
+                onClose={() => controllerRef.current?.selectCustomer(undefined)}
+                onRestoreFocus={() => gameHostRef.current?.focus()}
+              />
+              {selectedCustomerNutrition.frozenMeal ? (
+                <FrozenMealInspector meal={selectedCustomerNutrition.frozenMeal} />
+              ) : null}
+            </>
           ) : null}
 
           {selectedContent && panel !== "activity" ? (
@@ -2722,13 +4073,24 @@ export function HawkerSimulator() {
         <PeriodDebrief
           dialogRef={periodDebriefDialogRef}
           period={snapshot.servicePeriod}
+          forecast={snapshot.forecast}
           ledger={snapshot.periodLedger}
           debrief={snapshot.periodDebrief}
           onContinue={toggleCentre}
         />
       ) : null}
 
-      <nav className="bottom-dock" aria-label="Game sections" inert={interfaceInert} aria-hidden={interfaceInert}>
+      <nav
+        className="bottom-dock"
+        aria-label="Game sections; scroll horizontally for more sections when needed"
+        inert={managementBackgroundInert}
+        aria-hidden={managementBackgroundInert}
+        onFocusCapture={(event) => {
+          if (event.target instanceof HTMLElement) {
+            revealScrollableControl(event.target, settings.reducedMotion);
+          }
+        }}
+      >
         {(
           [
             ["focus", "◎", "Focus"],
@@ -2742,8 +4104,11 @@ export function HawkerSimulator() {
           <button
             type="button"
             key={value}
-            className={panel === value ? "is-active" : ""}
-            aria-current={panel === value ? "page" : undefined}
+            className={visiblePanelSelection && panel === value ? "is-active" : ""}
+            aria-current={visiblePanelSelection && panel === value ? "page" : undefined}
+            aria-controls={overlayManagement ? "management-panel" : undefined}
+            aria-expanded={overlayManagement ? managementSheetOpen && panel === value : undefined}
+            aria-haspopup={overlayManagement ? "dialog" : undefined}
             aria-label={value === "activity" && activityUnread > 0 ? `Activity, ${activityUnread} unread` : label}
             onClick={(event) => {
               openPanel(value, event.currentTarget);
@@ -2763,12 +4128,12 @@ export function HawkerSimulator() {
         </button>
       </nav>
 
-      <div className="connection-badge" data-online={online} inert={interfaceInert} aria-hidden={interfaceInert}>
+      <div className="connection-badge" data-online={online} inert={managementBackgroundInert} aria-hidden={managementBackgroundInert}>
         <span />
         {online ? (offlineReady ? "Online · offline-ready" : "Online") : "Playing offline"}
       </div>
 
-      <div className="toast-stack" aria-live="polite" aria-atomic="false" inert={interfaceInert} aria-hidden={interfaceInert}>
+      <div className="toast-stack" aria-live="polite" aria-atomic="false" inert={managementBackgroundInert} aria-hidden={managementBackgroundInert}>
         {updateReady ? (
           <div className="toast info">
             <span>↻</span>
@@ -2815,14 +4180,14 @@ export function HawkerSimulator() {
                 ))}
               </div>
               <div className="tutorial-actions">
-                <button type="button" className="text-button" onClick={() => void finishTutorial(false)}>
+                <button type="button" className="text-button" onClick={() => void finishTutorial()}>
                   Skip tutorial
                 </button>
                 <button
                   type="button"
                   className="primary-button"
                   onClick={() => {
-                    if (tutorialStep === 4) void finishTutorial(true);
+                    if (tutorialStep === 4) void finishTutorial();
                     else setTutorialStep((tutorialStep + 1) as TutorialStep);
                   }}
                 >
@@ -2834,49 +4199,91 @@ export function HawkerSimulator() {
         </div>
       ) : null}
 
-      {tutorialStep === 5 && nutritionTourStep < 2 ? (
+      {tutorialStep === 5 && nutritionTourStep < 2 && guidedDecision ? (
         <div className="modal-backdrop nutrition-tour-backdrop" role="presentation">
           <section
             ref={nutritionTourDialogRef}
-            className="nutrition-tour-modal"
+            className="nutrition-tour-modal guided-decision-modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="nutrition-tour-title"
             tabIndex={-1}
           >
             <div className="nutrition-tour-art" aria-hidden="true">
-              {nutritionTourStep === 0 ? "◉" : "☺"}
+              {nutritionTourStep === 0 ? "?" : "✓"}
             </div>
             <div className="nutrition-tour-copy">
-              <span>Nutrition tour · {nutritionTourStep + 1} of 2</span>
+              <span>What’s new · {nutritionTourStep === 0 ? "Predict" : "Reveal"}</span>
               <h2 id="nutrition-tour-title" tabIndex={-1} data-modal-initial-focus>
-                {nutritionTourStep === 0 ? "Two ratings, one serving" : "Read this visit’s needs"}
-              </h2>
-              <p>
                 {nutritionTourStep === 0
-                  ? "Open Menu planning to compare every listed nutrient and preparation term. Health ratings show in-game balance; Star appeal separately represents taste and popularity and can change by preparation."
-                  : "Some visits include a simulated condition-aware need. Select a guest to compare the serving, the nutrients considered, and the small fictional game-stat effect. Taste, price, queues, and distance still matter."}
-              </p>
-              <div className="tutorial-actions">
-                <button type="button" className="text-button" onClick={() => void finishNutritionTour(false)}>
-                  {startAfterNutritionTour ? "Skip and keep planning" : "Skip tour"}
-                </button>
-                <button
-                  type="button"
-                  className="primary-button"
-                  onClick={() => {
-                    if (nutritionTourStep === 1) void finishNutritionTour(startAfterNutritionTour);
-                    else setNutritionTourStep(1);
-                  }}
-                >
-                  {nutritionTourStep === 1
-                    ? startAfterNutritionTour
-                      ? "Start breakfast"
-                      : "Return to centre"
-                    : "Show guest health needs"}
-                  <span aria-hidden="true"> →</span>
-                </button>
-              </div>
+                  ? `Which option fits ${guidedDecision.needLabel.toLocaleLowerCase("en-SG")}?`
+                  : "One benefit, one trade-off"}
+              </h2>
+              {nutritionTourStep === 0 ? (
+                <>
+                  <p>
+                    Some {snapshot.servicePeriod.label.toLocaleLowerCase("en-SG")} visits may carry this need.
+                    Predict which real unlocked preparation fits this context better, then reveal a benefit and a trade-off.
+                  </p>
+                  <fieldset className="guided-choice-list">
+                    <legend>Choose your prediction</legend>
+                    {guidedDecision.options.map((option) => {
+                      const inputId = `guided-choice-${option.responseId.replace(/[^a-z0-9_-]/gi, "-")}`;
+                      return (
+                        <article key={`${option.dishId}-${option.responseId}`} data-selected={guidedPredictionId === option.responseId}>
+                          <label className="guided-choice-heading" htmlFor={inputId}>
+                            <input
+                              id={inputId}
+                              type="radio"
+                              name="guided-forecast-choice"
+                              checked={guidedPredictionId === option.responseId}
+                              onChange={() => setGuidedPredictionId(option.responseId)}
+                            />
+                            <span><strong>{option.label}</strong><small>{option.variantLabel ?? "Listed serving"} · Unlocked</small></span>
+                          </label>
+                          <PreparationTermsSummary terms={option.terms} label={`${option.label} comparison terms`} compact />
+                        </article>
+                      );
+                    })}
+                  </fieldset>
+                  <p className="guided-no-penalty">Prediction only: this does not change your menu, cash, objective, or service.</p>
+                  <div className="tutorial-actions">
+                    <button type="button" className="text-button" onClick={() => void finishNutritionTour()}>
+                      Skip and keep planning
+                    </button>
+                    <button
+                      type="button"
+                      className="primary-button"
+                      disabled={!guidedSelectedOption}
+                      onClick={() => setNutritionTourStep(1)}
+                    >
+                      Reveal the trade-off <span aria-hidden="true">→</span>
+                    </button>
+                  </div>
+                </>
+              ) : guidedSelectedOption && guidedOtherOption && guidedResult ? (
+                <>
+                  <p>
+                    You picked <strong>{guidedSelectedOption.label}</strong>{guidedSelectedOption.variantLabel ? ` · ${guidedSelectedOption.variantLabel}` : ""}.
+                    Both options remain valid; the stronger choice changes with the visit and operating context.
+                  </p>
+                  <div className="guided-reveal" role="status" aria-live="polite">
+                    <article data-tone="benefit"><span>Benefit</span><p aria-label={guidedResult.benefitAccessible}>{guidedResult.benefit}</p></article>
+                    <article data-tone="tradeoff"><span>Trade-off</span><p aria-label={guidedResult.tradeoffAccessible}>{guidedResult.tradeoff}</p></article>
+                  </div>
+                  <p className="guided-no-penalty">
+                    No score, reward, cash, or configuration changed. Price, queue time, walking distance, Star appeal, demand, and other needs can still alter the best response.
+                  </p>
+                  <div className="tutorial-actions">
+                    <button type="button" className="text-button" onClick={() => setGuidedPredictionId(guidedOtherOption.responseId)}>
+                      Reveal {guidedOtherOption.label}
+                    </button>
+                    <button type="button" className="primary-button" onClick={() => void finishNutritionTour()}>
+                      Keep planning <span aria-hidden="true">→</span>
+                    </button>
+                  </div>
+                </>
+              ) : null}
             </div>
           </section>
         </div>
@@ -2967,13 +4374,19 @@ export function HawkerSimulator() {
               <article><kbd>Esc</kbd><strong>Cancel</strong><p>Leave build mode without spending anything.</p></article>
               <article><kbd>Space</kbd><strong>Pause</strong><p>The simulation clamps time after a suspended tab.</p></article>
               <article><kbd>U</kbd><strong>Undo</strong><p>Restore the most recent build change safely.</p></article>
-              <article><kbd>Menu</kbd><strong>Compare two ratings</strong><p>Health reflects nutrition balance; Stars reflect taste and popularity.</p></article>
+              <article><kbd>Menu</kbd><strong>Compare two ratings</strong><p>Health is a serving-specific comparative in-game balance score; Stars reflect taste and popularity.</p></article>
               <article><kbd>Guest</kbd><strong>Inspect a visit</strong><p>See simulated visit needs, condition-aware game fit, reasons, and fictional stat effects.</p></article>
             </div>
             <NutritionDisclosure />
             <footer>
-              <button type="button" onClick={() => { setHelpOpen(false); setStartAfterNutritionTour(false); setTutorialStep(0); }}>Replay tutorial</button>
-              <button type="button" onClick={() => { setHelpOpen(false); setStartAfterNutritionTour(false); setNutritionTourStep(0); }}>Replay nutrition tour</button>
+              <button type="button" onClick={() => { setHelpOpen(false); setGuidedPredictionId(undefined); setNutritionTourStep(0); setTutorialStep(0); }}>Replay tutorial</button>
+              <button
+                type="button"
+                disabled={!guidedDecision || snapshot.servicePeriod.phase !== "planning"}
+                onClick={() => { setHelpOpen(false); openGuidedDecision(); }}
+              >
+                What’s new guide{snapshot.servicePeriod.phase !== "planning" ? " · planning only" : ""}
+              </button>
               <button type="button" className="primary-button" onClick={() => setHelpOpen(false)}>Back to centre</button>
             </footer>
           </section>
@@ -2992,7 +4405,7 @@ export function HawkerSimulator() {
       ) : null}
 
       {debugEnabled ? (
-        <section className={debugOpen ? "debug-panel is-open" : "debug-panel"} aria-label="Developer tools" inert={interfaceInert} aria-hidden={interfaceInert}>
+        <section className={debugOpen ? "debug-panel is-open" : "debug-panel"} aria-label="Developer tools" inert={managementBackgroundInert} aria-hidden={managementBackgroundInert}>
           <button type="button" onClick={() => setDebugOpen((value) => !value)}>Debug {debugOpen ? "×" : "+"}</button>
           {debugOpen ? (
             <div>
@@ -3011,8 +4424,8 @@ export function HawkerSimulator() {
         </section>
       ) : null}
 
-      <p className="sr-only" aria-live="polite">
-        {snapshot.activeCustomers} guests active. {snapshot.freeSeats} seats free. Cash {describeSgd(snapshot.cashCents)}. {snapshot.servicePeriod.label}, {SERVICE_PHASE_LABELS[snapshot.servicePeriod.phase]}, {snapshot.servicePeriod.clockLabel}.
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {serviceAnnouncement}
       </p>
     </main>
   );

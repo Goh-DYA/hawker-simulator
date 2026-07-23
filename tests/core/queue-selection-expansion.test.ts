@@ -56,7 +56,7 @@ function withSlowBalancedStall(): SimulationCatalog {
 }
 
 function makeTwoStallGame(catalog = withSlowBalancedStall()): GameState {
-  return duringArrivals(createNewGame({
+  const game = duringArrivals(createNewGame({
     map: createGridMap(14, 8),
     entrance: { x: 0, y: 4 },
     exit: { x: 13, y: 4 },
@@ -69,6 +69,7 @@ function makeTwoStallGame(catalog = withSlowBalancedStall()): GameState {
     ],
     config: { fixedStepMs: 100, spawnIntervalMs: 100, standard: { maxActiveCustomers: 20 } },
   }));
+  return { ...game, forecast: { ...game.forecast, demandRange: [96, 96] } };
 }
 
 function runSteps(state: GameState, count: number): GameState {

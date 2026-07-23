@@ -115,7 +115,7 @@ const customerSeeds = [
     },
     spendMultiplier: 0.78,
     trayReturnChance: 0.76,
-    unlockRequirement: { level: 2, reputation: 8, prerequisiteIds: [] },
+    unlockRequirement: { level: 1, reputation: 0, prerequisiteIds: [] },
     tags: ["value-seeker", "social", "flexible-distance"],
   },
   {

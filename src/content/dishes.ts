@@ -900,9 +900,9 @@ const dishInputs = [
   {
     id: "dish.siew-mai",
     stallId: "stall.bamboo-basket",
-    name: "Siew Mai",
+    name: "Three Siew Mai",
     description:
-      "Open-topped yellow dumplings packed with seasoned pork and prawn, each crowned with carrot and steamed until glossy.",
+      "Three open-topped yellow dumplings packed with seasoned pork and prawn, each crowned with carrot and steamed until glossy.",
     category: "small-plate",
     price: 8,
     demand: 0.82,

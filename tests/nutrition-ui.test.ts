@@ -172,9 +172,14 @@ describe("Hawker Balance nutrition education UI", () => {
     expect(lab).toContain('role="radiogroup"');
     expect(lab).toContain("Unlocks at mastery rank 4");
     expect(lab).toContain("Changes apply to future orders only");
-    expect(lab).toContain("Price, ingredient cost, timing, Star appeal");
+    expect(lab).toContain("Price, ingredient cost, preparation time");
     expect(lab).toContain("S$4.50");
-    expect(lab).toContain("Prep 16 sec");
+    expect(lab).toContain("Preparation time");
+    expect(lab).toContain("16 sec");
+    expect(lab).toContain("Serving, eating, and frozen-order details");
+    expect(lab).toContain("Serving time");
+    expect(lab).toContain("Eating time");
+    expect(lab).toContain("terms are snapshotted");
     expect(lab).toContain("4.7/5");
     expect(lab).toContain("1.10× (+10%)");
     expect(lab).not.toContain("star rating stays the same");
@@ -284,7 +289,7 @@ describe("Hawker Balance nutrition education UI", () => {
     expect(simulator).toContain("Compare health, popularity, and every nutrient per listed serving.");
     expect(simulator).toContain("snapshot.activePreparations.find");
     expect(simulator).toContain("terms={activePreparation.terms}");
-    expect(simulator).toContain("Star appeal separately represents taste and popularity and can change by preparation.");
+    expect(simulator).toContain("Star appeal, demand, and other needs can still alter the best response.");
     expect(simulator).not.toContain("Variants can change nutrition and health without changing popularity.");
     expect(simulator).toContain("Tune recipe");
     expect(simulator).toContain("aria-labelledby={dishTitleId}");
@@ -292,7 +297,7 @@ describe("Hawker Balance nutrition education UI", () => {
     expect(simulator).toContain("Tune recipe for");
     expect(simulator).toContain('["focus", "◎", "Focus"]');
     expect(nutritionUi).toContain("Variant Lab");
-    expect(nutritionUi).toContain("Accepted orders keep their frozen terms.");
+    expect(nutritionUi).toContain("Accepted orders keep their frozen terms, ledger result, and satisfaction outcome.");
     expect(nutritionUi).toContain("variant.terms.starAppeal");
     expect(nutritionUi).toContain("Nutrition pulse");
     expect(nutritionUi).toContain("Trace amount");
@@ -320,7 +325,8 @@ describe("Hawker Balance nutrition education UI", () => {
     expect(simulator).toContain('className="focus-panel"');
     expect(simulator).toContain('aria-label="Close management sheet"');
     expect(simulator).toContain("managementReturnFocusRef");
-    expect(simulator).toContain("returnFocus?.focus()");
+    expect(simulator).toContain("shouldRestoreManagementFocus(");
+    expect(simulator).toContain("returnFocus.focus()");
     expect(simulator).toContain('role={managementSheetOpen ? "dialog" : undefined}');
     expect(simulator).toContain("dialogFocusAction(");
     expect(simulator).toContain("sheet.contains(document.activeElement)");

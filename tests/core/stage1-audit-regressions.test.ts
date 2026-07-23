@@ -8,6 +8,7 @@ import {
   createServingTerms,
   deserializeGameState,
   dispatchCommand,
+  finalizeDrainWatchdogState,
   ledgerReconciliationDeltaCents,
   serializeGameState,
   sgdToCents,
@@ -127,10 +128,22 @@ describe("Stage 1 independent-audit regressions", () => {
   });
 
   it("persists frozen order terms and settles the saved price after catalogue changes", () => {
-    const ordered = runUntil(makeGame({
+    const initial = makeGame({
       seed: "frozen-order",
       config: { spawnIntervalMs: 100_000 },
-    }), (state) => Object.values(state.customers).some((customer) => Boolean(customer.orderLineSnapshot)));
+    });
+    const ordered = runUntil({
+      ...initial,
+      forecast: {
+        ...initial.forecast,
+        budgetBands: [{
+          id: "fixture-affordable",
+          basisPoints: 10_000,
+          minimumCents: sgdToCents(25),
+          maximumCents: sgdToCents(25),
+        }],
+      },
+    }, (state) => Object.values(state.customers).some((customer) => Boolean(customer.orderLineSnapshot)));
     const before = Object.values(ordered.customers).find((customer) => customer.orderLineSnapshot)!;
     expect(before.orderLineSnapshot).toBeDefined();
     const frozen = before.orderLineSnapshot!;
@@ -250,6 +263,121 @@ describe("Stage 1 independent-audit regressions", () => {
     expect(finalized.events.map((event) => event.message)).toEqual(
       expect.arrayContaining(["served-timeout", "unserved-period-close"]),
     );
+  });
+
+  it("finalizes unlocks and milestones when watchdog XP crosses a level threshold", () => {
+    const catalog: SimulationCatalog = {
+      ...TEST_CATALOG,
+      placeables: {
+        ...TEST_CATALOG.placeables,
+        "level-three-table": {
+          ...TEST_CATALOG.placeables.table,
+          id: "level-three-table",
+          unlockLevel: 3,
+        },
+      },
+    };
+    const spawned = stepSimulation(makeGame({
+      catalog,
+      config: { spawnIntervalMs: 100_000 },
+    }));
+    const template = Object.values(spawned.customers)[0]!;
+    const draining: GameState = {
+      ...spawned,
+      customers: {
+        served: {
+          ...template,
+          id: "served",
+          status: "eating",
+          served: true,
+          awardedVisitXp: 0,
+          firstServeBonusAwarded: false,
+          arrivalPeriodSequenceId: spawned.servicePeriod.sequenceId,
+        },
+      },
+      progression: {
+        ...spawned.progression,
+        xp: 298,
+        level: 2,
+        unlockedDefinitionIds: spawned.progression.unlockedDefinitionIds.filter(
+          (id) => id !== "level-three-table",
+        ),
+      },
+      servicePeriod: {
+        ...spawned.servicePeriod,
+        phase: "draining",
+        cohortCustomerIds: ["served"],
+      },
+    };
+    const beforeWatchdog = updateProgressionSystems(draining);
+    expect(beforeWatchdog.progression.level).toBe(2);
+    expect(beforeWatchdog.progression.claimedMilestoneIds).not.toContain("growth-1");
+
+    const finalized = finalizeDrainWatchdogState(beforeWatchdog).state;
+    expect(finalized.progression.xp).toBe(401);
+    expect(finalized.progression.level).toBe(3);
+    expect(finalized.progression.unlockedDefinitionIds).toContain("level-three-table");
+    expect(finalized.progression.claimedMilestoneIds).toContain("growth-1");
+    expect(finalized.economy.cashCents - beforeWatchdog.economy.cashCents).toBe(sgdToCents(250));
+    expect(finalized.periodLedgers[finalized.servicePeriod.sequenceId]!.entries.filter(
+      (entry) => entry.referenceId === "growth-1",
+    )).toHaveLength(1);
+    expect(ledgerReconciliationDeltaCents(
+      finalized.periodLedgers[finalized.servicePeriod.sequenceId]!,
+      finalized.economy.cashCents,
+    )).toBe(0);
+
+    const repeated = updateProgressionSystems(finalized);
+    expect(repeated.progression.xp).toBe(finalized.progression.xp);
+    expect(repeated.economy.cashCents).toBe(finalized.economy.cashCents);
+    expect(repeated.periodLedgers[repeated.servicePeriod.sequenceId]!.entries.filter(
+      (entry) => entry.referenceId === "growth-1",
+    )).toHaveLength(1);
+  });
+
+  it("keeps served cleanup active after maxVisit while redirecting an unserved guest", () => {
+    const spawned = stepSimulation(makeGame({
+      config: { maxVisitMs: 1_000, spawnIntervalMs: 100_000 },
+    }));
+    const template = Object.values(spawned.customers)[0]!;
+    const source: GameState = {
+      ...spawned,
+      customers: {
+        "customer-1": {
+          ...template,
+          status: "walking-to-tray-return",
+          served: true,
+          hasTray: true,
+          targetTrayReturnId: "tray-1",
+          targetStallId: undefined,
+          visitElapsedMs: 900,
+          stateElapsedMs: 0,
+          path: [],
+          pathIndex: 0,
+        },
+        "customer-2": {
+          ...template,
+          id: "customer-2",
+          status: "choosing-stall",
+          served: false,
+          visitElapsedMs: 900,
+          stateElapsedMs: 0,
+          path: [],
+          pathIndex: 0,
+        },
+      },
+      queues: { "stall-1": [] },
+      nextCustomerSequence: 3,
+      metrics: { ...spawned.metrics, spawnedCustomers: 2 },
+      servicePeriod: {
+        ...spawned.servicePeriod,
+        cohortCustomerIds: ["customer-1", "customer-2"],
+      },
+    };
+
+    const stepped = stepSimulation(source);
+    expect(stepped.customers["customer-1"]?.status).toBe("walking-to-tray-return");
+    expect(stepped.customers["customer-2"]?.status).toBe("walking-to-exit");
   });
 
   it("reconciles planning purchases and resales against actual period cash", () => {
@@ -403,34 +531,36 @@ describe("Stage 1 independent-audit regressions", () => {
   });
 
   it("keeps a 30-seed standard-service drain p95 below two minutes", () => {
-    const drainDurations = Array.from({ length: 30 }, (_, index) => {
-      let state = makeGame({
-        seed: `stage1-drain-${String(index + 1).padStart(2, "0")}`,
-        config: {
-          spawnIntervalMs: 2_500,
-          maxVisitMs: 120_000,
-          standard: { maxFixedStepsPerAdvance: 100, maxActiveCustomers: undefined },
-        },
-      });
-      let guard = 0;
-      while (state.servicePeriod.phase === "arrivals" && guard < 2_500) {
-        state = stepSimulation(state);
-        guard += 1;
-      }
-      expect(state.servicePeriod.arrivalElapsedMs).toBe(240_000);
-      while (state.servicePeriod.phase === "draining" && guard < 4_500) {
-        state = stepSimulation(state);
-        guard += 1;
-      }
-      expect(state.servicePeriod.phase).toBe("debrief");
-      expect(state.servicePeriod.drainElapsedMs).toBeLessThanOrEqual(DRAIN_WATCHDOG_MS);
-      expect(Object.keys(state.customers)).toHaveLength(0);
-      return state.servicePeriod.drainElapsedMs;
-    }).sort((left, right) => left - right);
+    const measureDrainDurations = () => Array.from({ length: 30 }, (_, index) => {
+        let state = makeGame({
+          seed: `stage1-drain-${String(index + 1).padStart(2, "0")}`,
+          config: {
+            spawnIntervalMs: 2_500,
+            maxVisitMs: 120_000,
+            standard: { maxFixedStepsPerAdvance: 100, maxActiveCustomers: undefined },
+          },
+        });
+        let guard = 0;
+        while (state.servicePeriod.phase === "arrivals" && guard < 2_500) {
+          state = stepSimulation(state);
+          guard += 1;
+        }
+        expect(state.servicePeriod.arrivalElapsedMs).toBe(240_000);
+        while (state.servicePeriod.phase === "draining" && guard < 4_500) {
+          state = stepSimulation(state);
+          guard += 1;
+        }
+        expect(state.servicePeriod.phase).toBe("debrief");
+        expect(state.servicePeriod.drainElapsedMs).toBeLessThanOrEqual(DRAIN_WATCHDOG_MS);
+        expect(Object.keys(state.customers)).toHaveLength(0);
+        return state.servicePeriod.drainElapsedMs;
+      }).sort((left, right) => left - right);
 
-    const p95Index = Math.ceil(drainDurations.length * 0.95) - 1;
-    const p95Ms = drainDurations[p95Index]!;
-    expect(p95Ms).toBe(3_800);
+    const firstRun = measureDrainDurations();
+    const secondRun = measureDrainDurations();
+    expect(secondRun).toEqual(firstRun);
+    const p95Index = Math.ceil(firstRun.length * 0.95) - 1;
+    const p95Ms = firstRun[p95Index]!;
     expect(p95Ms).toBeLessThan(DRAIN_TARGET_P95_MS);
   });
 });

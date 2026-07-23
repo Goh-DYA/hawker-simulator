@@ -308,7 +308,15 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     4,
     "4 pieces (196 g)",
   ),
-  released("dish.siew-mai", "Siew mai", "meal", "Exact named dim sum match."),
+  released(
+    "dish.siew-mai",
+    "Siew mai",
+    "meal",
+    "The source reports one siew mai; values are scaled to the game's three-piece bamboo-basket serving.",
+    "scaled-exact",
+    3,
+    "3 pieces (90 g)",
+  ),
   released(
     "dish.char-siew-bao",
     "Char siew pau",

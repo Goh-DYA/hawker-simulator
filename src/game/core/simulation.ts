@@ -6,6 +6,7 @@ import {
   getUnlockedDefinitionIds,
   economyWithCompatibilityAliases,
   recordLedgerEntry,
+  settleServedComponents,
   settleServedOrder,
 } from "./economy";
 import { asMoneyCents, centsToSgd } from "./money";
@@ -30,6 +31,13 @@ import { findPath } from "./pathfinding";
 import { getCustomerQueueCell, planStallQueueLayouts } from "./queueing";
 import { nextFloat } from "./rng";
 import { compareIds } from "./ordering";
+import {
+  forecastArrivalIntervalMs,
+  forecastArrivalTarget,
+  forecastUnitInterval,
+  sampleForecastInteger,
+  sampleForecastShare,
+} from "./forecast";
 import { cloneCustomer } from "./state";
 import { walkingSatisfactionScore } from "./satisfaction";
 import {
@@ -40,17 +48,12 @@ import {
   cloneNutritionProfile,
   createEmptyNutritionDayMetrics,
   dishStarRating,
-  HEALTH_CONDITIONS,
-  healthConditionFromRoll,
-  healthConditionRating,
   healthDishChoiceBonus,
   healthImpactFromRating,
   healthPreferenceResultForRating,
   healthStallChoiceBonus,
-  NUTRITION_INTENTS,
   NUTRITION_METRICS,
   nutritionIntentFit,
-  nutritionIntentFromRoll,
   nutritionDishChoiceBonus,
   nutritionRequestResult,
   nutritionStallChoiceBonus,
@@ -61,7 +64,25 @@ import {
   effectiveStallDefinition,
   updateProgressionSystems,
 } from "./progression";
-import { createServingTerms, snapshotOrderLine } from "./servingTerms";
+import {
+  createServingTerms,
+  snapshotMealOrder,
+  snapshotOrderLine,
+  type MealOrderSnapshot,
+} from "./servingTerms";
+import {
+  aggregateNutritionProfiles,
+  buildUnlockedMealUniverse,
+  compareMealBalanceAmongUnlockedOptions,
+  exactPreparationId,
+  mealComponentsForState,
+  resolveComboOffer,
+  selectReachableServingPlan,
+  servingDistancesForState,
+  validateComboBoardForState,
+  type MealComponent,
+  type MealRole,
+} from "./mealComposition";
 import {
   adjustedEatingDurationMs,
   getGlobalWayfinding,
@@ -82,7 +103,9 @@ import type {
   SimulationEvent,
   SimulationMetrics,
   NutritionIntent,
+  NutritionRequestResult,
   NutritionVariant,
+  NutritionProfile,
 } from "./types";
 
 interface Draft {
@@ -96,6 +119,7 @@ interface Draft {
   economy: GameState["economy"];
   progression: GameState["progression"];
   periodLedgers: GameState["periodLedgers"];
+  forecastArrivals: GameState["forecastArrivals"];
   rngState: number;
   nextCustomerSequence: number;
   spawnCountdownMs: number;
@@ -158,6 +182,10 @@ function createDraft(state: GameState, tick: number): Draft {
       id,
       { ...ledger, entries: ledger.entries.map((entry) => ({ ...entry })) },
     ])),
+    forecastArrivals: state.forecastArrivals.map((arrival) => ({
+      ...arrival,
+      healthConditions: [...arrival.healthConditions],
+    })),
     rngState: state.rngState,
     nextCustomerSequence: state.nextCustomerSequence,
     spawnCountdownMs: state.spawnCountdownMs,
@@ -390,17 +418,24 @@ function settleVisitRating(draft: Draft, source: Customer, abandoned: boolean, r
     stallDefinitionId: source.servedStallDefinitionId,
     components,
     day: draft.source.servicePeriod.day,
+    arrivalPeriodSequenceId: source.arrivalPeriodSequenceId,
   };
   draft.metrics = { ...draft.metrics, visitRatings: [...draft.metrics.visitRatings, rating].slice(-50) };
   if (abandoned) draft.economy = { ...draft.economy, abandonedVisits: draft.economy.abandonedVisits + 1 };
   const reputation = Math.max(0, Math.min(5, draft.progression.reputation + (score - 70) / 500));
   draft.progression = { ...draft.progression, reputation };
-  if (source.served && source.servedStallDefinitionId) {
-    draft.progression = awardStallMastery(
-      { progression: draft.progression },
-      source.servedStallDefinitionId,
-      score,
-    );
+  if (source.served) {
+    const servedStallDefinitionIds = [...new Set([
+      ...(source.servedStallDefinitionIds ?? []),
+      ...(source.servedStallDefinitionId ? [source.servedStallDefinitionId] : []),
+    ])].sort(compareIds);
+    for (const definitionId of servedStallDefinitionIds) {
+      draft.progression = awardStallMastery(
+        { progression: draft.progression },
+        definitionId,
+        score,
+      );
+    }
   }
   return { ...source, satisfaction: score / 20, ratingSettled: true };
 }
@@ -408,7 +443,7 @@ function settleVisitRating(draft: Draft, source: Customer, abandoned: boolean, r
 /** Awards normal visit XP only after all visit satisfaction factors are final. */
 function awardFinalCompletedVisitXp(draft: Draft, source: Customer): Customer {
   if (!source.served) return source;
-  const firstServeBonusXp = source.firstServeBonusAwarded ? 2 : 0;
+  const firstServeBonusXp = source.firstServeBonusXp ?? (source.firstServeBonusAwarded ? 2 : 0);
   // V5 live visits always persist the handover amount. An absent amount denotes
   // a legacy in-flight visit whose XP was already settled at handover.
   if (source.awardedVisitXp === undefined || source.awardedVisitXp > firstServeBonusXp) {
@@ -462,59 +497,21 @@ function openStalls(draft: Draft): readonly StallRuntime[] {
 
 const OFF_SCHEDULE_PERSONA_WEIGHT = 0.2;
 
-function eligibleNutritionIntents(draft: Draft): readonly NutritionIntent[] {
-  const eligible = new Set<NutritionIntent>();
-  for (const stall of openStalls(draft)) {
-    const definitionId = stall.object.definitionId;
-    const masteryRank = draft.progression.stallMastery[definitionId]?.rank ?? 1;
-    const dishIds = stall.definition.stall?.allDishIds ?? stall.definition.stall?.dishIds ?? [];
-    for (const dishId of dishIds) {
-      const dish = draft.source.catalog.dishes[dishId];
-      if (
-        !dish ||
-        draft.progression.level < (dish.unlockLevel ?? 1) ||
-        draft.progression.reputation < (dish.unlockReputation ?? 0)
-      ) {
-        continue;
-      }
-      for (const variant of dish.nutritionVariants ?? []) {
-        const profile = variant.profile;
-        if (variant.unlockRank > masteryRank || !profile || profile.status !== "released") continue;
-        for (const intent of NUTRITION_INTENTS) {
-          if (typeof profile.intentFits[intent] === "number") eligible.add(intent);
-        }
-      }
-    }
+function needFromIncidenceRoll<T extends NutritionIntent | HealthCondition>(
+  roll: number,
+  incidenceBasisPoints: number,
+  weightedIds: readonly { readonly id: string; readonly basisPoints: number }[],
+): T | undefined {
+  const incidence = incidenceBasisPoints / 10_000;
+  if (roll >= incidence || weightedIds.length === 0) return undefined;
+  const total = weightedIds.reduce((sum, entry) => sum + entry.basisPoints, 0);
+  if (total <= 0) return undefined;
+  let target = (roll / incidence) * total;
+  for (const entry of weightedIds) {
+    target -= entry.basisPoints;
+    if (target < 0) return entry.id as T;
   }
-  return NUTRITION_INTENTS.filter((intent) => eligible.has(intent));
-}
-
-function eligibleHealthConditions(draft: Draft): readonly HealthCondition[] {
-  const eligible = new Set<HealthCondition>();
-  for (const stall of openStalls(draft)) {
-    const definitionId = stall.object.definitionId;
-    const masteryRank = draft.progression.stallMastery[definitionId]?.rank ?? 1;
-    const dishIds = stall.definition.stall?.allDishIds ?? stall.definition.stall?.dishIds ?? [];
-    for (const dishId of dishIds) {
-      const dish = draft.source.catalog.dishes[dishId];
-      if (
-        !dish ||
-        draft.progression.level < (dish.unlockLevel ?? 1) ||
-        draft.progression.reputation < (dish.unlockReputation ?? 0)
-      ) {
-        continue;
-      }
-      for (const variant of dish.nutritionVariants ?? []) {
-        if (variant.unlockRank > masteryRank) continue;
-        for (const condition of HEALTH_CONDITIONS) {
-          if (healthConditionRating(variant.profile, condition) !== undefined) {
-            eligible.add(condition);
-          }
-        }
-      }
-    }
-  }
-  return HEALTH_CONDITIONS.filter((condition) => eligible.has(condition));
+  return weightedIds[weightedIds.length - 1]?.id as T | undefined;
 }
 
 function recordIntentRequest(draft: Draft, intent: NutritionIntent | undefined): void {
@@ -581,57 +578,48 @@ export function customerArchetypeSpawnWeight(
 function spawnCustomer(draft: Draft): void {
   const archetypes = Object.values(draft.source.catalog.archetypes).sort((a, b) => compareIds(a.id, b.id));
   if (archetypes.length === 0 || openStalls(draft).length === 0) return;
-  const weightedArchetypes = archetypes.map((archetype) => ({
-    archetype,
-    weight: customerArchetypeSpawnWeight(
-      archetype,
-      draft.progression.level,
-      draft.progression.reputation,
-      draft.source.servicePeriod.displayedMinute,
-      draft.progression.unlockedDefinitionIds,
-    ),
-  }));
-  const totalWeight = weightedArchetypes.reduce(
-    (total, candidate) => total + candidate.weight,
-    0,
+  const id = `customer-${draft.nextCustomerSequence}`;
+  const arrivalKey = `${draft.source.arrivalSamplingSeed}:${draft.source.forecast.periodSequenceId}:${id}`;
+  const archetypesById = new Map(archetypes.map((archetype) => [archetype.id, archetype]));
+  const forecastAudience = draft.source.forecast.crowdProfiles.filter(
+    (profile) => archetypesById.has(profile.id),
   );
-  if (totalWeight <= 0) return;
-
-  const roll = nextFloat(draft.rngState);
-  draft.rngState = roll.state;
-  let remainingWeight = roll.value * totalWeight;
-  let selected = weightedArchetypes.find((candidate) => candidate.weight > 0);
-  for (const candidate of weightedArchetypes) {
-    if (candidate.weight <= 0) continue;
-    selected = candidate;
-    remainingWeight -= candidate.weight;
-    if (remainingWeight < 0) break;
-  }
-  if (!selected) return;
-  const eligibleIntents = eligibleNutritionIntents(draft);
-  const eligibleConditions = eligibleHealthConditions(draft);
+  const audience = forecastAudience.length > 0
+    ? forecastAudience
+    : archetypes.map((archetype) => ({ id: archetype.id, basisPoints: 1 }));
+  const crowdProfile = sampleForecastShare(audience, `${arrivalKey}:crowd`);
+  const selectedArchetype = archetypesById.get(crowdProfile.id) ?? archetypes[0];
+  if (!selectedArchetype) return;
   let nutritionIntentId: NutritionIntent | undefined;
   let healthConditions: readonly HealthCondition[] = [];
-  if (eligibleConditions.length > 0) {
-    const healthRoll = nextFloat(draft.rngState);
-    draft.rngState = healthRoll.state;
-    const healthCondition = healthConditionFromRoll(
-      draft.progression.level,
-      eligibleConditions,
-      healthRoll.value,
+  if (draft.source.forecast.conditionAwareIncidenceBasisPoints > 0) {
+    const healthCondition = needFromIncidenceRoll<HealthCondition>(
+      forecastUnitInterval(`${arrivalKey}:condition`),
+      draft.source.forecast.conditionAwareIncidenceBasisPoints,
+      draft.source.forecast.nutritionNeeds
+        .filter((need) => need.kind === "condition-aware")
+        .map((need) => ({ id: need.healthCondition!, basisPoints: need.basisPoints })),
     );
     healthConditions = healthCondition ? [healthCondition] : [];
   }
-  if (draft.progression.level >= 2 && eligibleIntents.length > 0) {
-    const nutritionRoll = nextFloat(draft.rngState);
-    draft.rngState = nutritionRoll.state;
-    nutritionIntentId = nutritionIntentFromRoll(
-      draft.progression.level,
-      eligibleIntents,
-      nutritionRoll.value,
+  if (draft.source.forecast.nutritionIntentIncidenceBasisPoints > 0) {
+    nutritionIntentId = needFromIncidenceRoll<NutritionIntent>(
+      forecastUnitInterval(`${arrivalKey}:intent`),
+      draft.source.forecast.nutritionIntentIncidenceBasisPoints,
+      draft.source.forecast.nutritionNeeds
+        .filter((need) => need.kind === "nutrition-intent")
+        .map((need) => ({ id: need.nutritionIntent!, basisPoints: need.basisPoints })),
     );
   }
-  const id = `customer-${draft.nextCustomerSequence}`;
+  const budgetBand = sampleForecastShare(
+    draft.source.forecast.budgetBands,
+    `${arrivalKey}:budget-band`,
+  );
+  const budgetCents = asMoneyCents(sampleForecastInteger(
+    budgetBand.minimumCents,
+    budgetBand.maximumCents,
+    `${arrivalKey}:budget-cents`,
+  ));
   const entrances = draft.source.accessPoints.filter((point) => point.kind === "entrance");
   const entrance = [...entrances].sort((a, b) => {
     const nearbyA = Object.values(draft.customers).filter((customer) => Math.abs(customer.position.x - a.position.x) + Math.abs(customer.position.y - a.position.y) <= 3).length;
@@ -640,9 +628,17 @@ function spawnCustomer(draft: Draft): void {
   })[0];
   if (!entrance) return;
   draft.nextCustomerSequence += 1;
+  const forecastGroup = sampleForecastShare(
+    draft.source.forecast.groupSizeMix,
+    `${arrivalKey}:group-size`,
+  );
+  const forecastMeal = sampleForecastShare(
+    draft.source.forecast.mealMix,
+    `${arrivalKey}:meal-mix`,
+  );
   draft.customers[id] = {
     id,
-    archetypeId: selected.archetype.id,
+    archetypeId: selectedArchetype.id,
     status: "choosing-stall",
     position: { ...entrance.position },
     path: [],
@@ -651,9 +647,12 @@ function spawnCustomer(draft: Draft): void {
     stateElapsedMs: 0,
     visitElapsedMs: 0,
     walkingDistanceTiles: 0,
-    patienceRemainingMs: selected.archetype.patienceMs,
+    patienceRemainingMs: selectedArchetype.patienceMs,
     satisfaction: 3,
     arrivalPeriodSequenceId: draft.source.servicePeriod.sequenceId,
+    forecastGroupSize: forecastGroup.size,
+    forecastMealMixId: forecastMeal.id,
+    forecastBudgetCents: budgetCents,
     healthConditions,
     nutritionIntentId,
     sourceEntranceId: entrance.id,
@@ -663,13 +662,22 @@ function spawnCustomer(draft: Draft): void {
     spent: 0,
     stuckMs: 0,
   };
+  draft.forecastArrivals = [...draft.forecastArrivals, {
+    periodSequenceId: draft.source.servicePeriod.sequenceId,
+    customerId: id,
+    archetypeId: selectedArchetype.id,
+    budgetCents,
+    groupSize: forecastGroup.size,
+    mealMixId: forecastMeal.id,
+    nutritionIntent: nutritionIntentId,
+    healthConditions,
+  }];
   draft.metrics = { ...draft.metrics, spawnedCustomers: draft.metrics.spawnedCustomers + 1 };
   event(draft, { type: "customer-spawned", entityId: id });
 }
 
 function affordableDishes(draft: Draft, stall: StallRuntime, customer: Customer): readonly DishDefinition[] {
-  const archetype = getArchetype(draft, customer);
-  const budgetCents = archetype.budgetCents;
+  const budgetCents = customer.forecastBudgetCents ?? getArchetype(draft, customer).budgetCents;
   return (stall.definition.stall?.dishIds ?? [])
     .map((id) => draft.source.catalog.dishes[id])
     .filter((dish): dish is DishDefinition => Boolean(
@@ -678,7 +686,10 @@ function affordableDishes(draft: Draft, stall: StallRuntime, customer: Customer)
 }
 
 export function boundedDishDemandAppeal(dish: DishDefinition) {
-  const demand = Math.max(0, Math.min(1, dish.baseDemand ?? 0.5));
+  const demand = Math.max(0, Math.min(
+    1,
+    (dish.baseDemand ?? 0.5) * (dish.demandModifierBasisPoints ?? 10_000) / 10_000,
+  ));
   return (demand - 0.5) * 0.8;
 }
 
@@ -696,7 +707,7 @@ function chooseStall(draft: Draft, source: Customer): Customer {
     const path = requestPath(draft, source.position, targetQueueCell);
     if (!path) continue;
     const preferredTags = new Set(archetype.preferenceTags ?? []);
-    const menuAppeal = Math.max(
+    const singleMenuAppeal = Math.max(
       ...dishes.map((dish) => {
         const preferenceMatches = (dish.preferenceTags ?? []).filter((tag) => preferredTags.has(tag)).length;
         return (
@@ -707,6 +718,19 @@ function chooseStall(draft: Draft, source: Customer): Customer {
         );
       }),
     );
+    const combo = chooseCombo(draft, stall, source);
+    const comboMenuAppeal = combo
+      ? combo.snapshot.lines.reduce((sum, line) => (
+          sum + line.orderLine.terms.starAppeal +
+          line.orderLine.terms.demandModifierBasisPoints / 10_000
+        ), 0) -
+        (combo.snapshot.lines.reduce(
+          (sum, line) => sum + line.orderLine.terms.priceCents,
+          0,
+        ) / 100) * archetype.priceSensitivity +
+        3
+      : Number.NEGATIVE_INFINITY;
+    const menuAppeal = Math.max(singleMenuAppeal, comboMenuAppeal);
     const nutritionBonus = nutritionStallChoiceBonus(
       bestEnabledNutritionIntentFit(dishes, source.nutritionIntentId),
     );
@@ -773,6 +797,186 @@ function chooseDish(draft: Draft, stall: StallRuntime, customer: Customer): Dish
     }
   }
   return best ? { dish: best.dish, variant: best.variant } : undefined;
+}
+
+interface ComboChoice {
+  readonly snapshot: MealOrderSnapshot;
+  readonly main: MealComponent;
+  readonly complement: MealComponent;
+}
+
+function gameStateFromDraft(draft: Draft): GameState {
+  return {
+    ...draft.source,
+    objects: draft.objects,
+    customers: draft.customers,
+    queues: draft.queues,
+    seatReservations: draft.seatReservations,
+    economy: draft.economy,
+    progression: draft.progression,
+    periodLedgers: draft.periodLedgers,
+    forecastArrivals: draft.forecastArrivals,
+    rngState: draft.rngState,
+    nextCustomerSequence: draft.nextCustomerSequence,
+    spawnCountdownMs: draft.spawnCountdownMs,
+    metrics: draft.metrics,
+    tick: draft.tick,
+    events: draft.events,
+  };
+}
+
+function requestedComboRole(customer: Customer): Exclude<MealRole, "main"> | undefined {
+  if (customer.forecastMealMixId === "main-and-side") return "side";
+  if (customer.forecastMealMixId === "main-and-drink") return "drink";
+  return undefined;
+}
+
+function meanKnown(values: readonly (number | undefined)[]): number | undefined {
+  if (values.length === 0 || values.some((value) => value === undefined)) return undefined;
+  return values.reduce<number>((sum, value) => sum + value!, 0) / values.length;
+}
+
+function aggregateMealProfile(
+  orderId: string,
+  components: readonly [MealComponent, MealComponent],
+  intentId: NutritionIntent | undefined,
+): NutritionProfile {
+  const aggregate = aggregateNutritionProfiles(components.map((component) => component.nutritionProfile));
+  const intentFit = intentId
+    ? meanKnown(components.map((component) => {
+        const fit = component.nutritionProfile?.status === "released"
+          ? component.nutritionProfile.intentFits[intentId]
+          : undefined;
+        return typeof fit === "number" && Number.isFinite(fit)
+          ? Math.max(0, Math.min(1, fit))
+          : undefined;
+      }))
+    : undefined;
+  const released = components.every((component) => component.nutritionProfile?.status === "released");
+  return {
+    id: `meal:${orderId}`,
+    dishId: `meal:${orderId}`,
+    status: released ? "released" : "unavailable",
+    nutrients: aggregate.nutrients,
+    intentFits: intentId && intentFit !== undefined ? { [intentId]: intentFit } : {},
+    nutritionClass: "meal",
+  };
+}
+
+function chooseCombo(
+  draft: Draft,
+  stall: StallRuntime,
+  customer: Customer,
+): ComboChoice | undefined {
+  const desiredRole = requestedComboRole(customer);
+  if (
+    !desiredRole ||
+    draft.progression.level < 5 ||
+    draft.source.comboBoard.slots.every((offer) => offer === null)
+  ) return undefined;
+  const state = gameStateFromDraft(draft);
+  const components = mealComponentsForState(state, false);
+  const componentsById = Object.fromEntries(components.map((component) => [
+    component.preparationId,
+    component,
+  ]));
+  const availableStallIds = new Set(components.flatMap((component) => component.stallInstanceIds));
+  const distances = servingDistancesForState(state, customer.position, false);
+  const planningComponents = mealComponentsForState(state, true);
+  const planningAvailableStallIds = new Set(
+    planningComponents.flatMap((component) => component.stallInstanceIds),
+  );
+  const planningOrigin = state.accessPoints.find((point) => point.kind === "entrance")?.position ??
+    state.entrance;
+  const universe = buildUnlockedMealUniverse(
+    planningComponents,
+    servingDistancesForState(state, planningOrigin, true),
+    planningAvailableStallIds,
+  );
+  const budgetCents = customer.forecastBudgetCents ?? getArchetype(draft, customer).budgetCents;
+  const candidates = state.comboBoard.slots.flatMap((offer) => {
+    if (!offer) return [];
+    const resolved = resolveComboOffer(offer, componentsById);
+    if (!resolved || resolved.components.some((component) => !component.unlocked)) return [];
+    const main = resolved.components.find((component) => component.role === "main");
+    const complement = resolved.components.find((component) => component.role === desiredRole);
+    if (!main || !complement || main.stallInstanceIds.every((id) => id !== stall.object.id)) return [];
+    if (resolved.priceCents + customer.spentCents > budgetCents) return [];
+    const servingPlan = selectReachableServingPlan(
+      [main, complement],
+      distances,
+      availableStallIds,
+      stall.object.id,
+    );
+    if (!servingPlan) return [];
+    const candidateId = `pair:${main.preparationId}+${complement.preparationId}`;
+    if (!universe.some((candidate) => candidate.id === candidateId)) return [];
+    const balance = compareMealBalanceAmongUnlockedOptions(candidateId, universe);
+    const orderId = `${customer.id}:meal`;
+    const aggregateProfile = aggregateMealProfile(orderId, [main, complement], customer.nutritionIntentId);
+    const intentFit = customer.nutritionIntentId
+      ? aggregateProfile.intentFits[customer.nutritionIntentId]
+      : undefined;
+    const conditionRating = personalizedHealthRating(aggregateProfile, customer.healthConditions);
+    const conditionAwareFit = conditionRating === undefined
+      ? undefined
+      : Math.max(0, Math.min(1, (conditionRating - 1) / 4));
+    const aggregate = aggregateNutritionProfiles([main.nutritionProfile, complement.nutritionProfile]);
+    const explanationCodes = [
+      "frozen-at-order",
+      "meal-balance-among-unlocked-options",
+      ...(intentFit === undefined && customer.nutritionIntentId ? ["intent-fit-unavailable"] : []),
+      ...(conditionAwareFit === undefined && customer.healthConditions.length > 0
+        ? ["condition-aware-fit-unavailable"]
+        : []),
+    ];
+    const snapshot = snapshotMealOrder({
+      orderId,
+      offerId: offer.id,
+      arrivalPeriodSequenceId: customer.arrivalPeriodSequenceId,
+      lines: [main, complement].map((component, index) => ({
+        role: component.role,
+        orderLine: snapshotOrderLine({
+          lineId: `${customer.id}:${index + 1}`,
+          dishId: component.dishId,
+          variantId: component.variantId,
+          preparationId: component.preparationId,
+          mealRole: component.role,
+          arrivalPeriodSequenceId: customer.arrivalPeriodSequenceId,
+          terms: component.terms!,
+          nutritionProfile: component.nutritionProfile,
+          mealBalanceRating: balance.rating,
+          intentFit: customer.nutritionIntentId
+            ? component.nutritionProfile?.intentFits[customer.nutritionIntentId]
+            : undefined,
+          explanationCodes,
+        }),
+      })) as unknown as MealOrderSnapshot["lines"],
+      servingPlan,
+      nutrition: aggregate,
+      fit: {
+        mealBalance: balance.rating,
+        intentId: customer.nutritionIntentId,
+        intentFit,
+        conditionIds: customer.healthConditions,
+        conditionAwareFit,
+        explanationCodes: [
+          ...balance.explanationCodes,
+          ...explanationCodes,
+        ],
+      },
+      explanationCodes,
+    });
+    const score = main.terms!.starAppeal + complement.terms!.starAppeal +
+      (main.terms!.demandModifierBasisPoints + complement.terms!.demandModifierBasisPoints) / 20_000 -
+      (resolved.priceCents / 100) * getArchetype(draft, customer).priceSensitivity +
+      (intentFit ?? 0) * 2 + (conditionAwareFit ?? 0) * 2;
+    return [{ snapshot, main, complement, score }];
+  }).sort((left, right) => right.score - left.score || left.snapshot.offerId.localeCompare(right.snapshot.offerId));
+  const selected = candidates[0];
+  return selected
+    ? { snapshot: selected.snapshot, main: selected.main, complement: selected.complement }
+    : undefined;
 }
 
 function findSeat(draft: Draft, customer: Customer): { seat: SeatLocation; path: readonly GridPoint[] } | undefined {
@@ -851,7 +1055,10 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
     : undefined;
   const priceCents = asMoneyCents(terms.priceCents);
   const ingredientCostCents = asMoneyCents(terms.ingredientCostCents);
-  const preparationId = source.orderedNutritionVariantId ?? dish.id;
+  const preparationId = source.orderLineSnapshot?.preparationId ?? exactPreparationId(
+    dish.id,
+    source.orderedNutritionVariantId,
+  );
   const update = settleServedOrder(
     draft.economy,
     draft.progression,
@@ -860,6 +1067,8 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
       ingredientCostCents,
       satisfaction: source.satisfaction * 20,
       preparationId,
+      legacyPreparationIds: [dish.id, source.orderedNutritionVariantId]
+        .filter((id): id is string => Boolean(id)),
       reputationGain: 0,
     },
   );
@@ -875,19 +1084,25 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
   const ledger = draft.periodLedgers[source.arrivalPeriodSequenceId ?? draft.source.servicePeriod.sequenceId]
     ?? createPeriodLedger(source.arrivalPeriodSequenceId ?? draft.source.servicePeriod.sequenceId);
   let updatedLedger = recordLedgerEntry(ledger, {
-    id: `${source.id}-sale`,
+    id: `${source.id}-${source.orderLineSnapshot?.lineId ?? "line-1"}-sale`,
     kind: "gross-sale",
     amountCents: priceCents,
     tick: draft.tick,
     referenceId: dish.id,
+    visitId: source.id,
+    lineId: source.orderLineSnapshot?.lineId,
+    preparationId,
   });
   if (ingredientCostCents !== undefined && ingredientCostCents > 0) {
     updatedLedger = recordLedgerEntry(updatedLedger, {
-      id: `${source.id}-ingredients`,
+      id: `${source.id}-${source.orderLineSnapshot?.lineId ?? "line-1"}-ingredients`,
       kind: "ingredient-cost",
       amountCents: ingredientCostCents,
       tick: draft.tick,
       referenceId: dish.id,
+      visitId: source.id,
+      lineId: source.orderLineSnapshot?.lineId,
+      preparationId,
     });
   }
   draft.periodLedgers = {
@@ -907,6 +1122,29 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
   const requestResult = source.nutritionIntentId
     ? nutritionRequestResult(source.nutritionIntentId, profile)
     : undefined;
+  const conditionResult = source.healthConditions.length > 0
+    ? healthPreferenceResult
+    : undefined;
+  const needResults = [requestResult, conditionResult].filter(
+    (result): result is NutritionRequestResult => result !== undefined,
+  );
+  const combinedNutritionResult: NutritionRequestResult | undefined = needResults.length === 0
+    ? undefined
+    : needResults.some((result) => result === "missed")
+      ? "missed"
+      : needResults.every((result) => result === "matched")
+        ? "matched"
+        : "unknown";
+  draft.forecastArrivals = draft.forecastArrivals.map((arrival) => (
+    arrival.customerId === source.id
+      ? {
+          ...arrival,
+          nutritionResult: combinedNutritionResult,
+          nutritionIntentResult: requestResult,
+          conditionAwareResult: conditionResult,
+        }
+      : arrival
+  ));
   recordIntentRequest(draft, source.nutritionIntentId);
   const nutrition = draft.metrics.nutrition;
   const saleDay = draft.source.servicePeriod.day;
@@ -1014,12 +1252,16 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
     ...transition(draft, source, "seeking-seat"),
     targetStallId: undefined,
     servedStallDefinitionId: servedStall?.definitionId,
+    servedStallDefinitionIds: servedStall?.definitionId
+      ? [servedStall.definitionId]
+      : undefined,
     orderedDishId: dish.id,
     nutritionRequestResult: requestResult,
     hasTray: true,
     served: true,
     awardedVisitXp: update.xpAwarded,
     firstServeBonusAwarded: update.firstServeBonusAwarded,
+    firstServeBonusXp: update.xpAwarded,
     spentCents: asMoneyCents(source.spentCents + priceCents),
     spent: centsToSgd(asMoneyCents(source.spentCents + priceCents)),
     personalizedHealthRating: healthRating,
@@ -1044,7 +1286,10 @@ function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Cus
         ),
       ),
       value: Math.max(25, Math.min(100, 120 - (
-        priceCents / Math.max(1, getArchetype(draft, source).budgetCents)
+        priceCents / Math.max(
+          1,
+          source.forecastBudgetCents ?? getArchetype(draft, source).budgetCents,
+        )
       ) * 70)),
     },
   };
@@ -1057,8 +1302,12 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
     stateElapsedMs: source.stateElapsedMs + deltaMs,
   };
 
-  if (customer.visitElapsedMs >= draft.source.config.maxVisitMs && customer.status !== "walking-to-exit") {
-    return beginExit(draft, customer, !customer.served);
+  if (
+    !customer.served &&
+    customer.visitElapsedMs >= draft.source.config.maxVisitMs &&
+    customer.status !== "walking-to-exit"
+  ) {
+    return beginExit(draft, customer, true);
   }
 
   switch (customer.status) {
@@ -1068,13 +1317,44 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
     case "walking-to-queue": {
       const stall = getStall(draft, customer.targetStallId);
       if (!stall) {
+        const mainLineId = customer.mealOrderSnapshot?.lines[0].orderLine.lineId;
+        if (mainLineId && customer.settledMealLineIds?.includes(mainLineId)) {
+          removeFromAllQueues(draft, customer.id);
+          return finalizeFrozenMeal(draft, customer, "second-stall-unavailable");
+        }
         removeFromAllQueues(draft, customer.id);
         markRecovery(draft, customer, "Stall unavailable while walking to queue");
         return { ...transition(draft, customer, "choosing-stall"), targetStallId: undefined, orderedDishId: undefined };
       }
-      const queue = draft.queues[stall.object.id] ?? [];
-      const queueCell = getCustomerQueueCell(queue, customer.id, stall.queueCells);
+      let queue = draft.queues[stall.object.id] ?? [];
+      let queueCell = getCustomerQueueCell(queue, customer.id, stall.queueCells);
+      const mainLineId = customer.mealOrderSnapshot?.lines[0].orderLine.lineId;
+      const awaitingSecondComboStop = Boolean(
+        mainLineId &&
+        customer.settledMealLineIds?.includes(mainLineId) &&
+        (customer.mealStopIndex ?? 0) > 0,
+      );
+      if (awaitingSecondComboStop && !queue.includes(customer.id)) {
+        const availableCell = stall.queueCells[queue.length];
+        if (!availableCell) {
+          // A full live queue is temporary capacity pressure, not a lost
+          // serving stall. Retry deterministically until space or watchdog.
+          return { ...customer, path: [], pathIndex: 0, movementProgress: 0 };
+        }
+        const joiningPath = requestPath(draft, customer.position, availableCell);
+        if (!joiningPath) {
+          return finalizeFrozenMeal(draft, customer, "second-stall-unavailable");
+        }
+        queue = [...queue, customer.id];
+        draft.queues[stall.object.id] = queue;
+        queueCell = availableCell;
+        customer = preparePath(customer, joiningPath);
+      }
       if (!queueCell) {
+        if (mainLineId && customer.settledMealLineIds?.includes(mainLineId)) {
+          removeFromAllQueues(draft, customer.id);
+          return { ...customer, path: [], pathIndex: 0, movementProgress: 0 };
+        }
         removeFromAllQueues(draft, customer.id);
         markRecovery(draft, customer, "Queue assignment disappeared");
         return { ...transition(draft, customer, "choosing-stall"), targetStallId: undefined };
@@ -1082,6 +1362,11 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
       const movement = moveToward(draft, customer, queueCell, deltaMs);
       customer = movement.customer;
       if (movement.failed) {
+        const mainLineId = customer.mealOrderSnapshot?.lines[0].orderLine.lineId;
+        if (mainLineId && customer.settledMealLineIds?.includes(mainLineId)) {
+          removeFromAllQueues(draft, customer.id);
+          return finalizeFrozenMeal(draft, movement.customer, "second-stall-unavailable");
+        }
         removeFromAllQueues(draft, customer.id);
         markRecovery(draft, customer, "Queue path became unreachable");
         return { ...transition(draft, customer, "choosing-stall"), targetStallId: undefined };
@@ -1094,12 +1379,22 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
       const stall = getStall(draft, customer.targetStallId);
       const queue = customer.targetStallId ? draft.queues[customer.targetStallId] ?? [] : [];
       if (!stall || !queue.includes(customer.id)) {
+        const mainLineId = customer.mealOrderSnapshot?.lines[0].orderLine.lineId;
+        if (mainLineId && customer.settledMealLineIds?.includes(mainLineId)) {
+          removeFromAllQueues(draft, customer.id);
+          return finalizeFrozenMeal(draft, customer, "second-stall-unavailable");
+        }
         removeFromAllQueues(draft, customer.id);
         markRecovery(draft, customer, "Queue target was removed");
         return { ...transition(draft, customer, "choosing-stall"), targetStallId: undefined };
       }
       const queueCell = getCustomerQueueCell(queue, customer.id, stall.queueCells);
       if (!queueCell) {
+        const mainLineId = customer.mealOrderSnapshot?.lines[0].orderLine.lineId;
+        if (mainLineId && customer.settledMealLineIds?.includes(mainLineId)) {
+          removeFromAllQueues(draft, customer.id);
+          return finalizeFrozenMeal(draft, customer, "second-stall-unavailable");
+        }
         removeFromAllQueues(draft, customer.id);
         markRecovery(draft, customer, "Queue cell became unavailable");
         return { ...transition(draft, customer, "choosing-stall"), targetStallId: undefined };
@@ -1112,8 +1407,14 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
       );
       customer = {
         ...customer,
-        patienceRemainingMs:
-          customer.patienceRemainingMs - deltaMs * (1 - queueUtility.queuePatience),
+        // Once a main is served, the accepted second component remains a
+        // committed order. Base queue patience no longer cancels that line.
+        patienceRemainingMs: customer.mealOrderSnapshot &&
+          customer.settledMealLineIds?.includes(
+            customer.mealOrderSnapshot.lines[0].orderLine.lineId,
+          )
+          ? customer.patienceRemainingMs
+          : customer.patienceRemainingMs - deltaMs * (1 - queueUtility.queuePatience),
       };
       if (customer.patienceRemainingMs <= 0) return beginExit(draft, customer, true);
       if (
@@ -1128,11 +1429,44 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
     case "ordering": {
       const stall = getStall(draft, customer.targetStallId);
       if (!stall) {
+        const mainLineId = customer.mealOrderSnapshot?.lines[0].orderLine.lineId;
+        if (mainLineId && customer.settledMealLineIds?.includes(mainLineId)) {
+          removeFromAllQueues(draft, customer.id);
+          return finalizeFrozenMeal(draft, customer, "second-stall-unavailable");
+        }
         removeFromAllQueues(draft, customer.id);
         markRecovery(draft, customer, "Stall closed during ordering");
         return { ...transition(draft, customer, "choosing-stall"), targetStallId: undefined };
       }
       if (customer.stateElapsedMs < (stall.definition.stall?.orderMs ?? 0)) return customer;
+      if (customer.mealOrderSnapshot && (customer.mealStopIndex ?? 0) > 0) {
+        removeFromAllQueues(draft, customer.id);
+        return transition(draft, customer, "waiting-for-food");
+      }
+      const combo = chooseCombo(draft, stall, customer);
+      if (combo) {
+        const conditionRating = combo.snapshot.fit.conditionAwareFit === undefined
+          ? undefined
+          : 1 + combo.snapshot.fit.conditionAwareFit * 4;
+        removeFromAllQueues(draft, customer.id);
+        return {
+          ...transition(draft, customer, "waiting-for-food"),
+          orderedDishId: combo.main.dishId,
+          orderedNutritionVariantId: combo.main.variantId,
+          orderedNutritionProfile: cloneNutritionProfile(combo.main.nutritionProfile),
+          orderLineSnapshot: undefined,
+          mealOrderSnapshot: combo.snapshot,
+          mealStopIndex: 0,
+          settledMealLineIds: [],
+          mealSettlementCause: undefined,
+          nutritionRequestResult: undefined,
+          personalizedHealthRating: conditionRating,
+          healthImpact: undefined,
+          healthPreferenceResult: customer.healthConditions.length > 0
+            ? healthPreferenceResultForRating(conditionRating)
+            : undefined,
+        };
+      }
       const choice = chooseDish(draft, stall, customer);
       if (!choice) return beginExit(draft, customer, true);
       const healthRating = personalizedHealthRating(
@@ -1151,6 +1485,8 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
           lineId: `${customer.id}:1`,
           dishId: choice.dish.id,
           variantId: choice.variant?.id,
+          preparationId: exactPreparationId(choice.dish.id, choice.variant?.id),
+          mealRole: choice.dish.mealRole,
           arrivalPeriodSequenceId: customer.arrivalPeriodSequenceId ?? draft.source.servicePeriod.sequenceId,
           terms: createServingTerms({
             priceCents: choice.dish.priceCents,
@@ -1183,6 +1519,39 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
     }
 
     case "waiting-for-food": {
+      if (customer.mealOrderSnapshot) {
+        const stopIndex = customer.mealStopIndex ?? 0;
+        const stop = customer.mealOrderSnapshot.servingPlan.stops[stopIndex];
+        const stall = getStall(draft, customer.targetStallId);
+        if (!stop || !stall || stall.object.id !== stop.stallInstanceId) {
+          const mainLineId = customer.mealOrderSnapshot.lines[0].orderLine.lineId;
+          if (customer.settledMealLineIds?.includes(mainLineId)) {
+            return finalizeFrozenMeal(draft, customer, "second-stall-unavailable");
+          }
+          removeFromAllQueues(draft, customer.id);
+          markRecovery(draft, customer, "Combo serving stall disappeared before the main was served");
+          return {
+            ...transition(draft, customer, "choosing-stall"),
+            targetStallId: undefined,
+            orderedDishId: undefined,
+            orderedNutritionVariantId: undefined,
+            orderedNutritionProfile: undefined,
+            mealOrderSnapshot: undefined,
+            mealStopIndex: undefined,
+            settledMealLineIds: undefined,
+          };
+        }
+        const settled = new Set(customer.settledMealLineIds ?? []);
+        const stopLines = customer.mealOrderSnapshot.lines.filter((line) => (
+          stop.preparationIds.includes(line.orderLine.preparationId!) &&
+          !settled.has(line.orderLine.lineId)
+        ));
+        const serviceMs = stopLines.reduce((sum, line) => (
+          sum + line.orderLine.terms.preparationTimeMs + line.orderLine.terms.servingTimeMs
+        ), 0);
+        if (customer.stateElapsedMs < serviceMs) return customer;
+        return completeFrozenMealStop(draft, customer);
+      }
       const stall = getStall(draft, customer.targetStallId);
       const dish = customer.orderedDishId ? draft.source.catalog.dishes[customer.orderedDishId] : undefined;
       if (!stall || !dish) {
@@ -1191,7 +1560,8 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
         return { ...transition(draft, customer, "choosing-stall"), targetStallId: undefined, orderedDishId: undefined };
       }
       const preparationMs = customer.orderLineSnapshot?.terms.preparationTimeMs ?? dish.preparationMs;
-      if (customer.stateElapsedMs < preparationMs) return customer;
+      const servingMs = customer.orderLineSnapshot?.terms.servingTimeMs ?? dish.servingMs ?? 0;
+      if (customer.stateElapsedMs < preparationMs + servingMs) return customer;
       return completeSale(draft, customer, dish);
     }
 
@@ -1238,7 +1608,11 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
         draft.source.catalog,
         seat.point,
       );
-      const frozenEatingMs = customer.orderLineSnapshot?.terms.eatingTimeMs ?? dish?.eatingMs;
+      const frozenEatingMs = customer.mealOrderSnapshot
+        ? Math.max(...customer.mealOrderSnapshot.lines
+            .filter((line) => customer.settledMealLineIds?.includes(line.orderLine.lineId))
+            .map((line) => line.orderLine.terms.eatingTimeMs))
+        : customer.orderLineSnapshot?.terms.eatingTimeMs ?? dish?.eatingMs;
       const adjustedEatingMs = frozenEatingMs !== undefined
         ? adjustedEatingDurationMs(frozenEatingMs, diningUtility.eatingSpeed)
         : Number.POSITIVE_INFINITY;
@@ -1343,14 +1717,29 @@ export interface DrainWatchdogStateResult {
 
 /** Atomically settles and removes the remaining cohort at the drain watchdog. */
 export function finalizeDrainWatchdogState(source: GameState): DrainWatchdogStateResult {
-  const cohort = Object.values(source.customers)
+  const originalCohort = Object.values(source.customers)
     .filter((customer) => customer.arrivalPeriodSequenceId === source.servicePeriod.sequenceId)
     .sort((left, right) => compareIds(left.id, right.id));
-  const served = cohort.filter((customer) => customer.served);
-  const unserved = cohort.filter((customer) => !customer.served);
-  if (cohort.length === 0) {
+  if (originalCohort.length === 0) {
     return { state: source, servedTimeoutIds: [], unservedDepartureIds: [] };
   }
+  const watchdogDraft = createDraft(source, source.tick);
+  for (const customer of originalCohort.filter((candidate) => candidate.served)) {
+    const snapshot = customer.mealOrderSnapshot;
+    if (!snapshot || customer.mealSettlementCause !== undefined) continue;
+    const settled = new Set(customer.settledMealLineIds ?? []);
+    const mainSettled = settled.has(snapshot.lines[0].orderLine.lineId);
+    const complementSettled = settled.has(snapshot.lines[1].orderLine.lineId);
+    if (!mainSettled || complementSettled) continue;
+    watchdogDraft.customers[customer.id] = finalizeFrozenMeal(
+      watchdogDraft,
+      customer,
+      "served-timeout",
+    );
+  }
+  const cohort = originalCohort.map((customer) => watchdogDraft.customers[customer.id] ?? customer);
+  const served = cohort.filter((customer) => customer.served);
+  const unserved = cohort.filter((customer) => !customer.served);
   const removedIds = new Set(cohort.map((customer) => customer.id));
   const customers = Object.fromEntries(
     Object.entries(source.customers).filter(([id]) => !removedIds.has(id)),
@@ -1363,7 +1752,9 @@ export function finalizeDrainWatchdogState(source: GameState): DrainWatchdogStat
     Object.entries(source.seatReservations).filter(([, customerId]) => !removedIds.has(customerId)),
   );
   const xpCorrection = served.reduce((total, customer) => {
-    const desiredXp = 3 + (customer.firstServeBonusAwarded ? 2 : 0);
+    const desiredXp = 3 + (
+      customer.firstServeBonusXp ?? (customer.firstServeBonusAwarded ? 2 : 0)
+    );
     return total + desiredXp - (customer.awardedVisitXp ?? desiredXp);
   }, 0);
   const xp = Math.max(0, source.progression.xp + xpCorrection);
@@ -1377,7 +1768,7 @@ export function finalizeDrainWatchdogState(source: GameState): DrainWatchdogStat
     ambience: 50,
   } as const;
   const visitRatings = [
-    ...source.metrics.visitRatings,
+    ...watchdogDraft.metrics.visitRatings,
     ...cohort.map((customer) => ({
       customerId: customer.id,
       walkingMetricVersion: 2 as const,
@@ -1388,10 +1779,12 @@ export function finalizeDrainWatchdogState(source: GameState): DrainWatchdogStat
       stallDefinitionId: customer.servedStallDefinitionId,
       components: { ...fallbackComponents, ...customer.ratingFactors },
       day: source.servicePeriod.day,
+      arrivalPeriodSequenceId: customer.arrivalPeriodSequenceId,
     })),
   ].slice(-50);
   const events: SimulationEvent[] = [
     ...source.events,
+    ...watchdogDraft.events.filter((entry) => entry.type === "meal-partial"),
     ...served.map((customer) => ({
       type: "customer-despawned" as const,
       tick: source.tick,
@@ -1405,32 +1798,370 @@ export function finalizeDrainWatchdogState(source: GameState): DrainWatchdogStat
       message: "unserved-period-close",
     })),
   ];
-  return {
-    state: {
-      ...source,
-      customers,
-      queues,
-      seatReservations,
-      economy: economyWithCompatibilityAliases({
-        ...source.economy,
-        abandonedVisits: source.economy.abandonedVisits + unserved.length,
-      }),
-      progression: {
-        ...source.progression,
-        xp,
-        level: Math.max(source.progression.level, calculateLevel(xp)),
-      },
-      servicePeriod: { ...source.servicePeriod, phase: "debrief", cohortCustomerIds: [] },
-      metrics: {
-        ...source.metrics,
-        despawnedCustomers: source.metrics.despawnedCustomers + cohort.length,
-        completedCustomers: source.metrics.completedCustomers + served.length,
-        visitRatings,
-      },
-      events,
+  const finalizedState = updateProgressionSystems({
+    ...source,
+    customers,
+    queues,
+    seatReservations,
+    economy: economyWithCompatibilityAliases({
+      ...source.economy,
+      abandonedVisits: source.economy.abandonedVisits + unserved.length,
+    }),
+    progression: {
+      ...source.progression,
+      xp,
+      level: Math.max(source.progression.level, calculateLevel(xp)),
     },
+    servicePeriod: { ...source.servicePeriod, phase: "debrief", cohortCustomerIds: [] },
+    forecastArrivals: watchdogDraft.forecastArrivals,
+    metrics: {
+      ...watchdogDraft.metrics,
+      despawnedCustomers: watchdogDraft.metrics.despawnedCustomers + cohort.length,
+      completedCustomers: watchdogDraft.metrics.completedCustomers + served.length,
+      visitRatings,
+    },
+    events,
+  });
+  return {
+    state: finalizedState,
     servedTimeoutIds: served.map((customer) => customer.id),
     unservedDepartureIds: unserved.map((customer) => customer.id),
+  };
+}
+
+function frozenMealProfile(
+  snapshot: MealOrderSnapshot,
+  servedLineIds: ReadonlySet<string>,
+): NutritionProfile {
+  const servedLines = snapshot.lines.filter((line) => servedLineIds.has(line.orderLine.lineId));
+  const aggregate = aggregateNutritionProfiles(
+    servedLines.map((line) => line.orderLine.nutritionProfile),
+  );
+  const intentFit = snapshot.fit.intentId && servedLines.length === snapshot.lines.length
+    ? snapshot.fit.intentFit
+    : snapshot.fit.intentId
+      ? meanKnown(servedLines.map((line) => line.orderLine.intentFit))
+      : undefined;
+  return {
+    id: `meal:${snapshot.orderId}:${servedLines.map((line) => line.orderLine.lineId).join("+")}`,
+    dishId: `meal:${snapshot.offerId}`,
+    status: servedLines.length > 0 && servedLines.every(
+      (line) => line.orderLine.nutritionProfile?.status === "released",
+    ) ? "released" : "unavailable",
+    nutrients: aggregate.nutrients,
+    intentFits: snapshot.fit.intentId && intentFit !== undefined
+      ? { [snapshot.fit.intentId]: intentFit }
+      : {},
+    nutritionClass: "meal",
+  };
+}
+
+function recordFrozenMealNutrition(
+  draft: Draft,
+  source: Customer,
+  snapshot: MealOrderSnapshot,
+  servedLineIds: ReadonlySet<string>,
+  profile: NutritionProfile,
+  requestResult: NutritionRequestResult | undefined,
+): void {
+  recordIntentRequest(draft, source.nutritionIntentId);
+  const nutrition = draft.metrics.nutrition;
+  const day = draft.source.servicePeriod.day;
+  const today = nutrition.today.day === day
+    ? nutrition.today
+    : createEmptyNutritionDayMetrics(day);
+  const nutrientTotals = { ...nutrition.nutrientTotals };
+  const nutrientKnownCounts = { ...nutrition.nutrientKnownCounts };
+  const dailyNutrientTotals = { ...today.nutrientTotals };
+  const dailyNutrientKnownCounts = { ...today.nutrientKnownCounts };
+  if (profile.status === "released") {
+    for (const metric of NUTRITION_METRICS) {
+      const value = profile.nutrients[metric];
+      if (value.status !== "known") continue;
+      nutrientTotals[metric] += value.value;
+      nutrientKnownCounts[metric] += 1;
+      dailyNutrientTotals[metric] += value.value;
+      dailyNutrientKnownCounts[metric] += 1;
+    }
+  }
+  const byIntent = { ...nutrition.byIntent };
+  const dailyByIntent = { ...today.byIntent };
+  let intentMatches = nutrition.intentMatches;
+  let intentMisses = nutrition.intentMisses;
+  let intentUnknowns = nutrition.intentUnknowns;
+  if (source.nutritionIntentId && requestResult) {
+    const intent = source.nutritionIntentId;
+    byIntent[intent] = {
+      ...byIntent[intent],
+      matches: byIntent[intent].matches + (requestResult === "matched" ? 1 : 0),
+      misses: byIntent[intent].misses + (requestResult === "missed" ? 1 : 0),
+      unknowns: byIntent[intent].unknowns + (requestResult === "unknown" ? 1 : 0),
+    };
+    dailyByIntent[intent] = {
+      ...dailyByIntent[intent],
+      matches: dailyByIntent[intent].matches + (requestResult === "matched" ? 1 : 0),
+      misses: dailyByIntent[intent].misses + (requestResult === "missed" ? 1 : 0),
+      unknowns: dailyByIntent[intent].unknowns + (requestResult === "unknown" ? 1 : 0),
+    };
+    intentMatches += requestResult === "matched" ? 1 : 0;
+    intentMisses += requestResult === "missed" ? 1 : 0;
+    intentUnknowns += requestResult === "unknown" ? 1 : 0;
+  }
+  const servedLines = snapshot.lines.filter((line) => servedLineIds.has(line.orderLine.lineId));
+  const dishServings = { ...nutrition.dishServings };
+  const dailyDishServings = { ...today.dishServings };
+  for (const line of servedLines) {
+    if (line.orderLine.nutritionProfile?.status !== "released") continue;
+    dishServings[line.orderLine.dishId] = (dishServings[line.orderLine.dishId] ?? 0) + 1;
+    dailyDishServings[line.orderLine.dishId] = (dailyDishServings[line.orderLine.dishId] ?? 0) + 1;
+  }
+  const nonDefault = servedLines.some((line) => (
+    line.orderLine.explanationCodes.includes("non-default-preparation")
+  ));
+  draft.metrics = {
+    ...draft.metrics,
+    nutrition: {
+      ...nutrition,
+      servedMeals: nutrition.servedMeals + 1,
+      profiledServings: nutrition.profiledServings + (profile.status === "released" ? 1 : 0),
+      nonDefaultVariantServings: nutrition.nonDefaultVariantServings + (nonDefault ? 1 : 0),
+      intentMatches,
+      intentMisses,
+      intentUnknowns,
+      byIntent,
+      nutrientTotals,
+      nutrientKnownCounts,
+      dishServings,
+      recentOutcomes: [
+        ...nutrition.recentOutcomes,
+        {
+          customerId: source.id,
+          day,
+          intentId: source.nutritionIntentId,
+          dishId: `meal:${snapshot.offerId}`,
+          result: requestResult ?? "unknown",
+          profile,
+        },
+      ].slice(-50),
+      today: {
+        ...today,
+        servedMeals: today.servedMeals + 1,
+        profiledServings: today.profiledServings + (profile.status === "released" ? 1 : 0),
+        intentMatches: today.intentMatches + (requestResult === "matched" ? 1 : 0),
+        intentMisses: today.intentMisses + (requestResult === "missed" ? 1 : 0),
+        intentUnknowns: today.intentUnknowns + (requestResult === "unknown" ? 1 : 0),
+        byIntent: dailyByIntent,
+        nutrientTotals: dailyNutrientTotals,
+        nutrientKnownCounts: dailyNutrientKnownCounts,
+        dishServings: dailyDishServings,
+      },
+    },
+  };
+}
+
+function finalizeFrozenMeal(
+  draft: Draft,
+  source: Customer,
+  cause: "complete" | "second-stall-unavailable" | "served-timeout",
+): Customer {
+  const snapshot = source.mealOrderSnapshot;
+  if (!snapshot) throw new Error("A frozen meal is required for combo finalization");
+  const settledLineIds = new Set(source.settledMealLineIds ?? []);
+  const profile = frozenMealProfile(snapshot, settledLineIds);
+  const requestResult = source.nutritionIntentId
+    ? nutritionRequestResult(source.nutritionIntentId, profile)
+    : undefined;
+  const conditionRating = cause === "complete" && snapshot.fit.conditionAwareFit !== undefined
+    ? 1 + snapshot.fit.conditionAwareFit * 4
+    : personalizedHealthRating(profile, source.healthConditions);
+  const healthPreferenceResult = source.healthConditions.length > 0
+    ? healthPreferenceResultForRating(conditionRating)
+    : undefined;
+  const healthImpact = source.healthConditions.length > 0
+    ? healthImpactFromRating(conditionRating)
+    : undefined;
+  const conditionResult = source.healthConditions.length > 0
+    ? healthPreferenceResult
+    : undefined;
+  const needResults = [requestResult, conditionResult].filter(
+    (result): result is NutritionRequestResult => result !== undefined,
+  );
+  const combinedResult: NutritionRequestResult | undefined = needResults.length === 0
+    ? undefined
+    : needResults.some((result) => result === "missed")
+      ? "missed"
+      : needResults.every((result) => result === "matched")
+        ? "matched"
+        : "unknown";
+  draft.forecastArrivals = draft.forecastArrivals.map((arrival) => arrival.customerId === source.id
+    ? {
+        ...arrival,
+        nutritionResult: combinedResult,
+        nutritionIntentResult: requestResult,
+        conditionAwareResult: conditionResult,
+      }
+    : arrival);
+  recordFrozenMealNutrition(draft, source, snapshot, settledLineIds, profile, requestResult);
+  const servedLines = snapshot.lines.filter((line) => settledLineIds.has(line.orderLine.lineId));
+  const averageAppeal = servedLines.reduce(
+    (sum, line) => sum + line.orderLine.terms.starAppeal,
+    0,
+  ) / Math.max(1, servedLines.length);
+  if (cause !== "complete") {
+    event(draft, {
+      type: "meal-partial",
+      entityId: source.id,
+      message: cause,
+    });
+  }
+  const budget = source.forecastBudgetCents ?? getArchetype(draft, source).budgetCents;
+  return {
+    ...transition(draft, source, "seeking-seat"),
+    targetStallId: undefined,
+    orderedNutritionProfile: cloneNutritionProfile(profile),
+    nutritionRequestResult: requestResult,
+    personalizedHealthRating: conditionRating,
+    healthImpact,
+    healthPreferenceResult,
+    mealSettlementCause: cause,
+    hasTray: true,
+    served: true,
+    satisfaction: Math.max(
+      0,
+      Math.min(5, source.satisfaction + normalizeQuality(averageAppeal) / 100 + (healthImpact ?? 0)),
+    ),
+    ratingFactors: {
+      ...source.ratingFactors,
+      foodQuality: Math.max(0, Math.min(100, normalizeQuality(averageAppeal) + (healthImpact ?? 0) * 20)),
+      value: Math.max(25, Math.min(100, 120 - (source.spentCents / Math.max(1, budget)) * 70)),
+    },
+  };
+}
+
+function completeFrozenMealStop(draft: Draft, source: Customer): Customer {
+  const snapshot = source.mealOrderSnapshot;
+  const stopIndex = source.mealStopIndex ?? 0;
+  const stop = snapshot?.servingPlan.stops[stopIndex];
+  if (!snapshot || !stop) throw new Error("A frozen meal stop is required for settlement");
+  const alreadySettled = new Set(source.settledMealLineIds ?? []);
+  const stopLines = snapshot.lines.filter((line) => (
+    stop.preparationIds.includes(line.orderLine.preparationId!) &&
+    !alreadySettled.has(line.orderLine.lineId)
+  ));
+  let customer = source;
+  if (stopLines.length > 0) {
+    const update = settleServedComponents(
+      draft.economy,
+      draft.progression,
+      stopLines.map((line) => ({
+        priceCents: line.orderLine.terms.priceCents,
+        ingredientCostCents: line.orderLine.terms.ingredientCostCents,
+        preparationId: line.orderLine.preparationId,
+        legacyPreparationIds: [line.orderLine.dishId, line.orderLine.variantId]
+          .filter((id): id is string => Boolean(id)),
+      })),
+      { countVisit: alreadySettled.size === 0, reputationGain: 0 },
+    );
+    draft.economy = update.economy;
+    draft.progression = {
+      ...update.progression,
+      unlockedDefinitionIds: getUnlockedDefinitionIds(
+        draft.source.catalog,
+        update.progression.level,
+        update.progression.unlockedDefinitionIds,
+      ),
+    };
+    let ledger = draft.periodLedgers[source.arrivalPeriodSequenceId] ??
+      createPeriodLedger(source.arrivalPeriodSequenceId);
+    for (const line of stopLines) {
+      const preparationId = line.orderLine.preparationId!;
+      ledger = recordLedgerEntry(ledger, {
+        id: `${source.id}-${line.orderLine.lineId}-sale`,
+        kind: "gross-sale",
+        amountCents: line.orderLine.terms.priceCents,
+        tick: draft.tick,
+        referenceId: line.orderLine.dishId,
+        visitId: source.id,
+        lineId: line.orderLine.lineId,
+        preparationId,
+      });
+      if (line.orderLine.terms.ingredientCostCents > 0) {
+        ledger = recordLedgerEntry(ledger, {
+          id: `${source.id}-${line.orderLine.lineId}-ingredients`,
+          kind: "ingredient-cost",
+          amountCents: line.orderLine.terms.ingredientCostCents,
+          tick: draft.tick,
+          referenceId: line.orderLine.dishId,
+          visitId: source.id,
+          lineId: line.orderLine.lineId,
+          preparationId,
+        });
+      }
+      alreadySettled.add(line.orderLine.lineId);
+      event(draft, {
+        type: "sale-completed",
+        entityId: source.id,
+        amount: line.orderLine.terms.priceCents,
+        amountCents: line.orderLine.terms.priceCents,
+        message: preparationId,
+      });
+    }
+    draft.periodLedgers = { ...draft.periodLedgers, [ledger.periodSequenceId]: ledger };
+    if (update.levelUp) {
+      event(draft, { type: "level-up", entityId: source.id, message: String(update.progression.level) });
+    }
+    const priceCents = asMoneyCents(
+      stopLines.reduce((sum, line) => sum + line.orderLine.terms.priceCents, 0),
+    );
+    const mainWasServed = alreadySettled.has(snapshot.lines[0].orderLine.lineId);
+    const stallObject = draft.objects[stop.stallInstanceId];
+    const servedStallDefinitionIds = [...new Set([
+      ...(source.servedStallDefinitionIds ?? []),
+      ...(source.servedStallDefinitionId ? [source.servedStallDefinitionId] : []),
+      ...(stallObject?.definitionId ? [stallObject.definitionId] : []),
+    ])].sort(compareIds);
+    customer = {
+      ...source,
+      settledMealLineIds: [...alreadySettled].sort(compareIds),
+      served: mainWasServed,
+      hasTray: mainWasServed,
+      servedStallDefinitionId: source.servedStallDefinitionId ?? stallObject?.definitionId,
+      servedStallDefinitionIds,
+      spentCents: asMoneyCents(source.spentCents + priceCents),
+      spent: centsToSgd(asMoneyCents(source.spentCents + priceCents)),
+      awardedVisitXp: (source.awardedVisitXp ?? 0) + update.xpAwarded,
+      firstServeBonusAwarded: Boolean(source.firstServeBonusAwarded || update.firstServeBonusAwarded),
+      firstServeBonusXp: (source.firstServeBonusXp ?? 0) + update.xpAwarded,
+    };
+  }
+  removeFromAllQueues(draft, source.id);
+  if (alreadySettled.size === snapshot.lines.length) {
+    return finalizeFrozenMeal(draft, customer, "complete");
+  }
+  const nextStopIndex = stopIndex + 1;
+  const nextStop = snapshot.servingPlan.stops[nextStopIndex];
+  const nextStall = getStall(draft, nextStop?.stallInstanceId);
+  if (!nextStop || !nextStall) {
+    return finalizeFrozenMeal(draft, customer, "second-stall-unavailable");
+  }
+  const queue = draft.queues[nextStall.object.id] ?? [];
+  const targetCell = nextStall.queueCells[queue.length];
+  if (!targetCell) {
+    return {
+      ...transition(draft, customer, "walking-to-queue"),
+      targetStallId: nextStall.object.id,
+      mealStopIndex: nextStopIndex,
+    };
+  }
+  const path = requestPath(draft, customer.position, targetCell);
+  if (!path) {
+    return finalizeFrozenMeal(draft, customer, "second-stall-unavailable");
+  }
+  draft.queues[nextStall.object.id] = [...queue, customer.id];
+  return {
+    ...preparePath(transition(draft, customer, "walking-to-queue"), path),
+    targetStallId: nextStall.object.id,
+    mealStopIndex: nextStopIndex,
   };
 }
 
@@ -1439,32 +2170,22 @@ export function stepSimulation(state: GameState): GameState {
   const tick = state.tick + 1;
   const draft = createDraft(state, tick);
   draft.spawnCountdownMs -= deltaMs;
+  const arrivalTarget = forecastArrivalTarget(
+    draft.source.forecast,
+    state.arrivalSamplingSeed,
+  );
 
   if (
     draft.spawnCountdownMs <= 0 &&
-    state.servicePeriod.phase === "arrivals"
+    state.servicePeriod.phase === "arrivals" &&
+    draft.forecastArrivals.length < arrivalTarget
   ) {
     spawnCustomer(draft);
-    const active = Object.keys(draft.customers).length;
-    const seats = getSeatLocations(draft.objects, draft.source.catalog).length;
-    const stalls = openStalls(draft);
-    const serviceCapacity = stalls.reduce((sum, stall) => sum + (stall.definition.stall?.preparationCapacity ?? 1), 0);
-    const queueCount = Object.values(draft.queues).reduce((sum, queue) => sum + queue.length, 0);
-    const queueCapacity = stalls.reduce((sum, stall) => sum + Math.min(stall.queueCells.length, stall.definition.stall?.queueCapacity ?? 0), 0);
-    const infrastructure = Math.max(4, seats + serviceCapacity * 3 + draft.source.accessPoints.filter((point) => point.kind === "entrance").length * 4);
-    const occupancyPressure = active / infrastructure;
-    const queuePressure = queueCount / Math.max(1, queueCapacity);
-    const reputationDemand = 0.75 + (draft.progression.reputation / 5) * 1.25;
-    const stallDemand = Math.max(0.6, Math.sqrt(Math.max(1, stalls.length)) * (stalls.reduce((sum, stall) => sum + (stall.definition.stall?.popularity ?? 0.5), 0) / Math.max(1, stalls.length)));
-    const serviceProgress = Math.max(0, Math.min(1,
-      draft.source.servicePeriod.arrivalElapsedMs / 240_000,
-    ));
-    const timeDemand = 0.8 + Math.sin(serviceProgress * Math.PI) * 0.55;
-    const backpressure = 1 + occupancyPressure ** 2 * 2.5 + queuePressure ** 2 * 3 + draft.source.arrivalPerformancePressure * 4;
-    const quality = state.qualityMode === "standard" ? state.config.standard : state.config.lowerEnd;
-    const interval = quality.maxActiveCustomers === undefined
-      ? (state.config.spawnIntervalMs / Math.max(0.2, reputationDemand * stallDemand * timeDemand)) * backpressure
-      : state.config.spawnIntervalMs;
+    const interval = forecastArrivalIntervalMs(
+      draft.source.forecast,
+      state.config.spawnIntervalMs,
+      state.arrivalSamplingSeed,
+    );
     draft.spawnCountdownMs += Math.max(1, interval);
   }
 
@@ -1556,6 +2277,7 @@ export function stepSimulation(state: GameState): GameState {
     economy: draft.economy,
     progression: draft.progression,
     periodLedgers: draft.periodLedgers,
+    forecastArrivals: draft.forecastArrivals,
     servicePeriod,
     rngState: draft.rngState,
     nextCustomerSequence: draft.nextCustomerSequence,
@@ -1596,6 +2318,14 @@ export function advanceSimulation(state: GameState, realDeltaMs: number): Advanc
 }
 
 export function assertSimulationInvariants(state: GameState): void {
+  if (state.comboBoard.slots.length !== 3) {
+    throw new Error("Combo Board must contain exactly three slots");
+  }
+  const boardIssues = validateComboBoardForState(state, state.comboBoard, true)
+    .filter((issue) => issue.code !== "unavailable-stall");
+  if (boardIssues.length > 0) {
+    throw new Error(`Combo Board is invalid: ${boardIssues[0]!.message}`);
+  }
   const customerIds = new Set(Object.keys(state.customers));
   const queued = new Set<string>();
   const invariantCatalog = {
@@ -1671,6 +2401,92 @@ export function assertSimulationInvariants(state: GameState): void {
     if (!Number.isFinite(customer.walkingDistanceTiles) || customer.walkingDistanceTiles < 0) {
       throw new Error(`Customer ${customer.id} has an invalid walking distance`);
     }
+    if (customer.orderLineSnapshot && customer.mealOrderSnapshot) {
+      throw new Error(`Customer ${customer.id} has both a single and combo order snapshot`);
+    }
+    if (customer.mealOrderSnapshot) {
+      const [main, complement] = customer.mealOrderSnapshot.lines;
+      if (main.orderLine.mealRole !== "main") {
+        throw new Error(`Customer ${customer.id}'s combo does not start with a main`);
+      }
+      if (complement.orderLine.mealRole !== "side" && complement.orderLine.mealRole !== "drink") {
+        throw new Error(`Customer ${customer.id}'s combo has an invalid complement`);
+      }
+      const validLineIds = new Set(customer.mealOrderSnapshot.lines.map((line) => line.orderLine.lineId));
+      if ((customer.settledMealLineIds ?? []).some((lineId) => !validLineIds.has(lineId))) {
+        throw new Error(`Customer ${customer.id} settled an unknown combo line`);
+      }
+      if ((customer.settledMealLineIds ?? []).includes(complement.orderLine.lineId) &&
+        !(customer.settledMealLineIds ?? []).includes(main.orderLine.lineId)) {
+        throw new Error(`Customer ${customer.id} settled a complement before its main`);
+      }
+      const settled = new Set(customer.settledMealLineIds ?? []);
+      const settledCount = settled.size;
+      const expectedSpentCents = customer.mealOrderSnapshot.lines
+        .filter((line) => settled.has(line.orderLine.lineId))
+        .reduce((sum, line) => sum + line.orderLine.terms.priceCents, 0);
+      if (customer.spentCents !== expectedSpentCents) {
+        throw new Error(`Customer ${customer.id}'s meal spend does not match settled lines`);
+      }
+      const stopIndex = customer.mealStopIndex;
+      if (
+        stopIndex === undefined ||
+        stopIndex >= customer.mealOrderSnapshot.servingPlan.stops.length
+      ) {
+        throw new Error(`Customer ${customer.id} has an invalid meal stop`);
+      }
+      const activeStatuses = new Set<CustomerStatus>([
+        "walking-to-queue", "queued", "ordering", "waiting-for-food",
+      ]);
+      const postStatuses = new Set<CustomerStatus>([
+        "seeking-seat", "walking-to-seat", "eating", "seeking-tray-return",
+        "walking-to-tray-return", "walking-to-exit",
+      ]);
+      if (customer.mealSettlementCause === undefined) {
+        const validActive = settledCount === 0
+          ? customer.status === "waiting-for-food" && stopIndex === 0 && !customer.served && !customer.hasTray
+          : settledCount === 1 &&
+            customer.mealOrderSnapshot.servingPlan.stops.length === 2 &&
+            stopIndex === 1 &&
+            activeStatuses.has(customer.status) &&
+            customer.served &&
+            customer.hasTray;
+        if (!validActive) throw new Error(`Customer ${customer.id} has invalid active meal progress`);
+      } else if (customer.mealSettlementCause === "complete") {
+        if (
+          settledCount !== 2 ||
+          stopIndex !== customer.mealOrderSnapshot.servingPlan.stops.length - 1 ||
+          !postStatuses.has(customer.status) ||
+          !customer.served ||
+          (customer.status !== "walking-to-exit" && !customer.hasTray)
+        ) {
+          throw new Error(`Customer ${customer.id} has invalid completed meal progress`);
+        }
+      } else if (customer.mealSettlementCause === "second-stall-unavailable") {
+        if (
+          settledCount !== 1 ||
+          customer.mealOrderSnapshot.servingPlan.stops.length !== 2 ||
+          stopIndex !== 1 ||
+          !postStatuses.has(customer.status) ||
+          !customer.served ||
+          (customer.status !== "walking-to-exit" && !customer.hasTray)
+        ) {
+          throw new Error(`Customer ${customer.id} has invalid partial meal progress`);
+        }
+      } else if (customer.mealSettlementCause === "served-timeout") {
+        throw new Error(`Customer ${customer.id} persisted after its meal watchdog timeout`);
+      } else if (
+        settledCount !== 0 ||
+        stopIndex !== 0 ||
+        customer.status !== "walking-to-exit" ||
+        customer.served ||
+        customer.hasTray
+      ) {
+        throw new Error(`Customer ${customer.id} has invalid cancelled meal progress`);
+      }
+    } else if ((customer.settledMealLineIds?.length ?? 0) > 0 || customer.mealStopIndex !== undefined) {
+      throw new Error(`Customer ${customer.id} has combo progress without a combo order snapshot`);
+    }
   }
   for (const [name, value] of Object.entries(state.economy)) {
     if (!Number.isFinite(value) || value < 0) throw new Error(`Economy value ${name} is invalid`);
@@ -1708,6 +2524,16 @@ export function simulationDigest(state: GameState): string {
       stall: customer.targetStallId,
       seat: customer.reservedSeatKey,
       spentCents: customer.spentCents,
+      orderLine: customer.orderLineSnapshot?.lineId,
+      mealOrder: customer.mealOrderSnapshot
+        ? {
+            offerId: customer.mealOrderSnapshot.offerId,
+            lines: customer.mealOrderSnapshot.lines.map((line) => line.orderLine.lineId),
+            settled: customer.settledMealLineIds,
+            stop: customer.mealStopIndex,
+            cause: customer.mealSettlementCause,
+          }
+        : undefined,
     }));
   return JSON.stringify({
     tick: state.tick,
@@ -1716,6 +2542,7 @@ export function simulationDigest(state: GameState): string {
     progression: state.progression,
     queues: state.queues,
     reservations: state.seatReservations,
+    comboBoard: state.comboBoard,
     customers,
     metrics: state.metrics,
   });

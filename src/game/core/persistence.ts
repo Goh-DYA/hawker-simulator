@@ -8,8 +8,27 @@ import {
 } from "./economy";
 import { asMoneyCents, centsToSgd, sgdToCents } from "./money";
 import { createInitialServicePeriod, SERVICE_PERIODS } from "./servicePeriods";
+import {
+  derivePeriodForecast,
+  forecastForServicePeriod,
+  lockPeriodForecast,
+} from "./forecast";
 import { createDailyObjectives, metMilestoneIds } from "./progression";
-import { createServingTerms, snapshotOrderLine } from "./servingTerms";
+import {
+  createServingTerms,
+  snapshotMealOrder,
+  snapshotOrderLine,
+  type OrderLineSnapshot,
+} from "./servingTerms";
+import {
+  EMPTY_COMBO_BOARD,
+  aggregateNutritionProfiles,
+  type ComboBoard,
+  type ComboOffer,
+  type MealFitSnapshot,
+  type MealRole,
+  type ServingPlan,
+} from "./mealComposition";
 import { assertSimulationInvariants, finalizeDrainWatchdogState } from "./simulation";
 import {
   getObjectQueueAnchor,
@@ -19,6 +38,7 @@ import {
 } from "./grid";
 import { createNewGame } from "./state";
 import { compareIds } from "./ordering";
+import { hashSeed } from "./rng";
 import {
   cloneNutritionMetrics,
   createEmptyNutritionMetrics,
@@ -35,6 +55,7 @@ import type {
   PersistentGameStateV3,
   PersistentGameStateV4,
   PersistentGameStateV5,
+  PersistentGameStateV6,
   PlacedObject,
   QualityMode,
   SimulationCatalog,
@@ -57,8 +78,9 @@ import type {
   Customer,
   CustomerStatus,
 } from "./types";
+import type { ForecastArrivalObservation, PeriodForecast } from "./forecast";
 
-export const PERSISTENT_SCHEMA_VERSION = 5 as const;
+export const PERSISTENT_SCHEMA_VERSION = 6 as const;
 
 export class PersistenceError extends Error {
   constructor(message: string, options?: ErrorOptions) {
@@ -576,6 +598,11 @@ function parseVisitRatings(value: unknown): readonly VisitRating[] {
       stallDefinitionId: typeof entry.stallDefinitionId === "string" ? entry.stallDefinitionId : undefined,
       components,
       day: safeInteger(entry.day, `metrics.visitRatings[${index}].day`, 1),
+      arrivalPeriodSequenceId: safeInteger(
+        entry.arrivalPeriodSequenceId ?? 1,
+        `metrics.visitRatings[${index}].arrivalPeriodSequenceId`,
+        1,
+      ),
     };
   });
 }
@@ -665,6 +692,187 @@ function optionalString(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+function parseMealRole(value: unknown, path: string): MealRole {
+  if (value !== "main" && value !== "side" && value !== "drink") {
+    throw new PersistenceError(`${path} is invalid`);
+  }
+  return value;
+}
+
+function parseComboBoard(value: unknown, path = "comboBoard"): ComboBoard {
+  if (!isRecord(value) || !Array.isArray(value.slots) || value.slots.length !== 3) {
+    throw new PersistenceError(`${path}.slots must contain exactly three entries`);
+  }
+  const slots = value.slots.map((candidate, index): ComboOffer | null => {
+    if (candidate === null) return null;
+    if (!isRecord(candidate) || !Array.isArray(candidate.preparationIds) || candidate.preparationIds.length !== 2) {
+      throw new PersistenceError(`${path}.slots[${index}] is invalid`);
+    }
+    const preparationIds = candidate.preparationIds.map((id, preparationIndex) => stringValue(
+      id,
+      `${path}.slots[${index}].preparationIds[${preparationIndex}]`,
+    ));
+    return Object.freeze({
+      id: stringValue(candidate.id, `${path}.slots[${index}].id`),
+      preparationIds: Object.freeze(preparationIds) as unknown as readonly [string, string],
+    });
+  });
+  return Object.freeze({
+    slots: Object.freeze(slots) as unknown as ComboBoard["slots"],
+  });
+}
+
+function parseOrderLineSnapshot(
+  value: unknown,
+  path: string,
+  arrivalPeriodSequenceId: number,
+  strictPeriodId = false,
+): OrderLineSnapshot {
+  if (!isRecord(value) || !isRecord(value.terms)) {
+    throw new PersistenceError(`${path} is invalid`);
+  }
+  const termsSource = value.terms;
+  const snapshot = snapshotOrderLine({
+    lineId: stringValue(value.lineId, `${path}.lineId`),
+    dishId: stringValue(value.dishId, `${path}.dishId`),
+    variantId: optionalString(value.variantId),
+    preparationId: optionalString(value.preparationId),
+    mealRole: value.mealRole === undefined ? undefined : parseMealRole(value.mealRole, `${path}.mealRole`),
+    arrivalPeriodSequenceId: strictPeriodId
+      ? safeInteger(value.arrivalPeriodSequenceId, `${path}.arrivalPeriodSequenceId`, 1)
+      : parseArrivalPeriodSequenceId(
+          value.arrivalPeriodSequenceId,
+          `${path}.arrivalPeriodSequenceId`,
+          arrivalPeriodSequenceId,
+        ),
+    terms: createServingTerms({
+      priceCents: safeInteger(termsSource.priceCents, `${path}.terms.priceCents`),
+      ingredientCostCents: safeInteger(
+        termsSource.ingredientCostCents,
+        `${path}.terms.ingredientCostCents`,
+      ),
+      preparationTimeMs: safeInteger(termsSource.preparationTimeMs, `${path}.terms.preparationTimeMs`),
+      servingTimeMs: safeInteger(termsSource.servingTimeMs, `${path}.terms.servingTimeMs`),
+      eatingTimeMs: safeInteger(termsSource.eatingTimeMs, `${path}.terms.eatingTimeMs`),
+      starAppeal: finite(termsSource.starAppeal, `${path}.terms.starAppeal`, 1),
+      demandModifierBasisPoints: safeInteger(
+        termsSource.demandModifierBasisPoints,
+        `${path}.terms.demandModifierBasisPoints`,
+      ),
+    }),
+    nutritionProfile: value.nutritionProfile === undefined
+      ? undefined
+      : parseNutritionProfile(value.nutritionProfile, `${path}.nutritionProfile`),
+    mealBalanceRating: value.mealBalanceRating === undefined
+      ? undefined
+      : finite(value.mealBalanceRating, `${path}.mealBalanceRating`, 0),
+    intentFit: value.intentFit === undefined
+      ? undefined
+      : finite(value.intentFit, `${path}.intentFit`, 0),
+    explanationCodes: Array.isArray(value.explanationCodes)
+      ? value.explanationCodes.map((code, index) => stringValue(code, `${path}.explanationCodes[${index}]`))
+      : [],
+  });
+  if (snapshot.arrivalPeriodSequenceId !== arrivalPeriodSequenceId) {
+    throw new PersistenceError(`${path}.arrivalPeriodSequenceId must match the visit cohort`);
+  }
+  return snapshot;
+}
+
+function parseServingPlan(value: unknown, path: string): ServingPlan {
+  if (!isRecord(value) || !Array.isArray(value.stops) || value.stops.length < 1 || value.stops.length > 2) {
+    throw new PersistenceError(`${path} requires one or two stops`);
+  }
+  return {
+    totalDistance: finite(value.totalDistance, `${path}.totalDistance`, 0),
+    stops: value.stops.map((candidate, index) => {
+      if (!isRecord(candidate) || !Array.isArray(candidate.preparationIds)) {
+        throw new PersistenceError(`${path}.stops[${index}] is invalid`);
+      }
+      return {
+        stallInstanceId: stringValue(candidate.stallInstanceId, `${path}.stops[${index}].stallInstanceId`),
+        distance: finite(candidate.distance, `${path}.stops[${index}].distance`, 0),
+        preparationIds: candidate.preparationIds.map((id, preparationIndex) => stringValue(
+          id,
+          `${path}.stops[${index}].preparationIds[${preparationIndex}]`,
+        )),
+      };
+    }),
+  };
+}
+
+function parseMealOrderSnapshot(
+  value: unknown,
+  path: string,
+  arrivalPeriodSequenceId: number,
+  strictPeriodId = false,
+) {
+  if (!isRecord(value) || !Array.isArray(value.lines) || value.lines.length !== 2) {
+    throw new PersistenceError(`${path} is invalid`);
+  }
+  const lines = value.lines.map((candidate, index) => {
+    if (!isRecord(candidate)) throw new PersistenceError(`${path}.lines[${index}] is invalid`);
+    const role = parseMealRole(candidate.role, `${path}.lines[${index}].role`);
+    return {
+      role,
+      orderLine: parseOrderLineSnapshot(
+        candidate.orderLine,
+        `${path}.lines[${index}].orderLine`,
+        arrivalPeriodSequenceId,
+        strictPeriodId,
+      ),
+    };
+  }) as unknown as readonly [{ role: MealRole; orderLine: OrderLineSnapshot }, { role: MealRole; orderLine: OrderLineSnapshot }];
+  const aggregate = aggregateNutritionProfiles(lines.map((line) => line.orderLine.nutritionProfile));
+  const fitSource = isRecord(value.fit) ? value.fit : {};
+  const intentId = fitSource.intentId;
+  if (intentId !== undefined && !NUTRITION_INTENTS.includes(intentId as NutritionIntent)) {
+    throw new PersistenceError(`${path}.fit.intentId is invalid`);
+  }
+  const conditionIds = Array.isArray(fitSource.conditionIds)
+    ? fitSource.conditionIds.map((condition, index) => {
+        if (!HEALTH_CONDITIONS.includes(condition as HealthCondition)) {
+          throw new PersistenceError(`${path}.fit.conditionIds[${index}] is invalid`);
+        }
+        return condition as HealthCondition;
+      })
+    : [];
+  const fit: MealFitSnapshot = {
+    mealBalance: fitSource.mealBalance === undefined
+      ? undefined
+      : finite(fitSource.mealBalance, `${path}.fit.mealBalance`, 0),
+    intentId: intentId as NutritionIntent | undefined,
+    intentFit: fitSource.intentFit === undefined
+      ? undefined
+      : finite(fitSource.intentFit, `${path}.fit.intentFit`, 0),
+    conditionIds,
+    conditionAwareFit: fitSource.conditionAwareFit === undefined
+      ? undefined
+      : finite(fitSource.conditionAwareFit, `${path}.fit.conditionAwareFit`, 0),
+    explanationCodes: Array.isArray(fitSource.explanationCodes)
+      ? fitSource.explanationCodes.map((code, index) => stringValue(code, `${path}.fit.explanationCodes[${index}]`))
+      : [],
+  };
+  return snapshotMealOrder({
+    orderId: stringValue(value.orderId, `${path}.orderId`),
+    offerId: stringValue(value.offerId, `${path}.offerId`),
+    arrivalPeriodSequenceId: strictPeriodId
+      ? safeInteger(value.arrivalPeriodSequenceId, `${path}.arrivalPeriodSequenceId`, 1)
+      : parseArrivalPeriodSequenceId(
+          value.arrivalPeriodSequenceId,
+          `${path}.arrivalPeriodSequenceId`,
+          arrivalPeriodSequenceId,
+        ),
+    lines,
+    servingPlan: parseServingPlan(value.servingPlan, `${path}.servingPlan`),
+    nutrition: aggregate,
+    fit,
+    explanationCodes: Array.isArray(value.explanationCodes)
+      ? value.explanationCodes.map((code, index) => stringValue(code, `${path}.explanationCodes[${index}]`))
+      : [],
+  });
+}
+
 /**
  * Stage 1 preview saves briefly accepted textual or omitted period ids. They
  * normalize to the owning visit's numeric cohort during V5 parsing; every
@@ -684,16 +892,23 @@ function parseArrivalPeriodSequenceId(
   return safeInteger(value, path, 1);
 }
 
-function parseCustomer(value: unknown, index: number, fallbackPeriodSequenceId: number): Customer {
+function parseCustomer(
+  value: unknown,
+  index: number,
+  fallbackPeriodSequenceId: number,
+  strictV6 = false,
+): Customer {
   const path = `customers[${index}]`;
   if (!isRecord(value) || !CUSTOMER_STATUSES.includes(value.status as CustomerStatus)) {
     throw new PersistenceError(`${path} is invalid`);
   }
-  const arrivalPeriodSequenceId = parseArrivalPeriodSequenceId(
-    value.arrivalPeriodSequenceId,
-    `${path}.arrivalPeriodSequenceId`,
-    fallbackPeriodSequenceId,
-  );
+  const arrivalPeriodSequenceId = strictV6
+    ? safeInteger(value.arrivalPeriodSequenceId, `${path}.arrivalPeriodSequenceId`, 1)
+    : parseArrivalPeriodSequenceId(
+        value.arrivalPeriodSequenceId,
+        `${path}.arrivalPeriodSequenceId`,
+        fallbackPeriodSequenceId,
+      );
   const healthConditions = Array.isArray(value.healthConditions)
     ? value.healthConditions.map((condition, conditionIndex) => {
         if (!HEALTH_CONDITIONS.includes(condition as HealthCondition)) {
@@ -714,75 +929,155 @@ function parseCustomer(value: unknown, index: number, fallbackPeriodSequenceId: 
         ? []
         : [[key, boundedPercentage(ratingSource[key], `${path}.ratingFactors.${key}`)]]))
     : undefined;
-  const snapshotSource = isRecord(value.orderLineSnapshot) ? value.orderLineSnapshot : undefined;
-  const termsSource = snapshotSource && isRecord(snapshotSource.terms) ? snapshotSource.terms : undefined;
-  if (value.orderLineSnapshot !== undefined && (!snapshotSource || !termsSource)) {
-    throw new PersistenceError(`${path}.orderLineSnapshot is invalid`);
+  if (value.orderLineSnapshot !== undefined && value.mealOrderSnapshot !== undefined) {
+    throw new PersistenceError(`${path} cannot contain both single and Combo Board orders`);
   }
-  const orderLineSnapshot = snapshotSource && termsSource
-    ? snapshotOrderLine({
-        lineId: stringValue(snapshotSource.lineId, `${path}.orderLineSnapshot.lineId`),
-        dishId: stringValue(snapshotSource.dishId, `${path}.orderLineSnapshot.dishId`),
-        variantId: optionalString(snapshotSource.variantId),
-        arrivalPeriodSequenceId: parseArrivalPeriodSequenceId(
-          snapshotSource.arrivalPeriodSequenceId,
-          `${path}.orderLineSnapshot.arrivalPeriodSequenceId`,
-          arrivalPeriodSequenceId,
-        ),
-        terms: createServingTerms({
-          priceCents: safeInteger(termsSource.priceCents, `${path}.orderLineSnapshot.terms.priceCents`),
-          ingredientCostCents: safeInteger(
-            termsSource.ingredientCostCents,
-            `${path}.orderLineSnapshot.terms.ingredientCostCents`,
-          ),
-          preparationTimeMs: safeInteger(
-            termsSource.preparationTimeMs,
-            `${path}.orderLineSnapshot.terms.preparationTimeMs`,
-          ),
-          servingTimeMs: safeInteger(
-            termsSource.servingTimeMs,
-            `${path}.orderLineSnapshot.terms.servingTimeMs`,
-          ),
-          eatingTimeMs: safeInteger(
-            termsSource.eatingTimeMs,
-            `${path}.orderLineSnapshot.terms.eatingTimeMs`,
-          ),
-          starAppeal: finite(termsSource.starAppeal, `${path}.orderLineSnapshot.terms.starAppeal`, 1),
-          demandModifierBasisPoints: safeInteger(
-            termsSource.demandModifierBasisPoints,
-            `${path}.orderLineSnapshot.terms.demandModifierBasisPoints`,
-          ),
-        }),
-        nutritionProfile: snapshotSource.nutritionProfile === undefined
-          ? undefined
-          : parseNutritionProfile(
-              snapshotSource.nutritionProfile,
-              `${path}.orderLineSnapshot.nutritionProfile`,
-            ),
-        mealBalanceRating: snapshotSource.mealBalanceRating === undefined
-          ? undefined
-          : finite(snapshotSource.mealBalanceRating, `${path}.orderLineSnapshot.mealBalanceRating`, 0),
-        intentFit: snapshotSource.intentFit === undefined
-          ? undefined
-          : finite(snapshotSource.intentFit, `${path}.orderLineSnapshot.intentFit`, 0),
-        explanationCodes: Array.isArray(snapshotSource.explanationCodes)
-          ? snapshotSource.explanationCodes.map((code, codeIndex) => stringValue(
-              code,
-              `${path}.orderLineSnapshot.explanationCodes[${codeIndex}]`,
-            ))
-          : [],
-      })
-    : undefined;
+  const orderLineSnapshot = value.orderLineSnapshot === undefined
+    ? undefined
+    : parseOrderLineSnapshot(
+        value.orderLineSnapshot,
+        `${path}.orderLineSnapshot`,
+        arrivalPeriodSequenceId,
+        strictV6,
+      );
+  const mealOrderSnapshot = value.mealOrderSnapshot === undefined
+    ? undefined
+    : parseMealOrderSnapshot(
+        value.mealOrderSnapshot,
+        `${path}.mealOrderSnapshot`,
+        arrivalPeriodSequenceId,
+        strictV6,
+      );
   const spentCents = value.spentCents === undefined
     ? sgdToCents(finite(value.spent ?? 0, `${path}.spent`, 0), `${path}.spent`)
     : asMoneyCents(safeInteger(value.spentCents, `${path}.spentCents`));
+  const settledMealLineIds = value.settledMealLineIds === undefined
+    ? undefined
+    : Array.isArray(value.settledMealLineIds) && value.settledMealLineIds.every((id) => typeof id === "string")
+      ? [...new Set(value.settledMealLineIds as string[])]
+      : (() => { throw new PersistenceError(`${path}.settledMealLineIds must be a string array`); })();
+  const servedStallDefinitionIds = value.servedStallDefinitionIds === undefined
+    ? undefined
+    : Array.isArray(value.servedStallDefinitionIds) &&
+        value.servedStallDefinitionIds.every((id) => typeof id === "string" && id.length > 0) &&
+        new Set(value.servedStallDefinitionIds).size === value.servedStallDefinitionIds.length
+      ? [...value.servedStallDefinitionIds as string[]].sort(compareIds)
+      : (() => {
+          throw new PersistenceError(
+            `${path}.servedStallDefinitionIds must be a unique non-empty string array`,
+          );
+        })();
+  const mealSettlementCause = value.mealSettlementCause;
   if (
-    orderLineSnapshot &&
-    orderLineSnapshot.arrivalPeriodSequenceId !== arrivalPeriodSequenceId
+    mealSettlementCause !== undefined &&
+    mealSettlementCause !== "complete" &&
+    mealSettlementCause !== "second-stall-unavailable" &&
+    mealSettlementCause !== "served-timeout" &&
+    mealSettlementCause !== "cancelled-before-service"
   ) {
-    throw new PersistenceError(
-      `${path}.orderLineSnapshot.arrivalPeriodSequenceId must match the visit cohort`,
-    );
+    throw new PersistenceError(`${path}.mealSettlementCause is invalid`);
+  }
+  const mealStopIndex = value.mealStopIndex === undefined
+    ? undefined
+    : safeInteger(value.mealStopIndex, `${path}.mealStopIndex`, 0, 1);
+  if (mealOrderSnapshot) {
+    const lineIds = new Set(mealOrderSnapshot.lines.map((line) => line.orderLine.lineId));
+    if ((settledMealLineIds ?? []).some((lineId) => !lineIds.has(lineId))) {
+      throw new PersistenceError(`${path}.settledMealLineIds references an unknown meal line`);
+    }
+    if ((settledMealLineIds ?? []).includes(mealOrderSnapshot.lines[1].orderLine.lineId) &&
+      !(settledMealLineIds ?? []).includes(mealOrderSnapshot.lines[0].orderLine.lineId)) {
+      throw new PersistenceError(`${path} cannot settle a complement before its main`);
+    }
+    const settledCount = settledMealLineIds?.length ?? 0;
+    const status = value.status as CustomerStatus;
+    const activeSecondStopStatuses = new Set<CustomerStatus>([
+      "walking-to-queue",
+      "queued",
+      "ordering",
+      "waiting-for-food",
+    ]);
+    const postServiceStatuses = new Set<CustomerStatus>([
+      "seeking-seat",
+      "walking-to-seat",
+      "eating",
+      "seeking-tray-return",
+      "walking-to-tray-return",
+      "walking-to-exit",
+    ]);
+    const expectedSpentCents = mealOrderSnapshot.lines
+      .filter((line) => (settledMealLineIds ?? []).includes(line.orderLine.lineId))
+      .reduce((sum, line) => sum + line.orderLine.terms.priceCents, 0);
+    if (spentCents !== expectedSpentCents) {
+      throw new PersistenceError(`${path}.spentCents must equal the settled frozen meal-line prices`);
+    }
+    if (mealStopIndex === undefined || mealStopIndex >= mealOrderSnapshot.servingPlan.stops.length) {
+      throw new PersistenceError(`${path}.mealStopIndex does not match the frozen serving plan`);
+    }
+    if (
+      (mealSettlementCause === "complete" && settledCount !== 2) ||
+      ((mealSettlementCause === "second-stall-unavailable" || mealSettlementCause === "served-timeout") &&
+        settledCount !== 1) ||
+      (mealSettlementCause === "cancelled-before-service" && settledCount !== 0) ||
+      (mealSettlementCause === undefined && settledCount === 2)
+    ) {
+      throw new PersistenceError(`${path}.mealSettlementCause does not match settled meal lines`);
+    }
+    if (mealSettlementCause === undefined) {
+      const validActiveState = settledCount === 0
+        ? status === "waiting-for-food" &&
+          mealStopIndex === 0 &&
+          value.served !== true &&
+          value.hasTray !== true
+        : settledCount === 1 &&
+          mealOrderSnapshot.servingPlan.stops.length === 2 &&
+          mealStopIndex === 1 &&
+          activeSecondStopStatuses.has(status) &&
+          value.served === true &&
+          value.hasTray === true;
+      if (!validActiveState) {
+        throw new PersistenceError(`${path} has incompatible active Combo Board progress`);
+      }
+    } else if (mealSettlementCause === "complete") {
+      const finalStopIndex = mealOrderSnapshot.servingPlan.stops.length - 1;
+      if (
+        mealStopIndex !== finalStopIndex ||
+        !postServiceStatuses.has(status) ||
+        (status !== "walking-to-exit" && value.hasTray !== true)
+      ) {
+        throw new PersistenceError(`${path} has incompatible completed Combo Board state`);
+      }
+    } else if (mealSettlementCause === "second-stall-unavailable") {
+      if (
+        mealOrderSnapshot.servingPlan.stops.length !== 2 ||
+        mealStopIndex !== 1 ||
+        !postServiceStatuses.has(status) ||
+        (status !== "walking-to-exit" && value.hasTray !== true)
+      ) {
+        throw new PersistenceError(`${path} has incompatible partial Combo Board state`);
+      }
+    } else if (mealSettlementCause === "served-timeout") {
+      throw new PersistenceError(`${path} cannot persist an active served-timeout Combo Board visit`);
+    } else if (
+      status !== "walking-to-exit" ||
+      value.served === true ||
+      value.hasTray === true ||
+      mealStopIndex !== 0
+    ) {
+      throw new PersistenceError(`${path} has incompatible cancelled Combo Board state`);
+    }
+    if (
+      (mealSettlementCause === "complete" ||
+        mealSettlementCause === "second-stall-unavailable") &&
+      value.served !== true
+    ) {
+      throw new PersistenceError(`${path}.served must be true after a meal settlement`);
+    }
+    if (mealSettlementCause === "cancelled-before-service" && value.served === true) {
+      throw new PersistenceError(`${path}.served cannot be true for a cancelled meal`);
+    }
+  } else if (mealStopIndex !== undefined || settledMealLineIds !== undefined || mealSettlementCause !== undefined) {
+    throw new PersistenceError(`${path} has meal progress without a meal snapshot`);
   }
   return {
     id: stringValue(value.id, `${path}.id`),
@@ -800,9 +1095,27 @@ function parseCustomer(value: unknown, index: number, fallbackPeriodSequenceId: 
     patienceRemainingMs: finite(value.patienceRemainingMs ?? 0, `${path}.patienceRemainingMs`),
     satisfaction: finite(value.satisfaction ?? 0, `${path}.satisfaction`, 0),
     arrivalPeriodSequenceId,
+    ...(value.forecastGroupSize === undefined ? {} : {
+      forecastGroupSize: safeInteger(
+        value.forecastGroupSize,
+        `${path}.forecastGroupSize`,
+        1,
+        6,
+      ) as 1 | 2 | 3 | 4 | 5 | 6,
+    }),
+    ...(value.forecastMealMixId === undefined ? {} : {
+      forecastMealMixId: stringValue(value.forecastMealMixId, `${path}.forecastMealMixId`),
+    }),
+    ...(value.forecastBudgetCents === undefined ? {} : {
+      forecastBudgetCents: asMoneyCents(safeInteger(
+        value.forecastBudgetCents,
+        `${path}.forecastBudgetCents`,
+      )),
+    }),
     healthConditions,
     sourceEntranceId: optionalString(value.sourceEntranceId),
     targetExitId: optionalString(value.targetExitId),
+    servedStallDefinitionIds,
     servedStallDefinitionId: optionalString(value.servedStallDefinitionId),
     ratingFactors,
     ratingSettled: value.ratingSettled === undefined ? undefined : Boolean(value.ratingSettled),
@@ -814,6 +1127,10 @@ function parseCustomer(value: unknown, index: number, fallbackPeriodSequenceId: 
       ? undefined
       : parseNutritionProfile(value.orderedNutritionProfile, `${path}.orderedNutritionProfile`),
     orderLineSnapshot,
+    mealOrderSnapshot,
+    mealStopIndex,
+    settledMealLineIds,
+    mealSettlementCause,
     nutritionRequestResult: value.nutritionRequestResult === "matched" ||
       value.nutritionRequestResult === "missed" || value.nutritionRequestResult === "unknown"
       ? value.nutritionRequestResult
@@ -838,6 +1155,9 @@ function parseCustomer(value: unknown, index: number, fallbackPeriodSequenceId: 
     firstServeBonusAwarded: value.firstServeBonusAwarded === undefined
       ? undefined
       : Boolean(value.firstServeBonusAwarded),
+    firstServeBonusXp: value.firstServeBonusXp === undefined
+      ? (value.firstServeBonusAwarded ? 2 : undefined)
+      : safeInteger(value.firstServeBonusXp, `${path}.firstServeBonusXp`, 0),
     spentCents,
     spent: centsToSgd(spentCents),
     stuckMs: safeInteger(value.stuckMs ?? 0, `${path}.stuckMs`),
@@ -930,6 +1250,9 @@ function parsePeriodLedger(value: unknown, sequenceId: number): PeriodLedger {
         amountCents: asMoneyCents(safeInteger(entry.amountCents, `periodLedgers.${sequenceId}.entries[${index}].amountCents`)),
         tick: safeInteger(entry.tick, `periodLedgers.${sequenceId}.entries[${index}].tick`),
         referenceId: typeof entry.referenceId === "string" ? entry.referenceId : undefined,
+        visitId: optionalString(entry.visitId),
+        lineId: optionalString(entry.lineId),
+        preparationId: optionalString(entry.preparationId),
       };
     }),
   };
@@ -943,12 +1266,210 @@ function parsePeriodLedger(value: unknown, sequenceId: number): PeriodLedger {
       amountCents: entry.amountCents,
       tick: entry.tick,
       referenceId: entry.referenceId,
+      visitId: entry.visitId,
+      lineId: entry.lineId,
+      preparationId: entry.preparationId,
     }),
     createPeriodLedger(sequenceId, persisted.openingCashCents),
   );
 }
 
-function parseV5(value: Record<string, unknown>): PersistentGameStateV5 {
+function parsePeriodForecast(
+  value: unknown,
+  servicePeriod: ServicePeriodState,
+): { readonly forecast: PeriodForecast; readonly regenerated: boolean } {
+  const fallback = () => ({
+    forecast: forecastForServicePeriod(servicePeriod),
+    regenerated: true,
+  });
+  if (!isRecord(value)) return fallback();
+  try {
+    if (
+      value.periodId !== servicePeriod.periodId ||
+      safeInteger(value.periodSequenceId, "forecast.periodSequenceId", 1) !== servicePeriod.sequenceId ||
+      safeInteger(value.day, "forecast.day", 1) !== servicePeriod.day ||
+      value.needShareBasis !== "among-flagged-needs" ||
+      !Array.isArray(value.demandRange) || value.demandRange.length !== 2
+    ) return fallback();
+    const parseShare = (source: unknown, path: string) => {
+      if (!isRecord(source)) throw new PersistenceError(`${path} must be an object`);
+      return {
+        id: stringValue(source.id, `${path}.id`),
+        basisPoints: safeInteger(source.basisPoints, `${path}.basisPoints`, 0),
+      };
+    };
+    const arrays = ["crowdProfiles", "budgetBands", "groupSizeMix", "mealMix", "nutritionNeeds"] as const;
+    if (arrays.some((key) => !Array.isArray(value[key]) || (value[key] as unknown[]).length === 0)) {
+      return fallback();
+    }
+    const crowdProfiles = (value.crowdProfiles as unknown[]).map((entry, index) =>
+      parseShare(entry, `forecast.crowdProfiles[${index}]`));
+    const budgetBands = (value.budgetBands as unknown[]).map((entry, index) => {
+      const path = `forecast.budgetBands[${index}]`;
+      const share = parseShare(entry, path);
+      const source = entry as Record<string, unknown>;
+      const minimumCents = safeInteger(source.minimumCents, `${path}.minimumCents`, 0);
+      return {
+        ...share,
+        minimumCents,
+        maximumCents: safeInteger(source.maximumCents, `${path}.maximumCents`, minimumCents),
+      };
+    });
+    const groupSizeMix = (value.groupSizeMix as unknown[]).map((entry, index) => {
+      const path = `forecast.groupSizeMix[${index}]`;
+      return {
+        ...parseShare(entry, path),
+        size: safeInteger((entry as Record<string, unknown>).size, `${path}.size`, 1, 6) as 1 | 2 | 3 | 4 | 5 | 6,
+      };
+    });
+    const mealMix = (value.mealMix as unknown[]).map((entry, index) =>
+      parseShare(entry, `forecast.mealMix[${index}]`));
+    const nutritionNeeds = (value.nutritionNeeds as unknown[]).map((entry, index) => {
+      const path = `forecast.nutritionNeeds[${index}]`;
+      const share = parseShare(entry, path);
+      const source = entry as Record<string, unknown>;
+      if (source.kind === "nutrition-intent" && NUTRITION_INTENTS.includes(source.nutritionIntent as NutritionIntent)) {
+        return { ...share, kind: "nutrition-intent" as const, nutritionIntent: source.nutritionIntent as NutritionIntent };
+      }
+      if (source.kind === "condition-aware" && HEALTH_CONDITIONS.includes(source.healthCondition as HealthCondition)) {
+        return { ...share, kind: "condition-aware" as const, healthCondition: source.healthCondition as HealthCondition };
+      }
+      throw new PersistenceError(`${path} has an invalid need discriminant`);
+    });
+    const minimumDemand = safeInteger(value.demandRange[0], "forecast.demandRange[0]", 0);
+    const maximumDemand = safeInteger(value.demandRange[1], "forecast.demandRange[1]", minimumDemand);
+    const nutritionIntentIncidenceBasisPoints = safeInteger(
+      value.nutritionIntentIncidenceBasisPoints,
+      "forecast.nutritionIntentIncidenceBasisPoints",
+      0,
+      10_000,
+    );
+    const conditionAwareIncidenceBasisPoints = safeInteger(
+      value.conditionAwareIncidenceBasisPoints,
+      "forecast.conditionAwareIncidenceBasisPoints",
+      0,
+      10_000,
+    );
+    const restored = derivePeriodForecast({
+      periodId: servicePeriod.periodId,
+      demandRange: [minimumDemand, maximumDemand],
+      crowdProfiles,
+      budgetBands,
+      groupSizeMix,
+      mealMix,
+      nutritionNeeds,
+      nutritionIntentIncidenceBasisPoints,
+      conditionAwareIncidenceBasisPoints,
+    }, servicePeriod.day, servicePeriod.sequenceId);
+    return {
+      forecast: value.audienceLocked === true
+        ? Object.freeze({ ...restored, audienceLocked: true })
+        : restored,
+      regenerated: false,
+    };
+  } catch {
+    return fallback();
+  }
+}
+
+function parseForecastArrivals(
+  value: unknown,
+  forecast: PeriodForecast,
+  nextCustomerSequence: number,
+): readonly ForecastArrivalObservation[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) throw new PersistenceError("forecastArrivals must be an array");
+  const crowdIds = new Set(forecast.crowdProfiles.map((profile) => profile.id));
+  const mealIds = new Set(forecast.mealMix.map((meal) => meal.id));
+  const groupSizes = new Set(forecast.groupSizeMix.map((group) => group.size));
+  const intentIds = new Set(forecast.nutritionNeeds.flatMap((need) => (
+    need.kind === "nutrition-intent" && need.nutritionIntent ? [need.nutritionIntent] : []
+  )));
+  const conditionIds = new Set(forecast.nutritionNeeds.flatMap((need) => (
+    need.kind === "condition-aware" && need.healthCondition ? [need.healthCondition] : []
+  )));
+  const seenCustomerIds = new Set<string>();
+  const result = (candidate: unknown): NutritionRequestResult | undefined => (
+    candidate === "matched" || candidate === "missed" || candidate === "unknown"
+      ? candidate
+      : undefined
+  );
+  const combinedResult = (
+    intent: NutritionRequestResult | undefined,
+    condition: NutritionRequestResult | undefined,
+  ): NutritionRequestResult | undefined => {
+    const outcomes = [intent, condition].filter(
+      (outcome): outcome is NutritionRequestResult => outcome !== undefined,
+    );
+    if (outcomes.length === 0) return undefined;
+    if (outcomes.includes("missed")) return "missed";
+    if (outcomes.every((outcome) => outcome === "matched")) return "matched";
+    return "unknown";
+  };
+  return value.flatMap((source, index) => {
+    try {
+      if (!isRecord(source)) return [];
+      const customerId = stringValue(source.customerId, `forecastArrivals[${index}].customerId`);
+      const customerSequence = /^customer-([1-9]\d*)$/.exec(customerId);
+      if (!customerSequence || Number(customerSequence[1]) >= nextCustomerSequence || seenCustomerIds.has(customerId)) {
+        return [];
+      }
+      const periodSequenceId = source.periodSequenceId === undefined
+        ? forecast.periodSequenceId
+        : safeInteger(source.periodSequenceId, `forecastArrivals[${index}].periodSequenceId`, 1);
+      const archetypeId = stringValue(source.archetypeId, `forecastArrivals[${index}].archetypeId`);
+      const budgetCents = safeInteger(source.budgetCents, `forecastArrivals[${index}].budgetCents`, 0);
+      const groupSize = safeInteger(source.groupSize, `forecastArrivals[${index}].groupSize`, 1, 6) as 1 | 2 | 3 | 4 | 5 | 6;
+      const mealMixId = stringValue(source.mealMixId, `forecastArrivals[${index}].mealMixId`);
+      if (
+        periodSequenceId !== forecast.periodSequenceId ||
+        !crowdIds.has(archetypeId) ||
+        !forecast.budgetBands.some((band) => budgetCents >= band.minimumCents && budgetCents <= band.maximumCents) ||
+        !groupSizes.has(groupSize) ||
+        !mealIds.has(mealMixId)
+      ) return [];
+      const nutritionIntent = typeof source.nutritionIntent === "string" &&
+        NUTRITION_INTENTS.includes(source.nutritionIntent as NutritionIntent) &&
+        intentIds.has(source.nutritionIntent as NutritionIntent) &&
+        forecast.nutritionIntentIncidenceBasisPoints > 0
+        ? source.nutritionIntent as NutritionIntent
+        : undefined;
+      const healthConditions = Array.isArray(source.healthConditions)
+        ? [...new Set(source.healthConditions.filter((condition): condition is HealthCondition => (
+            typeof condition === "string" &&
+            HEALTH_CONDITIONS.includes(condition as HealthCondition) &&
+            conditionIds.has(condition as HealthCondition) &&
+            forecast.conditionAwareIncidenceBasisPoints > 0
+          )))]
+        : [];
+      const legacyResult = result(source.nutritionResult);
+      const nutritionIntentResult = nutritionIntent
+        ? result(source.nutritionIntentResult) ?? (healthConditions.length === 0 ? legacyResult : undefined)
+        : undefined;
+      const conditionAwareResult = healthConditions.length > 0
+        ? result(source.conditionAwareResult) ?? (!nutritionIntent ? legacyResult : undefined)
+        : undefined;
+      seenCustomerIds.add(customerId);
+      return [{
+        periodSequenceId,
+        customerId,
+        archetypeId,
+        budgetCents,
+        groupSize,
+        mealMixId,
+        nutritionIntent,
+        healthConditions,
+        nutritionResult: combinedResult(nutritionIntentResult, conditionAwareResult),
+        nutritionIntentResult,
+        conditionAwareResult,
+      }];
+    } catch {
+      return [];
+    }
+  });
+}
+
+function parseV5(value: Record<string, unknown>, strictV6 = false): PersistentGameStateV5 {
   const economy = parsePersistentEconomyV5(value.economy);
   const old = parseV4({
     ...value,
@@ -967,6 +1488,12 @@ function parseV5(value: Record<string, unknown>): PersistentGameStateV5 {
     throw new PersistenceError("progression.firstServedPreparationIds must be a string array");
   }
   const servicePeriod = parseServicePeriod(value.servicePeriod);
+  const parsedForecast = parsePeriodForecast(value.forecast, servicePeriod);
+  const forecast = parsedForecast.forecast;
+  const nextCustomerSequence = safeInteger(value.nextCustomerSequence, "nextCustomerSequence", 1);
+  const forecastArrivals = parsedForecast.regenerated
+    ? []
+    : parseForecastArrivals(value.forecastArrivals, forecast, nextCustomerSequence);
   const ledgerSource = isRecord(value.periodLedgers) ? value.periodLedgers : {};
   const periodLedgers = Object.fromEntries(Object.entries(ledgerSource).map(([id, ledger]) => {
     const sequenceId = safeInteger(Number(id), `periodLedgers.${id}.periodSequenceId`, 1);
@@ -990,10 +1517,11 @@ function parseV5(value: Record<string, unknown>): PersistentGameStateV5 {
     throw new PersistenceError("customers must be an array");
   }
   const customers = Array.isArray(value.customers)
-    ? value.customers.map((customer, index) => parseCustomer(
+      ? value.customers.map((customer, index) => parseCustomer(
         customer,
         index,
         servicePeriod.sequenceId,
+        strictV6,
       ))
     : [];
   const customerIds = new Set(customers.map((customer) => customer.id));
@@ -1072,6 +1600,11 @@ function parseV5(value: Record<string, unknown>): PersistentGameStateV5 {
       0,
     ),
     recovery: { resolvedEpisodeIds, zeroResaleObjectIds },
+    forecast,
+    forecastArrivals,
+    arrivalSamplingSeed: value.arrivalSamplingSeed === undefined
+      ? hashSeed(`${old.rngState}:forecast-arrivals:legacy-v1`)
+      : safeInteger(value.arrivalSamplingSeed, "arrivalSamplingSeed", 1, 0xffff_ffff),
     metrics: {
       spawnedCustomers,
       despawnedCustomers,
@@ -1087,6 +1620,23 @@ function parseV5(value: Record<string, unknown>): PersistentGameStateV5 {
       visitRatings: old.metrics.visitRatings,
       nutrition: old.metrics.nutrition,
     },
+  };
+}
+
+function migrateV5ToV6(old: PersistentGameStateV5): PersistentGameStateV6 {
+  return {
+    ...old,
+    schemaVersion: 6,
+    comboBoard: EMPTY_COMBO_BOARD,
+  };
+}
+
+function parseV6(value: Record<string, unknown>): PersistentGameStateV6 {
+  const old = parseV5({ ...value, schemaVersion: 5 }, true);
+  return {
+    ...old,
+    schemaVersion: 6,
+    comboBoard: parseComboBoard(value.comboBoard),
   };
 }
 
@@ -1134,6 +1684,9 @@ function migrateV4ToV5(old: PersistentGameStateV4): PersistentGameStateV5 {
     accumulatorMs: 0,
     arrivalPerformancePressure: 0,
     recovery: { resolvedEpisodeIds: [], zeroResaleObjectIds: [] },
+    forecast: forecastForServicePeriod(initialPeriod),
+    forecastArrivals: [],
+    arrivalSamplingSeed: hashSeed(`${old.rngState}:forecast-arrivals:legacy-v1`),
     metrics: {
       spawnedCustomers: old.economy.completedVisits + old.economy.abandonedVisits,
       despawnedCustomers: old.economy.completedVisits + old.economy.abandonedVisits,
@@ -1163,21 +1716,22 @@ function parseV1(value: Record<string, unknown>): PersistentGameStateV1 {
   };
 }
 
-export function migratePersistentState(value: unknown): PersistentGameStateV5 {
+export function migratePersistentState(value: unknown): PersistentGameStateV6 {
   if (!isRecord(value)) throw new PersistenceError("Save data must be an object");
-  if (value.schemaVersion === 5) return parseV5(value);
-  if (value.schemaVersion === 4) return migrateV4ToV5(parseV4(value));
+  if (value.schemaVersion === 6) return parseV6(value);
+  if (value.schemaVersion === 5) return migrateV5ToV6(parseV5(value));
+  if (value.schemaVersion === 4) return migrateV5ToV6(migrateV4ToV5(parseV4(value)));
   if (value.schemaVersion === 3) {
     const old = parseV3(value);
-    return migrateV4ToV5({
+    return migrateV5ToV6(migrateV4ToV5({
       ...old,
       schemaVersion: 4,
       metrics: { ...old.metrics, nutrition: createEmptyNutritionMetrics() },
-    });
+    }));
   }
   if (value.schemaVersion === 2) {
     const old = parseV2(value);
-    return migrateV4ToV5({
+    return migrateV5ToV6(migrateV4ToV5({
       schemaVersion: 4,
       savedAtTick: old.savedAtTick,
       map: old.map,
@@ -1198,7 +1752,7 @@ export function migratePersistentState(value: unknown): PersistentGameStateV5 {
       rngState: old.rngState,
       nextCustomerSequence: old.nextCustomerSequence,
       elapsedMs: old.elapsedMs,
-    });
+    }));
   }
   if (value.schemaVersion !== 1) throw new PersistenceError(`Unsupported save version: ${String(value.schemaVersion)}`);
   const old = parseV1(value);
@@ -1237,9 +1791,9 @@ export function migratePersistentState(value: unknown): PersistentGameStateV5 {
   });
 }
 
-export function persistentStateFromGame(state: GameState): PersistentGameStateV5 {
+export function persistentStateFromGame(state: GameState): PersistentGameStateV6 {
   return {
-    schemaVersion: 5,
+    schemaVersion: 6,
     savedAtTick: state.tick,
     map: {
       ...state.map,
@@ -1299,6 +1853,12 @@ export function persistentStateFromGame(state: GameState): PersistentGameStateV5
       orderLineSnapshot: customer.orderLineSnapshot
         ? snapshotOrderLine(customer.orderLineSnapshot)
         : undefined,
+      mealOrderSnapshot: customer.mealOrderSnapshot
+        ? snapshotMealOrder(customer.mealOrderSnapshot)
+        : undefined,
+      settledMealLineIds: customer.settledMealLineIds
+        ? [...customer.settledMealLineIds]
+        : undefined,
     })),
     queues: Object.fromEntries(Object.entries(state.queues).map(([id, queue]) => [id, [...queue]])),
     seatReservations: { ...state.seatReservations },
@@ -1308,6 +1868,20 @@ export function persistentStateFromGame(state: GameState): PersistentGameStateV5
     recovery: {
       resolvedEpisodeIds: [...state.recovery.resolvedEpisodeIds],
       zeroResaleObjectIds: [...state.recovery.zeroResaleObjectIds],
+    },
+    forecast: state.forecast,
+    forecastArrivals: state.forecastArrivals.map((arrival) => ({
+      ...arrival,
+      healthConditions: [...arrival.healthConditions],
+    })),
+    arrivalSamplingSeed: state.arrivalSamplingSeed,
+    comboBoard: {
+      slots: state.comboBoard.slots.map((offer) => offer
+        ? {
+            ...offer,
+            preparationIds: [...offer.preparationIds] as [string, string],
+          }
+        : null) as unknown as ComboBoard["slots"],
     },
     metrics: {
       spawnedCustomers: state.metrics.spawnedCustomers,
@@ -1340,7 +1914,7 @@ export function serializeGameState(state: GameState): string {
 }
 
 function normalizeObjects(
-  save: PersistentGameStateV5,
+  save: PersistentGameStateV6,
   catalog: SimulationCatalog,
   options: DeserializeOptions,
 ): { readonly objects: readonly PlacedObject[]; readonly recovery: PersistenceRecoveryReport } {
@@ -1497,6 +2071,7 @@ export function deserializeGameStateWithReport(
       config: options.config,
       initialObjects: normalized.objects,
       initiallyUnlockedDefinitionIds: normalizedUnlocks.ids,
+      comboBoard: save.comboBoard,
     });
   } catch (error) {
     throw new PersistenceError("Save data could not be normalized into a playable map", { cause: error });
@@ -1533,6 +2108,12 @@ export function deserializeGameStateWithReport(
   const restoredServicePeriod = save.servicePeriod.phase === "draining" && activeCohortIds.length === 0
     ? { ...save.servicePeriod, phase: "debrief" as const, cohortCustomerIds: [] }
     : { ...save.servicePeriod, cohortCustomerIds: activeCohortIds };
+  const restoredForecast = lockPeriodForecast(save.forecast, catalog, save.progression);
+  const restoredForecastArrivals = parseForecastArrivals(
+    save.forecastArrivals,
+    restoredForecast,
+    save.nextCustomerSequence,
+  );
   let state: GameState = {
     ...base,
     economy: recoveredEconomy,
@@ -1543,6 +2124,10 @@ export function deserializeGameStateWithReport(
     servicePeriod: restoredServicePeriod,
     periodLedgers: recoveredPeriodLedgers,
     recovery: save.recovery,
+    forecast: restoredForecast,
+    forecastArrivals: restoredForecastArrivals,
+    arrivalSamplingSeed: save.arrivalSamplingSeed,
+    comboBoard: save.comboBoard,
     rngState: save.rngState,
     nextCustomerSequence: save.nextCustomerSequence,
     tick: save.savedAtTick,

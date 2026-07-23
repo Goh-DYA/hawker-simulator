@@ -1,7 +1,13 @@
 /** Pure simulation-domain types. Rendering and UI state intentionally live elsewhere. */
 
 import type { MoneyCents, MoneyDeltaCents } from "./money";
-import type { OrderLineSnapshot } from "./servingTerms";
+import type { MealOrderSnapshot, OrderLineSnapshot } from "./servingTerms";
+import type { ComboBoard, MealRole, MealSettlementCause } from "./mealComposition";
+import type {
+  ForecastArrivalObservation,
+  PeriodDemandProfile,
+  PeriodForecast,
+} from "./forecast";
 
 export interface GridPoint {
   readonly x: number;
@@ -65,10 +71,15 @@ export interface DishDefinition {
   /** Optional progression gates used when evaluating nutrition-intent availability. */
   readonly unlockLevel?: number;
   readonly unlockReputation?: number;
+  readonly unlockPrerequisiteIds?: readonly string[];
   /** Reviewed nutrition variants. The runtime selects exactly one active variant. */
   readonly nutritionVariants?: readonly NutritionVariant[];
   readonly defaultNutritionVariantId?: string;
   readonly activeNutritionVariantId?: string;
+  /** Exact reviewed preparation currently served by this resolved catalogue. */
+  readonly activePreparationId?: string;
+  /** Reviewed composition role; required by Combo Board validation. */
+  readonly mealRole?: MealRole;
 }
 
 export interface StallDefinition {
@@ -218,10 +229,17 @@ export interface Customer {
   readonly satisfaction: number;
   /** Immutable attribution to the arrivals cohort in which this visit began. */
   readonly arrivalPeriodSequenceId: number;
+  /** Menu-independent latent visit-size intent; Stage 4 may render it as a party. */
+  readonly forecastGroupSize?: 1 | 2 | 3 | 4 | 5 | 6;
+  readonly forecastMealMixId?: string;
+  readonly forecastBudgetCents?: MoneyCents;
   /** Visit-specific conditions assigned independently of customer archetype. */
   readonly healthConditions: readonly HealthCondition[];
   readonly sourceEntranceId?: string;
   readonly targetExitId?: string;
+  /** Unique stall definitions that contributed a served component to this visit. */
+  readonly servedStallDefinitionIds?: readonly string[];
+  /** Primary/legacy serving stall retained for visit-rating compatibility. */
   readonly servedStallDefinitionId?: string;
   readonly ratingFactors?: Partial<VisitRatingComponents>;
   readonly ratingSettled?: boolean;
@@ -234,6 +252,12 @@ export interface Customer {
   readonly orderedNutritionProfile?: NutritionProfile;
   /** Immutable serving, money, nutrition, and period terms captured when the order is accepted. */
   readonly orderLineSnapshot?: OrderLineSnapshot;
+  /** Frozen two-line Combo Board order. Mutually exclusive with orderLineSnapshot. */
+  readonly mealOrderSnapshot?: MealOrderSnapshot;
+  readonly mealStopIndex?: number;
+  /** Handover/ledger idempotency guard persisted across reloads. */
+  readonly settledMealLineIds?: readonly string[];
+  readonly mealSettlementCause?: MealSettlementCause;
   readonly nutritionRequestResult?: NutritionRequestResult;
   /** Frozen condition-aware rating for the ordered nutrition variant. */
   readonly personalizedHealthRating?: number;
@@ -248,6 +272,8 @@ export interface Customer {
   /** XP already awarded for this visit; preparation bonus may precede final departure XP. */
   readonly awardedVisitXp?: number;
   readonly firstServeBonusAwarded?: boolean;
+  /** Exact discovery XP across all served lines; V5 boolean represents one bonus. */
+  readonly firstServeBonusXp?: number;
   readonly spentCents: MoneyCents;
   /** @deprecated Compatibility-only SGD value derived from spentCents. */
   readonly spent: number;
@@ -274,6 +300,7 @@ export interface VisitRating {
   readonly stallDefinitionId?: string;
   readonly components: VisitRatingComponents;
   readonly day: number;
+  readonly arrivalPeriodSequenceId: number;
 }
 
 export type ObjectiveKind = "serve" | "revenue" | "happiness" | "flow" | "variety" | "facility" | "nutrition";
@@ -452,6 +479,10 @@ export interface PeriodLedgerEntry {
   readonly amountCents: MoneyCents;
   readonly tick: number;
   readonly referenceId?: string;
+  /** V6 attribution keeps per-line entries distinct from served-visit counts. */
+  readonly visitId?: string;
+  readonly lineId?: string;
+  readonly preparationId?: string;
 }
 
 export interface PeriodLedger {
@@ -580,6 +611,7 @@ export interface SimulationEvent {
     | "customer-state-changed"
     | "customer-despawned"
     | "sale-completed"
+    | "meal-partial"
     | "level-up"
     | "target-recovered"
     | "objective-completed"
@@ -620,7 +652,7 @@ export interface UndoEntry {
 }
 
 export interface GameState {
-  readonly schemaVersion: 5;
+  readonly schemaVersion: 6;
   readonly map: GridMap;
   readonly accessPoints: readonly AccessPoint[];
   readonly routeGuidePoints: readonly GridPoint[];
@@ -639,6 +671,11 @@ export interface GameState {
   readonly servicePeriod: ServicePeriodState;
   readonly periodLedgers: Readonly<Record<number, PeriodLedger>>;
   readonly recovery: RecoveryState;
+  readonly forecast: PeriodForecast;
+  readonly forecastArrivals: readonly ForecastArrivalObservation[];
+  readonly comboBoard: ComboBoard;
+  /** Immutable keyed stream seed for menu-neutral forecast arrival attributes. */
+  readonly arrivalSamplingSeed: number;
   readonly rngState: number;
   readonly nextCustomerSequence: number;
   readonly spawnCountdownMs: number;
@@ -665,6 +702,8 @@ export interface NewGameOptions {
   readonly config?: SimulationConfigOverrides;
   readonly initialObjects?: readonly PlacedObject[];
   readonly initiallyUnlockedDefinitionIds?: readonly string[];
+  readonly forecastProfiles?: readonly PeriodDemandProfile[];
+  readonly comboBoard?: ComboBoard;
 }
 
 export interface PlaceObjectCommand {
@@ -738,6 +777,11 @@ export interface UpgradeStallCommand {
   readonly definitionId: string;
 }
 
+export interface SetComboBoardCommand {
+  readonly type: "set-combo-board";
+  readonly board: ComboBoard;
+}
+
 export type BuildCommand =
   | PlaceObjectCommand
   | MoveObjectCommand
@@ -756,6 +800,7 @@ export type GameCommand =
   | { readonly type: "undo" }
   | { readonly type: "set-stall-open"; readonly objectId: string; readonly open: boolean }
   | { readonly type: "set-quality-mode"; readonly mode: QualityMode }
+  | SetComboBoardCommand
   | UpgradeStallCommand;
 
 export interface CommandResult {
@@ -773,7 +818,7 @@ export interface AdvanceResult {
 }
 
 export interface GameSnapshot {
-  readonly schemaVersion: 5;
+  readonly schemaVersion: 6;
   readonly tick: number;
   readonly elapsedMs: number;
   readonly map: GridMap;
@@ -791,6 +836,9 @@ export interface GameSnapshot {
   readonly servicePeriod: ServicePeriodState;
   readonly periodLedgers: Readonly<Record<number, PeriodLedger>>;
   readonly recovery: RecoveryState;
+  readonly forecast: PeriodForecast;
+  readonly forecastArrivals: readonly ForecastArrivalObservation[];
+  readonly comboBoard: ComboBoard;
   readonly metrics: SimulationMetrics;
   readonly canUndo: boolean;
   readonly events: readonly SimulationEvent[];
@@ -888,12 +936,21 @@ export interface PersistentGameStateV5 {
   readonly accumulatorMs: number;
   readonly arrivalPerformancePressure: number;
   readonly recovery: RecoveryState;
+  readonly forecast: PeriodForecast;
+  readonly forecastArrivals: readonly ForecastArrivalObservation[];
+  /** Immutable keyed stream seed for menu-neutral forecast arrival attributes. */
+  readonly arrivalSamplingSeed: number;
   /** Includes active-cohort counters required by simulation accounting invariants. */
   readonly metrics: SimulationMetrics;
   readonly rngState: number;
   readonly nextCustomerSequence: number;
   readonly elapsedMs: number;
 }
+
+export type PersistentGameStateV6 = Omit<PersistentGameStateV5, "schemaVersion"> & {
+  readonly schemaVersion: 6;
+  readonly comboBoard: ComboBoard;
+};
 
 export interface PersistentGameStateV1 {
   readonly schemaVersion: 1;
@@ -912,4 +969,5 @@ export type AnyPersistentGameState =
   | PersistentGameStateV2
   | PersistentGameStateV3
   | PersistentGameStateV4
-  | PersistentGameStateV5;
+  | PersistentGameStateV5
+  | PersistentGameStateV6;

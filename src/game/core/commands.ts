@@ -10,6 +10,7 @@ import {
 } from "./economy";
 import { asMoneyCents, asMoneyDeltaCents } from "./money";
 import { isConfigurationLocked } from "./servicePeriods";
+import { validateComboBoardForState } from "./mealComposition";
 import {
   expandGridMap,
   getBlockedTileKeys,
@@ -214,15 +215,39 @@ export function reconcileWorldTargets(
 
     if (stallInvalid) {
       if (customer.reservedSeatKey) delete reservations[customer.reservedSeatKey];
-      next = {
-        ...next,
-        status: "choosing-stall",
-        stateElapsedMs: 0,
-        targetStallId: undefined,
-        orderedDishId: undefined,
-        reservedSeatKey: undefined,
-        targetTrayReturnId: undefined,
-      };
+      const mainLineId = customer.mealOrderSnapshot?.lines[0].orderLine.lineId;
+      const mainWasServed = Boolean(
+        mainLineId && customer.settledMealLineIds?.includes(mainLineId),
+      );
+      next = mainWasServed
+        ? {
+            ...next,
+            // Preserve the frozen stop until the next deterministic simulation
+            // step records its nutrition/forecast outcome and one partial event.
+            status: "waiting-for-food",
+            stateElapsedMs: 0,
+            reservedSeatKey: undefined,
+            targetTrayReturnId: undefined,
+            served: true,
+            hasTray: true,
+            mealSettlementCause: undefined,
+          }
+        : {
+            ...next,
+            status: "choosing-stall",
+            stateElapsedMs: 0,
+            targetStallId: undefined,
+            orderedDishId: undefined,
+            orderedNutritionVariantId: undefined,
+            orderedNutritionProfile: undefined,
+            orderLineSnapshot: undefined,
+            mealOrderSnapshot: undefined,
+            mealStopIndex: undefined,
+            settledMealLineIds: undefined,
+            mealSettlementCause: undefined,
+            reservedSeatKey: undefined,
+            targetTrayReturnId: undefined,
+          };
       recovered += 1;
     } else if (seatInvalid) {
       next = {
@@ -385,7 +410,10 @@ function restoreUndoSnapshot(state: GameState, entry: GameState["undoStack"][num
 export function dispatchCommand(state: GameState, command: GameCommand): CommandResult {
   if (
     isConfigurationLocked(state.servicePeriod.phase) &&
-    (command.type === "undo" || isBuildCommand(command) || command.type === "upgrade-stall")
+    (command.type === "undo" ||
+      isBuildCommand(command) ||
+      command.type === "upgrade-stall" ||
+      command.type === "set-combo-board")
   ) {
     return reject(state, "Configuration is locked during service and drain");
   }
@@ -420,6 +448,20 @@ export function dispatchCommand(state: GameState, command: GameCommand): Command
   if (command.type === "set-quality-mode") {
     if (command.mode !== "standard" && command.mode !== "lower-end") return reject(state, "Unknown quality mode");
     return accept({ ...state, qualityMode: command.mode }, [commandEvent(state, true)]);
+  }
+
+  if (command.type === "set-combo-board") {
+    const issues = validateComboBoardForState(state, command.board, true);
+    if (issues.length > 0) return reject(state, issues[0]!.message);
+    return accept({
+      ...state,
+      comboBoard: {
+        slots: command.board.slots.map((offer) => offer ? {
+          ...offer,
+          preparationIds: [...offer.preparationIds] as [string, string],
+        } : null) as unknown as typeof command.board.slots,
+      },
+    }, [commandEvent(state, true, "Combo Board updated")]);
   }
 
   if (command.type === "upgrade-stall") {
@@ -464,7 +506,10 @@ export function dispatchCommand(state: GameState, command: GameCommand): Command
       objects,
       command.open ? undefined : object.id,
     );
-    return accept({ ...state, objects, ...reconciled, undoStack: [] }, [commandEvent(state, true)]);
+    return accept(
+      { ...state, objects, ...reconciled, undoStack: [] },
+      [commandEvent(state, true)],
+    );
   }
 
   if (!isBuildCommand(command)) return reject(state, "Unsupported command");

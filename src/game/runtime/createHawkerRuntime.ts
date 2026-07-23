@@ -11,9 +11,13 @@ import {
   getNutritionVariantFamily,
   type PlaceableCategory,
 } from "@/src/content";
-import { PREPARATION_GAMEPLAY_CATALOGUE } from "@/src/content/preparationGameplay";
+import {
+  PREPARATION_GAMEPLAY_CATALOGUE,
+  derivePreparationForecastResponses,
+} from "@/src/content/preparationGameplay";
 import {
   ARRIVAL_PERIOD_MS,
+  assessForecastCoverage,
   AUTHORED_LEVEL_XP_THRESHOLDS,
   DRAIN_WATCHDOG_MS,
   SERVICE_PERIODS,
@@ -24,18 +28,23 @@ import {
   asMoneyCents,
   asMoneyDeltaCents,
   averageVisitRating,
+  buildUnlockedMealUniverse,
   calculateExpansionCost,
+  comboOffersReferencingComponent,
+  compareMealBalanceAmongUnlockedOptions,
   createDailyObjectives,
   createGridMap,
   createNewGame,
   createPeriodLedger,
   createSnapshot,
+  compareForecastToArrivals,
   deserializeGameStateWithReport,
   describeSgd,
   dispatchCommand,
   economyWithCompatibilityAliases,
   effectiveStallDefinition,
   findPath,
+  forecastForServicePeriod,
   getBlockedTileKeys,
   getTile,
   getObjectOccupiedTiles,
@@ -46,25 +55,35 @@ import {
   ledgerCashMovementCents,
   ledgerContributionCents,
   ledgerReconciliationDeltaCents,
+  lockPeriodForecast,
+  mealComponentsForState,
   mealConsumptionFraction,
   operatingMargin,
   planStallQueueLayouts,
   planNextServicePeriod,
   persistentStateFromGame,
+  resolveComboOffer,
   sgdToCents,
   skipDailyObjectives,
   startServicePeriod,
+  selectReachableServingPlan,
+  servingDistancesForState,
   tileToWorld,
   validatePlacement,
+  validateComboBoardForState,
   validateWorldNavigationAccess,
   worldToTile,
   xpRequiredForLevel,
   type Customer,
+  type ComboBoard,
+  type ComboOffer,
+  type ForecastCoverage,
   type GameCommand,
   type GameSnapshot,
   type GameState,
   type GridPoint,
   type MoneyCents,
+  type MealComponent,
   type NutritionIntent,
   type NutritionMetric,
   type NutritionProfile as CoreNutritionProfile,
@@ -77,14 +96,20 @@ import {
   type SimulationCatalog,
   type SimulationEvent,
   type ServicePeriodPhase,
+  type VisitRatingComponents,
 } from "@/src/game/core";
 import type {
   BuildTool,
   GameSpeed,
   HealthConditionId,
   RuntimeController,
+  RuntimeComboBoardSummary,
+  RuntimeComboComponentSummary,
+  RuntimeComboRatingSummary,
   RuntimeEvent,
+  RuntimeFrozenMealSummary,
   RuntimePeriodDebrief,
+  RuntimeForecastComparison,
   RuntimeOptions,
   RuntimeNutritionProfileSummary,
   RuntimeServingTermsSummary,
@@ -136,6 +161,20 @@ export function canManuallyAdvanceServicePeriod(phase: ServicePeriodPhase): bool
   return phase === "planning" || phase === "debrief";
 }
 
+export function liveComboBoardAvailabilityMessage(
+  phase: ServicePeriodPhase,
+  unavailableOfferCount: number,
+): string | undefined {
+  if (
+    (phase !== "arrivals" && phase !== "draining") ||
+    unavailableOfferCount < 1
+  ) {
+    return undefined;
+  }
+  const offerLabel = unavailableOfferCount === 1 ? "offer is" : "offers are";
+  return `${unavailableOfferCount} Combo Board ${offerLabel} temporarily unavailable because a required reachable stall is closed. Saved offers stay configured; future matching guests use a feasible single meal until the stall reopens.`;
+}
+
 export function nextAuthoredLevelExperience(level: number): number | null {
   if (!Number.isSafeInteger(level) || level < 1) {
     throw new RangeError("Level must be a positive safe integer");
@@ -147,6 +186,65 @@ export function nextAuthoredLevelExperience(level: number): number | null {
 
 export function reviewedPreparationFor(dishId: string, variantId?: string) {
   return PREPARATION_BY_DISH_AND_VARIANT.get(`${dishId}:${variantId ?? "default"}`);
+}
+
+export function deriveRuntimeForecastAvailability(
+  state: Pick<GameState, "objects" | "catalog" | "progression" | "forecast">,
+  stallMenus: Readonly<Record<string, readonly string[]>>,
+  activeDishVariants: Readonly<Record<string, string>>,
+) {
+  const placedStallDefinitionIds = new Set(Object.values(state.objects).flatMap((object) => (
+    state.catalog.placeables[object.definitionId]?.kind === "stall"
+      ? [object.definitionId]
+      : []
+  )));
+  const openPlacedStallDefinitionIds = new Set(Object.values(state.objects).flatMap((object) => (
+    object.open && state.catalog.placeables[object.definitionId]?.kind === "stall"
+      ? [object.definitionId]
+      : []
+  )));
+  const activeMenuDishIds = new Set([...openPlacedStallDefinitionIds].flatMap(
+    (definitionId) => stallMenus[definitionId] ?? [],
+  ));
+  const unlockedPreparationIds = new Set(PREPARATION_GAMEPLAY_CATALOGUE.flatMap((preparation) => {
+    const dish = state.catalog.dishes[preparation.dishId];
+    const accessibleStalls = [...placedStallDefinitionIds].filter((stallId) => (
+      (state.catalog.placeables[stallId]?.stall?.allDishIds ??
+        state.catalog.placeables[stallId]?.stall?.dishIds ?? []).includes(preparation.dishId)
+    ));
+    const masteryRank = Math.max(
+      1,
+      ...accessibleStalls.map(
+        (stallId) => state.progression.stallMastery[stallId]?.rank ?? 1,
+      ),
+    );
+    return dish && state.progression.level >= (dish.unlockLevel ?? 1) &&
+      state.progression.reputation >= (dish.unlockReputation ?? 0) &&
+      (dish.unlockPrerequisiteIds ?? []).every((id) => (
+        state.progression.unlockedDefinitionIds.includes(id)
+      )) &&
+      accessibleStalls.length > 0 &&
+      preparation.unlockRank <= masteryRank
+      ? [preparation.id]
+      : [];
+  }));
+  const activePreparationIds = new Set([...activeMenuDishIds].flatMap((dishId) => {
+    const preparation = reviewedPreparationFor(dishId, activeDishVariants[dishId])
+      ?? DEFAULT_PREPARATION_BY_DISH_ID.get(dishId);
+    return preparation ? [preparation.id] : [];
+  }));
+  return {
+    unlockedPreparationIds,
+    activePreparationIds,
+    coverage: assessForecastCoverage(
+      state.forecast,
+      derivePreparationForecastResponses(
+        state.forecast.nutritionNeeds,
+        unlockedPreparationIds,
+        activePreparationIds,
+      ),
+    ),
+  };
 }
 
 function runtimeServingTerms(terms: {
@@ -166,6 +264,222 @@ function runtimeServingTerms(terms: {
     eatingTimeMs: terms.eatingTimeMs,
     starAppeal: terms.starAppeal,
     demandModifierBasisPoints: terms.demandModifierBasisPoints,
+  };
+}
+
+function runtimeComboComponent(component: MealComponent): RuntimeComboComponentSummary {
+  const dish = DISH_BY_ID.get(component.dishId);
+  const family = getNutritionVariantFamily(component.dishId);
+  const variant = component.variantId
+    ? family?.variants.find((candidate) => candidate.id === component.variantId)
+    : undefined;
+  if (!component.terms) {
+    throw new Error(`Preparation ${component.preparationId} is missing serving terms`);
+  }
+  return {
+    preparationId: component.preparationId,
+    dishId: component.dishId,
+    variantId: component.variantId,
+    label: dish ? localized(dish.nameKey) : component.dishId,
+    variantLabel: variant?.name,
+    servingLabel: component.nutritionProfile?.serving?.label,
+    role: component.role,
+    componentLabel: component.role === "main"
+      ? "Main"
+      : component.role === "drink"
+        ? "Drink"
+        : dish?.category === "dessert"
+          ? "Dessert"
+          : "Add-on",
+    terms: runtimeServingTerms(component.terms),
+    availableStallCount: component.stallInstanceIds.length,
+  };
+}
+
+function mealDataState(explanationCodes: readonly string[]): RuntimeComboRatingSummary["dataState"] {
+  if (explanationCodes.some((code) => code.startsWith("unavailable:"))) return "unavailable";
+  if (explanationCodes.some((code) => code.startsWith("trace-component:"))) return "trace";
+  return "known";
+}
+
+function averageDefined(values: readonly (number | undefined)[]): number | undefined {
+  const known = values.filter((value): value is number => typeof value === "number");
+  if (known.length !== values.length || known.length === 0) return undefined;
+  return known.reduce((sum, value) => sum + value, 0) / known.length;
+}
+
+export function servedVisitCount(
+  entries: readonly Readonly<{
+    id: string;
+    kind: string;
+    visitId?: string;
+  }>[],
+): number {
+  return new Set(entries
+    .filter((entry) => entry.kind === "gross-sale")
+    .map((entry) => entry.visitId ?? entry.id)).size;
+}
+
+export interface RuntimeComboOutcomeObservation {
+  readonly periodSequenceId: number;
+  readonly offerId: string;
+  readonly result: "complete" | "partial";
+  readonly cause?: "second-stall-unavailable" | "served-timeout";
+}
+
+export function comboOutcomeObservations(
+  events: readonly SimulationEvent[],
+  customersBefore: Readonly<Record<string, Customer>>,
+): readonly RuntimeComboOutcomeObservation[] {
+  const eventCustomerIds = [...new Set(events.flatMap((event) => (
+    event.entityId ? [event.entityId] : []
+  )))];
+  const observations: RuntimeComboOutcomeObservation[] = [];
+  for (const customerId of eventCustomerIds) {
+    const customer = customersBefore[customerId];
+    const meal = customer?.mealOrderSnapshot;
+    if (!customer || !meal) continue;
+    const customerEvents = events.filter((event) => event.entityId === customerId);
+    const partial = customerEvents.find((event) => (
+      event.type === "meal-partial" &&
+      (event.message === "second-stall-unavailable" || event.message === "served-timeout")
+    ));
+    if (partial) {
+      observations.push({
+        periodSequenceId: customer.arrivalPeriodSequenceId,
+        offerId: meal.offerId,
+        result: "partial",
+        cause: partial.message as "second-stall-unavailable" | "served-timeout",
+      });
+      continue;
+    }
+    const settledBefore = new Set(customer.settledMealLineIds ?? []);
+    const soldPreparationIds = new Set(customerEvents.flatMap((event) => (
+      event.type === "sale-completed" && event.message ? [event.message] : []
+    )));
+    const settledAfter = meal.lines.filter(({ orderLine }) => (
+      settledBefore.has(orderLine.lineId) ||
+      Boolean(orderLine.preparationId && soldPreparationIds.has(orderLine.preparationId))
+    )).length;
+    if (settledBefore.size < meal.lines.length && settledAfter === meal.lines.length) {
+      observations.push({
+        periodSequenceId: customer.arrivalPeriodSequenceId,
+        offerId: meal.offerId,
+        result: "complete",
+      });
+    }
+  }
+  return observations;
+}
+
+function runtimeFrozenMeal(
+  customer: Customer,
+  componentsById: Readonly<Record<string, MealComponent>>,
+): RuntimeFrozenMealSummary | undefined {
+  const frozen = customer.mealOrderSnapshot;
+  if (!frozen) return undefined;
+  const components = frozen.lines.map(({ role, orderLine }) => {
+    const preparationId = orderLine.preparationId ??
+      `${orderLine.dishId}::${orderLine.variantId ?? "base"}`;
+    const live = componentsById[preparationId];
+    const dish = DISH_BY_ID.get(orderLine.dishId);
+    const variant = orderLine.variantId
+      ? getNutritionVariantFamily(orderLine.dishId)?.variants.find(
+          (candidate) => candidate.id === orderLine.variantId,
+        )
+      : undefined;
+    return {
+      preparationId,
+      dishId: orderLine.dishId,
+      variantId: orderLine.variantId,
+      label: dish ? localized(dish.nameKey) : orderLine.dishId,
+      variantLabel: variant?.name,
+      servingLabel: orderLine.nutritionProfile?.serving?.label,
+      role,
+      componentLabel: role === "main"
+        ? "Main"
+        : role === "drink"
+          ? "Drink"
+          : dish?.category === "dessert"
+            ? "Dessert"
+            : "Add-on",
+      terms: runtimeServingTerms(orderLine.terms),
+      availableStallCount: live?.stallInstanceIds.length ?? 0,
+    };
+  }) as [RuntimeComboComponentSummary, RuntimeComboComponentSummary];
+  const dataState = mealDataState([
+    ...frozen.nutrition.explanationCodes,
+    ...frozen.fit.explanationCodes,
+    ...frozen.explanationCodes,
+  ]);
+  const settledLineIds = new Set(customer.settledMealLineIds ?? []);
+  const settledLines = frozen.lines.filter(({ orderLine }) => (
+    settledLineIds.has(orderLine.lineId)
+  ));
+  const servedPreparationIds = frozen.lines.flatMap(({ orderLine }) => (
+    settledLineIds.has(orderLine.lineId) && orderLine.preparationId
+      ? [orderLine.preparationId]
+      : []
+  ));
+  const cancelledPreparationIds = customer.mealSettlementCause
+    ? frozen.lines.flatMap(({ orderLine }) => (
+        !settledLineIds.has(orderLine.lineId) && orderLine.preparationId
+          ? [orderLine.preparationId]
+          : []
+      ))
+    : [];
+  return {
+    offerId: frozen.offerId,
+    components,
+    priceCents: asMoneyCents(
+      frozen.lines.reduce((sum, line) => sum + line.orderLine.terms.priceCents, 0),
+    ),
+    ingredientCostCents: asMoneyCents(
+      frozen.lines.reduce(
+        (sum, line) => sum + line.orderLine.terms.ingredientCostCents,
+        0,
+      ),
+    ),
+    chargedPriceCents: asMoneyCents(
+      settledLines.reduce((sum, line) => sum + line.orderLine.terms.priceCents, 0),
+    ),
+    chargedIngredientCostCents: asMoneyCents(
+      settledLines.reduce(
+        (sum, line) => sum + line.orderLine.terms.ingredientCostCents,
+        0,
+      ),
+    ),
+    servingStopCount: frozen.servingPlan.stops.length,
+    mealBalance: {
+      value: frozen.fit.mealBalance,
+      dataState: frozen.fit.mealBalance === undefined ? "unavailable" : dataState,
+      explanation: frozen.fit.mealBalance === undefined
+        ? "Meal balance was unavailable at order time."
+        : "Frozen comparative Meal balance among the unlocked feasible options at order time.",
+    },
+    intentFit: {
+      value: frozen.fit.intentFit,
+      needId: frozen.fit.intentId,
+      dataState: frozen.fit.intentFit === undefined ? "unavailable" : dataState,
+      explanation: frozen.fit.intentId
+        ? "Frozen fit for this visit's nutrition intent."
+        : "This visit did not carry a nutrition intent.",
+    },
+    conditionAwareFit: {
+      value: frozen.fit.conditionAwareFit,
+      dataState: frozen.fit.conditionAwareFit === undefined ? "unavailable" : dataState,
+      explanation: frozen.fit.conditionIds.length > 0
+        ? "Frozen visit-specific condition-aware game fit; this is not treatment advice."
+        : "This visit did not carry a condition-aware need.",
+    },
+    explanationCodes: [
+      ...frozen.nutrition.explanationCodes,
+      ...frozen.fit.explanationCodes,
+      ...frozen.explanationCodes,
+    ],
+    settlementCause: customer.mealSettlementCause,
+    servedPreparationIds,
+    cancelledPreparationIds,
   };
 }
 const CONTENT_PLACEABLE_BY_ID = new Map(PLACEABLES.map((item) => [item.id, item]));
@@ -450,6 +764,7 @@ export function customerDecisionReasons(
   customer: Pick<
     Customer,
     | "archetypeId"
+    | "forecastBudgetCents"
     | "nutritionIntentId"
     | "orderedDishId"
     | "orderedNutritionProfile"
@@ -477,13 +792,13 @@ export function customerDecisionReasons(
   }
 
   const priceCents = customer.orderLineSnapshot?.terms.priceCents ?? dish.priceCents;
-  const budgetCents = archetype.budgetCents;
+  const budgetCents = customer.forecastBudgetCents ?? archetype.budgetCents;
   if (priceCents <= budgetCents) reasons.push("Price within visit budget");
   if (dish.quality * archetype.qualitySensitivity > 0) reasons.push("Menu quality");
   return [...new Set(reasons)].slice(0, 2);
 }
 
-function buildCatalog(): {
+export function buildCatalog(): {
   catalog: SimulationCatalog;
   visuals: Readonly<Record<string, VisualDefinition>>;
 } {
@@ -532,6 +847,7 @@ function buildCatalog(): {
           preferenceTags: dish.preferenceTags,
           unlockLevel: dish.unlockRequirement.level,
           unlockReputation: dish.unlockRequirement.reputation / 20,
+          unlockPrerequisiteIds: [...dish.unlockRequirement.prerequisiteIds],
           nutritionVariants,
           defaultNutritionVariantId,
           activeNutritionVariantId: defaultNutritionVariantId,
@@ -675,6 +991,9 @@ function starterObjects(
     [seatId, 15, 9, false],
     [seatId, 6, 11, false],
     [seatId, 13, 12, false],
+    [seatId, 7, 8, false],
+    [seatId, 14, 9, false],
+    [seatId, 7, 9, false],
     [trayId, 20, 7, false],
     [plantId, 20, 2, false],
     [plantId, 20, 12, false],
@@ -702,7 +1021,24 @@ function starterObjects(
   return candidates;
 }
 
-function freshState(catalog: SimulationCatalog): GameState {
+export function savedLayoutCapacityWarning(input: {
+  readonly currentSeatCount: number;
+  readonly reviewedSeatCount: number;
+  readonly demandRange: readonly [number, number];
+}): string | undefined {
+  if (input.currentSeatCount >= input.reviewedSeatCount) return undefined;
+  const missingSeatCount = input.reviewedSeatCount - input.currentSeatCount;
+  return `Saved layout preserved with ${input.currentSeatCount} usable seats. The reviewed fresh-centre layout has ${
+    input.reviewedSeatCount
+  } for the current ${input.demandRange[0]}–${input.demandRange[1]} visit forecast. Consider adding ${
+    missingSeatCount
+  } ${missingSeatCount === 1 ? "seat" : "seats"} during the next planning period; no furniture was added automatically.`;
+}
+
+export function freshState(
+  catalog: SimulationCatalog,
+  seed: number | string = "neighbourhood-hall-launch",
+): GameState {
   const tiles = Array<"floor" | "wall">(MAP_WIDTH * MAP_HEIGHT).fill("floor");
   for (let x = 0; x < MAP_WIDTH; x += 1) {
     tiles[x] = "wall";
@@ -725,7 +1061,7 @@ function freshState(catalog: SimulationCatalog): GameState {
     entrance: { x: 0, y: 7 },
     exit: { x: MAP_WIDTH - 1, y: 7 },
     catalog,
-    seed: "neighbourhood-hall-launch",
+    seed,
     startingCashCents: asMoneyCents(ECONOMY.startingCashCents),
     initialObjects: starterObjects(catalog, map),
     initiallyUnlockedDefinitionIds: Object.values(catalog.placeables)
@@ -776,6 +1112,59 @@ export function canvasLabelFontSize(textScale: number, cameraZoom: number): numb
   return Math.ceil((12 * safeScale) / safeZoom);
 }
 
+export interface CanvasLabelBounds {
+  readonly left: number;
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+}
+
+/** Prevents a clipped fragment of an informational label from entering view. */
+export function canvasLabelFullyInsideView(
+  label: CanvasLabelBounds,
+  view: CanvasLabelBounds,
+  gap = 4,
+): boolean {
+  return label.left >= view.left + gap &&
+    label.right <= view.right - gap &&
+    label.top >= view.top + gap &&
+    label.bottom <= view.bottom - gap;
+}
+
+/**
+ * Keeps enlarged canvas labels distinct without shrinking them below the
+ * readable floor. Earlier labels have priority (portals are drawn before
+ * fixtures); later labels may stack one or two rows away or be omitted.
+ */
+export function collisionFreeCanvasLabelY(
+  requestedX: number,
+  requestedY: number,
+  width: number,
+  height: number,
+  occupied: readonly CanvasLabelBounds[],
+  gap = 4,
+): number | undefined {
+  const step = height + gap;
+  const offsets = [0, -step, step, -2 * step, 2 * step] as const;
+  for (const offset of offsets) {
+    const centreY = requestedY + offset;
+    const candidate = {
+      left: requestedX - width / 2,
+      right: requestedX + width / 2,
+      top: centreY - height / 2,
+      bottom: centreY + height / 2,
+    };
+    const overlaps = occupied.some((existing) => !(
+      candidate.right + gap <= existing.left
+      || candidate.left - gap >= existing.right
+      || candidate.bottom + gap <= existing.top
+      || candidate.top - gap >= existing.bottom
+    ));
+    if (!overlaps) return centreY;
+  }
+  return undefined;
+}
+
 /**
  * Development-only cash overrides are outside the player economy. Rebase the
  * active ledger opening balance at the same boundary so the next autosave
@@ -823,7 +1212,21 @@ export function formatSimulationEvent(event: SimulationEvent): RuntimeEvent | un
     };
   }
   if (event.type === "level-up") {
-    return { kind: "success", message: "Centre level increased — new catalogue entries unlocked.", importance: "important" };
+    const level = Number(event.message);
+    if (level === 5) {
+      return {
+        kind: "success",
+        message: "Centre reached level 5. Combo Board unlocked in Dishes: during planning, pair an exact main with a drink, dessert, or add-on for the forecast trade-offs.",
+        importance: "important",
+      };
+    }
+    return {
+      kind: "success",
+      message: Number.isSafeInteger(level) && level > 0
+        ? `Centre reached level ${level} — new catalogue entries unlocked.`
+        : "Centre level increased — new catalogue entries unlocked.",
+      importance: "important",
+    };
   }
   if (event.type === "objective-completed") {
     return {
@@ -838,6 +1241,17 @@ export function formatSimulationEvent(event: SimulationEvent): RuntimeEvent | un
       kind: "success",
       message: "Centre journey milestone complete.",
       importance: "important",
+      amountCents,
+    };
+  }
+  if (event.type === "meal-partial") {
+    return {
+      kind: "warning",
+      message: event.message === "served-timeout"
+        ? "A combo main was served, but the second component timed out and was cancelled without charge."
+        : "A combo main was served, but the second stall became unavailable; that component was cancelled without charge.",
+      importance: "important",
+      groupKey: `partial-meal:${event.message ?? "unknown"}`,
       amountCents,
     };
   }
@@ -883,7 +1297,7 @@ export function formatSimulationEvent(event: SimulationEvent): RuntimeEvent | un
 }
 
 export interface RuntimePersistentState {
-  readonly runtimeSchemaVersion: 3;
+  readonly runtimeSchemaVersion: 4;
   readonly core: unknown;
   readonly stallMenus: Readonly<Record<string, readonly string[]>>;
   readonly nutritionDataVersion: string;
@@ -895,6 +1309,18 @@ export interface RuntimePeriodOutcomeState {
   readonly periodSequenceId: number;
   readonly unservedDepartures: number;
   readonly timedOutServedVisits: number;
+  readonly partialMealSecondStallUnavailable: number;
+  readonly partialMealServedTimeout: number;
+  readonly comboOfferOutcomes: Readonly<Record<string, RuntimeComboOfferOutcomeState>>;
+  readonly forecastComparison?: RuntimeForecastComparison;
+  readonly forecastCoverage?: readonly ForecastCoverage[];
+}
+
+export interface RuntimeComboOfferOutcomeState {
+  readonly offerId: string;
+  readonly completedVisits: number;
+  readonly partialSecondStallUnavailable: number;
+  readonly partialServedTimeout: number;
 }
 
 export function defaultDishVariants(): Readonly<Record<string, string>> {
@@ -923,6 +1349,8 @@ function withDishVariants(
       ) ?? DEFAULT_PREPARATION_BY_DISH_ID.get(dishId);
       return [dishId, {
         ...dish,
+        activePreparationId: preparation?.id,
+        mealRole: preparation?.mealRole,
         activeNutritionVariantId,
         priceCents: preparation
           ? asMoneyCents(preparation.terms.priceCents)
@@ -1009,7 +1437,12 @@ function withStallMenus(
               ...definition,
               stall: {
                 ...definition.stall,
-                dishIds: menus[id] ?? definition.stall.dishIds,
+                // Locked stalls legitimately have no selectable runtime menu.
+                // Keep their authored catalogue non-empty so the core catalogue
+                // remains valid; progression still prevents placement and use.
+                dishIds: menus[id]?.length
+                  ? menus[id]
+                  : definition.stall.dishIds,
               },
             }
           : definition,
@@ -1020,7 +1453,7 @@ function withStallMenus(
 
 export function decodeRuntimeSave(value: unknown): {
   core: unknown;
-  runtimeSchemaVersion?: 1 | 2 | 3;
+  runtimeSchemaVersion?: 1 | 2 | 3 | 4;
   menus?: Readonly<Record<string, readonly string[]>>;
   variants?: unknown;
   nutritionDataVersion?: string;
@@ -1031,10 +1464,11 @@ export function decodeRuntimeSave(value: unknown): {
     typeof value === "object" &&
     ((value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 1 ||
       (value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 2 ||
-      (value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 3)
+      (value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 3 ||
+      (value as { runtimeSchemaVersion?: unknown }).runtimeSchemaVersion === 4)
   ) {
     const runtime = value as Partial<RuntimePersistentState> & {
-      readonly runtimeSchemaVersion?: 1 | 2 | 3;
+      readonly runtimeSchemaVersion?: 1 | 2 | 3 | 4;
     };
     return {
       core: runtime.core,
@@ -1050,7 +1484,34 @@ export function decodeRuntimeSave(value: unknown): {
   return { core: value };
 }
 
-function resolvePeriodOutcomes(
+function resolveComboOfferOutcomes(
+  value: unknown,
+): Readonly<Record<string, RuntimeComboOfferOutcomeState>> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).flatMap(([offerId, candidate]) => {
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) return [];
+    const source = candidate as Partial<RuntimeComboOfferOutcomeState>;
+    const counts = [
+      source.completedVisits,
+      source.partialSecondStallUnavailable,
+      source.partialServedTimeout,
+    ];
+    if (
+      source.offerId !== offerId ||
+      counts.some((count) => !Number.isSafeInteger(count) || (count ?? -1) < 0)
+    ) {
+      return [];
+    }
+    return [[offerId, {
+      offerId,
+      completedVisits: source.completedVisits!,
+      partialSecondStallUnavailable: source.partialSecondStallUnavailable!,
+      partialServedTimeout: source.partialServedTimeout!,
+    }]];
+  }));
+}
+
+export function resolvePeriodOutcomes(
   value: unknown,
   currentSequenceId: number,
 ): Readonly<Record<number, RuntimePeriodOutcomeState>> {
@@ -1075,6 +1536,23 @@ function resolvePeriodOutcomes(
         periodSequenceId: sequenceId,
         unservedDepartures: source.unservedDepartures!,
         timedOutServedVisits: source.timedOutServedVisits!,
+        partialMealSecondStallUnavailable:
+          Number.isSafeInteger(source.partialMealSecondStallUnavailable) &&
+          (source.partialMealSecondStallUnavailable ?? -1) >= 0
+            ? source.partialMealSecondStallUnavailable!
+            : 0,
+        partialMealServedTimeout:
+          Number.isSafeInteger(source.partialMealServedTimeout) &&
+          (source.partialMealServedTimeout ?? -1) >= 0
+            ? source.partialMealServedTimeout!
+            : 0,
+        comboOfferOutcomes: resolveComboOfferOutcomes(source.comboOfferOutcomes),
+        ...(isRuntimeForecastComparison(source.forecastComparison)
+          ? { forecastComparison: source.forecastComparison }
+          : {}),
+        ...(isRuntimeForecastCoverage(source.forecastCoverage)
+          ? { forecastCoverage: source.forecastCoverage }
+          : {}),
       };
     }
   }
@@ -1082,8 +1560,92 @@ function resolvePeriodOutcomes(
     periodSequenceId: currentSequenceId,
     unservedDepartures: 0,
     timedOutServedVisits: 0,
+    partialMealSecondStallUnavailable: 0,
+    partialMealServedTimeout: 0,
+    comboOfferOutcomes: {},
   };
   return resolved;
+}
+
+export function freezeRuntimePeriodForecastCoverage(
+  outcomes: Readonly<Record<number, RuntimePeriodOutcomeState>>,
+  periodSequenceId: number,
+  coverage: readonly ForecastCoverage[],
+): {
+  readonly outcomes: Readonly<Record<number, RuntimePeriodOutcomeState>>;
+  readonly changed: boolean;
+} {
+  const current = outcomes[periodSequenceId] ?? {
+    periodSequenceId,
+    unservedDepartures: 0,
+    timedOutServedVisits: 0,
+    partialMealSecondStallUnavailable: 0,
+    partialMealServedTimeout: 0,
+    comboOfferOutcomes: {},
+  };
+  if (current.forecastCoverage) return { outcomes, changed: false };
+  return {
+    outcomes: {
+      ...outcomes,
+      [periodSequenceId]: {
+        ...current,
+        forecastCoverage: coverage.map((entry) => ({
+          ...entry,
+          viableResponseIds: [...entry.viableResponseIds],
+          unlockedViableResponseIds: [...entry.unlockedViableResponseIds],
+        })),
+      },
+    },
+    changed: true,
+  };
+}
+
+function isRuntimeForecastCoverage(value: unknown): value is readonly ForecastCoverage[] {
+  return Array.isArray(value) && value.every((candidate) => {
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) return false;
+    const source = candidate as Partial<ForecastCoverage>;
+    return typeof source.needId === "string" &&
+      Array.isArray(source.viableResponseIds) &&
+      source.viableResponseIds.every((id) => typeof id === "string") &&
+      Array.isArray(source.unlockedViableResponseIds) &&
+      source.unlockedViableResponseIds.every((id) => typeof id === "string") &&
+      typeof source.covered === "boolean" &&
+      typeof source.eligibleForRequiredContent === "boolean";
+  });
+}
+
+function isRuntimeForecastComparison(value: unknown): value is RuntimeForecastComparison {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const source = value as Partial<RuntimeForecastComparison>;
+  const countRecords = [
+    source.crowdProfileCounts,
+    source.budgetBandCounts,
+    source.groupSizeCounts,
+    source.mealMixCounts,
+    source.nutritionIntentCounts,
+    source.conditionAwareCounts,
+  ];
+  const outcomeCounts = [
+    source.nutritionMatches,
+    source.nutritionMisses,
+    source.nutritionUnknowns,
+    source.nutritionOutcomeVisits,
+    source.intentOutcomeVisits,
+    source.intentMatches,
+    source.intentMisses,
+    source.intentUnknowns,
+    source.conditionOutcomeVisits,
+    source.conditionMatches,
+    source.conditionMisses,
+    source.conditionUnknowns,
+  ];
+  return Number.isSafeInteger(source.observedArrivals) && (source.observedArrivals ?? -1) >= 0 &&
+    (source.demandResult === "below-range" || source.demandResult === "within-range" ||
+      source.demandResult === "above-range") &&
+    outcomeCounts.every((count) => Number.isSafeInteger(count) && (count ?? -1) >= 0) &&
+    Number.isSafeInteger(source.contributionCents) &&
+    countRecords.every((record) => record && typeof record === "object" && !Array.isArray(record) &&
+      Object.values(record).every((count) => Number.isSafeInteger(count) && count >= 0));
 }
 
 function stallMenuProgression(state: GameState) {
@@ -1119,6 +1681,102 @@ function stallMenusMatch(
   });
 }
 
+function provisionalDishVariants(
+  value: unknown,
+  nutritionDataVersion: string | undefined,
+): Readonly<Record<string, string>> {
+  if (
+    nutritionDataVersion !== NUTRITION_CONTENT.dataVersion ||
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value)
+  ) {
+    return defaultDishVariants();
+  }
+  const source = value as Readonly<Record<string, unknown>>;
+  return Object.fromEntries(NUTRITION_CONTENT.variantFamilies.map((family) => {
+    const requested = source[family.dishId];
+    const selected = typeof requested === "string"
+      ? family.variants.find((variant) => variant.id === requested)
+      : undefined;
+    return [family.dishId, selected?.id ?? family.defaultVariantId];
+  }));
+}
+
+function provisionalStallMenus(
+  menus: Readonly<Record<string, readonly string[]>> | undefined,
+): Readonly<Record<string, readonly string[]>> {
+  return Object.fromEntries(
+    Object.entries(menus ?? {}).filter(([, dishIds]) => dishIds.length > 0),
+  );
+}
+
+export interface RestoredRuntimeEnvelope {
+  readonly state: GameState;
+  readonly catalog: SimulationCatalog;
+  readonly stallMenus: Readonly<Record<string, readonly string[]>>;
+  readonly activeDishVariants: Readonly<Record<string, string>>;
+  readonly periodOutcomes: unknown;
+  readonly coreRecoveryWarnings: readonly string[];
+  readonly recoveredNutritionSelection: boolean;
+  readonly incompleteRuntimeV2: boolean;
+}
+
+/**
+ * Restores the runtime-owned envelope before accepting the core state. Exact
+ * preparation ids on a persisted Combo Board are therefore validated against
+ * the persisted active variants, rather than against authored defaults.
+ */
+export function restoreRuntimeEnvelope(
+  value: unknown,
+  authoredCatalog: SimulationCatalog,
+): RestoredRuntimeEnvelope {
+  const decoded = decodeRuntimeSave(value);
+  const provisionalCatalog = withStallMenus(
+    withDishVariants(
+      authoredCatalog,
+      provisionalDishVariants(decoded.variants, decoded.nutritionDataVersion),
+    ),
+    provisionalStallMenus(decoded.menus),
+  );
+  const provisional = reconcileRuntimeUnlocks(assertRuntimeMap(
+    deserializeGameStateWithReport(decoded.core, provisionalCatalog).state,
+  ));
+  const stallMenus = resolveStallMenus(decoded.menus ?? {}, {
+    ...stallMenuProgression(provisional),
+    slotBonuses: stallMenuSlotBonuses(provisional),
+  });
+  const resolvedVariants = resolvePersistedDishVariants(
+    decoded.variants,
+    decoded.nutritionDataVersion,
+    provisional,
+  );
+  const catalog = withStallMenus(
+    withDishVariants(authoredCatalog, resolvedVariants.selections),
+    stallMenus,
+  );
+  // Validate again against the fully progression-resolved runtime catalogue.
+  // This rejects a Combo Board that points at a locked or recovered variant.
+  const deserialized = deserializeGameStateWithReport(decoded.core, catalog);
+  const state = {
+    ...reconcileRuntimeUnlocks(assertRuntimeMap(deserialized.state)),
+    catalog,
+  };
+  const incompleteRuntimeV2 =
+    decoded.runtimeSchemaVersion === 2 &&
+    (decoded.variants === undefined || decoded.nutritionDataVersion === undefined);
+  return {
+    state,
+    catalog,
+    stallMenus,
+    activeDishVariants: resolvedVariants.selections,
+    periodOutcomes: decoded.periodOutcomes,
+    coreRecoveryWarnings: deserialized.recovery.warnings,
+    recoveredNutritionSelection: resolvedVariants.recovered || incompleteRuntimeV2,
+    incompleteRuntimeV2,
+  };
+}
+
 export async function createHawkerRuntime(
   options: RuntimeOptions,
 ): Promise<RuntimeController> {
@@ -1137,44 +1795,23 @@ export async function createHawkerRuntime(
   let loadedPeriodOutcomes: unknown;
   let loadedCoreRecoveryWarnings: readonly string[] = [];
   let recoveredNutritionSelection = false;
+  let restoredExistingCentre = false;
   try {
     const candidates = options.initialStates ?? [];
     let loaded: GameState | undefined;
     let lastLoadError: unknown;
     for (let index = 0; index < candidates.length; index += 1) {
       try {
-        const decoded = decodeRuntimeSave(candidates[index]);
-        const deserialized = deserializeGameStateWithReport(
-          decoded.core,
-          authoredCatalog,
-        );
-        const loadedCore = reconcileRuntimeUnlocks(
-          assertRuntimeMap(deserialized.state),
-        );
-        loadedCoreRecoveryWarnings = deserialized.recovery.warnings;
-        stallMenus = resolveStallMenus(decoded.menus ?? {}, {
-          ...stallMenuProgression(loadedCore),
-          slotBonuses: stallMenuSlotBonuses(loadedCore),
-        });
-        const resolvedVariants = resolvePersistedDishVariants(
-          decoded.variants,
-          decoded.nutritionDataVersion,
-          loadedCore,
-        );
-        const incompleteRuntimeV2 =
-          decoded.runtimeSchemaVersion === 2 &&
-          (decoded.variants === undefined || decoded.nutritionDataVersion === undefined);
-        activeDishVariants = resolvedVariants.selections;
+        const restored = restoreRuntimeEnvelope(candidates[index], authoredCatalog);
+        loadedCoreRecoveryWarnings = restored.coreRecoveryWarnings;
+        stallMenus = restored.stallMenus;
+        activeDishVariants = restored.activeDishVariants;
         recoveredNutritionSelection =
           recoveredNutritionSelection ||
-          resolvedVariants.recovered ||
-          incompleteRuntimeV2;
-        loadedPeriodOutcomes = decoded.periodOutcomes;
-        catalog = withStallMenus(
-          withDishVariants(authoredCatalog, activeDishVariants),
-          stallMenus,
-        );
-        loaded = { ...loadedCore, catalog };
+          restored.recoveredNutritionSelection;
+        loadedPeriodOutcomes = restored.periodOutcomes;
+        catalog = restored.catalog;
+        loaded = restored.state;
         if (index > 0) {
           options.onEvent({
             kind: "warning",
@@ -1189,6 +1826,7 @@ export async function createHawkerRuntime(
     if (!loaded && candidates.length > 0) throw lastLoadError;
     if (loaded) {
       state = loaded;
+      restoredExistingCentre = true;
     } else {
       state = freshState(authoredCatalog);
       activeDishVariants = defaultDishVariants();
@@ -1216,6 +1854,25 @@ export async function createHawkerRuntime(
     state = { ...state, catalog };
   }
 
+  function emitPreservedLayoutCapacityWarning(
+    candidateState: GameState,
+    candidateCatalog: SimulationCatalog,
+  ) {
+    const reviewedStarterObjects = starterObjects(authoredCatalog, candidateState.map);
+    const reviewedStarterSeatCount = getSeatLocations(
+      Object.fromEntries(reviewedStarterObjects.map((object) => [object.id, object])),
+      authoredCatalog,
+    ).length;
+    const message = savedLayoutCapacityWarning({
+      currentSeatCount: getSeatLocations(candidateState.objects, candidateCatalog).length,
+      reviewedSeatCount: reviewedStarterSeatCount,
+      demandRange: candidateState.forecast.demandRange,
+    });
+    if (message) {
+      options.onEvent({ kind: "warning", message, importance: "important" });
+    }
+  }
+
   if (recoveredNutritionSelection) {
     options.onEvent({
       kind: "warning",
@@ -1231,11 +1888,35 @@ export async function createHawkerRuntime(
       importance: "important",
     });
   }
+  if (restoredExistingCentre) {
+    emitPreservedLayoutCapacityWarning(state, catalog);
+  }
 
   let periodOutcomes = resolvePeriodOutcomes(
     loadedPeriodOutcomes,
     state.servicePeriod.sequenceId,
   );
+
+  function freezePeriodForecastCoverage(periodSequenceId: number): boolean {
+    const frozen = freezeRuntimePeriodForecastCoverage(
+      periodOutcomes,
+      periodSequenceId,
+      deriveRuntimeForecastAvailability(
+        state,
+        stallMenus,
+        activeDishVariants,
+      ).coverage,
+    );
+    periodOutcomes = frozen.outcomes;
+    return frozen.changed;
+  }
+
+  const restoredCoverageNormalized = restoredExistingCentre && (
+    state.servicePeriod.phase === "draining" ||
+    state.servicePeriod.phase === "debrief"
+  )
+    ? freezePeriodForecastCoverage(state.servicePeriod.sequenceId)
+    : false;
 
   if (
     process.env.NODE_ENV !== "production" &&
@@ -1256,13 +1937,16 @@ export async function createHawkerRuntime(
   }
 
   const persistentPayload = (): RuntimePersistentState => ({
-    runtimeSchemaVersion: 3,
+    runtimeSchemaVersion: 4,
     core: persistentStateFromGame(state),
     stallMenus,
     nutritionDataVersion: NUTRITION_CONTENT.dataVersion,
     activeDishVariants,
     periodOutcomes,
   });
+  if (restoredCoverageNormalized) {
+    options.onPersistentChange(persistentPayload());
+  }
 
   const runtime = { game: undefined as Phaser.Game | undefined };
   let activeScene: HawkerScene | undefined;
@@ -1519,12 +2203,21 @@ export async function createHawkerRuntime(
 
   function updatePeriodOutcome(
     periodSequenceId: number,
-    delta: Pick<RuntimePeriodOutcomeState, "unservedDepartures" | "timedOutServedVisits">,
+    delta: Pick<
+      RuntimePeriodOutcomeState,
+      | "unservedDepartures"
+      | "timedOutServedVisits"
+      | "partialMealSecondStallUnavailable"
+      | "partialMealServedTimeout"
+    >,
   ) {
     const current = periodOutcomes[periodSequenceId] ?? {
       periodSequenceId,
       unservedDepartures: 0,
       timedOutServedVisits: 0,
+      partialMealSecondStallUnavailable: 0,
+      partialMealServedTimeout: 0,
+      comboOfferOutcomes: {},
     };
     periodOutcomes = {
       ...periodOutcomes,
@@ -1533,6 +2226,49 @@ export async function createHawkerRuntime(
         unservedDepartures: current.unservedDepartures + delta.unservedDepartures,
         timedOutServedVisits:
           current.timedOutServedVisits + delta.timedOutServedVisits,
+        partialMealSecondStallUnavailable:
+          current.partialMealSecondStallUnavailable +
+          delta.partialMealSecondStallUnavailable,
+        partialMealServedTimeout:
+          current.partialMealServedTimeout + delta.partialMealServedTimeout,
+      },
+    };
+  }
+
+  function recordComboOutcome(observation: RuntimeComboOutcomeObservation) {
+    const currentPeriod = periodOutcomes[observation.periodSequenceId] ?? {
+      periodSequenceId: observation.periodSequenceId,
+      unservedDepartures: 0,
+      timedOutServedVisits: 0,
+      partialMealSecondStallUnavailable: 0,
+      partialMealServedTimeout: 0,
+      comboOfferOutcomes: {},
+    };
+    const currentOffer = currentPeriod.comboOfferOutcomes[observation.offerId] ?? {
+      offerId: observation.offerId,
+      completedVisits: 0,
+      partialSecondStallUnavailable: 0,
+      partialServedTimeout: 0,
+    };
+    const nextOffer: RuntimeComboOfferOutcomeState = {
+      ...currentOffer,
+      completedVisits: currentOffer.completedVisits +
+        (observation.result === "complete" ? 1 : 0),
+      partialSecondStallUnavailable:
+        currentOffer.partialSecondStallUnavailable +
+        (observation.cause === "second-stall-unavailable" ? 1 : 0),
+      partialServedTimeout:
+        currentOffer.partialServedTimeout +
+        (observation.cause === "served-timeout" ? 1 : 0),
+    };
+    periodOutcomes = {
+      ...periodOutcomes,
+      [observation.periodSequenceId]: {
+        ...currentPeriod,
+        comboOfferOutcomes: {
+          ...currentPeriod.comboOfferOutcomes,
+          [observation.offerId]: nextOffer,
+        },
       },
     };
   }
@@ -1540,6 +2276,7 @@ export async function createHawkerRuntime(
   function recordPeriodDepartures(
     events: readonly SimulationEvent[],
     abandonedVisitsBefore: number,
+    customersBefore: Readonly<Record<string, Customer>>,
   ): boolean {
     const unservedDepartures = Math.max(
       0,
@@ -1550,23 +2287,90 @@ export async function createHawkerRuntime(
         event.type === "customer-despawned" &&
         event.message === "served-timeout",
     ).length;
-    if (unservedDepartures > 0 || timedOutServedVisits > 0) {
+    const partialMealSecondStallUnavailable = events.filter(
+      (event) => event.type === "meal-partial" &&
+        event.message === "second-stall-unavailable",
+    ).length;
+    const partialMealServedTimeout = events.filter(
+      (event) => event.type === "meal-partial" &&
+        event.message === "served-timeout",
+    ).length;
+    const comboObservations = comboOutcomeObservations(events, customersBefore);
+    if (
+      unservedDepartures > 0 ||
+      timedOutServedVisits > 0 ||
+      partialMealSecondStallUnavailable > 0 ||
+      partialMealServedTimeout > 0
+    ) {
       updatePeriodOutcome(state.servicePeriod.sequenceId, {
         unservedDepartures,
         timedOutServedVisits,
+        partialMealSecondStallUnavailable,
+        partialMealServedTimeout,
       });
-      return true;
     }
-    return false;
+    for (const observation of comboObservations) recordComboOutcome(observation);
+    return (
+      unservedDepartures > 0 ||
+      timedOutServedVisits > 0 ||
+      partialMealSecondStallUnavailable > 0 ||
+      partialMealServedTimeout > 0 ||
+      comboObservations.length > 0
+    );
   }
 
   function runCommand(command: GameCommand, persist = true) {
+    const unavailableComboOfferIdsBefore = new Set(validateComboBoardForState(
+      state,
+      state.comboBoard,
+      false,
+    ).filter((issue) => issue.code === "unavailable-stall").map((issue) => issue.offerId));
+    const hadComboCompatibilityIssue = validateComboBoardForState(
+      state,
+      state.comboBoard,
+      true,
+    ).some((issue) => issue.code === "unavailable-stall");
     const result = dispatchCommand(state, command);
     state = result.state;
     const menusChanged = synchronizeStallMenus();
     for (const event of result.events) {
       const runtimeEvent = formatSimulationEvent(event);
       if (runtimeEvent) options.onEvent(runtimeEvent);
+    }
+    const hasComboCompatibilityIssue = validateComboBoardForState(
+      state,
+      state.comboBoard,
+      true,
+    ).some((issue) => issue.code === "unavailable-stall");
+    const newlyUnavailableComboOfferIds = [...new Set(validateComboBoardForState(
+      state,
+      state.comboBoard,
+      false,
+    ).filter((issue) => (
+      issue.code === "unavailable-stall" &&
+      !unavailableComboOfferIdsBefore.has(issue.offerId)
+    )).map((issue) => issue.offerId))];
+    const shutterImpactMessage = command.type === "set-stall-open" && !command.open
+      ? liveComboBoardAvailabilityMessage(
+          state.servicePeriod.phase,
+          newlyUnavailableComboOfferIds.length,
+        )
+      : undefined;
+    if (result.accepted && shutterImpactMessage) {
+      options.onEvent({
+        kind: "warning",
+        message: shutterImpactMessage,
+        importance: "important",
+        groupKey: "combo-board-live-availability",
+      });
+    }
+    if (result.accepted && !hadComboCompatibilityIssue && hasComboCompatibilityIssue) {
+      options.onEvent({
+        kind: "warning",
+        message: "Combo Board configuration was retained, but this change removed a compatible reachable stall. Restore the stall or clear the affected offer before service.",
+        importance: "important",
+        groupKey: "combo-board-compatibility",
+      });
     }
     if ((result.accepted || menusChanged) && persist) {
       options.onPersistentChange(persistentPayload());
@@ -1707,19 +2511,109 @@ export async function createHawkerRuntime(
       periodSequenceId: state.servicePeriod.sequenceId,
       unservedDepartures: 0,
       timedOutServedVisits: 0,
+      partialMealSecondStallUnavailable: 0,
+      partialMealServedTimeout: 0,
+      comboOfferOutcomes: {},
     };
+    const periodRatings = snapshot.metrics.visitRatings.filter(
+      (rating) => rating.arrivalPeriodSequenceId === state.servicePeriod.sequenceId,
+    );
+    const forecastBaseComparison = compareForecastToArrivals(
+      state.forecast,
+      state.forecastArrivals,
+    );
+    const averageRatingComponent = (component: keyof VisitRatingComponents) => (
+      periodRatings.length === 0
+        ? undefined
+        : periodRatings.reduce((sum, rating) => sum + rating.components[component], 0) /
+          periodRatings.length
+    );
+    const persistedComparison = periodOutcome.forecastComparison;
+    const forecastComparison: RuntimeForecastComparison = {
+      ...forecastBaseComparison,
+      averageWaitScore: persistedComparison?.averageWaitScore ?? averageRatingComponent("wait"),
+      contributionCents: asMoneyDeltaCents(ledgerContributionCents(periodLedger)),
+      satisfactionCauseScores: persistedComparison?.satisfactionCauseScores ??
+        Object.fromEntries(
+          (["foodQuality", "wait", "value", "walking", "comfort", "cleanliness", "ambience"] as const)
+            .flatMap((component) => {
+              const score = averageRatingComponent(component);
+              return score === undefined ? [] : [[component, score]];
+            }),
+        ),
+    };
+    const comboOutcomeOfferIds = [...new Set([
+      ...state.comboBoard.slots.flatMap((offer) => offer ? [offer.id] : []),
+      ...Object.keys(periodOutcome.comboOfferOutcomes),
+    ])].sort((left, right) => left.localeCompare(right));
+    const comboOfferOutcomes = comboOutcomeOfferIds
+      .map((offerId) => periodOutcome.comboOfferOutcomes[offerId] ?? {
+        offerId,
+        completedVisits: 0,
+        partialSecondStallUnavailable: 0,
+        partialServedTimeout: 0,
+      })
+      .map((outcome) => ({
+        offerId: outcome.offerId,
+        completedVisits: outcome.completedVisits,
+        partialVisits:
+          outcome.partialSecondStallUnavailable + outcome.partialServedTimeout,
+        partialMealCauses: [
+          ...(outcome.partialSecondStallUnavailable > 0
+            ? [{
+                cause: "second-stall-unavailable" as const,
+                count: outcome.partialSecondStallUnavailable,
+              }]
+            : []),
+          ...(outcome.partialServedTimeout > 0
+            ? [{
+                cause: "served-timeout" as const,
+                count: outcome.partialServedTimeout,
+              }]
+            : []),
+        ],
+      }));
     const periodDebrief: RuntimePeriodDebrief | undefined =
       state.servicePeriod.phase === "debrief"
         ? {
             periodSequenceId: state.servicePeriod.sequenceId,
-            servedVisits: periodLedger.entries.filter((entry) => entry.kind === "gross-sale").length,
+            servedVisits: servedVisitCount(periodLedger.entries),
             timedOutServedVisits: periodOutcome.timedOutServedVisits,
             unservedDepartures: periodOutcome.unservedDepartures,
+            partialMeals:
+              periodOutcome.partialMealSecondStallUnavailable +
+              periodOutcome.partialMealServedTimeout,
+            partialMealCauses: [
+              ...(periodOutcome.partialMealSecondStallUnavailable > 0
+                ? [{
+                    cause: "second-stall-unavailable" as const,
+                    count: periodOutcome.partialMealSecondStallUnavailable,
+                  }]
+                : []),
+              ...(periodOutcome.partialMealServedTimeout > 0
+                ? [{
+                    cause: "served-timeout" as const,
+                    count: periodOutcome.partialMealServedTimeout,
+                  }]
+                : []),
+            ],
+            completedComboVisits: comboOfferOutcomes.reduce(
+              (sum, outcome) => sum + outcome.completedVisits,
+              0,
+            ),
+            comboOfferOutcomes,
             causeCodes: [
               "period-complete" as const,
               ...(periodOutcome.timedOutServedVisits > 0 ? ["served-timeout" as const] : []),
               ...(periodOutcome.unservedDepartures > 0 ? ["unserved-departure" as const] : []),
+              ...(periodOutcome.partialMealSecondStallUnavailable > 0
+                ? ["partial-meal-second-stall-unavailable" as const]
+                : []),
+              ...(periodOutcome.partialMealServedTimeout > 0
+                ? ["partial-meal-served-timeout" as const]
+                : []),
             ],
+            forecastComparison,
           }
         : undefined;
     const activePreparations = DISHES.map((dish) => {
@@ -1736,6 +2630,174 @@ export async function createHawkerRuntime(
         terms: runtimeServingTerms(preparation.terms),
       };
     });
+    const comboComponents = mealComponentsForState(state, true);
+    const comboComponentsById = Object.fromEntries(
+      comboComponents.map((component) => [component.preparationId, component]),
+    );
+    const comboOrigin = state.accessPoints.find((point) => point.kind === "entrance")?.position
+      ?? state.entrance;
+    const comboDistances = servingDistancesForState(state, comboOrigin, true);
+    const comboAvailableStalls = new Set(
+      comboComponents.flatMap((component) => component.stallInstanceIds),
+    );
+    const unlockedMealUniverse = buildUnlockedMealUniverse(
+      comboComponents,
+      comboDistances,
+      comboAvailableStalls,
+    );
+    const comboIssues = validateComboBoardForState(state, state.comboBoard, true);
+    const liveComboUnavailableOfferCount = new Set(validateComboBoardForState(
+      state,
+      state.comboBoard,
+      false,
+    ).filter((issue) => issue.code === "unavailable-stall").map((issue) => issue.offerId)).size;
+    const leadingForecastIntent = [...state.forecast.nutritionNeeds]
+      .filter((need) => need.kind === "nutrition-intent")
+      .sort((left, right) => right.basisPoints - left.basisPoints || left.id.localeCompare(right.id))[0];
+    const comboSlots = state.comboBoard.slots.map((offer, slot) => {
+      if (!offer) return null;
+      const slotIssues = comboIssues.filter((issue) => issue.slot === slot);
+      const resolved = resolveComboOffer(offer, comboComponentsById);
+      if (!resolved) {
+        const unavailableRating = {
+          dataState: "unavailable" as const,
+          explanation: "Restore the exact preparation or clear this retained offer.",
+        };
+        return {
+          id: offer.id,
+          slot,
+          preparationIds: [...offer.preparationIds] as [string, string],
+          valid: false,
+          issues: slotIssues.length > 0
+            ? slotIssues.map((issue) => issue.message)
+            : ["An exact preparation is no longer available."],
+          mealBalance: unavailableRating,
+          intentFit: unavailableRating,
+          conditionAwareFit: unavailableRating,
+          dataExplanation: "This saved offer was retained without remapping. Restore its exact preparation or clear it.",
+        };
+      }
+      const orderedComponents = [...resolved.components].sort((left, right) => (
+        left.role === "main" ? -1 : right.role === "main" ? 1 : left.preparationId.localeCompare(right.preparationId)
+      )) as [MealComponent, MealComponent];
+      const servingPlan = selectReachableServingPlan(
+        orderedComponents,
+        comboDistances,
+        comboAvailableStalls,
+      );
+      const candidateId = `pair:${orderedComponents[0].preparationId}+${orderedComponents[1].preparationId}`;
+      const candidate = unlockedMealUniverse.find((entry) => entry.id === candidateId);
+      const mealBalance = candidate
+        ? compareMealBalanceAmongUnlockedOptions(candidateId, unlockedMealUniverse)
+        : undefined;
+      const mealState = candidate
+        ? mealDataState([...candidate.explanationCodes, ...(mealBalance?.explanationCodes ?? [])])
+        : "unavailable" as const;
+      const intentFit = leadingForecastIntent
+        ? averageDefined(orderedComponents.map(
+            (component) => component.nutritionProfile?.intentFits[
+              leadingForecastIntent.id as NutritionIntent
+            ],
+          ))
+        : undefined;
+      return {
+        id: offer.id,
+        slot,
+        preparationIds: [...offer.preparationIds] as [string, string],
+        components: orderedComponents.map(runtimeComboComponent) as [
+          RuntimeComboComponentSummary,
+          RuntimeComboComponentSummary,
+        ],
+        priceCents: resolved.priceCents,
+        ingredientCostCents: resolved.ingredientCostCents,
+        servingStopCount: servingPlan?.stops.length,
+        routeDistanceTiles: servingPlan?.totalDistance,
+        valid: slotIssues.length === 0,
+        issues: slotIssues.map((issue) => issue.message),
+        mealBalance: {
+          value: mealBalance?.rating,
+          dataState: mealState,
+          explanation: mealBalance?.rating === undefined
+            ? "Meal balance is unavailable because the comparison lacks enough reported nutrition data."
+            : `Comparative in-game balance among ${unlockedMealUniverse.length} unlocked feasible single meals and valid pairs.`,
+        },
+        intentFit: {
+          value: intentFit,
+          needId: leadingForecastIntent?.id,
+          dataState: intentFit === undefined ? "unavailable" : mealState,
+          explanation: leadingForecastIntent
+            ? intentFit === undefined
+              ? "Forecast intent fit is unavailable when either component lacks a comparable value."
+              : "Fit for the leading forecast intent; this is separate from Meal balance."
+            : "No nutrition intent leads this period forecast.",
+        },
+        conditionAwareFit: {
+          dataState: "unavailable" as const,
+          explanation: "Condition-aware game fit is visit-specific and is frozen only when a guest orders.",
+        },
+        dataExplanation: mealState === "unavailable"
+          ? "At least one combined metric is unavailable; missing values are not imputed."
+          : mealState === "trace"
+            ? "At least one component includes a source-reported trace value; trace is preserved, not converted to a fabricated zero."
+            : "Both components have comparable released data for this in-game view.",
+      };
+    }) as unknown as RuntimeComboBoardSummary["slots"];
+    const comboBoard: RuntimeComboBoardSummary = {
+      unlockLevel: 5,
+      unlocked: snapshot.progression.level >= 5,
+      slots: comboSlots,
+      candidates: comboComponents
+        .filter((component) => component.unlocked && component.stallInstanceIds.length > 0)
+        .map(runtimeComboComponent),
+      valid: comboIssues.length === 0,
+      issues: comboIssues.map((issue) => issue.message),
+      configuredOfferCount: state.comboBoard.slots.filter(Boolean).length,
+      compatibilityWarning: comboIssues.some((issue) => issue.code === "unavailable-stall")
+        ? "Combo Board configuration was retained, but a compatible reachable stall is missing. Restore the stall or clear the affected offer before service."
+        : undefined,
+      liveAvailabilityWarning: liveComboBoardAvailabilityMessage(
+        state.servicePeriod.phase,
+        liveComboUnavailableOfferCount,
+      ),
+    };
+    const liveForecastCoverage = deriveRuntimeForecastAvailability(
+      state,
+      stallMenus,
+      activeDishVariants,
+    ).coverage;
+    const forecastCoverage = (
+      state.servicePeriod.phase === "draining" ||
+      state.servicePeriod.phase === "debrief"
+    )
+      ? periodOutcome.forecastCoverage ?? liveForecastCoverage
+      : liveForecastCoverage;
+    const runtimeForecast = {
+      periodSequenceId: state.forecast.periodSequenceId,
+      periodId: state.forecast.periodId,
+      day: state.forecast.day,
+      demandRange: state.forecast.demandRange,
+      crowdProfiles: state.forecast.crowdProfiles,
+      budgetBands: state.forecast.budgetBands,
+      groupSizeMix: state.forecast.groupSizeMix,
+      mealMix: state.forecast.mealMix,
+      nutritionIntents: state.forecast.nutritionNeeds.filter(
+        (need) => need.kind === "nutrition-intent",
+      ),
+      conditionAwareNeeds: state.forecast.nutritionNeeds.filter(
+        (need) => need.kind === "condition-aware",
+      ),
+      nutritionIntentIncidenceBasisPoints: state.forecast.nutritionIntentIncidenceBasisPoints,
+      conditionAwareIncidenceBasisPoints: state.forecast.conditionAwareIncidenceBasisPoints,
+      needShareBasis: state.forecast.needShareBasis,
+      coverage: forecastCoverage,
+      menuIndependent: true as const,
+      explanation: periodOutcome.forecastCoverage && (
+        state.servicePeriod.phase === "draining" ||
+        state.servicePeriod.phase === "debrief"
+      )
+        ? "Needs are forecast independently of the menu. Coverage is frozen from preparations on stalls that were open when arrivals closed; need shares are among flagged visits, and intent and condition incidence are independent."
+        : "Needs are forecast independently of the menu. Coverage and gaps reflect preparations on currently open stalls; need shares are among flagged visits, and intent and condition incidence are independent.",
+    };
     const nutritionFamilies = NUTRITION_CONTENT.variantFamilies.map((family) => {
       const rank = Math.max(
         1,
@@ -1850,6 +2912,7 @@ export async function createHawkerRuntime(
               ? "Draining current visits"
               : `Plan ${SERVICE_PERIODS[(state.servicePeriod.periodIndex + 1) % SERVICE_PERIODS.length]!.label}`,
       },
+      forecast: runtimeForecast,
       periodLedger: {
         ...periodLedger,
         contributionCents: asMoneyDeltaCents(ledgerContributionCents(periodLedger)),
@@ -1899,6 +2962,7 @@ export async function createHawkerRuntime(
       stallMenus,
       activeDishVariants,
       activePreparations,
+      comboBoard,
       nutritionFamilies,
       nutritionPulse: {
         servedMeals: nutritionToday.servedMeals,
@@ -1940,6 +3004,7 @@ export async function createHawkerRuntime(
               ? runtimeServingTerms(selectedCustomer.orderLineSnapshot.terms)
               : undefined,
             profile: runtimeNutritionProfile(selectedCustomer.orderedNutritionProfile),
+            frozenMeal: runtimeFrozenMeal(selectedCustomer, comboComponentsById),
           }
         : undefined,
       placedStalls,
@@ -2244,6 +3309,7 @@ export async function createHawkerRuntime(
             1.55,
           );
           this.cameras.main.setZoom(next);
+          this.render(true);
         },
       );
       this.input.keyboard?.on("keydown", (event: KeyboardEvent) => {
@@ -2318,6 +3384,7 @@ export async function createHawkerRuntime(
         const startedAt = performance.now();
         const periodBefore = state.servicePeriod;
         const abandonedVisitsBefore = state.economy.abandonedVisits;
+        const customersBefore = state.customers;
         state = {
           ...state,
           arrivalPerformancePressure: Math.max(0, Math.min(1, (lastSimulationMs - 8) / 16)),
@@ -2331,9 +3398,10 @@ export async function createHawkerRuntime(
         );
         const beforeUnlockCount = state.progression.unlockedDefinitionIds.length;
         state = reconcileRuntimeUnlocks(result.state);
-        const periodOutcomeChanged = recordPeriodDepartures(
+        let periodOutcomeChanged = recordPeriodDepartures(
           result.events,
           abandonedVisitsBefore,
+          customersBefore,
         );
         const periodEnteredDrain =
           periodBefore.phase === "arrivals" &&
@@ -2341,6 +3409,11 @@ export async function createHawkerRuntime(
         const periodEnteredDebrief =
           periodBefore.phase !== "debrief" &&
           state.servicePeriod.phase === "debrief";
+        if (periodEnteredDrain || periodEnteredDebrief) {
+          periodOutcomeChanged = freezePeriodForecastCoverage(
+            state.servicePeriod.sequenceId,
+          ) || periodOutcomeChanged;
+        }
         if (periodEnteredDrain) {
           options.onEvent({
             kind: "info",
@@ -2440,6 +3513,40 @@ export async function createHawkerRuntime(
         })
         .setOrigin(0.5, 0.5)
         .setDepth(20);
+      if (canvasTextScale >= 1.5) {
+        const resolvedY = collisionFreeCanvasLabelY(
+          x,
+          y,
+          label.width,
+          label.height,
+          this.labels
+            .filter((existing) => existing.visible)
+            .map((existing) => {
+              const bounds = existing.getBounds();
+              return {
+                left: bounds.left,
+                top: bounds.top,
+                right: bounds.right,
+                bottom: bounds.bottom,
+              };
+            }),
+        );
+        if (resolvedY === undefined) {
+          label.setVisible(false);
+        } else {
+          label.setY(resolvedY);
+        }
+      }
+      if (
+        label.visible &&
+        !canvasLabelFullyInsideView(
+          label.getBounds(),
+          this.cameras.main.worldView,
+          4 / Math.max(this.cameras.main.zoom, 0.01),
+        )
+      ) {
+        label.setVisible(false);
+      }
       this.labels.push(label);
     }
   }
@@ -6028,6 +7135,7 @@ export async function createHawkerRuntime(
     activeScene.cameras.main.setZoom(
       PhaserRuntime.Math.Clamp(activeScene.cameras.main.zoom + delta, 0.48, 1.55),
     );
+    activeScene.render(true);
   }
 
   const game = new PhaserRuntime.Game({
@@ -6097,10 +7205,32 @@ export async function createHawkerRuntime(
         return false;
       }
       if (state.servicePeriod.phase === "debrief") {
+        const completedForecastComparison = currentSnapshot().periodDebrief?.forecastComparison;
+        const completedOutcome = periodOutcomes[state.servicePeriod.sequenceId] ?? {
+          periodSequenceId: state.servicePeriod.sequenceId,
+          unservedDepartures: 0,
+          timedOutServedVisits: 0,
+          partialMealSecondStallUnavailable: 0,
+          partialMealServedTimeout: 0,
+          comboOfferOutcomes: {},
+        };
+        periodOutcomes = {
+          ...periodOutcomes,
+          [state.servicePeriod.sequenceId]: {
+            ...completedOutcome,
+            forecastComparison: completedForecastComparison,
+          },
+        };
         const nextServicePeriod = planNextServicePeriod(state.servicePeriod);
         const stateWithNextPeriod = {
           ...state,
           servicePeriod: nextServicePeriod,
+          forecast: lockPeriodForecast(
+            forecastForServicePeriod(nextServicePeriod),
+            state.catalog,
+            state.progression,
+          ),
+          forecastArrivals: [],
           periodLedgers: {
             ...state.periodLedgers,
             [nextServicePeriod.sequenceId]: createPeriodLedger(
@@ -6140,6 +7270,17 @@ export async function createHawkerRuntime(
       if (state.servicePeriod.phase === "planning" && applyValidSetupRecovery()) {
         return false;
       }
+      if (state.servicePeriod.phase === "planning") {
+        const comboIssue = validateComboBoardForState(state, state.comboBoard, true)[0];
+        if (comboIssue) {
+          options.onEvent({
+            kind: "warning",
+            message: `Resolve the Combo Board before service: ${comboIssue.message}`,
+            importance: "important",
+          });
+          return false;
+        }
+      }
       stalls = Object.values(state.objects).filter(
         (object) => catalog.placeables[object.definitionId]?.kind === "stall",
       );
@@ -6170,6 +7311,19 @@ export async function createHawkerRuntime(
           options.onEvent({
             kind: "warning",
             message: "At least one reachable stall must be open before arrivals begin.",
+          });
+          return false;
+        }
+        const liveComboIssue = validateComboBoardForState(
+          state,
+          state.comboBoard,
+          false,
+        )[0];
+        if (liveComboIssue) {
+          options.onEvent({
+            kind: "warning",
+            message: `The Combo Board cannot be served by the open reachable stalls: ${liveComboIssue.message}`,
+            importance: "important",
           });
           return false;
         }
@@ -6257,51 +7411,40 @@ export async function createHawkerRuntime(
       return persistentPayload();
     },
     importState(value) {
-      const decoded = decodeRuntimeSave(value);
-      const deserialized = deserializeGameStateWithReport(
-        decoded.core,
-        authoredCatalog,
-      );
-      const imported = reconcileRuntimeUnlocks(
-        assertRuntimeMap(deserialized.state),
-      );
-      stallMenus = resolveStallMenus(decoded.menus ?? {}, {
-        ...stallMenuProgression(imported),
-        slotBonuses: stallMenuSlotBonuses(imported),
-      });
-      const resolvedVariants = resolvePersistedDishVariants(
-        decoded.variants,
-        decoded.nutritionDataVersion,
-        imported,
-      );
-      const incompleteRuntimeV2 =
-        decoded.runtimeSchemaVersion === 2 &&
-        (decoded.variants === undefined || decoded.nutritionDataVersion === undefined);
-      activeDishVariants = resolvedVariants.selections;
-      catalog = withStallMenus(
-        withDishVariants(authoredCatalog, activeDishVariants),
-        stallMenus,
-      );
-      state = { ...imported, catalog };
+      const restored = restoreRuntimeEnvelope(value, authoredCatalog);
+      stallMenus = restored.stallMenus;
+      activeDishVariants = restored.activeDishVariants;
+      catalog = restored.catalog;
+      state = restored.state;
       periodOutcomes = resolvePeriodOutcomes(
-        decoded.periodOutcomes,
+        restored.periodOutcomes,
         state.servicePeriod.sequenceId,
       );
+      const importedCoverageNormalized = (
+        state.servicePeriod.phase === "draining" ||
+        state.servicePeriod.phase === "debrief"
+      )
+        ? freezePeriodForecastCoverage(state.servicePeriod.sequenceId)
+        : false;
+      emitPreservedLayoutCapacityWarning(state, catalog);
       selectedCustomerId = undefined;
-      if (resolvedVariants.recovered || incompleteRuntimeV2) {
+      if (restored.recoveredNutritionSelection) {
         options.onEvent({
           kind: "warning",
           message: "One or more imported recipe choices were reset to reviewed defaults.",
         });
       }
-      if (deserialized.recovery.warnings.length > 0) {
+      if (restored.coreRecoveryWarnings.length > 0) {
         options.onEvent({
           kind: "warning",
-          message: `The import needed ${deserialized.recovery.warnings.length} safe content recovery ${
-            deserialized.recovery.warnings.length === 1 ? "step" : "steps"
+          message: `The import needed ${restored.coreRecoveryWarnings.length} safe content recovery ${
+            restored.coreRecoveryWarnings.length === 1 ? "step" : "steps"
           }. Review the layout before service.`,
           importance: "important",
         });
+      }
+      if (importedCoverageNormalized) {
+        options.onPersistentChange(persistentPayload());
       }
       recomputeObjectSequence();
       lastPersistentGrossSalesCents = state.economy.lifetimeGrossSalesCents;
@@ -6484,6 +7627,23 @@ export async function createHawkerRuntime(
         });
         return false;
       }
+      if (!enabled) {
+        const activePreparation = reviewedPreparationFor(
+          dishId,
+          activeDishVariants[dishId],
+        ) ?? DEFAULT_PREPARATION_BY_DISH_ID.get(dishId);
+        const referencingOffers = activePreparation
+          ? comboOffersReferencingComponent(state.comboBoard, activePreparation.id)
+          : [];
+        if (referencingOffers.length > 0) {
+          options.onEvent({
+            kind: "warning",
+            message: `Remove ${referencingOffers.join(", ")} from the Combo Board before removing this exact preparation from the menu.`,
+            importance: "important",
+          });
+          return false;
+        }
+      }
       const next = enabled
         ? [...current, dishId]
         : current.filter((candidate) => candidate !== dishId);
@@ -6526,6 +7686,21 @@ export async function createHawkerRuntime(
         return false;
       }
       if (activeDishVariants[dishId] === variantId) return true;
+      const currentPreparation = reviewedPreparationFor(
+        dishId,
+        activeDishVariants[dishId],
+      ) ?? DEFAULT_PREPARATION_BY_DISH_ID.get(dishId);
+      const referencingOffers = currentPreparation
+        ? comboOffersReferencingComponent(state.comboBoard, currentPreparation.id)
+        : [];
+      if (referencingOffers.length > 0) {
+        options.onEvent({
+          kind: "warning",
+          message: `Remove ${referencingOffers.join(", ")} from the Combo Board before changing this preparation. Existing offers keep their exact serving terms.`,
+          importance: "important",
+        });
+        return false;
+      }
       activeDishVariants = { ...activeDishVariants, [dishId]: variantId };
       catalog = withStallMenus(
         withDishVariants(authoredCatalog, activeDishVariants),
@@ -6540,6 +7715,77 @@ export async function createHawkerRuntime(
         message: `${variant.name} will be used for future orders.`,
       });
       return true;
+    },
+    setComboOffer(slot, mainPreparationId, complementPreparationId) {
+      if (isConfigurationLocked(state.servicePeriod.phase)) {
+        options.onEvent({
+          kind: "warning",
+          message: "Combo Board changes are locked during service and drain.",
+        });
+        return false;
+      }
+      if (state.progression.level < 5) {
+        options.onEvent({
+          kind: "warning",
+          message: "The Combo Board unlocks at level 5.",
+        });
+        return false;
+      }
+      const components = mealComponentsForState(state, true);
+      const main = components.find((component) => component.preparationId === mainPreparationId);
+      const complement = components.find(
+        (component) => component.preparationId === complementPreparationId,
+      );
+      if (!main || main.role !== "main" || !complement || complement.role === "main") {
+        options.onEvent({
+          kind: "warning",
+          message: "Choose exactly one main and one drink, dessert, or add-on.",
+        });
+        return false;
+      }
+      const slots = [...state.comboBoard.slots] as [
+        ComboOffer | null,
+        ComboOffer | null,
+        ComboOffer | null,
+      ];
+      slots[slot] = {
+        id: `combo-slot-${slot + 1}`,
+        preparationIds: [mainPreparationId, complementPreparationId],
+      };
+      const board: ComboBoard = { slots };
+      const accepted = runCommand({ type: "set-combo-board", board });
+      if (accepted) {
+        options.onEvent({
+          kind: "success",
+          message: `Combo offer ${slot + 1} saved as a two-item meal. Component prices add with no discount.`,
+          importance: "important",
+        });
+      }
+      return accepted;
+    },
+    clearComboOffer(slot) {
+      if (isConfigurationLocked(state.servicePeriod.phase)) {
+        options.onEvent({
+          kind: "warning",
+          message: "Combo Board changes are locked during service and drain.",
+        });
+        return false;
+      }
+      const slots = [...state.comboBoard.slots] as [
+        ComboOffer | null,
+        ComboOffer | null,
+        ComboOffer | null,
+      ];
+      if (!slots[slot]) return true;
+      slots[slot] = null;
+      const accepted = runCommand({ type: "set-combo-board", board: { slots } });
+      if (accepted) {
+        options.onEvent({
+          kind: "info",
+          message: `Combo offer ${slot + 1} cleared.`,
+        });
+      }
+      return accepted;
     },
     acceptObjective(objectiveId) {
       if (state.servicePeriod.phase !== "planning") {

@@ -55,7 +55,7 @@ describe("nutrition content", () => {
     );
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
-      "f733b693e44a7767074bd84d263e357fcfd2ac7212e30ad388afc4cc7c5e580c",
+      "d69662acf1e462abd9b7db4f96a1977a3cdc7c4f87daed072fc23dd8809a046b",
     );
   });
 
@@ -184,6 +184,17 @@ describe("nutrition content", () => {
     });
     assert.equal(charSiewBao?.provenance?.multiplier, 3);
     assert.equal(charSiewBao?.provenance?.mappingKind, "scaled-exact");
+
+    const siewMai = getNutritionProfile("dish.siew-mai");
+    assert.equal(siewMai?.serving?.amount, 90);
+    assert.equal(siewMai?.serving?.label, "3 pieces (90 g)");
+    assert.deepEqual(siewMai?.nutrients.energyKcal, {
+      status: "known",
+      value: 201,
+    });
+    assert.equal(siewMai?.provenance?.sourceFoodName, "Siew mai");
+    assert.equal(siewMai?.provenance?.multiplier, 3);
+    assert.equal(siewMai?.provenance?.mappingKind, "scaled-exact");
 
     for (const profile of NUTRITION_CONTENT.profiles.filter(
       (candidate) => candidate.status === "released",

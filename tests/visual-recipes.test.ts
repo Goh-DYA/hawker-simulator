@@ -119,6 +119,10 @@ describe("code-native placeable visual recipes", () => {
     assert.ok(
       recipes.get("dish.siew-mai")?.presentation.detailCues.includes("diced-carrot"),
     );
+    assert.deepEqual(
+      recipes.get("dish.siew-mai")?.presentation.ingredientCues,
+      ["three-seasoned-pork-dumplings", "prawn"],
+    );
     assert.equal(
       recipes.get("dish.siew-mai")?.presentation.vessel,
       "bamboo-steamer",

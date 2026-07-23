@@ -53,7 +53,7 @@ All ratings use a 1.0-5.0 scale rounded to one decimal place.
 
 `starRating` is independent of nutrition and is calculated from authored dish quality and base demand: `1 + 4 x (0.65 x quality + 0.35 x demand)`.
 
-Nutrition ratings compare the listed serving only with other released profiles in the same class (`meal` or `drink`). For each metric, the importer calculates a deterministic percentile in the beneficial direction, combines those percentiles using the weights below, and maps the result to 1.0-5.0. An unavailable metric is omitted and the remaining weights are renormalised. A `trace` observation remains labelled `Trace` in the profile and interface, but is represented as zero only for percentile ordering so that it ranks below reported numeric amounts instead of disappearing from the comparison.
+Nutrition ratings compare the listed serving only with other released profiles in the same class (`meal` or `drink`). For each metric, the importer calculates a deterministic percentile in the beneficial direction, combines those percentiles using the weights below, and maps the result to 1.0-5.0. Unavailable and source-reported `trace` metrics are omitted from numeric percentile ordering and the remaining weights are renormalised. Trace remains visible as `Trace`; it is never converted to a fabricated zero.
 
 The general `healthRating` weights are:
 

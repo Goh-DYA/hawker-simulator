@@ -477,35 +477,51 @@ export function PreparationTermsSummary({
   readonly compact?: boolean;
 }) {
   return (
-    <dl
-      className={`preparation-terms${compact ? " is-compact" : ""}`}
+    <div
+      className={`preparation-terms-shell${compact ? " is-compact" : ""}`}
+      role="group"
       aria-label={label}
     >
-      <div>
-        <dt>Price</dt>
-        <dd><PreparationMoney cents={terms.priceCents} /></dd>
-      </div>
-      <div>
-        <dt>Ingredients</dt>
-        <dd><PreparationMoney cents={terms.ingredientCostCents} /></dd>
-      </div>
-      <div className="preparation-terms-timing">
-        <dt>Timing</dt>
-        <dd>
-          Prep {preparationDurationLabel(terms.preparationTimeMs)}
-          {" \u00b7 "}serve {preparationDurationLabel(terms.servingTimeMs)}
-          {" \u00b7 "}eat {preparationDurationLabel(terms.eatingTimeMs)}
-        </dd>
-      </div>
-      <div>
-        <dt>Star appeal</dt>
-        <dd>{ratingText(terms.starAppeal)}</dd>
-      </div>
-      <div>
-        <dt>Demand</dt>
-        <dd>{demandModifierLabel(terms.demandModifierBasisPoints)}</dd>
-      </div>
-    </dl>
+      <dl className={`preparation-terms${compact ? " is-compact" : ""}`}>
+        <div>
+          <dt>Price</dt>
+          <dd><PreparationMoney cents={terms.priceCents} /></dd>
+        </div>
+        <div>
+          <dt>Ingredient cost</dt>
+          <dd><PreparationMoney cents={terms.ingredientCostCents} /></dd>
+        </div>
+        <div>
+          <dt>Preparation time</dt>
+          <dd>{preparationDurationLabel(terms.preparationTimeMs)}</dd>
+        </div>
+        <div>
+          <dt>Star appeal</dt>
+          <dd>{ratingText(terms.starAppeal)}</dd>
+        </div>
+        <div>
+          <dt>Demand</dt>
+          <dd>{demandModifierLabel(terms.demandModifierBasisPoints)}</dd>
+        </div>
+      </dl>
+      <details className="preparation-terms-details">
+        <summary>Serving, eating, and frozen-order details</summary>
+        <dl>
+          <div>
+            <dt>Serving time</dt>
+            <dd>{preparationDurationLabel(terms.servingTimeMs)}</dd>
+          </div>
+          <div>
+            <dt>Eating time</dt>
+            <dd>{preparationDurationLabel(terms.eatingTimeMs)}</dd>
+          </div>
+        </dl>
+        <p>
+          When a guest orders, these terms are snapshotted. Later preparation changes cannot
+          alter that visit&apos;s charge, ingredient cost, timing, appeal, demand result, or debrief.
+        </p>
+      </details>
+    </div>
   );
 }
 
@@ -588,8 +604,8 @@ export function VariantLabDialog({
           <button type="button" aria-label="Close Variant Lab" onClick={onClose}>×</button>
         </header>
         <p className="nutrition-lab-intro">
-          Choose the version this stall will serve. Price, ingredient cost, timing, Star appeal,
-          demand, and nutrition can all change with the preparation.
+          Choose the version this stall will serve. Price, ingredient cost, preparation time,
+          Star appeal, demand, and nutrition can all change with the preparation.
         </p>
         <div className="nutrition-variant-list" role="radiogroup" aria-label={`${dishName} version`}>
           {family.variants.map((variant) => {
@@ -634,7 +650,7 @@ export function VariantLabDialog({
           })}
         </div>
         <footer>
-          <p>Changes apply to future orders only. Accepted orders keep their frozen terms.</p>
+          <p>Changes apply to future orders only. Accepted orders keep their frozen terms, ledger result, and satisfaction outcome.</p>
           <button type="button" className="primary-button" onClick={onClose}>Done</button>
         </footer>
       </section>
