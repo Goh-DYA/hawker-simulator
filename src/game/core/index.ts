@@ -20,3 +20,4 @@ export * from "./satisfaction";
 export * from "./nutrition";
 export * from "./simulation";
 export * from "./persistence";
+export * from "./scenarios";

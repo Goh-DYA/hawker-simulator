@@ -21,6 +21,7 @@ import {
   projectEventModifiers,
   type EventModifier,
   type NeighbourhoodEventDefinition,
+  type ScenarioId,
 } from "@/src/content/strategicGameplay";
 import {
   ARRIVAL_PERIOD_MS,
@@ -81,6 +82,7 @@ import {
   validateWorldNavigationAccess,
   worldToTile,
   xpRequiredForLevel,
+  evaluateScenarioRun,
   type Customer,
   type ComboBoard,
   type ComboOffer,
@@ -137,6 +139,21 @@ import type {
 import { utilityEffectsForPlaceable } from "./contentUtility";
 import { deriveQueueFlowInsight } from "./queueInsight";
 import { deriveSatisfactionTips } from "./satisfactionInsight";
+import {
+  constrainScenarioGameState,
+  createScenarioGameState,
+  createScenarioRuntimeCatalog,
+  getScenarioRuntimeSetup,
+  isScenarioRunComplete,
+  restoreScenarioRuntimeEnvelope,
+} from "./scenarioState";
+import {
+  buildScenarioRunReport,
+  createScenarioRunTelemetry,
+  observeScenarioAdvance,
+  parseScenarioRunTelemetry,
+  type ScenarioRunTelemetryV1,
+} from "./scenarioTelemetry";
 import {
   defaultStallMenusForProgression,
   isDishIdUnlockedForMenu,
@@ -431,6 +448,9 @@ function runtimeFrozenMeal(
     ...frozen.fit.explanationCodes,
     ...frozen.explanationCodes,
   ]);
+  const mealBalanceValue = dataState === "unavailable"
+    ? undefined
+    : frozen.fit.mealBalance;
   const settledLineIds = new Set(customer.settledMealLineIds ?? []);
   const settledLines = frozen.lines.filter(({ orderLine }) => (
     settledLineIds.has(orderLine.lineId)
@@ -470,9 +490,11 @@ function runtimeFrozenMeal(
     ),
     servingStopCount: frozen.servingPlan.stops.length,
     mealBalance: {
-      value: frozen.fit.mealBalance,
-      dataState: frozen.fit.mealBalance === undefined ? "unavailable" : dataState,
-      explanation: frozen.fit.mealBalance === undefined
+      value: mealBalanceValue,
+      dataState: mealBalanceValue === undefined ? "unavailable" : dataState,
+      knownWeightBasisPoints:
+        frozen.fit.mealBalanceKnownWeightBasisPoints,
+      explanation: mealBalanceValue === undefined
         ? "Meal balance was unavailable at order time."
         : "Frozen comparative Meal balance among the unlocked feasible options at order time.",
     },
@@ -714,6 +736,12 @@ function coreNutritionProfile(
     conditionRatings: source.conditionRatings
       ? { ...source.conditionRatings }
       : undefined,
+    ratingStates: Object.fromEntries(
+      Object.entries(source.ratingStates).map(([id, state]) => [
+        id,
+        { ...state, missingMetrics: [...state.missingMetrics] },
+      ]),
+    ),
   };
 }
 
@@ -740,15 +768,25 @@ function runtimeNutritionProfile(
     conditionRatings: profile.conditionRatings
       ? { ...profile.conditionRatings }
       : undefined,
+    ratingStates: profile.ratingStates
+      ? Object.fromEntries(
+          Object.entries(profile.ratingStates).map(([id, state]) => [
+            id,
+            state
+              ? { ...state, missingMetrics: [...state.missingMetrics] }
+              : state,
+          ]),
+        )
+      : undefined,
     intentFits: { ...profile.intentFits },
   };
 }
 
 const HEALTH_CONDITION_LABELS: Readonly<Record<HealthConditionId, string>> = {
-  "high-cholesterol": "Managing high cholesterol",
-  obesity: "Managing obesity",
-  diabetes: "Managing diabetes",
-  hypertension: "Managing hypertension",
+  "high-cholesterol": "High-cholesterol-aware visit need",
+  obesity: "Weight-management-aware visit need",
+  diabetes: "Diabetes-aware visit need",
+  hypertension: "Blood-pressure-aware visit need",
 };
 
 const HEALTH_CONDITION_NUTRIENTS: Readonly<Record<HealthConditionId, string>> = {
@@ -1387,6 +1425,11 @@ export type RuntimePersistentState = RuntimePersistentStateV5;
 
 export interface RuntimePeriodOutcomeState {
   readonly periodSequenceId: number;
+  readonly qualifyingFlowStartMs: number;
+  readonly trayReturnsStart: number;
+  readonly trayReturnOpportunitiesStart: number;
+  readonly waitMsByVisitId: Readonly<Record<string, number>>;
+  readonly satisfactionByVisitId: Readonly<Record<string, number>>;
   readonly unservedDepartures: number;
   readonly timedOutServedVisits: number;
   readonly partialMealSecondStallUnavailable: number;
@@ -1431,6 +1474,39 @@ export function deduplicatedPartialPartyOutcomeIds(
     newlyObserved.push(partyId);
   }
   return newlyObserved;
+}
+
+/** Counts only parties whose full served cohort reached a normal departure. */
+export function completedPartyDepartureCounts(
+  events: readonly SimulationEvent[],
+): { readonly partyVisits: number; readonly partyGuests: number } {
+  let partyVisits = 0;
+  let partyGuests = 0;
+  for (const event of events) {
+    if (
+      event.type !== "customer-despawned" ||
+      !event.entityId ||
+      !event.message
+    ) {
+      continue;
+    }
+    const match = /^party-completed:(\d+)\/(\d+)$/.exec(event.message);
+    if (!match) continue;
+    const served = Number(match[1]);
+    const total = Number(match[2]);
+    if (
+      !Number.isSafeInteger(served) ||
+      !Number.isSafeInteger(total) ||
+      total < 2 ||
+      total > 6 ||
+      served !== total
+    ) {
+      continue;
+    }
+    partyVisits += 1;
+    partyGuests += total;
+  }
+  return { partyVisits, partyGuests };
 }
 
 export interface RuntimeComboOfferOutcomeState {
@@ -2116,7 +2192,44 @@ function resolveComboOfferOutcomes(
 export function resolvePeriodOutcomes(
   value: unknown,
   currentSequenceId: number,
+  currentMetrics?: Pick<
+    GameState["metrics"],
+    | "qualifyingFlowMs"
+    | "trayReturns"
+    | "trayReturnOpportunities"
+    | "visitRatings"
+  >,
 ): Readonly<Record<number, RuntimePeriodOutcomeState>> {
+  const currentWaitMsByVisitId = Object.fromEntries(
+    (currentMetrics?.visitRatings ?? [])
+      .filter(
+        (rating) =>
+          rating.arrivalPeriodSequenceId === currentSequenceId &&
+          rating.served &&
+          rating.reason !== "served-timeout" &&
+          Number.isSafeInteger(rating.waitMs) &&
+          (rating.waitMs ?? -1) >= 0,
+      )
+      .map((rating) => [rating.customerId, rating.waitMs!]),
+  );
+  const currentSatisfactionByVisitId = Object.fromEntries(
+    (currentMetrics?.visitRatings ?? [])
+      .filter(
+        (rating) =>
+          rating.arrivalPeriodSequenceId === currentSequenceId &&
+          rating.served &&
+          rating.reason !== "served-timeout",
+      )
+      .map((rating) => [rating.customerId, rating.score]),
+  );
+  const currentBaseline = {
+    qualifyingFlowStartMs: currentMetrics?.qualifyingFlowMs ?? 0,
+    trayReturnsStart: currentMetrics?.trayReturns ?? 0,
+    trayReturnOpportunitiesStart:
+      currentMetrics?.trayReturnOpportunities ?? 0,
+    waitMsByVisitId: currentWaitMsByVisitId,
+    satisfactionByVisitId: currentSatisfactionByVisitId,
+  };
   const resolved: Record<number, RuntimePeriodOutcomeState> = {};
   if (value && typeof value === "object" && !Array.isArray(value)) {
     for (const [key, candidate] of Object.entries(value)) {
@@ -2148,6 +2261,53 @@ export function resolvePeriodOutcomes(
           : 0;
       resolved[sequenceId] = {
         periodSequenceId: sequenceId,
+        qualifyingFlowStartMs:
+          Number.isSafeInteger(source.qualifyingFlowStartMs) &&
+          (source.qualifyingFlowStartMs ?? -1) >= 0
+            ? source.qualifyingFlowStartMs!
+            : currentBaseline.qualifyingFlowStartMs,
+        trayReturnsStart:
+          Number.isSafeInteger(source.trayReturnsStart) &&
+          (source.trayReturnsStart ?? -1) >= 0
+            ? source.trayReturnsStart!
+            : currentBaseline.trayReturnsStart,
+        trayReturnOpportunitiesStart:
+          Number.isSafeInteger(source.trayReturnOpportunitiesStart) &&
+          (source.trayReturnOpportunitiesStart ?? -1) >= 0
+            ? source.trayReturnOpportunitiesStart!
+            : currentBaseline.trayReturnOpportunitiesStart,
+        waitMsByVisitId:
+          source.waitMsByVisitId &&
+          typeof source.waitMsByVisitId === "object" &&
+          !Array.isArray(source.waitMsByVisitId)
+            ? Object.fromEntries(
+                Object.entries(source.waitMsByVisitId).filter(
+                  ([visitId, waitMs]) =>
+                    visitId.length > 0 &&
+                    Number.isSafeInteger(waitMs) &&
+                    (waitMs as number) >= 0,
+                ),
+              ) as Readonly<Record<string, number>>
+            : sequenceId === currentSequenceId
+              ? currentBaseline.waitMsByVisitId
+              : {},
+        satisfactionByVisitId:
+          source.satisfactionByVisitId &&
+          typeof source.satisfactionByVisitId === "object" &&
+          !Array.isArray(source.satisfactionByVisitId)
+            ? Object.fromEntries(
+                Object.entries(source.satisfactionByVisitId).filter(
+                  ([visitId, score]) =>
+                    visitId.length > 0 &&
+                    typeof score === "number" &&
+                    Number.isFinite(score) &&
+                    score >= 0 &&
+                    score <= 100,
+                ),
+              ) as Readonly<Record<string, number>>
+            : sequenceId === currentSequenceId
+              ? currentBaseline.satisfactionByVisitId
+              : {},
         unservedDepartures: source.unservedDepartures!,
         timedOutServedVisits: source.timedOutServedVisits!,
         partialMealSecondStallUnavailable:
@@ -2197,6 +2357,7 @@ export function resolvePeriodOutcomes(
   }
   resolved[currentSequenceId] ??= {
     periodSequenceId: currentSequenceId,
+    ...currentBaseline,
     unservedDepartures: 0,
     timedOutServedVisits: 0,
     partialMealSecondStallUnavailable: 0,
@@ -2222,6 +2383,11 @@ export function freezeRuntimePeriodForecastCoverage(
 } {
   const current = outcomes[periodSequenceId] ?? {
     periodSequenceId,
+    qualifyingFlowStartMs: 0,
+    trayReturnsStart: 0,
+    trayReturnOpportunitiesStart: 0,
+    waitMsByVisitId: {},
+    satisfactionByVisitId: {},
     unservedDepartures: 0,
     timedOutServedVisits: 0,
     partialMealSecondStallUnavailable: 0,
@@ -2441,17 +2607,26 @@ export async function createHawkerRuntime(
 ): Promise<RuntimeController> {
   const PhaserRuntime = (await import("phaser")).default;
   const { catalog: authoredCatalog, visuals } = buildCatalog();
-  let stallMenus = defaultStallMenusForProgression({
-    level: 1,
-    reputation: ECONOMY.startingReputation,
-  });
-  let activeDishVariants = defaultDishVariants();
-  let catalog = withStallMenus(
-    withDishVariants(authoredCatalog, activeDishVariants),
-    stallMenus,
-  );
+  const scenarioId: ScenarioId | undefined = options.scenarioId;
+  const scenarioSetup = scenarioId
+    ? getScenarioRuntimeSetup(scenarioId, authoredCatalog)
+    : undefined;
+  let stallMenus = scenarioSetup?.stallMenus ??
+    defaultStallMenusForProgression({
+      level: 1,
+      reputation: ECONOMY.startingReputation,
+    });
+  let activeDishVariants = scenarioSetup?.activeDishVariants ??
+    defaultDishVariants();
+  let catalog = scenarioId
+    ? createScenarioRuntimeCatalog(scenarioId, authoredCatalog)
+    : withStallMenus(
+        withDishVariants(authoredCatalog, activeDishVariants),
+        stallMenus,
+      );
   let state: GameState;
   let loadedPeriodOutcomes: unknown;
+  let loadedScenarioTelemetry: unknown;
   let loadedCoreRecoveryWarnings: readonly string[] = [];
   let recoveredNutritionSelection = false;
   let restoredExistingCentre = false;
@@ -2461,14 +2636,26 @@ export async function createHawkerRuntime(
     let lastLoadError: unknown;
     for (let index = 0; index < candidates.length; index += 1) {
       try {
-        const restored = restoreRuntimeEnvelope(candidates[index], authoredCatalog);
+        const restored = scenarioId
+          ? restoreScenarioRuntimeEnvelope(
+              scenarioId,
+              candidates[index],
+              authoredCatalog,
+            )
+          : restoreRuntimeEnvelope(candidates[index], authoredCatalog);
         loadedCoreRecoveryWarnings = restored.coreRecoveryWarnings;
         stallMenus = restored.stallMenus;
         activeDishVariants = restored.activeDishVariants;
         recoveredNutritionSelection =
           recoveredNutritionSelection ||
-          restored.recoveredNutritionSelection;
+          ("recoveredNutritionSelection" in restored
+            ? restored.recoveredNutritionSelection
+            : restored.recoveredLegacySelections);
         loadedPeriodOutcomes = restored.periodOutcomes;
+        loadedScenarioTelemetry =
+          "scenarioTelemetry" in restored
+            ? restored.scenarioTelemetry
+            : undefined;
         catalog = restored.catalog;
         loaded = restored.state;
         if (index > 0) {
@@ -2486,6 +2673,9 @@ export async function createHawkerRuntime(
     if (loaded) {
       state = loaded;
       restoredExistingCentre = true;
+    } else if (scenarioId) {
+      state = createScenarioGameState(scenarioId, authoredCatalog);
+      catalog = state.catalog;
     } else {
       state = freshState(authoredCatalog);
       activeDishVariants = defaultDishVariants();
@@ -2498,19 +2688,32 @@ export async function createHawkerRuntime(
   } catch (error) {
     options.onEvent({
       kind: "warning",
-      message: `The previous save was recovered as a new centre: ${error instanceof Error ? error.message : "unknown save error"}`,
+      message: scenarioId
+        ? `The previous scenario save was recovered as a fresh run: ${
+            error instanceof Error ? error.message : "unknown save error"
+          }`
+        : `The previous save was recovered as a new centre: ${
+            error instanceof Error ? error.message : "unknown save error"
+          }`,
     });
-    stallMenus = defaultStallMenusForProgression({
-      level: 1,
-      reputation: ECONOMY.startingReputation,
-    });
-    activeDishVariants = defaultDishVariants();
-    catalog = withStallMenus(
-      withDishVariants(authoredCatalog, activeDishVariants),
-      stallMenus,
-    );
-    state = freshState(authoredCatalog);
-    state = { ...state, catalog };
+    if (scenarioId && scenarioSetup) {
+      stallMenus = scenarioSetup.stallMenus;
+      activeDishVariants = scenarioSetup.activeDishVariants;
+      state = createScenarioGameState(scenarioId, authoredCatalog);
+      catalog = state.catalog;
+    } else {
+      stallMenus = defaultStallMenusForProgression({
+        level: 1,
+        reputation: ECONOMY.startingReputation,
+      });
+      activeDishVariants = defaultDishVariants();
+      catalog = withStallMenus(
+        withDishVariants(authoredCatalog, activeDishVariants),
+        stallMenus,
+      );
+      state = freshState(authoredCatalog);
+      state = { ...state, catalog };
+    }
   }
 
   function emitPreservedLayoutCapacityWarning(
@@ -2547,14 +2750,27 @@ export async function createHawkerRuntime(
       importance: "important",
     });
   }
-  if (restoredExistingCentre) {
+  if (restoredExistingCentre && !scenarioId) {
     emitPreservedLayoutCapacityWarning(state, catalog);
   }
 
   let periodOutcomes = resolvePeriodOutcomes(
     loadedPeriodOutcomes,
     state.servicePeriod.sequenceId,
+    state.metrics,
   );
+  let scenarioTelemetry: ScenarioRunTelemetryV1 | undefined = scenarioId
+    ? parseScenarioRunTelemetry(loadedScenarioTelemetry, {
+        scenarioId,
+        periodSequenceId: state.servicePeriod.sequenceId,
+      }) ??
+      createScenarioRunTelemetry(
+        scenarioId,
+        state.servicePeriod.sequenceId,
+        `run-${scenarioId}-${state.servicePeriod.sequenceId}`,
+        state,
+      )
+    : undefined;
 
   function freezePeriodForecastCoverage(periodSequenceId: number): boolean {
     const frozen = freezeRuntimePeriodForecastCoverage(
@@ -2578,18 +2794,31 @@ export async function createHawkerRuntime(
     : false;
 
   if (
+    !scenarioId &&
     process.env.NODE_ENV !== "production" &&
     typeof location !== "undefined" &&
     new URLSearchParams(location.search).has("visualQa")
   ) {
     const qaParams = new URLSearchParams(location.search);
-    state = rebaseDevelopmentCash(state, sgdToCents(100_000));
+    const requestedCash = Number(qaParams.get("visualQaCash"));
+    const requestedLevel = Number(qaParams.get("visualQaLevel"));
+    const visualQaCash = Number.isSafeInteger(requestedCash) &&
+        requestedCash >= 0 &&
+        requestedCash <= 1_000_000
+      ? requestedCash
+      : 100_000;
+    const visualQaLevel = Number.isSafeInteger(requestedLevel) &&
+        requestedLevel >= 1 &&
+        requestedLevel <= 20
+      ? requestedLevel
+      : 12;
+    state = rebaseDevelopmentCash(state, sgdToCents(visualQaCash));
     state = {
       ...state,
       progression: {
         ...state.progression,
-        xp: xpRequiredForLevel(12),
-        level: 12,
+        xp: xpRequiredForLevel(visualQaLevel),
+        level: visualQaLevel,
         reputation: 5,
         unlockedDefinitionIds: Object.keys(catalog.placeables).sort(),
       },
@@ -2601,10 +2830,13 @@ export async function createHawkerRuntime(
     periodOutcomes = resolvePeriodOutcomes(
       undefined,
       state.servicePeriod.sequenceId,
+      state.metrics,
     );
   }
 
-  const preparedStrategicState = prepareRuntimeNeighbourhoodEvent(state);
+  const preparedStrategicState = scenarioId
+    ? state
+    : prepareRuntimeNeighbourhoodEvent(state);
   const strategicPlanningPrepared = preparedStrategicState !== state;
   state = preparedStrategicState;
 
@@ -2615,6 +2847,7 @@ export async function createHawkerRuntime(
       nutritionDataVersion: NUTRITION_CONTENT.dataVersion,
       activeDishVariants,
       periodOutcomes,
+      ...(scenarioTelemetry ? { scenarioTelemetry } : {}),
     });
   if (restoredCoverageNormalized || strategicPlanningPrepared) {
     options.onPersistentChange(persistentPayload());
@@ -2658,6 +2891,23 @@ export async function createHawkerRuntime(
   let cameraOrigin = { x: 0, y: 0 };
 
   function synchronizeStallMenus() {
+    if (scenarioId && scenarioSetup) {
+      const unlocksMatch =
+        state.progression.unlockedDefinitionIds.length ===
+          scenarioSetup.unlocks.placeableDefinitionIds.length &&
+        scenarioSetup.unlocks.placeableDefinitionIds.every(
+          (id, index) => state.progression.unlockedDefinitionIds[index] === id,
+        );
+      if (unlocksMatch) return false;
+      const constrained = constrainScenarioGameState(
+        scenarioId,
+        state,
+        authoredCatalog,
+      );
+      state = constrained;
+      catalog = constrained.catalog;
+      return true;
+    }
     const nextMenus = resolveStallMenus(stallMenus, {
       ...stallMenuProgression(state),
       slotBonuses: stallMenuSlotBonuses(state),
@@ -2740,6 +2990,7 @@ export async function createHawkerRuntime(
   /** Applies one transparent, guarded recovery episode for the minimum playable setup. */
   function applyValidSetupRecovery(): boolean {
     if (state.servicePeriod.phase !== "planning") return false;
+    if (scenarioId === "scenario.limited-cash") return false;
     const episodeId = `valid-setup-${state.servicePeriod.sequenceId}`;
     if (state.recovery.resolvedEpisodeIds.includes(episodeId)) return false;
 
@@ -2893,6 +3144,12 @@ export async function createHawkerRuntime(
   ) {
     const current = periodOutcomes[periodSequenceId] ?? {
       periodSequenceId,
+      qualifyingFlowStartMs: state.metrics.qualifyingFlowMs,
+      trayReturnsStart: state.metrics.trayReturns,
+      trayReturnOpportunitiesStart:
+        state.metrics.trayReturnOpportunities,
+      waitMsByVisitId: {},
+      satisfactionByVisitId: {},
       unservedDepartures: 0,
       timedOutServedVisits: 0,
       partialMealSecondStallUnavailable: 0,
@@ -2937,9 +3194,61 @@ export async function createHawkerRuntime(
     };
   }
 
+  function recordPeriodMasteryRatings(): boolean {
+    const periodSequenceId = state.servicePeriod.sequenceId;
+    const current = periodOutcomes[periodSequenceId];
+    if (!current) return false;
+    const nextWaitMsByVisitId = {
+      ...current.waitMsByVisitId,
+    };
+    const nextSatisfactionByVisitId = {
+      ...current.satisfactionByVisitId,
+    };
+    let changed = false;
+    for (const rating of state.metrics.visitRatings) {
+      if (
+        rating.arrivalPeriodSequenceId !== periodSequenceId ||
+        !rating.served ||
+        rating.reason === "served-timeout"
+      ) {
+        continue;
+      }
+      if (
+        Number.isSafeInteger(rating.waitMs) &&
+        (rating.waitMs ?? -1) >= 0 &&
+        nextWaitMsByVisitId[rating.customerId] !== rating.waitMs
+      ) {
+        nextWaitMsByVisitId[rating.customerId] = rating.waitMs!;
+        changed = true;
+      }
+      if (
+        nextSatisfactionByVisitId[rating.customerId] !== rating.score
+      ) {
+        nextSatisfactionByVisitId[rating.customerId] = rating.score;
+        changed = true;
+      }
+    }
+    if (!changed) return false;
+    periodOutcomes = {
+      ...periodOutcomes,
+      [periodSequenceId]: {
+        ...current,
+        waitMsByVisitId: nextWaitMsByVisitId,
+        satisfactionByVisitId: nextSatisfactionByVisitId,
+      },
+    };
+    return true;
+  }
+
   function recordComboOutcome(observation: RuntimeComboOutcomeObservation) {
     const currentPeriod = periodOutcomes[observation.periodSequenceId] ?? {
       periodSequenceId: observation.periodSequenceId,
+      qualifyingFlowStartMs: state.metrics.qualifyingFlowMs,
+      trayReturnsStart: state.metrics.trayReturns,
+      trayReturnOpportunitiesStart:
+        state.metrics.trayReturnOpportunities,
+      waitMsByVisitId: {},
+      satisfactionByVisitId: {},
       unservedDepartures: 0,
       timedOutServedVisits: 0,
       partialMealSecondStallUnavailable: 0,
@@ -3004,18 +3313,8 @@ export async function createHawkerRuntime(
       (event) => event.type === "meal-partial" &&
         event.message === "served-timeout",
     ).length;
-    const createdParties = events.filter(
-      (event) => event.type === "party-created",
-    );
-    const partyVisits = createdParties.length;
-    const partyGuests = createdParties.reduce((sum, event) => {
-      const count = Number(event.message);
-      return sum + (
-        Number.isSafeInteger(count) && count >= 2 && count <= 6
-          ? count
-          : 0
-      );
-    }, 0);
+    const { partyVisits, partyGuests } =
+      completedPartyDepartureCounts(events);
     const partySplits = events.filter(
       (event) =>
         event.type === "party-seated" &&
@@ -3259,6 +3558,12 @@ export async function createHawkerRuntime(
     );
     const periodOutcome = periodOutcomes[state.servicePeriod.sequenceId] ?? {
       periodSequenceId: state.servicePeriod.sequenceId,
+      qualifyingFlowStartMs: state.metrics.qualifyingFlowMs,
+      trayReturnsStart: state.metrics.trayReturns,
+      trayReturnOpportunitiesStart:
+        state.metrics.trayReturnOpportunities,
+      waitMsByVisitId: {},
+      satisfactionByVisitId: {},
       unservedDepartures: 0,
       timedOutServedVisits: 0,
       partialMealSecondStallUnavailable: 0,
@@ -3329,6 +3634,32 @@ export async function createHawkerRuntime(
             : []),
         ],
       }));
+    const waitSamplesMs = Object.values(periodOutcome.waitMsByVisitId).sort(
+      (left, right) => left - right,
+    );
+    const waitMiddle = Math.floor(waitSamplesMs.length / 2);
+    const medianWaitSeconds = waitSamplesMs.length === 0
+      ? undefined
+      : waitSamplesMs.length % 2 === 1
+        ? waitSamplesMs[waitMiddle]! / 1_000
+        : (
+            waitSamplesMs[waitMiddle - 1]! +
+            waitSamplesMs[waitMiddle]!
+          ) / 2_000;
+    const satisfactionSamples = Object.values(
+      periodOutcome.satisfactionByVisitId,
+    );
+    const minimumSatisfaction = satisfactionSamples.length === 0
+      ? undefined
+      : Math.min(...satisfactionSamples);
+    const distinctPreparationIds = [
+      ...new Set(
+        periodLedger.entries
+          .filter((entry) => entry.kind === "gross-sale")
+          .map((entry) => entry.preparationId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ].sort((left, right) => left.localeCompare(right));
     const periodDebrief: RuntimePeriodDebrief | undefined =
       state.servicePeriod.phase === "debrief"
         ? {
@@ -3375,8 +3706,56 @@ export async function createHawkerRuntime(
                 : []),
             ],
             forecastComparison,
+            masteryMetrics: {
+              ...(minimumSatisfaction === undefined
+                ? {}
+                : { minimumSatisfaction }),
+              ...(medianWaitSeconds === undefined
+                ? {}
+                : { medianWaitSeconds }),
+              flowSeconds: Math.floor(
+                Math.max(
+                  0,
+                  state.metrics.qualifyingFlowMs -
+                    periodOutcome.qualifyingFlowStartMs,
+                ) / 1_000,
+              ),
+              distinctPreparationIds,
+              trayReturns: Math.max(
+                0,
+                state.metrics.trayReturns - periodOutcome.trayReturnsStart,
+              ),
+              trayReturnOpportunities: Math.max(
+                0,
+                state.metrics.trayReturnOpportunities -
+                  periodOutcome.trayReturnOpportunitiesStart,
+              ),
+            },
           }
         : undefined;
+    const scenarioEvaluation = scenarioId && scenarioTelemetry
+      ? evaluateScenarioRun(
+          buildScenarioRunReport({
+            scenarioId,
+            telemetry: scenarioTelemetry,
+            state,
+            outcome: state.servicePeriod.phase === "debrief"
+              ? {
+                  kind: "terminal-debrief",
+                  periodSequenceId: state.servicePeriod.sequenceId,
+                  servedTimeoutIds: Array.from(
+                    { length: periodOutcome.timedOutServedVisits },
+                    (_, index) => `served-timeout-${index + 1}`,
+                  ),
+                  unservedDepartureIds: Array.from(
+                    { length: periodOutcome.unservedDepartures },
+                    (_, index) => `unserved-departure-${index + 1}`,
+                  ),
+                }
+              : { kind: "in-progress" },
+          }),
+        )
+      : undefined;
     const activePreparations = DISHES.map((dish) => {
       const variantId = activeDishVariants[dish.id];
       const preparation = reviewedPreparationFor(dish.id, variantId)
@@ -3478,6 +3857,11 @@ export async function createHawkerRuntime(
         mealBalance: {
           value: mealBalance?.rating,
           dataState: mealState,
+          knownWeightBasisPoints: mealBalance
+            ? Math.round(
+                (mealBalance.availableWeight / mealBalance.totalWeight) * 10_000,
+              )
+            : undefined,
           explanation: mealBalance?.rating === undefined
             ? "Meal balance is unavailable because the comparison lacks enough reported nutrition data."
             : `Comparative in-game balance among ${unlockedMealUniverse.length} unlocked feasible single meals and valid pairs.`,
@@ -3521,11 +3905,12 @@ export async function createHawkerRuntime(
         liveComboUnavailableOfferCount,
       ),
     };
-    const liveForecastCoverage = deriveRuntimeForecastAvailability(
+    const forecastAvailability = deriveRuntimeForecastAvailability(
       state,
       stallMenus,
       activeDishVariants,
-    ).coverage;
+    );
+    const liveForecastCoverage = forecastAvailability.coverage;
     const forecastCoverage = (
       state.servicePeriod.phase === "draining" ||
       state.servicePeriod.phase === "debrief"
@@ -3697,6 +4082,22 @@ export async function createHawkerRuntime(
         reconcilesToCash: reconciliationDeltaCents === 0,
       },
       periodDebrief,
+      scenario: scenarioId && scenarioEvaluation
+        ? {
+            scenarioId,
+            score: scenarioEvaluation.score,
+            scoreUnit: scenarioEvaluation.scoreUnit,
+            runComplete: state.servicePeriod.phase === "debrief",
+            medal: scenarioEvaluation.medal,
+            breakdown: scenarioEvaluation.breakdown,
+            failureCodes: scenarioEvaluation.failureCodes,
+            ...(scenarioEvaluation.nextMedal
+              ? { nextMedal: scenarioEvaluation.nextMedal }
+              : {}),
+            cosmeticRewardIds:
+              scenarioEvaluation.metaReward?.cosmeticIds ?? [],
+          }
+        : undefined,
       isOpen:
         state.servicePeriod.phase === "arrivals" ||
         state.servicePeriod.phase === "draining",
@@ -3735,6 +4136,7 @@ export async function createHawkerRuntime(
       unlockedContentIds: snapshot.progression.unlockedDefinitionIds,
       stallMenus,
       activeDishVariants,
+      unlockedPreparationCount: forecastAvailability.unlockedPreparationIds.size,
       activePreparations,
       comboBoard,
       nutritionFamilies,
@@ -4167,6 +4569,7 @@ export async function createHawkerRuntime(
           ...state,
           arrivalPerformancePressure: Math.max(0, Math.min(1, (lastSimulationMs - 8) / 16)),
         };
+        const simulationStateBefore = state;
         const periodRemainingMs = periodBefore.phase === "arrivals"
           ? ARRIVAL_PERIOD_MS - periodBefore.arrivalElapsedMs
           : DRAIN_WATCHDOG_MS - periodBefore.drainElapsedMs;
@@ -4176,12 +4579,21 @@ export async function createHawkerRuntime(
         );
         const beforeUnlockCount = state.progression.unlockedDefinitionIds.length;
         state = reconcileRuntimeUnlocks(result.state);
+        if (scenarioTelemetry) {
+          scenarioTelemetry = observeScenarioAdvance(
+            scenarioTelemetry,
+            simulationStateBefore,
+            state,
+          );
+        }
         let periodOutcomeChanged = recordPeriodDepartures(
           result.events,
           abandonedVisitsBefore,
           customersBefore,
           partiesBefore,
         );
+        periodOutcomeChanged =
+          recordPeriodMasteryRatings() || periodOutcomeChanged;
         const periodEnteredDrain =
           periodBefore.phase === "arrivals" &&
           state.servicePeriod.phase === "draining";
@@ -8093,9 +8505,24 @@ export async function createHawkerRuntime(
         return false;
       }
       if (state.servicePeriod.phase === "debrief") {
+        if (scenarioId && isScenarioRunComplete(state)) {
+          options.onEvent({
+            kind: "info",
+            message:
+              "This scenario run is complete. Review the result, then save and return to the main centre.",
+            importance: "important",
+          });
+          return false;
+        }
         const completedForecastComparison = currentSnapshot().periodDebrief?.forecastComparison;
         const completedOutcome = periodOutcomes[state.servicePeriod.sequenceId] ?? {
           periodSequenceId: state.servicePeriod.sequenceId,
+          qualifyingFlowStartMs: state.metrics.qualifyingFlowMs,
+          trayReturnsStart: state.metrics.trayReturns,
+          trayReturnOpportunitiesStart:
+            state.metrics.trayReturnOpportunities,
+          waitMsByVisitId: {},
+          satisfactionByVisitId: {},
           unservedDepartures: 0,
           timedOutServedVisits: 0,
           partialMealSecondStallUnavailable: 0,
@@ -8159,6 +8586,7 @@ export async function createHawkerRuntime(
         periodOutcomes = resolvePeriodOutcomes(
           periodOutcomes,
           nextServicePeriod.sequenceId,
+          state.metrics,
         );
         speed = 1;
         synchronizeEventPromptPause();
@@ -8335,17 +8763,43 @@ export async function createHawkerRuntime(
       return persistentPayload();
     },
     importState(value) {
-      const restored = restoreRuntimeEnvelope(value, authoredCatalog);
+      const restored = scenarioId
+        ? restoreScenarioRuntimeEnvelope(
+            scenarioId,
+            value,
+            authoredCatalog,
+          )
+        : restoreRuntimeEnvelope(value, authoredCatalog);
       stallMenus = restored.stallMenus;
       activeDishVariants = restored.activeDishVariants;
       catalog = restored.catalog;
       state = restored.state;
-      const importedStrategicState = prepareRuntimeNeighbourhoodEvent(state);
+      const importedStrategicState = scenarioId
+        ? state
+        : prepareRuntimeNeighbourhoodEvent(state);
       const importedStrategicPrepared = importedStrategicState !== state;
       state = importedStrategicState;
+      scenarioTelemetry = scenarioId
+        ? parseScenarioRunTelemetry(
+            "scenarioTelemetry" in restored
+              ? restored.scenarioTelemetry
+              : undefined,
+            {
+              scenarioId,
+              periodSequenceId: state.servicePeriod.sequenceId,
+            },
+          ) ??
+          createScenarioRunTelemetry(
+            scenarioId,
+            state.servicePeriod.sequenceId,
+            `run-${scenarioId}-${state.servicePeriod.sequenceId}`,
+            state,
+          )
+        : undefined;
       periodOutcomes = resolvePeriodOutcomes(
         restored.periodOutcomes,
         state.servicePeriod.sequenceId,
+        state.metrics,
       );
       const importedCoverageNormalized = (
         state.servicePeriod.phase === "draining" ||
@@ -8353,9 +8807,13 @@ export async function createHawkerRuntime(
       )
         ? freezePeriodForecastCoverage(state.servicePeriod.sequenceId)
         : false;
-      emitPreservedLayoutCapacityWarning(state, catalog);
+      if (!scenarioId) emitPreservedLayoutCapacityWarning(state, catalog);
       selectedCustomerId = undefined;
-      if (restored.recoveredNutritionSelection) {
+      const restoredReviewedDefaults =
+        "recoveredNutritionSelection" in restored
+          ? restored.recoveredNutritionSelection
+          : restored.recoveredLegacySelections;
+      if (restoredReviewedDefaults) {
         options.onEvent({
           kind: "warning",
           message: "One or more imported recipe choices were reset to reviewed defaults.",
@@ -8387,22 +8845,38 @@ export async function createHawkerRuntime(
       emitHud(true);
     },
     reset() {
-      stallMenus = defaultStallMenusForProgression({
-        level: 1,
-        reputation: ECONOMY.startingReputation,
-      });
-      activeDishVariants = defaultDishVariants();
-      catalog = withStallMenus(
-        withDishVariants(authoredCatalog, activeDishVariants),
-        stallMenus,
-      );
-      state = freshState(authoredCatalog);
-      state = { ...state, catalog };
-      state = prepareRuntimeNeighbourhoodEvent(state);
+      if (scenarioId && scenarioSetup) {
+        stallMenus = scenarioSetup.stallMenus;
+        activeDishVariants = scenarioSetup.activeDishVariants;
+        state = createScenarioGameState(scenarioId, authoredCatalog);
+        catalog = state.catalog;
+      } else {
+        stallMenus = defaultStallMenusForProgression({
+          level: 1,
+          reputation: ECONOMY.startingReputation,
+        });
+        activeDishVariants = defaultDishVariants();
+        catalog = withStallMenus(
+          withDishVariants(authoredCatalog, activeDishVariants),
+          stallMenus,
+        );
+        state = freshState(authoredCatalog);
+        state = { ...state, catalog };
+        state = prepareRuntimeNeighbourhoodEvent(state);
+      }
       periodOutcomes = resolvePeriodOutcomes(
         undefined,
         state.servicePeriod.sequenceId,
+        state.metrics,
       );
+      scenarioTelemetry = scenarioId
+        ? createScenarioRunTelemetry(
+            scenarioId,
+            state.servicePeriod.sequenceId,
+            `run-${scenarioId}-${state.servicePeriod.sequenceId}`,
+            state,
+          )
+        : undefined;
       recomputeObjectSequence();
       selectedBuildId = undefined;
       selectedObjectId = undefined;
@@ -8433,8 +8907,16 @@ export async function createHawkerRuntime(
         return;
       }
       state = { ...state, spawnCountdownMs: 0 };
+      const before = state;
       const result = advanceSimulation(state, state.config.fixedStepMs);
       state = result.state;
+      if (scenarioTelemetry) {
+        scenarioTelemetry = observeScenarioAdvance(
+          scenarioTelemetry,
+          before,
+          state,
+        );
+      }
       synchronizeStallMenus();
       activeScene?.render(true);
       emitHud(true);
@@ -8458,6 +8940,13 @@ export async function createHawkerRuntime(
       emitHud(true);
     },
     expandMap() {
+      if (scenarioId) {
+        options.onEvent({
+          kind: "info",
+          message: "Scenario maps use fixed boundaries for comparable scoring.",
+        });
+        return false;
+      }
       if (state.progression.level < 3) {
         options.onEvent({
           kind: "warning",
@@ -8526,6 +9015,13 @@ export async function createHawkerRuntime(
       activeScene?.render(true);
     },
     setDishEnabled(stallId, dishId, enabled) {
+      if (scenarioId) {
+        options.onEvent({
+          kind: "info",
+          message: "This scenario uses a fixed reviewed menu.",
+        });
+        return false;
+      }
       if (isConfigurationLocked(state.servicePeriod.phase)) {
         options.onEvent({
           kind: "warning",
@@ -8597,6 +9093,13 @@ export async function createHawkerRuntime(
       return true;
     },
     setDishVariant(dishId, variantId) {
+      if (scenarioId) {
+        options.onEvent({
+          kind: "info",
+          message: "This scenario keeps its authored preparations fixed.",
+        });
+        return false;
+      }
       if (isConfigurationLocked(state.servicePeriod.phase)) {
         options.onEvent({
           kind: "warning",
@@ -8846,6 +9349,13 @@ export async function createHawkerRuntime(
       activeScene?.render(true);
     },
     addAccessPoint(kind) {
+      if (scenarioId) {
+        options.onEvent({
+          kind: "info",
+          message: "Scenario entrances and exits are fixed by the challenge map.",
+        });
+        return;
+      }
       setBuildTool("access");
       pendingAccessKind = kind;
       selectedAccessPointId = undefined;
@@ -8864,6 +9374,13 @@ export async function createHawkerRuntime(
       activeScene?.render(true);
     },
     removeSelectedAccessPoint() {
+      if (scenarioId) {
+        options.onEvent({
+          kind: "info",
+          message: "Scenario entrances and exits cannot be removed.",
+        });
+        return false;
+      }
       if (!selectedAccessPointId) return false;
       const accepted = runCommand({ type: "remove-access-point", accessPointId: selectedAccessPointId });
       if (accepted) selectedAccessPointId = undefined;

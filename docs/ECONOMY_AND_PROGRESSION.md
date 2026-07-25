@@ -60,10 +60,10 @@ catastrophic. Exact rounding is centralized and covered by unit tests.
 
 | Phase | Levels | Player learning | Representative unlocks |
 |---|---:|---|---|
-| Starter | 1–3 | Build, service, tray return, first bottleneck | Sunrise Roost, Coconut & Lime, Kopi Canopy, Cinder Wok |
-| Variety | 4–7 | Menu mix, group seating, queue design | Mee Pok Junction, Tiffin Lantern, Sweet Monsoon, Satay Meridian, Tamarind Leaf, first expansion |
+| Starter | 1–3 | Build, service, tray return, first bottleneck | Sunrise Roost, Coconut & Lime, Kopi Canopy, Cinder Wok, isolated scenarios at level 3 |
+| Variety | 4–7 | Menu mix, group seating, queue design | Mee Pok Junction, Combo Board at level 5, Tiffin Lantern, Sweet Monsoon, Satay Meridian, Tamarind Leaf, first expansion |
 | Optimization | 8–12 | Peak flow, ambience, upgrades | Bamboo Basket, Straits Hearth, Harbour Ember, advanced facilities |
-| Mastery | 13–20 | Dense layouts and self-directed goals | premium families, final expansions, feature decorations |
+| Mastery | 13–20 | Dense layouts and self-directed goals | rotating mastery contracts at level 13, premium families, final expansions, feature decorations |
 
 Every required launch stall and catalogue item is earnable by level 20 without premium payment. Unlocks reveal no more than a manageable group at a time.
 
@@ -82,8 +82,14 @@ requiring a specific cultural dish as a novelty stunt.
 - If cash is below the cheapest valid earning setup and no openable stall exists, grant only the setup shortfall up to S$650 once per unresolved recovery condition and explain why.
 - Selling returns 70% of base price; the confirmation shows resulting capability.
 - A stall can always run at least one owned starter menu.
-- Reset and new game require confirmation; import/export is a debug/support feature.
+- Progress-bundle export/import is a player-controlled local backup feature. Main reset requires confirmation and preserves scenario/meta rewards; separately confirmed erase all removes main, scenario, and meta progression.
 - No debt, bankruptcy timer, forced restart, or paid rescue.
+
+## Scenario and mastery reward isolation
+
+The five scenario save slots have authored starting S$ and cannot modify main-centre cash, XP, reputation, objectives, or unlocks. Scenario completion awards medals and cosmetics only.
+
+Mastery contracts unlock at level 13 and award titles or cosmetics only. Rewards are granted once even when a completed template later appears as a labelled practice replay. Medals, titles, and cosmetics survive main-centre reset and have no operating-margin or economy effect.
 
 ## Balance acceptance
 

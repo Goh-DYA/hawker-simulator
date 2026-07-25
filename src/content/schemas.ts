@@ -366,6 +366,26 @@ export const nutritionProvenanceSchema = z.object({
   reviewNote: z.string().min(8),
 });
 
+export const nutritionRatingStateSchema = z.discriminatedUnion("status", [
+  z.object({
+    status: z.literal("known"),
+    value: fivePointRatingSchema,
+    knownWeightBasisPoints: z.number().int().min(7_500).max(10_000),
+    totalWeightBasisPoints: z.literal(10_000),
+    missingMetrics: z.array(nutritionMetricSchema),
+  }),
+  z.object({
+    status: z.literal("unavailable"),
+    reason: z.enum([
+      "insufficient-source-coverage",
+      "profile-unavailable",
+    ]),
+    knownWeightBasisPoints: z.number().int().min(0).max(10_000),
+    totalWeightBasisPoints: z.literal(10_000),
+    missingMetrics: z.array(nutritionMetricSchema),
+  }),
+]);
+
 export const nutritionProfileSchema = z.object({
   id: z.string().min(3),
   dishId: contentIdSchema.refine((id) => id.startsWith("dish.")),
@@ -374,8 +394,18 @@ export const nutritionProfileSchema = z.object({
   nutritionClass: z.enum(["meal", "drink"]),
   serving: nutritionServingSchema.optional(),
   nutrients: nutritionNutrientsSchema,
-  healthRating: fivePointRatingSchema,
-  conditionRatings: z.record(healthConditionSchema, fivePointRatingSchema),
+  healthRating: fivePointRatingSchema.optional(),
+  conditionRatings: z.partialRecord(
+    healthConditionSchema,
+    fivePointRatingSchema,
+  ),
+  ratingStates: z.object({
+    overall: nutritionRatingStateSchema,
+    "high-cholesterol": nutritionRatingStateSchema,
+    obesity: nutritionRatingStateSchema,
+    diabetes: nutritionRatingStateSchema,
+    hypertension: nutritionRatingStateSchema,
+  }),
   intentFits: z.partialRecord(
     nutritionIntentIdSchema,
     z.number().min(0).max(1),
@@ -386,6 +416,34 @@ export const nutritionProfileSchema = z.object({
     .optional(),
   reviewNote: z.string().min(8),
   quarantineReasons: z.array(z.string().min(8)).min(1).optional(),
+}).superRefine((profile, context) => {
+  const overall = profile.ratingStates.overall;
+  if (
+    (overall.status === "known" && profile.healthRating !== overall.value) ||
+    (overall.status === "unavailable" && profile.healthRating !== undefined)
+  ) {
+    context.addIssue({
+      code: "custom",
+      path: ["healthRating"],
+      message:
+        "healthRating must equal a known overall rating state and must be absent when that state is unavailable",
+    });
+  }
+  for (const condition of healthConditionSchema.options) {
+    const state = profile.ratingStates[condition];
+    const value = profile.conditionRatings[condition];
+    if (
+      (state.status === "known" && value !== state.value) ||
+      (state.status === "unavailable" && value !== undefined)
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["conditionRatings", condition],
+        message:
+          "condition rating must equal its known rating state and must be absent when that state is unavailable",
+      });
+    }
+  }
 });
 
 export const nutritionVariantSchema = z.object({

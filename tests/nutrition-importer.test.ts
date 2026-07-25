@@ -375,7 +375,59 @@ describe("nutrition CSV importer", () => {
     >) {
       assert.equal(profiles[0].conditionRatings[condition], 5);
       assert.equal(profiles[1].conditionRatings[condition], 1);
+      assert.equal(
+        (profiles[0] as unknown as {
+          ratingStates: Record<string, { status: string }>;
+        }).ratingStates[condition].status,
+        "known",
+      );
     }
+  });
+
+  it("withholds ratings below the source-completeness gate and preserves trace", () => {
+    const profiles = [{
+      id: "partial",
+      status: "released",
+      nutritionClass: "meal",
+      nutrients: nutrientFixture({
+        energyKcal: { status: "known", value: 500 },
+        proteinG: { status: "known", value: 20 },
+        totalFatG: { status: "known", value: 12 },
+        saturatedFatG: { status: "known", value: 4 },
+        transFatG: { status: "trace" },
+        carbohydrateG: { status: "known", value: 60 },
+        totalSugarG: { status: "unavailable", reason: "not-reported" },
+        dietaryFibreG: { status: "known", value: 4 },
+        sodiumMg: { status: "unavailable", reason: "not-reported" },
+        calciumMg: { status: "known", value: 100 },
+        ironMg: { status: "known", value: 2 },
+      }),
+      healthRating: 3,
+      conditionRatings: {
+        "high-cholesterol": 3,
+        obesity: 3,
+        diabetes: 3,
+        hypertension: 3,
+      },
+    }];
+
+    addHealthRatings(profiles);
+
+    const ratingStates = (profiles[0] as unknown as {
+      ratingStates: Record<string, {
+        status: string;
+        knownWeightBasisPoints: number;
+      }>;
+    }).ratingStates;
+    assert.equal(ratingStates.diabetes.status, "unavailable");
+    assert.equal(
+      ratingStates.diabetes.knownWeightBasisPoints,
+      7_000,
+    );
+    assert.equal(ratingStates.hypertension.status, "unavailable");
+    assert.equal(profiles[0].conditionRatings.diabetes, undefined);
+    assert.equal(profiles[0].conditionRatings.hypertension, undefined);
+    assert.equal(profiles[0].nutrients.transFatG.status, "trace");
   });
 
   it("rejects drift between preserved guideline metadata and rows", () => {

@@ -105,7 +105,8 @@ describe("runtime nutrition persistence", () => {
     const reviewedProfile = NUTRITION_CONTENT.profiles.find(
       (profile) =>
         profile.status === "released" &&
-        typeof profile.conditionRatings?.hypertension === "number",
+        typeof profile.conditionRatings?.hypertension === "number" &&
+        typeof profile.conditionRatings?.diabetes === "number",
     );
     expect(reviewedProfile).toBeDefined();
 
@@ -114,7 +115,9 @@ describe("runtime nutrition persistence", () => {
       orderedNutritionProfile: reviewedProfile,
     });
 
-    expect(reasons.some((reason) => reason.includes("Managing hypertension"))).toBe(true);
+    expect(
+      reasons.some((reason) => reason.includes("Blood-pressure-aware visit need")),
+    ).toBe(true);
     expect(reasons.some((reason) => reason.includes("sodium"))).toBe(true);
     expect(reasons.some((reason) => reason.includes("carbohydrate, total sugar"))).toBe(true);
   });

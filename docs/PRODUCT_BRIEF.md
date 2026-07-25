@@ -1,7 +1,7 @@
 # Hawker Balance — Product Brief
 
 Status: Release-candidate product baseline
-Last updated: 2026-07-20
+Last updated: 2026-07-26
 Release readiness: NO-GO pending exact-production browser/offline QA, publication evidence, and required human reviews
 
 ## Product statement
@@ -28,10 +28,14 @@ The game is for casual and simulation players aged 13+, launches free, requires 
 - Place, move, rotate, store, sell, remove, and undo placeable objects and stalls.
 - Fourteen fictional stalls, 54 playable dishes, 80 meaningfully distinct placeables, and twelve behavior archetypes.
 - A released source profile and Star rating for every dish, with 104 released nutrition profiles across 14 reviewed recipe-variant families.
+- Preparation-specific price, ingredient cost, timing, Star appeal, and demand trade-offs frozen at order time.
 - Overall Health ratings plus distinct high-cholesterol, obesity, diabetes, and hypertension ratings; optional visit conditions remain independent of customer archetype and demographics.
 - Customer spawning, choice, pathfinding, queueing, ordering, preparation abstraction, seat reservation, eating, reactions, tray return where applicable, and departure.
+- Four forecast-led daily service periods, target-frozen optional objectives, SGD ledgers/debriefs, and a level-5 three-slot Combo Board.
+- Atomic visible parties of up to six, eight deterministic neighbourhood events, and six recurring fictional regulars whose condition-aware needs are independently resampled each visit.
+- Five isolated level-3 scenarios with medal/cosmetic rewards and twelve rotating level-13 mastery templates with title/cosmetic rewards.
 - Cash, experience, reputation, unlocks, upgrades, objectives, and map expansion.
-- Tutorial, settings, accessibility options, audio controls, local saves, and offline application shell.
+- Tutorial, settings, accessibility options, audio controls, main/scenario/meta local saves, V3 progress-bundle import/export, preserved-meta main reset, erase all, and offline application shell.
 - English localization. Multilingual environmental text is used only after translation review.
 
 Content-counting rule: a catalogue entry counts only when it has a unique ID and a meaningful gameplay, footprint, interaction, unlock, or visual-construction difference. A palette-only recolour does not count.
@@ -52,7 +56,7 @@ The release must pass the acceptance checklist in RELEASE_CHECKLIST.md. In parti
 - Current stable desktop Chrome is tested and its exact version recorded.
 - Human Singapore cultural review, qualified legal/privacy review, and independent security review are complete or explicitly waived by the accountable human owner.
 
-The content `1.3.0` source contract, complete automated working-source gate, and both local production builds are recorded. Exact-production browser/offline validation, publication evidence, and all external review gates remain incomplete as of this document date.
+The content `1.3.0` and strategic-gameplay source contracts have automated working-source evidence. Exact-production browser/offline validation, immutable artifact and publication evidence, performance approval, and all external review gates remain incomplete as of this document date.
 
 ## Product assumptions
 

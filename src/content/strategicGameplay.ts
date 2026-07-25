@@ -626,6 +626,7 @@ export interface ScenarioDefinition {
   readonly unlockedStallIds: readonly string[];
   readonly unlockedDishIds: readonly string[];
   readonly modifiers: ScenarioModifierSet;
+  readonly planningNotes: readonly string[];
   readonly scoreUnit: ScenarioScoreUnit;
   readonly medalThresholds: Readonly<Record<ScenarioMedal, number>>;
   readonly cosmeticRewardIds: Readonly<Record<ScenarioMedal, string>>;
@@ -635,7 +636,8 @@ export const SCENARIOS = [
   {
     id: "scenario.narrow-aisles",
     name: "Narrow Aisles",
-    description: "Maintain reliable routes in a compact centre.",
+    description:
+      "A maintenance cordon narrows the morning aisles. Keep every neighbour moving through the compact centre.",
     unlockLevel: 3,
     isolation: "scenario-save-only",
     mapId: "map.scenario-narrow-aisles",
@@ -652,6 +654,10 @@ export const SCENARIOS = [
       aisleWidthTiles: 2,
       arrivalBasisPoints: 9_000,
     },
+    planningNotes: [
+      "Maintenance screens leave two-tile side aisles around the breakfast crowd.",
+      "Keep the central service route open so neighbours can reach stalls, seats, tray return, and exit.",
+    ],
     scoreUnit: "points",
     medalThresholds: { bronze: 55, silver: 72, gold: 86 },
     cosmeticRewardIds: {
@@ -663,7 +669,8 @@ export const SCENARIOS = [
   {
     id: "scenario.split-hall",
     name: "Split Hall",
-    description: "Serve both seating zones without leaving one behind.",
+    description:
+      "A community workshop fills both wings of the hall. Serve each seating zone without leaving one behind.",
     unlockLevel: 3,
     isolation: "scenario-save-only",
     mapId: "map.scenario-split-hall",
@@ -684,6 +691,10 @@ export const SCENARIOS = [
       seatingZones: 2,
       crossHallDistanceTiles: 16,
     },
+    planningNotes: [
+      "Workshop tables occupy two seating zones joined by one central crossing.",
+      "Balance stall access and seating so completed visits reach both sides.",
+    ],
     scoreUnit: "points",
     medalThresholds: { bronze: 50, silver: 70, gold: 85 },
     cosmeticRewardIds: {
@@ -696,7 +707,7 @@ export const SCENARIOS = [
     id: "scenario.limited-cash",
     name: "Limited Cash",
     description:
-      "Finish with positive contribution from a lean starting setup.",
+      "A repair bill leaves a lean starting setup. Rebuild a welcoming service with positive contribution.",
     unlockLevel: 3,
     isolation: "scenario-save-only",
     mapId: "map.scenario-limited-cash",
@@ -713,8 +724,12 @@ export const SCENARIOS = [
       purchaseCostBasisPoints: 10_000,
       startingFixtures: 4,
     },
+    planningNotes: [
+      "The small starting setup still has an open service spine and enough essentials for a competent first plan.",
+      "Recovery cash is disabled for medal qualification, so each purchase needs a clear service purpose.",
+    ],
     scoreUnit: "contribution-cents",
-    medalThresholds: { bronze: 8_000, silver: 14_000, gold: 20_000 },
+    medalThresholds: { bronze: 8_000, silver: 12_000, gold: 14_500 },
     cosmeticRewardIds: {
       bronze: "cosmetic.savings-jar",
       silver: "cosmetic.ledger-board",
@@ -725,7 +740,7 @@ export const SCENARIOS = [
     id: "scenario.menu-diversity",
     name: "Menu Diversity",
     description:
-      "Serve a deliberate spread of existing meal roles and preparations.",
+      "A neighbourhood open house brings varied meal plans. Serve a deliberate spread of existing roles and preparations.",
     unlockLevel: 3,
     isolation: "scenario-save-only",
     mapId: "map.scenario-menu-diversity",
@@ -734,22 +749,25 @@ export const SCENARIOS = [
     unlockedStallIds: [
       "stall.coconut-lime",
       "stall.kopi-canopy",
-      "stall.tiffin-lantern",
+      "stall.tamarind-leaf",
     ],
     unlockedDishIds: [
       "dish.nasi-lemak",
-      "dish.soto-ayam",
       "dish.kopi",
-      "dish.sugarcane-juice",
       "dish.ice-kacang",
+      "dish.masala-thosai",
     ],
     modifiers: {
       kind: "menu-diversity",
       requiredMealRoles: 3,
       minimumDistinctPreparations: 3,
     },
+    planningNotes: [
+      "Three stall bays support main, side, and drink roles for the open-house crowd.",
+      "Medals count frozen preparations actually served, not dishes listed only for display.",
+    ],
     scoreUnit: "distinct-preparations",
-    medalThresholds: { bronze: 3, silver: 4, gold: 5 },
+    medalThresholds: { bronze: 2, silver: 3, gold: 4 },
     cosmeticRewardIds: {
       bronze: "cosmetic.menu-tabs",
       silver: "cosmetic.colourful-board",
@@ -759,7 +777,8 @@ export const SCENARIOS = [
   {
     id: "scenario.peak-throughput",
     name: "Peak Throughput",
-    description: "Handle a dense rush while keeping waits controlled.",
+    description:
+      "A nearby shift change sends a dense evening rush through the centre. Keep waits controlled without losing the human rhythm.",
     unlockLevel: 3,
     isolation: "scenario-save-only",
     mapId: "map.scenario-peak-throughput",
@@ -780,6 +799,10 @@ export const SCENARIOS = [
       arrivalBasisPoints: 15_500,
       maximumMedianWaitMs: 65_000,
     },
+    planningNotes: [
+      "Two arrival lanes support the shift-change crowd, but queues still need clear pickup and seating paths.",
+      "Completed visits count only while median waits remain controlled.",
+    ],
     scoreUnit: "completed-visits",
     medalThresholds: { bronze: 28, silver: 40, gold: 52 },
     cosmeticRewardIds: {
@@ -804,6 +827,11 @@ export type MasteryMetric =
   | "periods-without-refund"
   | "combo-visits";
 
+export interface MasteryContractQualification {
+  readonly minimumCompletedVisitsPerPeriod?: number;
+  readonly minimumTrayReturnOpportunitiesPerPeriod?: number;
+}
+
 export interface MasteryContractTemplate {
   readonly id: `contract.${string}`;
   readonly title: string;
@@ -814,6 +842,11 @@ export interface MasteryContractTemplate {
     readonly metric: MasteryMetric;
     readonly value: number;
   };
+  /**
+   * Frozen participation floor for rate and guardrail targets. When present,
+   * every eligible period must meet these per-period sample requirements.
+   */
+  readonly qualification?: MasteryContractQualification;
   readonly feasibility: {
     readonly minimumOpenStalls: number;
     readonly minimumSeats: number;
@@ -842,7 +875,7 @@ export const MASTERY_CONTRACT_TEMPLATES = [
   {
     id: "contract.steady-takings",
     title: "Steady Takings",
-    description: "Record SGD 240 in gross sales.",
+    description: "Record S$240 in gross sales.",
     unlockLevel: 13,
     durationPeriods: 4,
     target: { metric: "gross-sales-cents", value: 24_000 },
@@ -856,7 +889,7 @@ export const MASTERY_CONTRACT_TEMPLATES = [
   {
     id: "contract.sound-footing",
     title: "Sound Footing",
-    description: "Record SGD 120 in contribution.",
+    description: "Record S$120 in contribution.",
     unlockLevel: 13,
     durationPeriods: 4,
     target: { metric: "contribution-cents", value: 12_000 },
@@ -874,6 +907,7 @@ export const MASTERY_CONTRACT_TEMPLATES = [
     unlockLevel: 13,
     durationPeriods: 3,
     target: { metric: "minimum-satisfaction", value: 78 },
+    qualification: { minimumCompletedVisitsPerPeriod: 3 },
     feasibility: {
       minimumOpenStalls: 1,
       minimumSeats: 10,
@@ -888,6 +922,7 @@ export const MASTERY_CONTRACT_TEMPLATES = [
     unlockLevel: 13,
     durationPeriods: 3,
     target: { metric: "maximum-median-wait-seconds", value: 55 },
+    qualification: { minimumCompletedVisitsPerPeriod: 3 },
     feasibility: {
       minimumOpenStalls: 2,
       minimumSeats: 8,
@@ -944,6 +979,7 @@ export const MASTERY_CONTRACT_TEMPLATES = [
     unlockLevel: 13,
     durationPeriods: 3,
     target: { metric: "tray-return-rate-percent", value: 80 },
+    qualification: { minimumTrayReturnOpportunitiesPerPeriod: 4 },
     feasibility: {
       minimumOpenStalls: 1,
       minimumSeats: 8,
@@ -954,7 +990,7 @@ export const MASTERY_CONTRACT_TEMPLATES = [
   {
     id: "contract.forecast-listener",
     title: "Forecast Listener",
-    description: "Meet 12 forecast needs.",
+    description: "Record 12 forecast nutrition-intent matches.",
     unlockLevel: 13,
     durationPeriods: 4,
     target: { metric: "forecast-needs-met", value: 12 },

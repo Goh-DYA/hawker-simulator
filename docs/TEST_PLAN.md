@@ -88,7 +88,7 @@ Only scripts present in package.json may be reported as run. Missing scripts are
 - Renamed/removed objects and dishes, added required fields, changed map size/upgrades.
 - Unsafe runtime customers normalize without losing map/economy/progression.
 - Quota error, denied/private storage, refresh during save, reset isolation.
-- Core V3-to-V4 and runtime V1-to-V2 nutrition migrations, default/locked/tampered variant repair, data-version recovery notice, and 50-record outcome cap.
+- Core migrations through V7, runtime-envelope migrations through V5, IndexedDB V1-to-V2 store creation, V3 whole-progress bundles, legacy main-only import isolation, default/locked/tampered preparation repair, cross-preview period/Combo/party/regular/mastery restoration, data-version recovery notice, and bounded history.
 
 ### Offline shell and UI
 
@@ -97,7 +97,7 @@ Only scripts present in package.json may be reported as run. Missing scripts are
 - Offline navigation shell responds after first successful load.
 - Waiting-worker update does not activate before a safe reload.
 - React error/loading states, modal focus, settings persistence, and reset confirmation.
-- Nutrition Lens value semantics, distinct text-labelled Health and Star ratings, condition-specific explanations, Variant Lab focus return, customer inspector departure, responsive Focus route, per-nutrient Pulse denominators, disclosure, and no color-only rating or delta.
+- Nutrition Lens value semantics, distinct text-labelled Health and Star ratings, condition-specific explanations, guided preparation decision, Combo Board validation, party/event/regular summaries, scenario/mastery/meta surfaces, focus return, responsive containment, per-nutrient Pulse denominators, disclosure, and no color-only rating, medal, or delta.
 
 ## Browser end-to-end scenarios
 
@@ -105,17 +105,20 @@ Only scripts present in package.json may be reported as run. Missing scripts are
 2. Complete or deliberately skip/replay the tutorial.
 3. Keyboard-place a table, seats, tray return, and stall; verify invalid placement feedback.
 4. Paint a preferred guest lane with pointer and keyboard controls; verify predicted-path shift, clear, undo, save/reload, and Escape speed restoration.
-5. Configure a menu, compare a reviewed variant, and open the centre.
-6. Observe one customer complete order, seat, eat, tray/clear, and exit.
-7. Confirm cash/XP/reputation change, inspect the reason breakdown, fictional nutrition intent, optional health condition, Health/Star ratings, and Nutrition Pulse. Verify nutrition intents do not change satisfaction and any condition-aware meal effect stays within the documented bound.
-8. Move an active target and verify recovery.
-9. Save, reload, and compare persistent map/progression/economy state.
-10. Change text scale, reduced motion, audio, and quality mode; reload.
-11. Install/cache once, go offline, reload, continue, save, and reload again.
-12. Trigger update flow with a second build; preserve save.
-13. Reset with cancel first, then confirm; verify only game-owned data is cleared.
+5. Inspect the menu-independent forecast, configure a menu/preparation and valid Combo Board offer, accept or skip an objective, and open the centre.
+6. Observe a solo customer and a multi-member party complete queue, order, settlement, seating, dining, tray/clear, and exit; exercise the explained adjacent-table and partial-meal paths.
+7. Resolve or neutrally dismiss a neighbourhood-event choice and verify the planning/debrief explanation; inspect a regular encounter without associating condition-aware needs with identity.
+8. Confirm cash/XP/reputation change, reconcile the SGD ledger, inspect cause codes, forecast match/miss, nutrition intent, optional health condition, Health/Star ratings, and Nutrition Pulse.
+9. Move an active target and verify recovery.
+10. Start, save, resume, and complete an isolated scenario; verify the main centre is unchanged and only the validated medal/cosmetic reaches meta progression.
+11. Accept or skip a three-choice breakfast mastery offer, advance qualifying periods, and verify target freezing, once-only rewards, and labelled practice replays.
+12. Save, reload, export, and re-import a V3 progress bundle; compare main, scenario, and meta state.
+13. Change text scale, reduced motion, audio, and quality mode; reload.
+14. Install/cache once, go offline, reload, continue, save, and reload again.
+15. Trigger update flow with a second build; preserve main, scenario, and meta progress.
+16. Cancel then confirm main reset and verify meta/scenario preservation; cancel then confirm erase all and verify main, scenario, and meta removal while preferences remain.
 
-Run at 1280 × 720 and 1024 × 640, plus zoom levels in ACCESSIBILITY.md.
+Run representative player-facing states at 1280 × 720, 1024 × 640, 800 × 720, and 390 × 844. Test 200% in-game text, actual browser zoom at 200%, and a combined containment spot-check separately, in addition to the levels in ACCESSIBILITY.md.
 
 ### Stall graphics browser matrix
 

@@ -6,6 +6,8 @@ import type {
   MoneyDeltaCents,
   NutritionIntent,
   NutritionProfileStatus,
+  NutritionRatingId,
+  NutritionRatingState,
   NutritionRequestResult,
   NutritionValue,
   ObjectiveKind,
@@ -22,7 +24,14 @@ import type {
   ForecastGroupSize,
   ForecastNeed,
   ForecastShare,
+  ScenarioNextMedalFeedback,
+  ScenarioScoreBreakdownEntry,
 } from "@/src/game/core";
+import type {
+  ScenarioId,
+  ScenarioMedal,
+  ScenarioScoreUnit,
+} from "@/src/content/strategicGameplay";
 import type { SatisfactionTip } from "./satisfactionInsight";
 import type { QueueFlowState } from "./queueInsight";
 
@@ -123,6 +132,15 @@ export interface RuntimeComboOfferOutcomeSummary {
   readonly partialMealCauses: readonly RuntimePartialMealCauseSummary[];
 }
 
+export interface RuntimeMasteryPeriodMetrics {
+  readonly minimumSatisfaction?: number;
+  readonly medianWaitSeconds?: number;
+  readonly flowSeconds: number;
+  readonly distinctPreparationIds: readonly string[];
+  readonly trayReturns: number;
+  readonly trayReturnOpportunities: number;
+}
+
 export interface RuntimePeriodDebrief {
   readonly periodSequenceId: number;
   readonly servedVisits: number;
@@ -139,6 +157,8 @@ export interface RuntimePeriodDebrief {
   readonly comboOfferOutcomes: readonly RuntimeComboOfferOutcomeSummary[];
   readonly causeCodes: readonly RuntimeDebriefCauseCode[];
   readonly forecastComparison: RuntimeForecastComparison;
+  /** Exact period-attributed inputs for persisted mastery contracts. */
+  readonly masteryMetrics: RuntimeMasteryPeriodMetrics;
 }
 
 export interface RuntimeForecastComparison extends ForecastComparison {
@@ -252,6 +272,10 @@ export interface RuntimeNutritionProfileSummary {
   readonly healthRating?: number;
   /** Condition-aware scores used to personalise customers' menu choices. */
   readonly conditionRatings?: Partial<Readonly<Record<HealthConditionId, number>>>;
+  /** Source-completeness evidence for each comparative rating. */
+  readonly ratingStates?: Partial<
+    Readonly<Record<NutritionRatingId, NutritionRatingState>>
+  >;
   readonly intentFits?: Partial<Readonly<Record<NutritionIntent, number>>>;
 }
 
@@ -291,6 +315,8 @@ export interface RuntimeComboComponentSummary {
 export interface RuntimeComboRatingSummary {
   readonly value?: number;
   readonly dataState: "known" | "trace" | "unavailable";
+  /** Reported nutrient-weight coverage used for this frozen comparison. */
+  readonly knownWeightBasisPoints?: number;
   readonly explanation: string;
 }
 
@@ -460,6 +486,17 @@ export interface RuntimeSnapshot {
   readonly regularProgress?: readonly RuntimeRegularProgressSummary[];
   readonly periodLedger: RuntimePeriodLedger;
   readonly periodDebrief?: RuntimePeriodDebrief;
+  readonly scenario?: {
+    readonly scenarioId: ScenarioId;
+    readonly score: number;
+    readonly scoreUnit: ScenarioScoreUnit;
+    readonly runComplete: boolean;
+    readonly medal?: ScenarioMedal;
+    readonly breakdown: readonly ScenarioScoreBreakdownEntry[];
+    readonly failureCodes: readonly string[];
+    readonly nextMedal?: ScenarioNextMedalFeedback;
+    readonly cosmeticRewardIds: readonly string[];
+  };
   isOpen: boolean;
   speed: GameSpeed;
   quality: QualityMode;
@@ -483,6 +520,8 @@ export interface RuntimeSnapshot {
   unlockedContentIds: readonly string[];
   stallMenus: Readonly<Record<string, readonly string[]>>;
   activeDishVariants: Readonly<Record<string, string>>;
+  /** Preparations currently reachable through owned stalls and authored unlocks. */
+  unlockedPreparationCount: number;
   activePreparations: readonly RuntimePreparationSummary[];
   comboBoard: RuntimeComboBoardSummary;
   nutritionFamilies: readonly RuntimeNutritionFamilySummary[];
@@ -583,6 +622,8 @@ export interface RuntimeController {
 export interface RuntimeOptions {
   parent: HTMLElement;
   settings: RuntimeSettings;
+  /** Runs an isolated Stage 5 scenario instead of the main centre. */
+  scenarioId?: ScenarioId;
   initialStates?: readonly unknown[];
   onSnapshot(snapshot: RuntimeSnapshot): void;
   onEvent(event: RuntimeEvent): void;

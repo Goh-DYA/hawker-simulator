@@ -11,6 +11,17 @@ import {
   useSyncExternalStore,
 } from "react";
 import {
+  Clock3,
+  Focus as FocusIcon,
+  Grid3X3,
+  Lightbulb,
+  Save as SaveIcon,
+  Store,
+  Trophy,
+  UtensilsCrossed,
+  type LucideIcon,
+} from "lucide-react";
+import {
   CUSTOMER_ARCHETYPES,
   DISHES,
   ENGLISH_LOCALIZATION,
@@ -24,21 +35,48 @@ import {
 } from "@/src/content";
 import { AudioDirector } from "@/src/game/audio/AudioDirector";
 import {
-  clearGame,
-  exportSave,
-  importSave,
-  loadGameCandidates,
+  MAIN_GAME_SCOPE,
+  clearScopedGame,
+  deserializeProgressBundle,
+  eraseAllProgress,
+  exportProgressBundle,
+  importProgressBundle,
+  loadMetaProgression,
   loadPreference,
-  saveGame,
+  loadScopedGameCandidates,
+  resetMainProgress,
+  saveMetaProgression,
   savePreference,
+  saveScopedGame,
+  scenarioGameScope,
+  type GameSaveScope,
+  type ProgressBundleSnapshot,
+  type ProgressBundleValidators,
 } from "@/src/game/persistence/saveStore";
 import { registerPwa } from "@/src/game/pwa/registerPwa";
 import { asMoneyCents, asMoneyDeltaCents } from "@/src/game/core/money";
+import {
+  acceptMasteryOfferInMeta,
+  applyMasteryPeriodDebriefToMeta,
+  createEmptyMetaProgression,
+  deriveMasteryOffer,
+  masteryProgressionFromMeta,
+  skipMasteryOfferInMeta,
+  type MasteryPeriodDebrief,
+  type MetaProgressionV1,
+} from "@/src/game/core/strategicProgression";
 import {
   derivePeriodForecast,
   lockForecastAudience,
   profileForPeriod,
 } from "@/src/game/core/forecast";
+import {
+  SCENARIOS,
+  type MasteryContractTemplate,
+  type ScenarioId,
+  type ScenarioMedal,
+  type ScenarioScoreUnit,
+} from "@/src/content/strategicGameplay";
 import { utilityEffectsForPlaceable } from "@/src/game/runtime/contentUtility";
 import { describeSgd, formatSgd } from "@/src/game/runtime/money";
 import { defaultStallMenusForProgression } from "@/src/game/runtime/stallMenus";
@@ -61,6 +99,7 @@ import type {
   RuntimeController,
   RuntimeComboBoardSummary,
   RuntimeComboComponentSummary,
+  RuntimeComboRatingSummary,
   RuntimeFrozenMealSummary,
   RuntimeNeighbourhoodEventSummary,
   RuntimeEvent,
@@ -90,6 +129,13 @@ import {
   type NutritionPulseView,
   type PreparationTermsView,
 } from "./NutritionEducation";
+import { StrategicChallenges } from "./StrategicChallenges";
+import {
+  buildMasteryPanelView,
+  buildMetaGallery,
+  buildScenarioProgress,
+  masteryFeasibilityContext,
+} from "./strategicChallengeModel";
 
 const INITIAL_LEVEL = 1;
 const INITIAL_REPUTATION = 8;
@@ -218,6 +264,7 @@ const INITIAL_SNAPSHOT: RuntimeSnapshot = {
     reputation: INITIAL_REPUTATION,
   }),
   activeDishVariants: {},
+  unlockedPreparationCount: 0,
   activePreparations: [],
   comboBoard: {
     unlockLevel: 5,
@@ -303,7 +350,14 @@ function normalizeSettings(
   };
 }
 
-type Panel = "focus" | "build" | "stalls" | "dishes" | "insights" | "activity";
+type Panel =
+  | "focus"
+  | "build"
+  | "stalls"
+  | "dishes"
+  | "challenges"
+  | "insights"
+  | "activity";
 type TutorialStep = 0 | 1 | 2 | 3 | 4 | 5;
 type NutritionTourStep = 0 | 1 | 2;
 
@@ -312,6 +366,7 @@ const MANAGEMENT_SECTIONS = [
   { value: "build", label: "Build" },
   { value: "stalls", label: "Stalls" },
   { value: "dishes", label: "Dishes" },
+  { value: "challenges", label: "Challenges" },
   { value: "insights", label: "Insights" },
   { value: "activity", label: "Activity" },
 ] as const satisfies readonly { readonly value: Panel; readonly label: string }[];
@@ -370,9 +425,298 @@ const PANEL_COPY: Readonly<Record<Panel, { kicker: string; title: string }>> = {
   build: { kicker: "Build catalogue", title: "Make it yours" },
   stalls: { kicker: "Food & drink", title: "Stalls" },
   dishes: { kicker: "Dishes & nutrition", title: "Menu planning" },
+  challenges: { kicker: "Scenarios & mastery", title: "Challenges" },
   insights: { kicker: "Service review", title: "Centre insights" },
   activity: { kicker: "Recent events", title: "Activity" },
 };
+
+const ACTIVE_SCOPE_PREFERENCE = "active-game-scope-v1";
+const MAIN_LEVEL_PREFERENCE = "main-progression-level-v1";
+const MASTERY_SEED = "hawker-balance-mastery-v1";
+const SCENARIO_ID_SET = new Set<ScenarioId>(
+  SCENARIOS.map((scenario) => scenario.id),
+);
+const SCENARIO_MEDAL_RANK: Readonly<Record<ScenarioMedal, number>> = {
+  bronze: 1,
+  silver: 2,
+  gold: 3,
+};
+
+function isScenarioId(value: unknown): value is ScenarioId {
+  return typeof value === "string" && SCENARIO_ID_SET.has(value as ScenarioId);
+}
+
+export function parseActiveGameScope(value: unknown): GameSaveScope {
+  if (
+    value &&
+    typeof value === "object" &&
+    (value as { kind?: unknown }).kind === "scenario" &&
+    isScenarioId((value as { scenarioId?: unknown }).scenarioId)
+  ) {
+    return scenarioGameScope(
+      (value as { scenarioId: ScenarioId }).scenarioId,
+    );
+  }
+  return MAIN_GAME_SCOPE;
+}
+
+function sameGameScope(left: GameSaveScope, right: GameSaveScope): boolean {
+  return (
+    left.kind === right.kind &&
+    (
+      left.kind === "main" ||
+      (
+        right.kind === "scenario" &&
+        left.scenarioId === right.scenarioId
+      )
+    )
+  );
+}
+
+export interface LocalDataOperationGate {
+  current: boolean;
+}
+
+export function claimLocalDataOperation(
+  gate: LocalDataOperationGate,
+): boolean {
+  if (gate.current) return false;
+  gate.current = true;
+  return true;
+}
+
+export function releaseLocalDataOperation(
+  gate: LocalDataOperationGate,
+): void {
+  gate.current = false;
+}
+
+export function canCaptureLifecycleSave(
+  gate: LocalDataOperationGate,
+): boolean {
+  return !gate.current;
+}
+
+export async function runSerializedProgressExport<T>(input: {
+  readonly controller?: Pick<RuntimeController, "setSpeed">;
+  readonly previousSpeed: GameSpeed;
+  readonly flushCore: () => Promise<unknown>;
+  readonly flushMeta: () => Promise<unknown>;
+  readonly exportBundle: () => Promise<T>;
+}): Promise<T> {
+  input.controller?.setSpeed(0);
+  try {
+    await input.flushCore();
+    await input.flushMeta();
+    return await input.exportBundle();
+  } finally {
+    input.controller?.setSpeed(input.previousSpeed);
+  }
+}
+
+function humanizeScenarioCode(value: string): string {
+  return value
+    .replace(/^scenario\./, "")
+    .replaceAll("-", " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function scenarioScoreUnitLabel(unit: ScenarioScoreUnit): string {
+  switch (unit) {
+    case "points":
+      return "points";
+    case "contribution-cents":
+      return "contribution";
+    case "distinct-preparations":
+      return "preparations";
+    case "completed-visits":
+      return "completed visits";
+  }
+}
+
+function scenarioScoreLabel(value: number, unit: ScenarioScoreUnit): string {
+  return unit === "contribution-cents"
+    ? `${formatSgd(value, "ledger")} contribution`
+    : `${value.toLocaleString("en-SG")} ${scenarioScoreUnitLabel(unit)}`;
+}
+
+export function scenarioFailureGuidance(code: string): string {
+  const known: Readonly<Record<string, string>> = {
+    "scenario-incomplete":
+      "Finish the authored service period and reach its debrief before the run can earn a medal.",
+    "ledger-not-reconciled":
+      "The run did not reconcile to the cent and cannot earn a medal.",
+    "contribution-mismatch":
+      "The reported contribution did not match sales minus ingredient costs, upkeep, and refunds.",
+    "cash-went-negative":
+      "Keep the isolated scenario balance at or above SGD 0 throughout the run.",
+    "score-below-bronze":
+      "The scored result is below the Bronze threshold shown on the scenario card.",
+    "flow-too-low":
+      "Open a clearer route between the entrance, stalls, seating, and return point.",
+    "route-reliability-too-low":
+      "Check that every service and seating destination remains reachable.",
+    "completion-rate-too-low":
+      "Reduce waits and protect serving capacity through the peak.",
+    "meal-role-spread-too-small":
+      "Serve more distinct reviewed preparations across the required meal roles.",
+    "zone-coverage-missing":
+      "Complete at least one visit in each authored seating zone.",
+    "zone-balance-too-low":
+      "Serve both hall zones instead of concentrating every completed visit on one side.",
+    "wait-too-long":
+      "Shorten queues and place the required stalls closer to guest routes.",
+    "recovery-used":
+      "Finish with the scenario's starting resources without a recovery grant.",
+  };
+  return known[code] ?? humanizeScenarioCode(code);
+}
+
+export function remainingScenarioFailureCodes(
+  failureCodes: readonly string[],
+  nextMedalConstraintFailureCodes: readonly string[] = [],
+): readonly string[] {
+  const nextMedalFailures = new Set(nextMedalConstraintFailureCodes);
+  return [...new Set(failureCodes)].filter(
+    (code) => !nextMedalFailures.has(code),
+  );
+}
+
+export function recordScenarioResultInMeta(
+  meta: MetaProgressionV1,
+  scenario: NonNullable<RuntimeSnapshot["scenario"]>,
+): MetaProgressionV1 {
+  if (!scenario.runComplete || !scenario.medal) return meta;
+  const previous = meta.scenarioMedals[scenario.scenarioId];
+  const best = previous &&
+      SCENARIO_MEDAL_RANK[previous] > SCENARIO_MEDAL_RANK[scenario.medal]
+    ? previous
+    : scenario.medal;
+  return {
+    ...meta,
+    scenarioMedals: {
+      ...meta.scenarioMedals,
+      [scenario.scenarioId]: best,
+    },
+    unlockedCosmeticIds: [
+      ...new Set([
+        ...meta.unlockedCosmeticIds,
+        ...scenario.cosmeticRewardIds,
+      ]),
+    ].sort((left, right) => left.localeCompare(right)),
+  };
+}
+
+export function resetMetaForFreshMain(
+  meta: MetaProgressionV1,
+): MetaProgressionV1 {
+  return {
+    ...meta,
+    mastery: { schemaVersion: 1 },
+  };
+}
+
+export function masteryPeriodDebriefFromSnapshot(
+  snapshot: RuntimeSnapshot,
+): MasteryPeriodDebrief | undefined {
+  const debrief = snapshot.periodDebrief;
+  if (!debrief) return undefined;
+  const masteryMetrics = debrief.masteryMetrics;
+  const comparison = debrief.forecastComparison;
+  return {
+    periodSequenceId: debrief.periodSequenceId,
+    completedVisits: Math.max(
+      0,
+      debrief.servedVisits - debrief.timedOutServedVisits,
+    ),
+    grossSalesCents: snapshot.periodLedger.grossSalesCents,
+    contributionCents: snapshot.periodLedger.contributionCents,
+    ...(masteryMetrics.minimumSatisfaction === undefined
+      ? {}
+      : { minimumSatisfaction: masteryMetrics.minimumSatisfaction }),
+    ...(masteryMetrics.medianWaitSeconds === undefined
+      ? {}
+      : { medianWaitSeconds: masteryMetrics.medianWaitSeconds }),
+    flowSeconds: masteryMetrics.flowSeconds,
+    distinctPreparationIds: masteryMetrics.distinctPreparationIds,
+    partyVisits: debrief.partyVisits,
+    trayReturns: masteryMetrics.trayReturns,
+    trayReturnOpportunities: masteryMetrics.trayReturnOpportunities,
+    forecastNeedsMet: comparison.nutritionMatches,
+    refundCents: snapshot.periodLedger.refundsCents,
+    comboVisits: debrief.completedComboVisits,
+  };
+}
+
+export type MasteryDebriefSaveStatus = "idle" | "saving" | "error";
+
+export function masteryDebriefContinuePresentation(
+  status: MasteryDebriefSaveStatus,
+  actionLabel: string,
+): {
+  readonly disabled: boolean;
+  readonly label: string;
+  readonly statusMessage?: string;
+} {
+  if (status === "saving") {
+    return {
+      disabled: true,
+      label: "Saving mastery progress\u2026",
+      statusMessage:
+        "Mastery progress is being saved before the next period opens.",
+    };
+  }
+  if (status === "error") {
+    return {
+      disabled: false,
+      label: "Retry save and continue",
+      statusMessage:
+        "Mastery progress was not saved. Retry before opening the next period.",
+    };
+  }
+  return {
+    disabled: false,
+    label: actionLabel,
+  };
+}
+
+export async function ensureMasteryDebriefSaved(
+  currentSave: Promise<boolean>,
+  pendingDebrief: MasteryPeriodDebrief | undefined,
+  expectedPeriodSequenceId: number,
+  retry: (debrief: MasteryPeriodDebrief) => Promise<boolean>,
+): Promise<"saved" | "missing" | "failed"> {
+  if (await currentSave) return "saved";
+  if (
+    !pendingDebrief ||
+    pendingDebrief.periodSequenceId !== expectedPeriodSequenceId
+  ) {
+    return "missing";
+  }
+  return await retry(pendingDebrief) ? "saved" : "failed";
+}
+
+export function dishMenuUsesMainProgressionGate(
+  scenarioMenuFixed: boolean,
+  requirement: {
+    readonly level: number;
+    readonly reputation: number;
+    readonly prerequisiteIds: readonly string[];
+  },
+  progression: {
+    readonly level: number;
+    readonly reputation: number;
+    readonly unlockedContentIds: readonly string[];
+  },
+): boolean {
+  return !scenarioMenuFixed && (
+    requirement.level > progression.level ||
+    requirement.reputation > progression.reputation ||
+    requirement.prerequisiteIds.some(
+      (id) => !progression.unlockedContentIds.includes(id),
+    )
+  );
+}
 
 const EMPTY_NUTRITION_PULSE = {
   servedMeals: 0,
@@ -583,6 +927,82 @@ function SgdAmount({
       <span className="sr-only">{describeSgd(cents)}</span>
     </>
   );
+}
+
+export function scenarioBreakdownLabel(id: string): string {
+  const labels: Readonly<Record<string, string>> = {
+    completion: "Completed-service points",
+    "route-reliability": "Route-reliability points",
+    flow: "Flow points",
+    "controlled-waits": "Controlled-wait points",
+    "zone-balance": "Zone-balance points",
+    "both-zones-served": "Both-zone coverage points",
+    "contribution-cents": "Contribution",
+    "distinct-preparations": "Distinct preparations served",
+    "distinct-meal-roles": "Distinct meal roles served",
+    "completed-visits": "Completed visits",
+    "completion-basis-points": "Completion rate",
+    "median-wait-ms": "Median service wait",
+  };
+  return labels[id] ?? titleFromId(id);
+}
+
+function medalLabel(medal: ScenarioMedal): string {
+  return `${medal[0]!.toUpperCase()}${medal.slice(1)}`;
+}
+
+function ScenarioScoreValue({
+  value,
+  unit,
+}: {
+  value: number;
+  unit: ScenarioScoreUnit;
+}) {
+  if (unit === "contribution-cents") {
+    return (
+      <>
+        <SgdAmount cents={value} />
+        <span> contribution</span>
+      </>
+    );
+  }
+  const suffix = unit === "points"
+    ? "points"
+    : unit === "distinct-preparations"
+      ? value === 1 ? "preparation" : "preparations"
+      : value === 1 ? "completed visit" : "completed visits";
+  return <>{value.toLocaleString("en-SG")} {suffix}</>;
+}
+
+function ScenarioBreakdownValue({
+  entry,
+}: {
+  entry: NonNullable<RuntimeSnapshot["scenario"]>["breakdown"][number];
+}) {
+  if (entry.id === "contribution-cents") {
+    return <SgdAmount cents={entry.value} />;
+  }
+  if (entry.id === "completion-basis-points") {
+    return <>{(entry.value / 100).toLocaleString("en-SG", {
+      maximumFractionDigits: 1,
+    })}%</>;
+  }
+  if (entry.id === "median-wait-ms") {
+    return <>{(entry.value / 1_000).toLocaleString("en-SG", {
+      maximumFractionDigits: 1,
+    })} seconds</>;
+  }
+  if (entry.maximum !== undefined) {
+    const suffix = entry.id === "distinct-meal-roles" ? "roles" : "points";
+    return <>{entry.value.toLocaleString("en-SG")} of{" "}
+      {entry.maximum.toLocaleString("en-SG")} {suffix}</>;
+  }
+  const suffix = entry.id === "distinct-preparations"
+    ? entry.value === 1 ? "preparation" : "preparations"
+    : entry.id === "completed-visits"
+      ? entry.value === 1 ? "completed visit" : "completed visits"
+      : "";
+  return <>{entry.value.toLocaleString("en-SG")}{suffix ? ` ${suffix}` : ""}</>;
 }
 
 function catalogueIcon(category: PlaceableDefinition["category"] | "stall") {
@@ -1028,7 +1448,7 @@ function ForecastCard({
             </section>
             <section className="forecast-needs">
               <h3>Condition-aware needs</h3>
-              <p>{forecastShareLabel(forecast.conditionAwareIncidenceBasisPoints)} of visits may carry a condition-aware need. Each share below is among those independently flagged visits.</p>
+              <p>{forecastShareLabel(forecast.conditionAwareIncidenceBasisPoints)} of visits may carry a condition-aware need in this fictional scenario mix, not a prevalence estimate. Each share below is among those independently flagged visits.</p>
               <ul>{forecast.conditionAwareNeeds.map((item) => <li key={item.id}><span>{forecastNeedLabel(item)}</span><strong>{forecastShareLabel(item.basisPoints)} of flagged</strong></li>)}</ul>
               <p>Sampled independently for every visit; events, appearance, persona, regular identity, and neighbourhood theme never set these needs.</p>
             </section>
@@ -1281,9 +1701,11 @@ function PeriodDebrief({
   forecast,
   ledger,
   debrief,
+  scenario,
   neighbourhoodEvent,
   activeParties,
   regularProgress,
+  masterySaveStatus,
   onContinue,
 }: {
   dialogRef: RefObject<HTMLElement | null>;
@@ -1291,9 +1713,11 @@ function PeriodDebrief({
   forecast: RuntimeForecast;
   ledger: RuntimePeriodLedger;
   debrief?: RuntimePeriodDebrief;
+  scenario?: RuntimeSnapshot["scenario"];
   neighbourhoodEvent?: RuntimeNeighbourhoodEventSummary;
   activeParties: readonly RuntimePartySummary[];
   regularProgress: readonly RuntimeRegularProgressSummary[];
+  masterySaveStatus: MasteryDebriefSaveStatus;
   onContinue(): void;
 }) {
   const comparison = debrief?.forecastComparison;
@@ -1337,6 +1761,18 @@ function PeriodDebrief({
     .sort((left, right) => left[1] - right[1] || left[0].localeCompare(right[0]))
     .slice(0, 3);
   const tryNextCopy = debriefTryNextCopy(forecast, comparison, lowestSatisfactionCauses);
+  const remainingScenarioFailures = scenario
+    ? remainingScenarioFailureCodes(
+        scenario.failureCodes,
+        scenario.nextMedal?.constraintFailureCodes,
+      )
+    : [];
+  const continuePresentation = masteryDebriefContinuePresentation(
+    masterySaveStatus,
+    scenario
+      ? "Record result and return to main centre"
+      : period.actionLabel,
+  );
   const mixRows = [
     {
       label: "Crowd profile",
@@ -1380,6 +1816,128 @@ function PeriodDebrief({
             <div><dt>Completed two-item meals</dt><dd>{debrief?.completedComboVisits ?? 0}</dd></div>
             <div><dt>Partial two-item meals</dt><dd>{debrief?.partialMeals ?? 0}</dd></div>
           </dl>
+          {scenario ? (
+            <section
+              className="debrief-neighbourhood-context"
+              aria-labelledby="debrief-scenario-result-title"
+            >
+              <div className="debrief-section-heading">
+                <span>Scenario result</span>
+                <h3 id="debrief-scenario-result-title">
+                  {humanizeScenarioCode(scenario.scenarioId)}
+                </h3>
+              </div>
+              <dl>
+                <div>
+                  <dt>Score</dt>
+                  <dd>
+                    <strong>
+                      <ScenarioScoreValue
+                        value={scenario.score}
+                        unit={scenario.scoreUnit}
+                      />
+                    </strong>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Medal</dt>
+                  <dd>
+                    <strong>
+                      {scenario.medal
+                        ? medalLabel(scenario.medal)
+                        : "No medal earned"}
+                    </strong>
+                    <span>
+                      Scenario rewards are cosmetics only. Main-centre cash and
+                      experience stay unchanged.
+                    </span>
+                    <span>
+                      Returning records the best medal and clears this completed
+                      run slot.
+                    </span>
+                  </dd>
+                </div>
+              </dl>
+              <p id="debrief-scenario-breakdown-title">
+                <strong>How the score was built</strong>
+              </p>
+              <dl aria-labelledby="debrief-scenario-breakdown-title">
+                {scenario.breakdown.map((entry) => (
+                  <div key={entry.id}>
+                    <dt>{scenarioBreakdownLabel(entry.id)}</dt>
+                    <dd>
+                      <strong>
+                        <ScenarioBreakdownValue entry={entry} />
+                      </strong>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              {scenario.nextMedal ? (
+                <div className="debrief-cause-summary" role="status">
+                  <strong>
+                    Next medal target: {medalLabel(scenario.nextMedal.medal)}
+                  </strong>{" "}
+                  {scenario.nextMedal.scoreShortfall > 0 ? (
+                    <span>
+                      Add{" "}
+                      <ScenarioScoreValue
+                        value={scenario.nextMedal.scoreShortfall}
+                        unit={scenario.scoreUnit}
+                      />{" "}
+                      to reach the{" "}
+                      <ScenarioScoreValue
+                        value={scenario.nextMedal.threshold}
+                        unit={scenario.scoreUnit}
+                      />{" "}
+                      threshold.
+                    </span>
+                  ) : (
+                    <span>
+                      The{" "}
+                      <ScenarioScoreValue
+                        value={scenario.nextMedal.threshold}
+                        unit={scenario.scoreUnit}
+                      />{" "}
+                      score threshold is met.
+                      {scenario.nextMedal.constraintFailureCodes.length > 0
+                        ? " Resolve the remaining constraints below."
+                        : ""}
+                    </span>
+                  )}
+                  {scenario.nextMedal.constraintFailureCodes.length > 0 ? (
+                    <ul>
+                      {scenario.nextMedal.constraintFailureCodes.map((code) => (
+                        <li key={code}>{scenarioFailureGuidance(code)}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              ) : scenario.medal === "gold" ? (
+                <p className="debrief-cause-summary">
+                  <strong>Gold standard reached.</strong>{" "}
+                  There is no higher scenario medal.
+                </p>
+              ) : null}
+              {remainingScenarioFailures.length > 0 ? (
+                <div className="debrief-partial-meals" role="status">
+                  <strong>What held this run back</strong>
+                  <ul>
+                    {remainingScenarioFailures.map((code) => (
+                      <li key={code}>
+                        <span>{scenarioFailureGuidance(code)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : scenario.failureCodes.length === 0 ? (
+                <p className="debrief-cause-summary">
+                  <strong>Validated run.</strong>{" "}
+                  The scenario result reconciled and met its scored constraints.
+                </p>
+              ) : null}
+            </section>
+          ) : null}
           {(neighbourhoodEvent || debrief || activeParties.length > 0 || regularsSeenToday.length > 0) ? (
             <section className="debrief-neighbourhood-context" aria-labelledby="debrief-neighbourhood-title">
               <div className="debrief-section-heading">
@@ -1557,8 +2115,27 @@ function PeriodDebrief({
           ) : null}
         </div>
         <footer className="period-debrief-footer">
-          <button type="button" className="primary-button" onClick={onContinue}>
-            {period.actionLabel}
+          {continuePresentation.statusMessage ? (
+            <p
+              id="mastery-debrief-save-status"
+              role={masterySaveStatus === "error" ? "alert" : "status"}
+            >
+              {continuePresentation.statusMessage}
+            </p>
+          ) : null}
+          <button
+            type="button"
+            className="primary-button"
+            disabled={continuePresentation.disabled}
+            aria-busy={masterySaveStatus === "saving"}
+            aria-describedby={
+              continuePresentation.statusMessage
+                ? "mastery-debrief-save-status"
+                : undefined
+            }
+            onClick={onContinue}
+          >
+            {continuePresentation.label}
           </button>
         </footer>
       </div>
@@ -1573,13 +2150,21 @@ function comboComponentName(component: RuntimeComboComponentSummary): string {
 }
 
 function comboRatingValue(
-  rating: { readonly value?: number },
+  rating: RuntimeComboRatingSummary,
   scale: "five" | "percent",
 ): string {
-  if (rating.value === undefined) return "Unavailable";
+  if (rating.dataState === "unavailable" || rating.value === undefined) {
+    return "Unavailable";
+  }
   return scale === "five"
     ? `${rating.value.toFixed(1)}/5`
     : `${Math.round(rating.value * 100)}%`;
+}
+
+function comboCoverageText(rating: RuntimeComboRatingSummary): string {
+  return rating.knownWeightBasisPoints === undefined
+    ? "Source coverage not stored"
+    : `${Math.round(rating.knownWeightBasisPoints / 100)}% source coverage`;
 }
 
 function ComboOfferEditor({
@@ -1810,7 +2395,10 @@ function ComboOfferEditor({
             <div>
               <dt>Meal balance</dt>
               <dd>{comboRatingValue(offer.mealBalance, "five")}</dd>
-              <small>Among unlocked feasible options</small>
+              <small>
+                Among unlocked feasible options ·{" "}
+                {comboCoverageText(offer.mealBalance)}
+              </small>
             </div>
             <div>
               <dt>Forecast intent fit</dt>
@@ -1988,7 +2576,7 @@ export function FrozenMealInspector({ meal }: { meal: RuntimeFrozenMealSummary }
       </p>
       <p className="frozen-meal-cause" role="status">{causeCopy}</p>
       <dl className="combo-fit-grid is-frozen">
-        <div><dt>Meal balance</dt><dd>{comboRatingValue(meal.mealBalance, "five")}</dd><small>Among unlocked feasible options at order</small></div>
+        <div><dt>Meal balance</dt><dd>{comboRatingValue(meal.mealBalance, "five")}</dd><small>Among unlocked feasible options at order · {comboCoverageText(meal.mealBalance)}</small></div>
         <div><dt>Intent fit</dt><dd>{comboRatingValue(meal.intentFit, "percent")}</dd><small>{meal.intentFit.needId ? titleFromId(meal.intentFit.needId) : "No visit intent"}</small></div>
         <div><dt>Condition-aware game fit</dt><dd>{comboRatingValue(meal.conditionAwareFit, "percent")}</dd><small>Visit-specific; not treatment advice</small></div>
       </dl>
@@ -2089,6 +2677,7 @@ function nutritionProfileView(
     waterG: profile.nutrients.waterG,
     healthRating: ratedProfile.healthRating,
     conditionRatings: ratedProfile.conditionRatings,
+    ratingStates: profile.ratingStates,
     intentFits: profile.intentFits,
   };
 }
@@ -2435,8 +3024,29 @@ export function HawkerSimulator() {
   const audioRef = useRef<AudioDirector | undefined>(undefined);
   const saveTimerRef = useRef<number | undefined>(undefined);
   const pendingSaveRef = useRef<unknown>(undefined);
+  const pendingSaveScopeRef = useRef<GameSaveScope>(MAIN_GAME_SCOPE);
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const metaSaveQueueRef = useRef<Promise<boolean>>(Promise.resolve(true));
   const saveSequenceRef = useRef(0);
+  const runtimeGenerationRef = useRef(0);
+  const localDataOperationRef = useRef(false);
+  const activeScopeRef = useRef<GameSaveScope>(MAIN_GAME_SCOPE);
+  const mainLevelRef = useRef(INITIAL_LEVEL);
+  const metaProgressionRef = useRef<MetaProgressionV1>(
+    createEmptyMetaProgression(),
+  );
+  const lastMasteryDebriefRef = useRef<number | undefined>(undefined);
+  const pendingMasteryDebriefRef = useRef<MasteryPeriodDebrief | undefined>(
+    undefined,
+  );
+  const masteryDebriefSaveRef = useRef<Promise<boolean>>(
+    Promise.resolve(true),
+  );
+  const masteryDebriefAttemptRef = useRef(0);
+  const masteryDebriefContinuePendingRef = useRef(false);
+  const masteryDecisionPendingRef = useRef(false);
+  const recordedScenarioResultRef = useRef<string | undefined>(undefined);
+  const scenarioRewardSaveRef = useRef<Promise<boolean>>(Promise.resolve(true));
   const storageWarningRef = useRef(false);
   const audioWarningRef = useRef(false);
   const toastSequenceRef = useRef(0);
@@ -2449,12 +3059,23 @@ export function HawkerSimulator() {
   const settingsDialogRef = useRef<HTMLElement>(null);
   const helpDialogRef = useRef<HTMLElement>(null);
   const resetDialogRef = useRef<HTMLElement>(null);
+  const eraseAllDialogRef = useRef<HTMLElement>(null);
   const periodDebriefDialogRef = useRef<HTMLElement>(null);
   const eventDecisionDialogRef = useRef<HTMLElement>(null);
   const managementReturnFocusRef = useRef<HTMLElement | null>(null);
   const managementFocusRestoreRequestedRef = useRef(false);
 
   const [snapshot, setSnapshot] = useState(INITIAL_SNAPSHOT);
+  const [activeScope, setActiveScope] = useState<GameSaveScope>(
+    MAIN_GAME_SCOPE,
+  );
+  const [mainLevel, setMainLevel] = useState(INITIAL_LEVEL);
+  const [metaProgression, setMetaProgression] = useState<MetaProgressionV1>(
+    createEmptyMetaProgression,
+  );
+  const [scenarioHasSave, setScenarioHasSave] = useState<
+    Readonly<Partial<Record<ScenarioId, boolean>>>
+  >({});
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [panel, setPanel] = useState<Panel>("build");
   const [buildCategory, setBuildCategory] = useState("all");
@@ -2464,6 +3085,7 @@ export function HawkerSimulator() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
+  const [eraseAllOpen, setEraseAllOpen] = useState(false);
   const [tutorialStep, setTutorialStep] = useState<TutorialStep>(0);
   const [nutritionTourStep, setNutritionTourStep] = useState<NutritionTourStep>(2);
   const [guidedPredictionId, setGuidedPredictionId] = useState<string>();
@@ -2478,6 +3100,10 @@ export function HawkerSimulator() {
   const [offlineReady, setOfflineReady] = useState(false);
   const [updateReady, setUpdateReady] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [localDataBusy, setLocalDataBusy] = useState(false);
+  const [masteryDebriefSaveStatus, setMasteryDebriefSaveStatus] =
+    useState<MasteryDebriefSaveStatus>("idle");
+  const [masteryDecisionBusy, setMasteryDecisionBusy] = useState(false);
   const [loadingError, setLoadingError] = useState<string>();
   const [debugOpen, setDebugOpen] = useState(false);
   const [serviceAnnouncement, setServiceAnnouncement] = useState("");
@@ -2489,6 +3115,7 @@ export function HawkerSimulator() {
     && !settingsOpen
     && !helpOpen
     && !resetOpen
+    && !eraseAllOpen
     && !variantLabDishId
   );
   const debugEnabled = useSyncExternalStore(
@@ -2525,13 +3152,28 @@ export function HawkerSimulator() {
     [announce],
   );
 
+  function beginLocalDataOperation(): boolean {
+    if (!claimLocalDataOperation(localDataOperationRef)) return false;
+    setLocalDataBusy(true);
+    return true;
+  }
+
+  function finishLocalDataOperation(): void {
+    releaseLocalDataOperation(localDataOperationRef);
+    setLocalDataBusy(false);
+  }
+
   const performSave = useCallback(
-    async (payload: unknown, announceSuccess = false) => {
+    async (
+      payload: unknown,
+      scope: GameSaveScope,
+      announceSuccess = false,
+    ) => {
       const sequence = ++saveSequenceRef.current;
       setSnapshot((current) => ({ ...current, autosaveState: "saving" }));
       const operation = saveQueueRef.current
         .catch(() => undefined)
-        .then(() => saveGame(payload));
+        .then(() => saveScopedGame(scope, payload));
       saveQueueRef.current = operation;
       try {
         await operation;
@@ -2539,7 +3181,12 @@ export function HawkerSimulator() {
           setSnapshot((current) => ({ ...current, autosaveState: "saved" }));
         }
         if (announceSuccess) {
-          announce({ kind: "success", message: "Centre saved on this device." });
+          announce({
+            kind: "success",
+            message: scope.kind === "main"
+              ? "Centre saved on this device."
+              : "Scenario saved on this device.",
+          });
         }
       } catch {
         if (sequence === saveSequenceRef.current) {
@@ -2555,20 +3202,249 @@ export function HawkerSimulator() {
     [announce],
   );
 
-  const flushPendingSave = useCallback(async (captureFreshState = false) => {
-    window.clearTimeout(saveTimerRef.current);
-    if (captureFreshState) {
-      const freshPayload = latestRuntimeSavePayload(
-        controllerRef.current,
-        pendingSaveRef.current,
+  const flushPendingSave = useCallback(
+    async (
+      captureFreshState = false,
+      suppressFailure = true,
+    ): Promise<boolean> => {
+      window.clearTimeout(saveTimerRef.current);
+      if (captureFreshState) {
+        const freshPayload = latestRuntimeSavePayload(
+          controllerRef.current,
+          pendingSaveRef.current,
+        );
+        if (freshPayload !== undefined) {
+          pendingSaveRef.current = freshPayload;
+          pendingSaveScopeRef.current = activeScopeRef.current;
+        }
+      }
+      const payload = pendingSaveRef.current;
+      const operation = payload === undefined
+        ? saveQueueRef.current
+        : performSave(payload, pendingSaveScopeRef.current);
+      pendingSaveRef.current = undefined;
+      try {
+        await operation;
+        return true;
+      } catch (error) {
+        if (suppressFailure) return false;
+        throw error;
+      }
+    },
+    [performSave],
+  );
+
+  const persistMeta = useCallback(
+    (nextMeta: MetaProgressionV1): Promise<boolean> => {
+      const operation = metaSaveQueueRef.current
+        .catch(() => false)
+        .then(async () => {
+          if (
+            process.env.NODE_ENV !== "production" &&
+            typeof window !== "undefined" &&
+            new URLSearchParams(window.location.search).has("visualQa")
+          ) {
+            metaProgressionRef.current = nextMeta;
+            setMetaProgression(nextMeta);
+            return true;
+          }
+          try {
+            await saveMetaProgression(nextMeta);
+            metaProgressionRef.current = nextMeta;
+            setMetaProgression(nextMeta);
+            return true;
+          } catch {
+            reportStorageIssue(
+              "Medals, titles, cosmetics, or mastery progress could not be saved.",
+            );
+            return false;
+          }
+        });
+      metaSaveQueueRef.current = operation;
+      return operation;
+    },
+    [reportStorageIssue],
+  );
+
+  const persistMasteryDebrief = useCallback(
+    (masteryDebrief: MasteryPeriodDebrief): Promise<boolean> => {
+      const attempt = ++masteryDebriefAttemptRef.current;
+      pendingMasteryDebriefRef.current = masteryDebrief;
+      setMasteryDebriefSaveStatus("saving");
+      const operation = (async () => {
+        try {
+          const result = applyMasteryPeriodDebriefToMeta(
+            metaProgressionRef.current,
+            masteryDebrief,
+          );
+          if (
+            result.meta !== metaProgressionRef.current &&
+            !(await persistMeta(result.meta))
+          ) {
+            if (attempt === masteryDebriefAttemptRef.current) {
+              setMasteryDebriefSaveStatus("error");
+            }
+            return false;
+          }
+          if (attempt === masteryDebriefAttemptRef.current) {
+            pendingMasteryDebriefRef.current = undefined;
+            setMasteryDebriefSaveStatus("idle");
+          }
+          if (result.outcome) {
+            announce({
+              kind: result.outcome.status === "completed"
+                ? "success"
+                : "info",
+              importance: "important",
+              message: result.outcome.status === "completed"
+                ? "Mastery contract complete. Its keepsake is now in the gallery."
+                : "The mastery contract ended. A new rotation will arrive later.",
+            });
+          }
+          return true;
+        } catch (error) {
+          if (attempt === masteryDebriefAttemptRef.current) {
+            setMasteryDebriefSaveStatus("error");
+          }
+          announce({
+            kind: "error",
+            importance: "important",
+            message: error instanceof Error
+              ? `Mastery progress was not applied: ${error.message}`
+              : "Mastery progress was not applied.",
+          });
+          return false;
+        }
+      })();
+      masteryDebriefSaveRef.current = operation;
+      return operation;
+    },
+    [announce, persistMeta],
+  );
+
+  const installRuntime = useCallback(
+    async (
+      scope: GameSaveScope,
+      initialStates: readonly unknown[],
+      runtimeSettings: RuntimeSettings,
+      visualQa: boolean,
+    ) => {
+      const generation = ++runtimeGenerationRef.current;
+      const previous = controllerRef.current;
+      controllerRef.current = undefined;
+      previous?.destroy();
+      const { createHawkerRuntime } = await import(
+        "@/src/game/runtime/createHawkerRuntime"
       );
-      if (freshPayload !== undefined) pendingSaveRef.current = freshPayload;
-    }
-    const payload = pendingSaveRef.current;
-    if (payload === undefined) return;
-    pendingSaveRef.current = undefined;
-    await performSave(payload).catch(() => undefined);
-  }, [performSave]);
+      const controller = await createHawkerRuntime({
+        parent: gameHostRef.current!,
+        settings: runtimeSettings,
+        ...(scope.kind === "scenario"
+          ? { scenarioId: scope.scenarioId }
+          : {}),
+        initialStates,
+        onSnapshot(nextSnapshot) {
+          if (generation !== runtimeGenerationRef.current) return;
+          setSnapshot((current) => ({
+            ...nextSnapshot,
+            autosaveState: current.autosaveState,
+          }));
+          if (scope.kind === "main") {
+            if (mainLevelRef.current !== nextSnapshot.level) {
+              mainLevelRef.current = nextSnapshot.level;
+              setMainLevel(nextSnapshot.level);
+              void savePreference(
+                MAIN_LEVEL_PREFERENCE,
+                nextSnapshot.level,
+              ).catch(() =>
+                reportStorageIssue(
+                  "Main-centre challenge unlocks could not be saved.",
+                ),
+              );
+            }
+            const masteryDebrief = masteryPeriodDebriefFromSnapshot(
+              nextSnapshot,
+            );
+            if (
+              masteryDebrief &&
+              lastMasteryDebriefRef.current !==
+                masteryDebrief.periodSequenceId
+            ) {
+              lastMasteryDebriefRef.current =
+                masteryDebrief.periodSequenceId;
+              void persistMasteryDebrief(masteryDebrief);
+            }
+          } else if (
+            nextSnapshot.scenario?.runComplete &&
+            nextSnapshot.servicePeriod.phase === "debrief"
+          ) {
+            const resultKey = [
+              nextSnapshot.scenario.scenarioId,
+              nextSnapshot.servicePeriod.sequenceId,
+              nextSnapshot.scenario.score,
+              nextSnapshot.scenario.medal ?? "none",
+            ].join(":");
+            if (recordedScenarioResultRef.current !== resultKey) {
+              recordedScenarioResultRef.current = resultKey;
+              const nextMeta = recordScenarioResultInMeta(
+                metaProgressionRef.current,
+                nextSnapshot.scenario,
+              );
+              if (nextMeta !== metaProgressionRef.current) {
+                const rewardSave = persistMeta(nextMeta).then((saved) => {
+                  if (!saved) recordedScenarioResultRef.current = undefined;
+                  return saved;
+                });
+                scenarioRewardSaveRef.current = rewardSave;
+              }
+            }
+          }
+          audioRef.current?.setGameplayState(
+            nextSnapshot.isOpen,
+            nextSnapshot.activeCustomers,
+            nextSnapshot.queuePressure,
+          );
+        },
+        onEvent(event) {
+          if (generation !== runtimeGenerationRef.current) return;
+          announce(event);
+          if (event.kind === "success") audioRef.current?.play("sale");
+          if (event.kind === "error") audioRef.current?.play("invalid");
+        },
+        onPersistentChange(state) {
+          if (visualQa || generation !== runtimeGenerationRef.current) return;
+          pendingSaveRef.current = state;
+          pendingSaveScopeRef.current = scope;
+          if (scope.kind === "scenario") {
+            setScenarioHasSave((current) => ({
+              ...current,
+              [scope.scenarioId]: true,
+            }));
+          }
+          window.clearTimeout(saveTimerRef.current);
+          setSnapshot((current) => ({
+            ...current,
+            autosaveState: "saving",
+          }));
+          saveTimerRef.current = window.setTimeout(() => {
+            void flushPendingSave();
+          }, 200);
+        },
+      });
+      if (generation !== runtimeGenerationRef.current) {
+        controller.destroy();
+        return;
+      }
+      controllerRef.current = controller;
+    },
+    [
+      announce,
+      flushPendingSave,
+      persistMasteryDebrief,
+      persistMeta,
+      reportStorageIssue,
+    ],
+  );
 
   useEffect(() => {
     let disposed = false;
@@ -2588,6 +3464,12 @@ export function HawkerSimulator() {
         let completedGuidedDecision = false;
         let savedNutritionLens = true;
         let initialStates: readonly unknown[] = [];
+        let savedScope: GameSaveScope = MAIN_GAME_SCOPE;
+        let savedMainLevel = INITIAL_LEVEL;
+        let savedMeta = createEmptyMetaProgression();
+        let savedScenarioSlots: Readonly<
+          Partial<Record<ScenarioId, boolean>>
+        > = {};
         try {
           const initialSettings = {
             ...DEFAULT_SETTINGS,
@@ -2609,6 +3491,22 @@ export function HawkerSimulator() {
             || (guidedDecisionPreference === undefined && completedNutritionTour);
           savedNutritionLens =
             (await loadPreference<unknown>("nutrition-lens-enabled", true)) !== false;
+          savedScope = parseActiveGameScope(
+            await loadPreference<unknown>(
+              ACTIVE_SCOPE_PREFERENCE,
+              MAIN_GAME_SCOPE,
+            ),
+          );
+          const storedMainLevel = await loadPreference<unknown>(
+            MAIN_LEVEL_PREFERENCE,
+            INITIAL_LEVEL,
+          );
+          savedMainLevel =
+            typeof storedMainLevel === "number" &&
+              Number.isSafeInteger(storedMainLevel) &&
+              storedMainLevel >= INITIAL_LEVEL
+              ? storedMainLevel
+              : INITIAL_LEVEL;
         } catch {
           reportStorageIssue(
             "Local preferences are unavailable. The game will continue with defaults.",
@@ -2627,9 +3525,52 @@ export function HawkerSimulator() {
           completedTutorial = true;
           completedNutritionTour = true;
           completedGuidedDecision = true;
+          savedScope = MAIN_GAME_SCOPE;
         } else {
           try {
-            initialStates = await loadGameCandidates();
+            const slotEntries = await Promise.all(
+              SCENARIOS.map(async (scenario) => [
+                scenario.id,
+                (await loadScopedGameCandidates(
+                  scenarioGameScope(scenario.id),
+                )).length > 0,
+              ] as const),
+            );
+            savedScenarioSlots = Object.fromEntries(slotEntries);
+            if (
+              savedScope.kind === "scenario" &&
+              savedScenarioSlots[savedScope.scenarioId] !== true
+            ) {
+              savedScope = MAIN_GAME_SCOPE;
+            }
+            const [scopeCandidates, mainCandidates, loadedMeta] =
+              await Promise.all([
+                loadScopedGameCandidates(savedScope),
+                savedScope.kind === "main"
+                  ? Promise.resolve<readonly unknown[]>([])
+                  : loadScopedGameCandidates(MAIN_GAME_SCOPE),
+                loadMetaProgression(),
+              ]);
+            initialStates = scopeCandidates;
+            savedMeta = loadedMeta;
+            if (savedScope.kind === "scenario" && mainCandidates.length > 0) {
+              const { buildCatalog, restoreRuntimeEnvelope } = await import(
+                "@/src/game/runtime/createHawkerRuntime"
+              );
+              const authoredCatalog = buildCatalog().catalog;
+              for (const candidate of mainCandidates) {
+                try {
+                  savedMainLevel = restoreRuntimeEnvelope(
+                    candidate,
+                    authoredCatalog,
+                  ).state.progression.level;
+                  break;
+                } catch {
+                  // Try the backup candidate before falling back to the
+                  // persisted main-level preference.
+                }
+              }
+            }
           } catch {
             reportStorageIssue(
               "Local saves are unavailable in this browser session. You can still play, but progress may not persist.",
@@ -2638,45 +3579,27 @@ export function HawkerSimulator() {
         }
         if (disposed || !gameHostRef.current) return;
         setSettings(savedSettings);
+        activeScopeRef.current = savedScope;
+        setActiveScope(savedScope);
+        mainLevelRef.current = savedMainLevel;
+        setMainLevel(savedMainLevel);
+        metaProgressionRef.current = savedMeta;
+        setMetaProgression(savedMeta);
+        setScenarioHasSave(savedScenarioSlots);
         setTutorialStep(completedTutorial ? 5 : 0);
         setNutritionTourStep(completedGuidedDecision ? 2 : 0);
         setNutritionLens(savedNutritionLens);
-        const { createHawkerRuntime } = await import(
-          "@/src/game/runtime/createHawkerRuntime"
-        );
-        const controller = await createHawkerRuntime({
-          parent: gameHostRef.current,
-          settings: savedSettings,
+        await installRuntime(
+          savedScope,
           initialStates,
-          onSnapshot(nextSnapshot) {
-            setSnapshot((current) => ({
-              ...nextSnapshot,
-              autosaveState: current.autosaveState,
-            }));
-            audioRef.current?.setGameplayState(
-              nextSnapshot.isOpen,
-              nextSnapshot.activeCustomers,
-              nextSnapshot.queuePressure,
-            );
-          },
-          onEvent(event) {
-            announce(event);
-            if (event.kind === "success") audioRef.current?.play("sale");
-            if (event.kind === "error") audioRef.current?.play("invalid");
-          },
-          onPersistentChange(state) {
-            if (visualQa) return;
-            pendingSaveRef.current = state;
-            window.clearTimeout(saveTimerRef.current);
-            setSnapshot((current) => ({ ...current, autosaveState: "saving" }));
-            saveTimerRef.current = window.setTimeout(() => {
-              void flushPendingSave();
-            }, 200);
-          },
-        });
-        if (disposed) controller.destroy();
-        else {
-          controllerRef.current = controller;
+          savedSettings,
+          visualQa,
+        );
+        if (disposed) {
+          runtimeGenerationRef.current += 1;
+          controllerRef.current?.destroy();
+          controllerRef.current = undefined;
+        } else {
           if (!visualQa) {
             unregisterPwa = registerPwa({
               onOfflineReady() {
@@ -2704,19 +3627,30 @@ export function HawkerSimulator() {
     }
 
     void start();
-    const flushOnPageHide = () => void flushPendingSave(true);
+    const flushOnPageHide = () => {
+      if (!canCaptureLifecycleSave(localDataOperationRef)) return;
+      void flushPendingSave(true);
+    };
     window.addEventListener("pagehide", flushOnPageHide);
 
     return () => {
       disposed = true;
+      runtimeGenerationRef.current += 1;
       window.clearTimeout(saveTimerRef.current);
-      void flushPendingSave(true);
+      if (canCaptureLifecycleSave(localDataOperationRef)) {
+        void flushPendingSave(true);
+      }
       window.removeEventListener("pagehide", flushOnPageHide);
       controllerRef.current?.destroy();
       audioRef.current?.destroy();
       unregisterPwa();
     };
-  }, [announce, flushPendingSave, reportStorageIssue]);
+  }, [
+    announce,
+    flushPendingSave,
+    installRuntime,
+    reportStorageIssue,
+  ]);
 
   useEffect(() => {
     document.documentElement.style.setProperty(
@@ -2747,6 +3681,19 @@ export function HawkerSimulator() {
   }, [loading, nutritionLens, reportStorageIssue]);
 
   useEffect(() => {
+    if (snapshot.unlockedContentIds.includes(menuStallId)) return;
+    const firstUnlockedStall = STALLS.find((stall) =>
+      snapshot.unlockedContentIds.includes(stall.id)
+    );
+    if (!firstUnlockedStall) return;
+    const update = window.setTimeout(
+      () => setMenuStallId(firstUnlockedStall.id),
+      0,
+    );
+    return () => window.clearTimeout(update);
+  }, [menuStallId, snapshot.unlockedContentIds]);
+
+  useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 899px)");
     const updateCompactManagement = () => setCompactManagement(mediaQuery.matches);
     updateCompactManagement();
@@ -2764,7 +3711,9 @@ export function HawkerSimulator() {
   }, [serviceAnnouncementMoment.key, serviceAnnouncementMoment.message]);
 
   useEffect(() => {
-    const modal = resetOpen
+    const modal = eraseAllOpen
+      ? eraseAllDialogRef.current
+      : resetOpen
       ? resetDialogRef.current
       : settingsOpen
         ? settingsDialogRef.current
@@ -2803,7 +3752,9 @@ export function HawkerSimulator() {
     const handleModalKeys = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        if (resetOpen) setResetOpen(false);
+        if (localDataBusy && (eraseAllOpen || resetOpen)) return;
+        if (eraseAllOpen) setEraseAllOpen(false);
+        else if (resetOpen) setResetOpen(false);
         else if (settingsOpen) setSettingsOpen(false);
         else if (helpOpen) setHelpOpen(false);
         else if (snapshot.servicePeriod.phase === "debrief") {
@@ -2855,6 +3806,8 @@ export function HawkerSimulator() {
     };
   }, [
     helpOpen,
+    eraseAllOpen,
+    localDataBusy,
     nutritionTourStep,
     eventDecisionOpen,
     reportStorageIssue,
@@ -2887,6 +3840,7 @@ export function HawkerSimulator() {
     [selectedId],
   );
   const configurationLocked = snapshot.servicePeriod.configurationLocked;
+  const scenarioMenuFixed = activeScope.kind === "scenario";
 
   function explainConfigurationLock() {
     announce({
@@ -2957,8 +3911,55 @@ export function HawkerSimulator() {
     audioRef.current?.play("ui");
   }
 
-  function toggleCentre() {
+  async function toggleCentre() {
     unlockAudio();
+    if (
+      snapshot.servicePeriod.phase === "debrief" &&
+      activeScopeRef.current.kind === "scenario"
+    ) {
+      void leaveScenario(activeScopeRef.current.scenarioId);
+      return;
+    }
+    if (
+      snapshot.servicePeriod.phase === "debrief" &&
+      activeScopeRef.current.kind === "main"
+    ) {
+      if (masteryDebriefContinuePendingRef.current) return;
+      masteryDebriefContinuePendingRef.current = true;
+      try {
+        const masterySaveResult = await ensureMasteryDebriefSaved(
+          masteryDebriefSaveRef.current,
+          pendingMasteryDebriefRef.current,
+          snapshot.servicePeriod.sequenceId,
+          persistMasteryDebrief,
+        );
+        if (masterySaveResult === "missing") {
+          announce({
+            kind: "error",
+            importance: "important",
+            message:
+              "Mastery progress is not ready to retry. The debrief remains open so no period progress is skipped.",
+          });
+          return;
+        }
+        if (masterySaveResult === "failed") {
+          announce({
+            kind: "error",
+            importance: "important",
+            message:
+              "Mastery progress still could not be saved. The debrief remains open; retry when local storage is available.",
+          });
+          return;
+        }
+        const changed = controllerRef.current?.toggleOpen() ?? false;
+        if (changed) {
+          audioRef.current?.play("open");
+        }
+        return;
+      } finally {
+        masteryDebriefContinuePendingRef.current = false;
+      }
+    }
     if (snapshot.servicePeriod.phase === "planning") {
       setSelectedId(undefined);
       setVariantLabDishId(undefined);
@@ -3031,16 +4032,318 @@ export function HawkerSimulator() {
     controllerRef.current?.selectCustomer(undefined);
   }
 
-  async function saveNow(): Promise<boolean> {
-    window.clearTimeout(saveTimerRef.current);
-    pendingSaveRef.current = undefined;
-    const state = controllerRef.current?.exportState();
-    if (!state) return false;
+  async function switchGameScope(
+    nextScope: GameSaveScope,
+    clearNextSlot = false,
+    operationAlreadyClaimed = false,
+    successMessage?: string,
+  ): Promise<boolean> {
+    if (sameGameScope(activeScopeRef.current, nextScope) && !clearNextSlot) {
+      return true;
+    }
+    const ownsOperation = !operationAlreadyClaimed;
+    if (
+      ownsOperation
+        ? !beginLocalDataOperation()
+        : !localDataOperationRef.current
+    ) {
+      return false;
+    }
+    const visualQa =
+      process.env.NODE_ENV !== "production" &&
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).has("visualQa");
+    if (visualQa) {
+      setLoading(true);
+      try {
+        controllerRef.current?.setSpeed(0);
+        pendingSaveRef.current = undefined;
+        pendingSaveScopeRef.current = nextScope;
+        activeScopeRef.current = nextScope;
+        setActiveScope(nextScope);
+        lastMasteryDebriefRef.current = undefined;
+        recordedScenarioResultRef.current = undefined;
+        await installRuntime(nextScope, [], settings, true);
+        announce({
+          kind: "success",
+          importance: "important",
+          message: successMessage ?? (
+            nextScope.kind === "main"
+              ? "Returned to the visual QA main centre."
+              : `${humanizeScenarioCode(nextScope.scenarioId)} opened in a non-persisting visual QA fixture.`
+          ),
+        });
+        return true;
+      } finally {
+        if (ownsOperation) finishLocalDataOperation();
+        setLoading(false);
+      }
+    }
+    const previousScope = activeScopeRef.current;
+    setLoading(true);
     try {
-      await performSave(state, true);
+      controllerRef.current?.setSpeed(0);
+      await flushPendingSave(true, false);
+      if (clearNextSlot) {
+        await clearScopedGame(nextScope);
+        if (nextScope.kind === "scenario") {
+          setScenarioHasSave((current) => ({
+            ...current,
+            [nextScope.scenarioId]: false,
+          }));
+        }
+      }
+      const initialStates = clearNextSlot
+        ? []
+        : await loadScopedGameCandidates(nextScope);
+      pendingSaveRef.current = undefined;
+      pendingSaveScopeRef.current = nextScope;
+      activeScopeRef.current = nextScope;
+      setActiveScope(nextScope);
+      lastMasteryDebriefRef.current = undefined;
+      recordedScenarioResultRef.current = undefined;
+      await savePreference(ACTIVE_SCOPE_PREFERENCE, nextScope);
+      await installRuntime(nextScope, initialStates, settings, false);
+      const installedState = controllerRef.current?.exportState();
+      if (installedState !== undefined) {
+        await performSave(installedState, nextScope);
+        if (nextScope.kind === "scenario") {
+          setScenarioHasSave((current) => ({
+            ...current,
+            [nextScope.scenarioId]: true,
+          }));
+        }
+      }
+      announce({
+        kind: "success",
+        importance: "important",
+        message: successMessage ?? (
+          nextScope.kind === "main"
+            ? "Returned to the saved main centre."
+            : `${humanizeScenarioCode(nextScope.scenarioId)} opened in its isolated save slot.`
+        ),
+      });
+      return true;
+    } catch (error) {
+      try {
+        activeScopeRef.current = previousScope;
+        setActiveScope(previousScope);
+        pendingSaveScopeRef.current = previousScope;
+        await savePreference(ACTIVE_SCOPE_PREFERENCE, previousScope);
+        await installRuntime(
+          previousScope,
+          await loadScopedGameCandidates(previousScope),
+          settings,
+          false,
+        );
+      } catch {
+        // The original error remains the most actionable message. The global
+        // loading error boundary still protects a subsequent full reload.
+      }
+      announce({
+        kind: "error",
+        message: error instanceof Error
+          ? `Could not switch game saves: ${error.message}`
+          : "Could not switch game saves.",
+      });
+      return false;
+    } finally {
+      if (ownsOperation) finishLocalDataOperation();
+      setLoading(false);
+    }
+  }
+
+  async function startScenario(scenarioId: ScenarioId) {
+    if (activeScope.kind !== "main" || mainLevel < 3) {
+      return;
+    }
+    await switchGameScope(scenarioGameScope(scenarioId), true);
+  }
+
+  async function resumeScenario(scenarioId: ScenarioId) {
+    if (activeScope.kind !== "main" || mainLevel < 3) {
+      return;
+    }
+    await switchGameScope(scenarioGameScope(scenarioId));
+  }
+
+  async function restartScenario(scenarioId: ScenarioId): Promise<boolean> {
+    const currentScope = activeScopeRef.current;
+    if (
+      currentScope.kind !== "scenario" ||
+      currentScope.scenarioId !== scenarioId
+    ) {
+      return false;
+    }
+    return switchGameScope(
+      scenarioGameScope(scenarioId),
+      true,
+      false,
+      "The scenario restarted from its authored setup. Main-centre progress and earned gallery rewards were preserved.",
+    );
+  }
+
+  async function leaveScenario(scenarioId: ScenarioId) {
+    const currentScope = activeScopeRef.current;
+    if (
+      currentScope.kind !== "scenario" ||
+      currentScope.scenarioId !== scenarioId
+    ) {
+      return;
+    }
+    if (!beginLocalDataOperation()) return;
+    try {
+      const runComplete = snapshot.scenario?.runComplete === true;
+      if (runComplete && snapshot.scenario) {
+        await scenarioRewardSaveRef.current;
+        const durableMeta = recordScenarioResultInMeta(
+          metaProgressionRef.current,
+          snapshot.scenario,
+        );
+        if (
+          durableMeta !== metaProgressionRef.current &&
+          !(await persistMeta(durableMeta))
+        ) {
+          announce({
+            kind: "error",
+            importance: "important",
+            message:
+              "The medal could not be saved, so this completed scenario was kept for a safe retry.",
+          });
+          return;
+        }
+      }
+      if (
+        await switchGameScope(MAIN_GAME_SCOPE, false, true) &&
+        runComplete
+      ) {
+        try {
+          await clearScopedGame(scenarioGameScope(scenarioId));
+          setScenarioHasSave((current) => ({
+            ...current,
+            [scenarioId]: false,
+          }));
+        } catch {
+          reportStorageIssue("The completed scenario slot could not be cleared.");
+        }
+      }
+    } finally {
+      finishLocalDataOperation();
+    }
+  }
+
+  function currentMasteryOffer() {
+    return deriveMasteryOffer({
+      seed: MASTERY_SEED,
+      day: snapshot.day,
+      periodId: snapshot.servicePeriod.id,
+      context: masteryFeasibilityContext({
+        ...snapshot,
+        level: mainLevel,
+      }),
+      progression: masteryProgressionFromMeta(metaProgressionRef.current),
+      meta: metaProgressionRef.current,
+    });
+  }
+
+  async function acceptMasteryContract(
+    contractId: MasteryContractTemplate["id"],
+  ) {
+    if (
+      activeScopeRef.current.kind !== "main" ||
+      snapshot.servicePeriod.phase !== "planning" ||
+      masteryDecisionPendingRef.current
+    ) return;
+    masteryDecisionPendingRef.current = true;
+    setMasteryDecisionBusy(true);
+    const offer = currentMasteryOffer();
+    if (offer.status !== "available") {
+      masteryDecisionPendingRef.current = false;
+      setMasteryDecisionBusy(false);
+      return;
+    }
+    try {
+      const nextMeta = acceptMasteryOfferInMeta(
+        metaProgressionRef.current,
+        offer,
+        contractId,
+        snapshot.day,
+        snapshot.servicePeriod.sequenceId,
+      );
+      if (!(await persistMeta(nextMeta))) return;
+      audioRef.current?.play("reward");
+      announce({
+        kind: "success",
+        importance: "important",
+        message: "Mastery contract accepted. Its target and keepsake are frozen.",
+      });
+    } catch (error) {
+      announce({
+        kind: "error",
+        message: error instanceof Error
+          ? error.message
+          : "The mastery contract could not be accepted.",
+      });
+    } finally {
+      masteryDecisionPendingRef.current = false;
+      setMasteryDecisionBusy(false);
+    }
+  }
+
+  async function skipMasteryContracts() {
+    if (
+      activeScopeRef.current.kind !== "main" ||
+      snapshot.servicePeriod.phase !== "planning" ||
+      masteryDecisionPendingRef.current
+    ) return;
+    masteryDecisionPendingRef.current = true;
+    setMasteryDecisionBusy(true);
+    const offer = currentMasteryOffer();
+    if (offer.status !== "available") {
+      masteryDecisionPendingRef.current = false;
+      setMasteryDecisionBusy(false);
+      return;
+    }
+    try {
+      if (!(await persistMeta(
+        skipMasteryOfferInMeta(metaProgressionRef.current, offer),
+      ))) return;
+      announce({
+        kind: "info",
+        message: "This mastery rotation was skipped without penalty.",
+      });
+    } catch (error) {
+      announce({
+        kind: "error",
+        message: error instanceof Error
+          ? error.message
+          : "The mastery offer could not be skipped.",
+      });
+    } finally {
+      masteryDecisionPendingRef.current = false;
+      setMasteryDecisionBusy(false);
+    }
+  }
+
+  async function saveNow(): Promise<boolean> {
+    if (!beginLocalDataOperation()) {
+      announce({
+        kind: "info",
+        message: "Another local-data operation is still finishing.",
+      });
+      return false;
+    }
+    try {
+      window.clearTimeout(saveTimerRef.current);
+      pendingSaveRef.current = undefined;
+      const state = controllerRef.current?.exportState();
+      if (!state) return false;
+      await performSave(state, activeScopeRef.current, true);
       return true;
     } catch {
       return false;
+    } finally {
+      finishLocalDataOperation();
     }
   }
 
@@ -3059,61 +4362,489 @@ export function HawkerSimulator() {
     registration.waiting.postMessage({ type: "ACTIVATE_UPDATE" });
   }
 
-  function downloadSave() {
-    const state = controllerRef.current?.exportState();
-    if (!state) return;
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(
-      new Blob([exportSave(state)], { type: "application/json" }),
-    );
-    link.download = `hawker-balance-day-${snapshot.day}.json`;
-    link.click();
-    URL.revokeObjectURL(link.href);
+  async function downloadSave() {
+    if (!beginLocalDataOperation()) {
+      announce({
+        kind: "info",
+        message: "Another local-data operation is still finishing.",
+      });
+      return;
+    }
+    try {
+      const source = await runSerializedProgressExport({
+        controller: controllerRef.current,
+        previousSpeed: snapshot.speed,
+        flushCore: () => flushPendingSave(true, false),
+        flushMeta: () => metaSaveQueueRef.current,
+        exportBundle: async () => {
+          const freshMain = activeScopeRef.current.kind === "main"
+            ? controllerRef.current?.exportState()
+            : undefined;
+          const [
+            { buildCatalog, restoreRuntimeEnvelope },
+            { restoreScenarioRuntimeEnvelope },
+          ] = await Promise.all([
+            import("@/src/game/runtime/createHawkerRuntime"),
+            import("@/src/game/runtime/scenarioState"),
+          ]);
+          const authoredCatalog = buildCatalog().catalog;
+          const validators: ProgressBundleValidators = {
+            validateMain(payload) {
+              restoreRuntimeEnvelope(payload, authoredCatalog);
+            },
+            validateScenario(scenarioId, payload) {
+              restoreScenarioRuntimeEnvelope(
+                scenarioId,
+                payload,
+                authoredCatalog,
+              );
+            },
+          };
+          return exportProgressBundle(freshMain, validators);
+        },
+      });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(
+        new Blob([source], { type: "application/json" }),
+      );
+      link.download = `hawker-balance-day-${snapshot.day}-progress.json`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      announce({
+        kind: "success",
+        message: "Main centre, scenarios, medals, and mastery progress exported.",
+      });
+    } catch (error) {
+      announce({
+        kind: "error",
+        message: error instanceof Error
+          ? error.message
+          : "Could not export progress.",
+      });
+    } finally {
+      finishLocalDataOperation();
+    }
   }
 
   async function uploadSave(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
+    if (!beginLocalDataOperation()) {
+      announce({
+        kind: "info",
+        message: "Another local-data operation is still finishing.",
+      });
+      return;
+    }
+    let loadingShown = false;
+    let runtimePaused = false;
+    let callbacksInvalidated = false;
+    let committedImport: ProgressBundleSnapshot | undefined;
+    const previousScope = activeScopeRef.current;
+    const previousSpeed = snapshot.speed;
     try {
+      const [
+        { buildCatalog, restoreRuntimeEnvelope },
+        { restoreScenarioRuntimeEnvelope },
+      ] = await Promise.all([
+        import("@/src/game/runtime/createHawkerRuntime"),
+        import("@/src/game/runtime/scenarioState"),
+      ]);
+      const authoredCatalog = buildCatalog().catalog;
+      const source = await file.text();
+      const validators: ProgressBundleValidators = {
+        validateMain(payload) {
+          restoreRuntimeEnvelope(payload, authoredCatalog);
+        },
+        validateScenario(scenarioId, payload) {
+          restoreScenarioRuntimeEnvelope(
+            scenarioId,
+            payload,
+            authoredCatalog,
+          );
+        },
+      };
+      // Validate the full bundle before pausing or replacing any live data.
+      deserializeProgressBundle(source, validators);
+      setLoading(true);
+      loadingShown = true;
+      controllerRef.current?.setSpeed(0);
+      runtimePaused = true;
+      await flushPendingSave(true, false);
+      await metaSaveQueueRef.current;
+      runtimeGenerationRef.current += 1;
+      callbacksInvalidated = true;
       window.clearTimeout(saveTimerRef.current);
       pendingSaveRef.current = undefined;
-      const payload = importSave(await file.text());
-      const controller = controllerRef.current;
-      if (!controller) throw new Error("The game is not ready to import a save.");
-      controller.importState(payload);
-      await performSave(controller.exportState());
-      announce({ kind: "success", message: "Save imported and checked.", importance: "important" });
-    } catch (error) {
+      const imported = await importProgressBundle(source, validators);
+      committedImport = imported;
+      const replacedController = controllerRef.current;
+      controllerRef.current = undefined;
+      replacedController?.destroy();
+      const [loadedMeta, slotEntries] = await Promise.all([
+        loadMetaProgression(),
+        Promise.all(
+          SCENARIOS.map(async (scenario) => [
+            scenario.id,
+            (await loadScopedGameCandidates(
+              scenarioGameScope(scenario.id),
+            )).length > 0,
+          ] as const),
+        ),
+      ]);
+      metaProgressionRef.current = loadedMeta;
+      setMetaProgression(loadedMeta);
+      setScenarioHasSave(Object.fromEntries(slotEntries));
+      activeScopeRef.current = MAIN_GAME_SCOPE;
+      setActiveScope(MAIN_GAME_SCOPE);
+      pendingSaveRef.current = undefined;
+      pendingSaveScopeRef.current = MAIN_GAME_SCOPE;
+      lastMasteryDebriefRef.current = undefined;
+      recordedScenarioResultRef.current = undefined;
+      await savePreference(ACTIVE_SCOPE_PREFERENCE, MAIN_GAME_SCOPE);
+      await installRuntime(
+        MAIN_GAME_SCOPE,
+        [imported.main],
+        settings,
+        false,
+      );
       announce({
-        kind: "error",
-        message: error instanceof Error ? error.message : "Could not import that save.",
+        kind: "success",
+        message: "Progress bundle imported and semantically checked.",
+        importance: "important",
       });
+    } catch (error) {
+      if (committedImport) {
+        const committed = committedImport;
+        try {
+          const recoveredMeta = await loadMetaProgression().catch(
+            () => committed.metaProgression,
+          );
+          const recoveredSlots = await Promise.all(
+            SCENARIOS.map(async (scenario) => [
+              scenario.id,
+              await loadScopedGameCandidates(
+                scenarioGameScope(scenario.id),
+              ).then(
+                (candidates) => candidates.length > 0,
+                () => Object.hasOwn(committed.scenarios, scenario.id),
+              ),
+            ] as const),
+          );
+          metaProgressionRef.current = recoveredMeta;
+          setMetaProgression(recoveredMeta);
+          setScenarioHasSave(Object.fromEntries(recoveredSlots));
+          activeScopeRef.current = MAIN_GAME_SCOPE;
+          setActiveScope(MAIN_GAME_SCOPE);
+          pendingSaveRef.current = undefined;
+          pendingSaveScopeRef.current = MAIN_GAME_SCOPE;
+          lastMasteryDebriefRef.current = undefined;
+          recordedScenarioResultRef.current = undefined;
+          await savePreference(
+            ACTIVE_SCOPE_PREFERENCE,
+            MAIN_GAME_SCOPE,
+          ).catch(() =>
+            reportStorageIssue(
+              "The imported active-save preference could not be saved.",
+            ),
+          );
+          await installRuntime(
+            MAIN_GAME_SCOPE,
+            [committed.main],
+            settings,
+            false,
+          );
+          announce({
+            kind: "warning",
+            importance: "important",
+            message:
+              "Progress was imported. A later setup step failed, so the committed imported centre was recovered.",
+          });
+        } catch (recoveryError) {
+          setLoadingError(
+            "Progress was imported and replaced the previous local progress, but its main centre could not start. Reload to open the committed import.",
+          );
+          announce({
+            kind: "error",
+            importance: "important",
+            message: recoveryError instanceof Error
+              ? `Progress was imported, but recovery failed: ${recoveryError.message}`
+              : "Progress was imported, but the imported centre must be reloaded.",
+          });
+        }
+      } else {
+        try {
+          if (callbacksInvalidated) {
+            activeScopeRef.current = previousScope;
+            setActiveScope(previousScope);
+            pendingSaveScopeRef.current = previousScope;
+            await installRuntime(
+              previousScope,
+              await loadScopedGameCandidates(previousScope),
+              settings,
+              false,
+            );
+          } else if (runtimePaused) {
+            controllerRef.current?.setSpeed(previousSpeed);
+          }
+        } catch {
+          setLoadingError(
+            "The import did not replace local progress, but the current save must be reloaded.",
+          );
+        }
+        announce({
+          kind: "error",
+          message: error instanceof Error ? error.message : "Could not import that save.",
+        });
+      }
+    } finally {
+      if (loadingShown) setLoading(false);
+      finishLocalDataOperation();
     }
   }
 
   async function confirmReset() {
+    if (!beginLocalDataOperation()) return;
+    const previousSpeed = snapshot.speed;
+    let resetCommitted = false;
+    setLoading(true);
+    try {
+      controllerRef.current?.setSpeed(0);
+      await flushPendingSave(true, false);
+      await metaSaveQueueRef.current;
+      const resetMeta = resetMetaForFreshMain(metaProgressionRef.current);
+      await resetMainProgress(resetMeta);
+      resetCommitted = true;
+      runtimeGenerationRef.current += 1;
+      const replacedController = controllerRef.current;
+      controllerRef.current = undefined;
+      replacedController?.destroy();
+      metaProgressionRef.current = resetMeta;
+      setMetaProgression(resetMeta);
+      pendingSaveRef.current = undefined;
+      pendingSaveScopeRef.current = MAIN_GAME_SCOPE;
+      activeScopeRef.current = MAIN_GAME_SCOPE;
+      setActiveScope(MAIN_GAME_SCOPE);
+      mainLevelRef.current = INITIAL_LEVEL;
+      setMainLevel(INITIAL_LEVEL);
+      lastMasteryDebriefRef.current = undefined;
+      recordedScenarioResultRef.current = undefined;
+      await savePreference(ACTIVE_SCOPE_PREFERENCE, MAIN_GAME_SCOPE).catch(
+        () => reportStorageIssue("The fresh main-centre scope could not be saved."),
+      );
+      setTutorialStep(0);
+      setNutritionTourStep(0);
+      setGuidedPredictionId(undefined);
+      await savePreference("tutorial-complete", false).catch(() =>
+        reportStorageIssue("Tutorial progress could not be reset."),
+      );
+      await savePreference("nutrition-tour-v1-complete", false).catch(() =>
+        reportStorageIssue("Nutrition tour progress could not be reset."),
+      );
+      await savePreference("forecast-guide-v1-complete", false).catch(() =>
+        reportStorageIssue("What’s new guide progress could not be reset."),
+      );
+      await installRuntime(MAIN_GAME_SCOPE, [], settings, false);
+      const freshState = latestRuntimeSavePayload(
+        controllerRef.current,
+        undefined,
+      );
+      if (freshState === undefined) {
+        throw new Error("The fresh main centre did not start");
+      }
+      await performSave(freshState, MAIN_GAME_SCOPE);
+      setResetOpen(false);
+      announce({
+        kind: "info",
+        message:
+          "A fresh main centre is ready. Scenario saves and earned gallery rewards were preserved; the active mastery contract ended.",
+      });
+    } catch (error) {
+      if (resetCommitted) {
+        try {
+          activeScopeRef.current = MAIN_GAME_SCOPE;
+          setActiveScope(MAIN_GAME_SCOPE);
+          pendingSaveRef.current = undefined;
+          pendingSaveScopeRef.current = MAIN_GAME_SCOPE;
+          await installRuntime(MAIN_GAME_SCOPE, [], settings, false);
+          const recoveredFreshState = controllerRef.current?.exportState();
+          if (recoveredFreshState !== undefined) {
+            await performSave(
+              recoveredFreshState,
+              MAIN_GAME_SCOPE,
+            ).catch(() => undefined);
+          }
+          setResetOpen(false);
+          announce({
+            kind: "warning",
+            importance: "important",
+            message:
+              "The main reset was committed. A later setup step failed, so the fresh centre was recovered without restoring the old mastery contract.",
+          });
+        } catch (recoveryError) {
+          setResetOpen(false);
+          setLoadingError(
+            "The main reset was committed, but a fresh centre could not start. Reload to create the reset centre.",
+          );
+          announce({
+            kind: "error",
+            importance: "important",
+            message: recoveryError instanceof Error
+              ? `The main reset was committed, but recovery failed: ${recoveryError.message}`
+              : "The main reset was committed, but the fresh centre must be reloaded.",
+          });
+        }
+      } else {
+        controllerRef.current?.setSpeed(previousSpeed);
+        announce({
+          kind: "error",
+          message: error instanceof Error
+            ? `The main centre was not reset: ${error.message}`
+            : "The main centre was not reset.",
+        });
+      }
+    } finally {
+      setLoading(false);
+      finishLocalDataOperation();
+    }
+  }
+
+  async function confirmEraseAll() {
+    if (!beginLocalDataOperation()) return;
+    const previousScope = activeScopeRef.current;
+    let eraseCommitted = false;
     window.clearTimeout(saveTimerRef.current);
+    controllerRef.current?.setSpeed(0);
     pendingSaveRef.current = undefined;
+    setLoading(true);
     await saveQueueRef.current.catch(() => undefined);
-    await clearGame().catch(() =>
-      reportStorageIssue("The stored save could not be removed."),
-    );
-    controllerRef.current?.reset();
-    setResetOpen(false);
-    setTutorialStep(0);
-    setNutritionTourStep(0);
-    setGuidedPredictionId(undefined);
-    await savePreference("tutorial-complete", false).catch(() =>
-      reportStorageIssue("Tutorial progress could not be reset."),
-    );
-    await savePreference("nutrition-tour-v1-complete", false).catch(() =>
-      reportStorageIssue("Nutrition tour progress could not be reset."),
-    );
-    await savePreference("forecast-guide-v1-complete", false).catch(() =>
-      reportStorageIssue("What’s new guide progress could not be reset."),
-    );
-    announce({ kind: "info", message: "A fresh centre is ready." });
+    await metaSaveQueueRef.current.catch(() => false);
+    runtimeGenerationRef.current += 1;
+    try {
+      await eraseAllProgress();
+      eraseCommitted = true;
+      const replacedController = controllerRef.current;
+      controllerRef.current = undefined;
+      replacedController?.destroy();
+      const emptyMeta = createEmptyMetaProgression();
+      metaProgressionRef.current = emptyMeta;
+      setMetaProgression(emptyMeta);
+      setScenarioHasSave({});
+      setTutorialStep(0);
+      setNutritionTourStep(0);
+      setGuidedPredictionId(undefined);
+      activeScopeRef.current = MAIN_GAME_SCOPE;
+      setActiveScope(MAIN_GAME_SCOPE);
+      mainLevelRef.current = INITIAL_LEVEL;
+      setMainLevel(INITIAL_LEVEL);
+      lastMasteryDebriefRef.current = undefined;
+      recordedScenarioResultRef.current = undefined;
+      await Promise.all([
+        savePreference(ACTIVE_SCOPE_PREFERENCE, MAIN_GAME_SCOPE),
+        savePreference(MAIN_LEVEL_PREFERENCE, INITIAL_LEVEL),
+      ]);
+      await installRuntime(MAIN_GAME_SCOPE, [], settings, false);
+      const freshState = latestRuntimeSavePayload(
+        controllerRef.current,
+        undefined,
+      );
+      if (freshState !== undefined) {
+        await performSave(freshState, MAIN_GAME_SCOPE);
+      }
+      setEraseAllOpen(false);
+      setResetOpen(false);
+      setSettingsOpen(false);
+      announce({
+        kind: "info",
+        importance: "important",
+        message: "All local game progress was erased. A new centre is ready.",
+      });
+    } catch (error) {
+      if (eraseCommitted) {
+        const emptyMeta = createEmptyMetaProgression();
+        metaProgressionRef.current = emptyMeta;
+        setMetaProgression(emptyMeta);
+        setScenarioHasSave({});
+        setTutorialStep(0);
+        setNutritionTourStep(0);
+        setGuidedPredictionId(undefined);
+        activeScopeRef.current = MAIN_GAME_SCOPE;
+        setActiveScope(MAIN_GAME_SCOPE);
+        pendingSaveRef.current = undefined;
+        pendingSaveScopeRef.current = MAIN_GAME_SCOPE;
+        mainLevelRef.current = INITIAL_LEVEL;
+        setMainLevel(INITIAL_LEVEL);
+        lastMasteryDebriefRef.current = undefined;
+        recordedScenarioResultRef.current = undefined;
+        try {
+          await Promise.all([
+            savePreference(ACTIVE_SCOPE_PREFERENCE, MAIN_GAME_SCOPE),
+            savePreference(MAIN_LEVEL_PREFERENCE, INITIAL_LEVEL),
+          ]).catch(() =>
+            reportStorageIssue(
+              "Fresh-centre preferences could not be saved after erasing progress.",
+            ),
+          );
+          await installRuntime(MAIN_GAME_SCOPE, [], settings, false);
+          const recoveredFreshState = controllerRef.current?.exportState();
+          if (recoveredFreshState !== undefined) {
+            await performSave(
+              recoveredFreshState,
+              MAIN_GAME_SCOPE,
+            ).catch(() => undefined);
+          }
+          setEraseAllOpen(false);
+          setResetOpen(false);
+          setSettingsOpen(false);
+          announce({
+            kind: "warning",
+            importance: "important",
+            message:
+              "All previous progress was erased. A later setup step failed, so a fresh empty centre was recovered.",
+          });
+        } catch (recoveryError) {
+          setEraseAllOpen(false);
+          setResetOpen(false);
+          setSettingsOpen(false);
+          setLoadingError(
+            "All previous progress was erased, but a fresh centre could not start. Reload to create a new empty centre.",
+          );
+          announce({
+            kind: "error",
+            importance: "important",
+            message: recoveryError instanceof Error
+              ? `Progress was erased, but fresh-centre recovery failed: ${recoveryError.message}`
+              : "Progress was erased, but a fresh centre must be created after reload.",
+          });
+        }
+      } else {
+        try {
+          activeScopeRef.current = previousScope;
+          setActiveScope(previousScope);
+          pendingSaveScopeRef.current = previousScope;
+          await installRuntime(
+            previousScope,
+            await loadScopedGameCandidates(previousScope),
+            settings,
+            false,
+          );
+        } catch {
+          setLoadingError(
+            "Erase all did not commit, but the current save must be reloaded.",
+          );
+        }
+        announce({
+          kind: "error",
+          message: error instanceof Error
+            ? error.message
+            : "All progress could not be erased.",
+        });
+      }
+    } finally {
+      finishLocalDataOperation();
+      setLoading(false);
+    }
   }
 
   const tutorialCopy = TUTORIAL_COPY[Math.min(tutorialStep, 4)]!;
@@ -3142,11 +4873,13 @@ export function HawkerSimulator() {
     ? nutritionFamilies.find((family) => family.dishId === variantLabDishId)
     : undefined;
   const interfaceInert =
+    localDataBusy ||
     tutorialStep < 5 ||
     (nutritionTourStep < 2 && Boolean(guidedDecision)) ||
     settingsOpen ||
     helpOpen ||
     resetOpen ||
+    eraseAllOpen ||
     snapshot.servicePeriod.phase === "debrief" ||
     eventDecisionOpen ||
     Boolean(variantLabFamily);
@@ -3248,10 +4981,72 @@ export function HawkerSimulator() {
         snapshot.unlockedContentIds.includes(id),
       ),
   ).length;
+  const scenarioProgress = buildScenarioProgress(
+    scenarioHasSave,
+    metaProgression,
+  );
+  const derivedMasteryPanel = buildMasteryPanelView(
+    {
+      ...snapshot,
+      level: mainLevel,
+    },
+    masteryProgressionFromMeta(metaProgression),
+    metaProgression,
+  );
+  const masteryPanel = activeScope.kind === "scenario" &&
+      derivedMasteryPanel.kind !== "active"
+    ? {
+          kind: "unavailable" as const,
+          explanation:
+            "Return to the main centre during breakfast planning to choose or skip a mastery contract.",
+        }
+    : snapshot.servicePeriod.phase !== "planning" &&
+        derivedMasteryPanel.kind === "offer"
+      ? {
+          kind: "unavailable" as const,
+          explanation:
+            "Choices can only be accepted during breakfast planning. Finish this service and return during a future breakfast.",
+        }
+      : derivedMasteryPanel;
+  const activeScenarioDefinition = activeScope.kind === "scenario"
+    ? SCENARIOS.find((scenario) => scenario.id === activeScope.scenarioId)
+    : undefined;
+  const activeScenarioView =
+    activeScope.kind === "scenario" && activeScenarioDefinition
+      ? {
+          scenarioId: activeScope.scenarioId,
+          cashCents: snapshot.cashCents,
+          periodLabel:
+            `${snapshot.servicePeriod.label} · ${snapshot.servicePeriod.phase}`,
+          scoreLabel:
+            snapshot.servicePeriod.phase === "planning"
+              ? "Scoring starts with service"
+              : snapshot.scenario
+                ? scenarioScoreLabel(
+                    snapshot.scenario.score,
+                    snapshot.scenario.scoreUnit,
+                  )
+                : "Scoring starts with service",
+          objectiveLabel:
+            `Bronze begins at ${scenarioScoreLabel(
+              activeScenarioDefinition.medalThresholds.bronze,
+              activeScenarioDefinition.scoreUnit,
+            )}.`,
+          ...(snapshot.scenario?.medal
+            ? { projectedMedal: snapshot.scenario.medal }
+            : {}),
+          saveStatusLabel: snapshot.autosaveState === "saving"
+            ? "Saving scenario…"
+            : snapshot.autosaveState === "error"
+              ? "Scenario save needs attention"
+              : "Scenario saved on this device",
+        }
+      : undefined;
 
   return (
     <main
       className="game-shell"
+      aria-busy={loading || localDataBusy}
       data-contrast={settings.highContrast ? "high" : "normal"}
       data-motion={settings.reducedMotion ? "reduced" : "full"}
       data-text-scale={
@@ -3283,7 +5078,7 @@ export function HawkerSimulator() {
 
         <dl className="hud-stats" aria-label="Centre status">
           <div>
-            <dt>Cash</dt>
+            <dt>{activeScenarioDefinition ? "Scenario cash" : "Cash"}</dt>
             <dd data-testid="cash-value"><SgdAmount cents={snapshot.cashCents} /></dd>
           </div>
           <div>
@@ -3293,9 +5088,20 @@ export function HawkerSimulator() {
             </dd>
           </div>
           <div className="level-stat">
-            <dt>Level {snapshot.level}</dt>
+            <dt>
+              {activeScenarioDefinition
+                ? `Main level ${mainLevel}`
+                : `Level ${snapshot.level}`}
+            </dt>
             <dd>
-              {snapshot.nextLevelExperience === null ? (
+              {activeScenarioDefinition ? (
+                <>
+                  <strong aria-hidden="true">ISOLATED</strong>
+                  <span className="sr-only">
+                    Scenario play does not change main-centre experience
+                  </span>
+                </>
+              ) : snapshot.nextLevelExperience === null ? (
                 <>
                   <strong aria-hidden="true">MAX</strong>
                   <span className="sr-only">Maximum authored level reached</span>
@@ -3320,7 +5126,11 @@ export function HawkerSimulator() {
 
         <div className="day-controls">
           <div className="clock-card">
-            <span>Day {snapshot.servicePeriod.day} · {snapshot.servicePeriod.label}</span>
+            <span>
+              {activeScenarioDefinition
+                ? `${activeScenarioDefinition.name} scenario · ${snapshot.servicePeriod.label}`
+                : `Day ${snapshot.servicePeriod.day} · ${snapshot.servicePeriod.label}`}
+            </span>
             <strong>{snapshot.servicePeriod.clockLabel}</strong>
             <small>{SERVICE_PHASE_LABELS[snapshot.servicePeriod.phase]}</small>
           </div>
@@ -3680,8 +5490,10 @@ export function HawkerSimulator() {
                 ? STALLS.length
                 : panel === "dishes"
                   ? DISHES.length
-                  : panel === "focus"
+                : panel === "focus"
                     ? snapshot.objectives.length
+                  : panel === "challenges"
+                    ? SCENARIOS.length
                   : panel === "insights"
                     ? snapshot.activeCustomers
                     : panel === "activity"
@@ -3979,16 +5791,17 @@ export function HawkerSimulator() {
                     {DISHES.filter((dish) => dish.stallIds.includes(stall.id)).map((dish) => {
                       const checked = activeMenu.includes(dish.id);
                       const preview = dishPreview(dish);
-                      const gated =
-                        dish.unlockRequirement.level > snapshot.level ||
-                        dish.unlockRequirement.reputation > snapshot.reputation ||
-                        dish.unlockRequirement.prerequisiteIds.some(
-                          (id) => !snapshot.unlockedContentIds.includes(id),
-                        );
+                      const gated = dishMenuUsesMainProgressionGate(
+                        scenarioMenuFixed,
+                        dish.unlockRequirement,
+                        snapshot,
+                      );
                       const atCapacity = !checked && activeMenu.length >= menuSlots;
-                      const unavailableReason = configurationLocked
-                        ? "Menu changes reopen during planning"
-                        : gated
+                      const unavailableReason = scenarioMenuFixed
+                        ? "Scenario menu and preparations are fixed for comparable scoring"
+                        : configurationLocked
+                          ? "Menu changes reopen during planning"
+                          : gated
                           ? unlockLabel(
                               dish,
                               snapshot.level,
@@ -4056,6 +5869,7 @@ export function HawkerSimulator() {
                           ) : (
                             <DishRatingSummary
                               healthRating={profile?.healthRating}
+                              healthRatingState={profile?.ratingStates?.overall}
                               starRating={starRating}
                             />
                           )}
@@ -4070,8 +5884,12 @@ export function HawkerSimulator() {
                             {nutritionFamily ? (
                               <button
                                 type="button"
-                                aria-label={`Tune recipe for ${localize(dish.nameKey)}`}
-                                disabled={configurationLocked}
+                                aria-label={`Tune recipe for ${localize(dish.nameKey)}${
+                                  scenarioMenuFixed
+                                    ? ", unavailable: scenario preparations are fixed for comparable scoring"
+                                    : ""
+                                }`}
+                                disabled={configurationLocked || scenarioMenuFixed}
                                 onClick={() => setVariantLabDishId(dish.id)}
                               >
                                 Tune recipe
@@ -4264,6 +6082,35 @@ export function HawkerSimulator() {
             </div>
           ) : null}
 
+          {panel === "challenges" ? (
+            <StrategicChallenges
+              level={mainLevel}
+              scenarioProgress={scenarioProgress}
+              activeScenario={activeScenarioView}
+              mastery={masteryPanel}
+              masteryDecisionBusy={masteryDecisionBusy}
+              gallery={buildMetaGallery(metaProgression)}
+              onStartScenario={(scenarioId) => {
+                void startScenario(scenarioId);
+              }}
+              onResumeScenario={(scenarioId) => {
+                void resumeScenario(scenarioId);
+              }}
+              onLeaveScenario={(scenarioId) => {
+                void leaveScenario(scenarioId);
+              }}
+              onRestartScenario={(scenarioId) => {
+                return restartScenario(scenarioId);
+              }}
+              onAcceptMasteryContract={(contractId) => {
+                void acceptMasteryContract(contractId);
+              }}
+              onSkipMasteryContracts={() => {
+                void skipMasteryContracts();
+              }}
+            />
+          ) : null}
+
           {panel === "activity" ? (
             <div className="activity-panel">
               <div className="activity-toolbar">
@@ -4329,7 +6176,9 @@ export function HawkerSimulator() {
             </>
           ) : null}
 
-          {selectedContent && panel !== "activity" ? (
+          {selectedContent &&
+          panel !== "activity" &&
+          panel !== "challenges" ? (
             <div className="selection-card">
               <button
                 type="button"
@@ -4380,10 +6229,16 @@ export function HawkerSimulator() {
           forecast={snapshot.forecast}
           ledger={snapshot.periodLedger}
           debrief={snapshot.periodDebrief}
+          scenario={snapshot.scenario}
           neighbourhoodEvent={snapshot.neighbourhoodEvent}
           activeParties={snapshot.activeParties ?? []}
           regularProgress={snapshot.regularProgress ?? []}
-          onContinue={toggleCentre}
+          masterySaveStatus={
+            activeScope.kind === "main"
+              ? masteryDebriefSaveStatus
+              : "idle"
+          }
+          onContinue={() => void toggleCentre()}
         />
       ) : null}
 
@@ -4400,37 +6255,45 @@ export function HawkerSimulator() {
       >
         {(
           [
-            ["focus", "◎", "Focus"],
-            ["build", "▦", "Build"],
-            ["stalls", "▰", "Stalls"],
-            ["dishes", "◉", "Dishes"],
-            ["insights", "⌁", "Insights"],
-            ["activity", "◷", "Activity"],
+            ["focus", FocusIcon, "Focus"],
+            ["build", Grid3X3, "Build"],
+            ["stalls", Store, "Stalls"],
+            ["dishes", UtensilsCrossed, "Dishes"],
+            ["challenges", Trophy, "Challenges"],
+            ["insights", Lightbulb, "Insights"],
+            ["activity", Clock3, "Activity"],
           ] as const
-        ).map(([value, icon, label]) => (
-          <button
-            type="button"
-            key={value}
-            className={visiblePanelSelection && panel === value ? "is-active" : ""}
-            aria-current={visiblePanelSelection && panel === value ? "page" : undefined}
-            aria-controls={overlayManagement ? "management-panel" : undefined}
-            aria-expanded={overlayManagement ? managementSheetOpen && panel === value : undefined}
-            aria-haspopup={overlayManagement ? "dialog" : undefined}
-            aria-label={value === "activity" && activityUnread > 0 ? `Activity, ${activityUnread} unread` : label}
-            onClick={(event) => {
-              openPanel(value, event.currentTarget);
-            }}
-          >
-            <span aria-hidden="true">{icon}</span>
-            {label}
-            {value === "activity" && activityUnread > 0 ? (
-              <i className="dock-unread" aria-hidden="true">{activityUnread}</i>
-            ) : null}
-          </button>
-        ))}
+        ).map(([value, Icon, label]) => {
+          const DockIcon = Icon as LucideIcon;
+          return (
+            <button
+              type="button"
+              key={value}
+              className={visiblePanelSelection && panel === value ? "is-active" : ""}
+              aria-current={visiblePanelSelection && panel === value ? "page" : undefined}
+              aria-controls={overlayManagement ? "management-panel" : undefined}
+              aria-expanded={overlayManagement ? managementSheetOpen && panel === value : undefined}
+              aria-haspopup={overlayManagement ? "dialog" : undefined}
+              aria-label={value === "activity" && activityUnread > 0 ? `Activity, ${activityUnread} unread` : label}
+              onClick={(event) => {
+                openPanel(value, event.currentTarget);
+              }}
+            >
+              <DockIcon aria-hidden="true" focusable="false" />
+              {label}
+              {value === "activity" && activityUnread > 0 ? (
+                <i className="dock-unread" aria-hidden="true">{activityUnread}</i>
+              ) : null}
+            </button>
+          );
+        })}
         <span className="dock-divider" />
-        <button type="button" onClick={() => void saveNow()}>
-          <span aria-hidden="true">▣</span>
+        <button
+          type="button"
+          disabled={localDataBusy}
+          onClick={() => void saveNow()}
+        >
+          <SaveIcon aria-hidden="true" focusable="false" />
           Save now
         </button>
       </nav>
@@ -4690,7 +6553,7 @@ export function HawkerSimulator() {
 
       {settingsOpen ? (
         <div className="modal-backdrop" role="presentation">
-          <section ref={settingsDialogRef} className="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabIndex={-1} inert={resetOpen} aria-hidden={resetOpen}>
+          <section ref={settingsDialogRef} className="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabIndex={-1} inert={resetOpen || eraseAllOpen} aria-hidden={resetOpen || eraseAllOpen}>
             <header>
               <div><span>Preferences &amp; guide</span><h2 id="settings-title">Settings</h2></div>
               <button type="button" aria-label="Close settings" onClick={() => setSettingsOpen(false)}>×</button>
@@ -4732,14 +6595,18 @@ export function HawkerSimulator() {
                 <label>Ambience volume <strong>{Math.round(settings.ambienceVolume * 100)}%</strong><input type="range" min="0" max="1" step="0.05" value={settings.ambienceVolume} onChange={(event) => setSettings((current) => ({ ...current, ambienceVolume: Number(event.target.value) }))} /></label>
                 <label>Effects volume <strong>{Math.round(settings.sfxVolume * 100)}%</strong><input type="range" min="0" max="1" step="0.05" value={settings.sfxVolume} onChange={(event) => setSettings((current) => ({ ...current, sfxVolume: Number(event.target.value) }))} /></label>
               </fieldset>
-              <fieldset>
+              <fieldset disabled={localDataBusy} aria-busy={localDataBusy}>
                 <legend>Local data</legend>
+                {localDataBusy ? (
+                  <small role="status">Finishing a local-data operation…</small>
+                ) : null}
                 <div className="button-row">
-                  <button type="button" onClick={downloadSave}>Export save</button>
-                  <button type="button" onClick={() => fileInputRef.current?.click()}>Import save</button>
+                  <button type="button" onClick={() => void downloadSave()}>Export progress</button>
+                  <button type="button" onClick={() => fileInputRef.current?.click()}>Import progress</button>
                   <input ref={fileInputRef} className="sr-only" type="file" accept="application/json" onChange={uploadSave} />
                 </div>
-                <button type="button" className="danger-button" onClick={() => setResetOpen(true)}>Reset game…</button>
+                <button type="button" className="danger-button" onClick={() => setResetOpen(true)}>Reset main centre…</button>
+                <button type="button" className="danger-button" onClick={() => setEraseAllOpen(true)}>Erase all progress…</button>
               </fieldset>
             </div>
             <footer><button type="button" className="primary-button" onClick={() => setSettingsOpen(false)}>Done</button></footer>
@@ -4781,9 +6648,68 @@ export function HawkerSimulator() {
         <div className="modal-backdrop nested" role="presentation">
           <section ref={resetDialogRef} className="confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="reset-title" aria-describedby="reset-description" tabIndex={-1}>
             <span aria-hidden="true">!</span>
-            <h2 id="reset-title">Reset this centre?</h2>
-            <p id="reset-description">This removes the local save and starts again. Export first if you may want it later.</p>
-            <div><button type="button" onClick={() => setResetOpen(false)}>Keep playing</button><button type="button" className="danger-button" onClick={() => void confirmReset()}>Reset game</button></div>
+            <h2 id="reset-title">Reset the main centre?</h2>
+            <p id="reset-description">
+              This starts the main centre again. Scenario saves, medals, titles,
+              and cosmetics are preserved. Any active mastery contract ends so
+              its old period sequence cannot carry into the fresh centre.
+            </p>
+            <div>
+              <button
+                type="button"
+                disabled={localDataBusy}
+                onClick={() => setResetOpen(false)}
+              >
+                Keep playing
+              </button>
+              <button
+                type="button"
+                className="danger-button"
+                disabled={localDataBusy}
+                onClick={() => void confirmReset()}
+              >
+                Reset main centre
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {eraseAllOpen ? (
+        <div className="modal-backdrop nested" role="presentation">
+          <section
+            ref={eraseAllDialogRef}
+            className="confirm-modal"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="erase-all-title"
+            aria-describedby="erase-all-description"
+            tabIndex={-1}
+          >
+            <span aria-hidden="true">!</span>
+            <h2 id="erase-all-title">Erase all progress?</h2>
+            <p id="erase-all-description">
+              This removes the main centre, every scenario save, medals,
+              titles, cosmetics, and mastery progress from this device.
+              Display and audio preferences remain.
+            </p>
+            <div>
+              <button
+                type="button"
+                disabled={localDataBusy}
+                onClick={() => setEraseAllOpen(false)}
+              >
+                Keep progress
+              </button>
+              <button
+                type="button"
+                className="danger-button"
+                disabled={localDataBusy}
+                onClick={() => void confirmEraseAll()}
+              >
+                Erase all progress
+              </button>
+            </div>
           </section>
         </div>
       ) : null}
@@ -4810,6 +6736,9 @@ export function HawkerSimulator() {
 
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {serviceAnnouncement}
+      </p>
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {localDataBusy ? "A local game-data operation is in progress." : ""}
       </p>
     </main>
   );

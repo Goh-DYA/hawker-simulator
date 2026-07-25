@@ -55,14 +55,14 @@ function profile(
     hypertension: 3,
   },
 ): NutritionProfile {
-  const unavailable: NutritionValue = { status: "unavailable", reason: "not-reported" };
+  const known: NutritionValue = { status: "known", value: 1 };
   return {
     id,
     dishId,
     status: "released",
     nutritionClass: "meal",
     serving: { amount: 300, unit: "g", label: "1 plate (300 g)" },
-    nutrients: Object.fromEntries(METRICS.map((metric) => [metric, unavailable])) as Record<
+    nutrients: Object.fromEntries(METRICS.map((metric) => [metric, known])) as Record<
       NutritionMetric,
       NutritionValue
     >,
@@ -261,13 +261,20 @@ describe("nutrition education rules", () => {
     expect(levelTwoFull.rngState).toBe(levelTwoHealthOnly.rngState);
   });
 
-  it("uses authored condition ratings and nutrient-derived legacy fallbacks", () => {
-    const authored = profile("authored", "dish", {}, {
-      "high-cholesterol": 2,
-      obesity: 3,
-      diabetes: 4.5,
-      hypertension: 5,
-    });
+  it("uses complete authored ratings and withholds incomplete legacy fallbacks", () => {
+    const completeNutrients = Object.fromEntries(METRICS.map((metric) => [
+      metric,
+      { status: "known" as const, value: metric === "sodiumMg" ? 600 : 10 },
+    ])) as Record<NutritionMetric, NutritionValue>;
+    const authored = {
+      ...profile("authored", "dish", {}, {
+        "high-cholesterol": 2,
+        obesity: 3,
+        diabetes: 4.5,
+        hypertension: 5,
+      }),
+      nutrients: completeNutrients,
+    };
     expect(healthConditionRating(authored, "diabetes")).toBe(4.5);
     expect(personalizedHealthRating(authored, ["diabetes", "hypertension"])).toBe(4.75);
     expect(healthDishChoiceBonus(5, ["hypertension"])).toBe(2.25);
@@ -282,12 +289,30 @@ describe("nutrition education rules", () => {
       healthRating: undefined,
       conditionRatings: undefined,
       nutrients: {
-        ...profile("legacy-base", "dish", {}).nutrients,
+        ...Object.fromEntries(METRICS.map((metric) => [
+          metric,
+          { status: "unavailable" as const, reason: "not-reported" as const },
+        ])) as Record<NutritionMetric, NutritionValue>,
         sodiumMg: { status: "known" as const, value: 1_800 },
       },
     };
-    expect(healthConditionRating(legacy, "hypertension")).toBe(1);
+    expect(healthConditionRating(legacy, "hypertension")).toBeUndefined();
     expect(healthConditionRating(legacy, "diabetes")).toBeUndefined();
+
+    const traceLegacy = {
+      ...legacy,
+      nutrients: {
+        ...legacy.nutrients,
+        sodiumMg: { status: "trace" as const },
+      },
+    };
+    expect(healthConditionRating(traceLegacy, "hypertension")).toBeUndefined();
+
+    const completeLegacy = {
+      ...legacy,
+      nutrients: completeNutrients,
+    };
+    expect(healthConditionRating(completeLegacy, "hypertension")).toBeDefined();
   });
 
   it("computes relative fits with average-rank ties and a single-option score of one", () => {

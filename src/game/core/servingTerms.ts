@@ -119,6 +119,14 @@ export function snapshotOrderLine(input: OrderLineSnapshotInput): OrderLineSnaps
     if (nutritionProfile.serving) Object.freeze(nutritionProfile.serving);
     Object.freeze(nutritionProfile.intentFits);
     if (nutritionProfile.conditionRatings) Object.freeze(nutritionProfile.conditionRatings);
+    if (nutritionProfile.ratingStates) {
+      Object.values(nutritionProfile.ratingStates).forEach((state) => {
+        if (!state) return;
+        Object.freeze(state.missingMetrics);
+        Object.freeze(state);
+      });
+      Object.freeze(nutritionProfile.ratingStates);
+    }
     Object.freeze(nutritionProfile);
   }
   return Object.freeze({
@@ -245,6 +253,23 @@ export function snapshotMealOrder(input: MealOrderSnapshotInput): MealOrderSnaps
     (!Number.isFinite(input.fit.mealBalance) || input.fit.mealBalance < 1 || input.fit.mealBalance > 5)
   ) {
     throw new Error("Meal balance fit must be between 1 and 5 when available.");
+  }
+  if (
+    input.fit.mealBalanceKnownWeightBasisPoints !== undefined &&
+    (
+      !Number.isSafeInteger(input.fit.mealBalanceKnownWeightBasisPoints) ||
+      input.fit.mealBalanceKnownWeightBasisPoints < 0 ||
+      input.fit.mealBalanceKnownWeightBasisPoints > 10_000
+    )
+  ) {
+    throw new Error("Meal balance source coverage must be between 0 and 10,000 basis points.");
+  }
+  if (
+    input.fit.mealBalance !== undefined &&
+    input.fit.mealBalanceKnownWeightBasisPoints !== undefined &&
+    input.fit.mealBalanceKnownWeightBasisPoints < 7_500
+  ) {
+    throw new Error("Available Meal balance fits require at least 75% frozen source coverage.");
   }
   if (
     input.fit.intentFit !== undefined &&

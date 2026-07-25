@@ -483,6 +483,7 @@ function settleVisitRating(draft: Draft, source: Customer, abandoned: boolean, r
     reason,
     stallDefinitionId: source.servedStallDefinitionId,
     components,
+    waitMs: source.waitElapsedMs ?? 0,
     day: draft.source.servicePeriod.day,
     arrivalPeriodSequenceId: source.arrivalPeriodSequenceId,
   };
@@ -1211,6 +1212,7 @@ function spawnCustomer(draft: Draft, remainingGuestTarget: number): void {
     movementProgress: 0,
     stateElapsedMs: 0,
     visitElapsedMs: 0,
+    waitElapsedMs: 0,
     walkingDistanceTiles: 0,
     patienceRemainingMs: isParty
       ? Math.max(
@@ -1803,6 +1805,9 @@ function comboChoicesForContext(
       nutrition: aggregate,
       fit: {
         mealBalance: balance.rating,
+        mealBalanceKnownWeightBasisPoints: Math.round(
+          (balance.availableWeight / balance.totalWeight) * 10_000,
+        ),
         intentId: customer.nutritionIntentId,
         intentFit,
         conditionIds: customer.healthConditions,
@@ -2528,7 +2533,9 @@ function freezePartyStopOrders(
         lineId: `${party.partyId}:${member.memberId}:line`,
         dishId: dish.id,
         variantId: variant?.id,
-        preparationId: exactPreparationId(dish.id, variant?.id),
+        preparationId:
+          dish.activePreparationId ??
+          exactPreparationId(dish.id, variant?.id),
         mealRole: dish.mealRole,
         arrivalPeriodSequenceId: source.arrivalPeriodSequenceId,
         terms: createServingTerms({
@@ -3029,10 +3036,16 @@ function finalizePartyDeparture(
 }
 
 function processCustomer(draft: Draft, source: Customer, deltaMs: number): Customer | undefined {
+  const waitingForService =
+    source.status === "queued" ||
+    source.status === "ordering" ||
+    source.status === "waiting-for-food";
   let customer: Customer = {
     ...source,
     visitElapsedMs: source.visitElapsedMs + deltaMs,
     stateElapsedMs: source.stateElapsedMs + deltaMs,
+    waitElapsedMs:
+      (source.waitElapsedMs ?? 0) + (waitingForService ? deltaMs : 0),
   };
 
   if (
@@ -3269,7 +3282,9 @@ function processCustomer(draft: Draft, source: Customer, deltaMs: number): Custo
           lineId: `${customer.id}:1`,
           dishId: choice.dish.id,
           variantId: choice.variant?.id,
-          preparationId: exactPreparationId(choice.dish.id, choice.variant?.id),
+          preparationId:
+            choice.dish.activePreparationId ??
+            exactPreparationId(choice.dish.id, choice.variant?.id),
           mealRole: choice.dish.mealRole,
           arrivalPeriodSequenceId: customer.arrivalPeriodSequenceId ?? draft.source.servicePeriod.sequenceId,
           terms: createServingTerms({

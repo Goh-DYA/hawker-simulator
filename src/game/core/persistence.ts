@@ -51,6 +51,7 @@ import {
   HEALTH_CONDITIONS,
   NUTRITION_INTENTS,
   NUTRITION_METRICS,
+  nutritionRatingStateForProfile,
 } from "./nutrition";
 import type {
   AnyPersistentGameState,
@@ -397,7 +398,7 @@ function parseNutritionProfile(value: unknown, path: string): NutritionProfile {
       );
     }
   }
-  return {
+  const profile: NutritionProfile = {
     id: stringValue(value.id, `${path}.id`),
     dishId: stringValue(value.dishId, `${path}.dishId`),
     status: value.status,
@@ -415,11 +416,68 @@ function parseNutritionProfile(value: unknown, path: string): NutritionProfile {
       ]),
     ) as Record<NutritionMetric, NutritionValue>,
     intentFits,
-    healthRating: value.healthRating === undefined
-      ? undefined
-      : healthRating(value.healthRating, `${path}.healthRating`),
-    conditionRatings: conditionRatingsSource ? conditionRatings : undefined,
+    ...(value.healthRating === undefined
+      ? {}
+      : { healthRating: healthRating(value.healthRating, `${path}.healthRating`) }),
+    ...(conditionRatingsSource ? { conditionRatings } : {}),
     nutritionClass: value.nutritionClass,
+  };
+  const hasPersistedRatingStates = isRecord(value.ratingStates);
+  const ratingStateSource: Record<string, unknown> = isRecord(value.ratingStates)
+    ? value.ratingStates
+    : {};
+  const overallStateSource = isRecord(ratingStateSource.overall)
+    ? ratingStateSource.overall
+    : undefined;
+  const overallCandidate = overallStateSource
+    ? overallStateSource.status === "known"
+      ? healthRating(overallStateSource.value, `${path}.ratingStates.overall.value`)
+      : undefined
+    : profile.healthRating;
+  const ratingStates: NonNullable<NutritionProfile["ratingStates"]> = {
+    overall: nutritionRatingStateForProfile(profile, "overall", overallCandidate),
+    ...Object.fromEntries(HEALTH_CONDITIONS.map((condition) => {
+      const stateSource = isRecord(ratingStateSource[condition])
+        ? ratingStateSource[condition]
+        : undefined;
+      const candidate = stateSource
+        ? stateSource.status === "known"
+          ? healthRating(
+              stateSource.value,
+              `${path}.ratingStates.${condition}.value`,
+            )
+          : undefined
+        : conditionRatings[condition];
+      return [
+        condition,
+        nutritionRatingStateForProfile(profile, condition, candidate),
+      ];
+    })),
+  };
+  const sanitizedConditionRatings = Object.fromEntries(
+    HEALTH_CONDITIONS.flatMap((condition) => {
+      const state = ratingStates[condition];
+      return state?.status === "known" ? [[condition, state.value]] : [];
+    }),
+  );
+  const profileWithoutRatings: NutritionProfile = {
+    id: profile.id,
+    dishId: profile.dishId,
+    status: profile.status,
+    ...(profile.serving ? { serving: profile.serving } : {}),
+    nutrients: profile.nutrients,
+    intentFits: profile.intentFits,
+    nutritionClass: profile.nutritionClass,
+  };
+  return {
+    ...profileWithoutRatings,
+    ...(ratingStates.overall?.status === "known"
+      ? { healthRating: ratingStates.overall.value }
+      : {}),
+    ...(Object.keys(sanitizedConditionRatings).length > 0
+      ? { conditionRatings: sanitizedConditionRatings }
+      : {}),
+    ...(hasPersistedRatingStates ? { ratingStates } : {}),
   };
 }
 
@@ -612,6 +670,14 @@ function parseVisitRatings(value: unknown): readonly VisitRating[] {
       reason: stringValue(entry.reason, `metrics.visitRatings[${index}].reason`),
       stallDefinitionId: typeof entry.stallDefinitionId === "string" ? entry.stallDefinitionId : undefined,
       components,
+      ...(entry.waitMs === undefined
+        ? {}
+        : {
+            waitMs: safeInteger(
+              entry.waitMs,
+              `metrics.visitRatings[${index}].waitMs`,
+            ),
+          }),
       day: safeInteger(entry.day, `metrics.visitRatings[${index}].day`, 1),
       arrivalPeriodSequenceId: safeInteger(
         entry.arrivalPeriodSequenceId ?? 1,
@@ -896,6 +962,13 @@ function parseMealOrderSnapshot(
     mealBalance: fitSource.mealBalance === undefined
       ? undefined
       : finite(fitSource.mealBalance, `${path}.fit.mealBalance`, 0),
+    mealBalanceKnownWeightBasisPoints:
+      fitSource.mealBalanceKnownWeightBasisPoints === undefined
+        ? undefined
+        : safeInteger(
+            fitSource.mealBalanceKnownWeightBasisPoints,
+            `${path}.fit.mealBalanceKnownWeightBasisPoints`,
+          ),
     intentId: intentId as NutritionIntent | undefined,
     intentFit: fitSource.intentFit === undefined
       ? undefined
@@ -1181,6 +1254,7 @@ function parseCustomer(
     movementProgress: finite(value.movementProgress ?? 0, `${path}.movementProgress`, 0),
     stateElapsedMs: safeInteger(value.stateElapsedMs ?? 0, `${path}.stateElapsedMs`),
     visitElapsedMs: safeInteger(value.visitElapsedMs ?? 0, `${path}.visitElapsedMs`),
+    waitElapsedMs: safeInteger(value.waitElapsedMs ?? 0, `${path}.waitElapsedMs`),
     walkingDistanceTiles: safeInteger(value.walkingDistanceTiles ?? 0, `${path}.walkingDistanceTiles`),
     patienceRemainingMs: finite(value.patienceRemainingMs ?? 0, `${path}.patienceRemainingMs`),
     satisfaction: finite(value.satisfaction ?? 0, `${path}.satisfaction`, 0),
@@ -1743,6 +1817,11 @@ function parseV5(
           ? metricsSource.recoveredTargets
           : metricsSource.recoveredTargets ?? 0,
         "metrics.recoveredTargets",
+        0,
+      ),
+      qualifyingFlowMs: safeInteger(
+        metricsSource.qualifyingFlowMs ?? 0,
+        "metrics.qualifyingFlowMs",
         0,
       ),
       trayReturns: old.metrics.trayReturns,
@@ -2594,6 +2673,7 @@ function migrateV4ToV5(old: PersistentGameStateV4): PersistentGameStateV5 {
       pathRequests: 0,
       pathFailures: 0,
       recoveredTargets: 0,
+      qualifyingFlowMs: 0,
       trayReturns: old.metrics.trayReturns,
       trayReturnOpportunities: old.metrics.trayReturns,
       visitRatings: old.metrics.visitRatings,
@@ -2795,6 +2875,7 @@ export function persistentStateFromGame(state: GameState): PersistentGameStateV7
       pathRequests: state.metrics.pathRequests,
       pathFailures: state.metrics.pathFailures,
       recoveredTargets: state.metrics.recoveredTargets,
+      qualifyingFlowMs: state.metrics.qualifyingFlowMs,
       trayReturns: state.metrics.trayReturns,
       trayReturnOpportunities: state.metrics.trayReturnOpportunities,
       visitRatings: state.metrics.visitRatings.map((rating) => ({
@@ -3093,6 +3174,7 @@ export function deserializeGameStateWithReport(
       pathRequests: save.metrics.pathRequests,
       pathFailures: save.metrics.pathFailures,
       recoveredTargets: save.metrics.recoveredTargets,
+      qualifyingFlowMs: save.metrics.qualifyingFlowMs,
       trayReturns: save.metrics.trayReturns,
       trayReturnOpportunities: save.metrics.trayReturnOpportunities,
       visitRatings: save.metrics.visitRatings,

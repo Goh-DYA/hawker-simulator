@@ -4,7 +4,7 @@ Status: Deferred ideas only; none may delay or silently enter 1.0
 
 ## Priority A — quality after release
 
-- More save export/import support for player-controlled backups.
+- Additional player-controlled backup formats or selective-restore UX beyond the current checksummed V3 main/scenario/meta progress bundle.
 - Additional accessibility options based on human audit.
 - More diagnostic overlays and layout analytics computed locally.
 - Browser/GPU compatibility fixes discovered from support.
@@ -22,9 +22,10 @@ Status: Deferred ideas only; none may delay or silently enter 1.0
 ## Priority C — deeper simulation
 
 - Lightweight cleaner routing if measurement shows it adds readable decisions.
-- Reservations for larger groups and shared-table etiquette refinements.
+- Party seating and shared-table etiquette refinements beyond the current atomic up-to-six model and explained adjacent-table split.
 - Advanced stall specialization and menu synergy.
-- Optional scenario challenges with no punitive real-time timers.
+- Additional isolated scenario maps or modifiers only after the five current scenarios complete human balance review.
+- Additional mastery templates only after the twelve current contracts complete human engagement and difficulty review.
 - More robust local replay/benchmark tooling.
 
 ## Separate approval required

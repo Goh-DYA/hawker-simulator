@@ -77,6 +77,7 @@ const board: RuntimeComboBoardSummary = {
     mealBalance: {
       value: 3.8,
       dataState: "known",
+      knownWeightBasisPoints: 8_200,
       explanation: "Comparative in-game balance among unlocked feasible options.",
     },
     intentFit: {
@@ -139,12 +140,60 @@ describe("Stage 3 Combo Board UI", () => {
     expect(html.match(/aria-hidden="true"/g)?.length).toBeGreaterThanOrEqual(5);
     expect(html).toContain("Meal balance");
     expect(html).toContain("Among unlocked feasible options");
+    expect(html).toContain("82% source coverage");
     expect(html).toContain("Forecast intent fit");
     expect(html).toContain("Condition-aware game fit");
     expect(html).toContain("not treatment advice");
     expect(html).toContain("Compare component timing, Star appeal, and demand");
     expect(html).toContain('for="combo-main-0"');
     expect(html).toContain('for="combo-complement-0"');
+  });
+
+  it("never renders a numeric Combo Board rating when its data state is unavailable", () => {
+    const unavailableBoard: RuntimeComboBoardSummary = {
+      ...board,
+      slots: [{
+        ...board.slots[0]!,
+        mealBalance: {
+          value: 4.9,
+          dataState: "unavailable",
+          knownWeightBasisPoints: 6_900,
+          explanation: "Not enough reported source data.",
+        },
+      }, null, null],
+    };
+    const html = renderToStaticMarkup(createElement(ComboBoardPlanner, {
+      board: unavailableBoard,
+      locked: false,
+      onSave: () => true,
+      onClear: () => true,
+    }));
+
+    expect(html).toContain("Unavailable");
+    expect(html).toContain("69% source coverage");
+    expect(html).not.toContain("4.9/5");
+
+    const frozenHtml = renderToStaticMarkup(createElement(FrozenMealInspector, {
+      meal: {
+        offerId: "legacy-unavailable",
+        components: [main, drink],
+        priceCents: asMoneyCents(830),
+        ingredientCostCents: asMoneyCents(295),
+        chargedPriceCents: asMoneyCents(830),
+        chargedIngredientCostCents: asMoneyCents(295),
+        servingStopCount: 2,
+        mealBalance: unavailableBoard.slots[0]!.mealBalance,
+        intentFit: board.slots[0]!.intentFit,
+        conditionAwareFit: board.slots[0]!.conditionAwareFit,
+        explanationCodes: ["unavailable:insufficient-source-coverage"],
+        settlementCause: "complete",
+        servedPreparationIds: [main.preparationId, drink.preparationId],
+        cancelledPreparationIds: [],
+      },
+    }));
+    expect(frozenHtml).toContain("Unavailable");
+    expect(frozenHtml).toContain("69% source coverage");
+    expect(frozenHtml).not.toContain("4.9/5");
   });
 
   it("shows the charged subtotal and explicit uncharged cancellation for a partial meal", () => {

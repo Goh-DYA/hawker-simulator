@@ -1,6 +1,6 @@
 # Hawker Balance Privacy Notice
 
-Draft date: 2026-07-12
+Draft date: 2026-07-26
 Status: Pre-release draft; qualified legal review pending
 
 Hawker Balance is designed to work without an account. The planned 1.0 release does not include advertising, analytics, behavioral tracking, payments, chat, social features, or cloud saves.
@@ -9,7 +9,7 @@ Hawker Balance is designed to work without an account. The planned 1.0 release d
 
 The game stores progress, map layout, unlocks, tutorial state, and settings in your browser’s local storage area, primarily IndexedDB. A service worker may cache application files so the core game can run offline after a successful first load.
 
-This information remains on the device/browser profile unless you choose a future manual export feature. Clearing site data, using private browsing, browser storage policies, or resetting the game may remove it.
+This information remains on the device/browser profile unless you manually export a checksummed progress bundle. The exported JSON contains main-centre, scenario, and meta progression and should be handled as a personal game backup. Clearing site data, using private browsing, browser storage policies, or erasing all progress may remove local progress.
 
 ## Network use
 
@@ -23,7 +23,7 @@ Customer health conditions in the simulation are fictional, visit-specific game 
 
 ## Your controls
 
-You can reset game data from settings after confirmation. Browser controls can also clear this site’s stored data and cache. The release UI must explain that deletion is local to the current browser profile.
+You can export or import a progress bundle from settings. Import replaces the bundle's main, scenario, and meta progression after validation. A confirmed main-centre reset preserves scenario saves and earned medals, titles, and cosmetics; a separate confirmed “Erase all progress” action removes main, scenario, and meta progression while retaining display/audio preferences. Browser controls can also clear this site’s stored data and cache. These controls apply only to the current browser profile, and any exported copies remain under your control.
 
 ## Children and changes
 

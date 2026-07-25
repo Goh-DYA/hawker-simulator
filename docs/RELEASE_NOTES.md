@@ -13,9 +13,13 @@ Hawker Balance is a complete, free, local-first browser management and nutrition
 - Paint saved preferred walking lanes that shift guest routes while retaining obstacle-safe fallback paths.
 - Read live queue, cleanliness, seating, ambience, cash, reputation, level, objective, and diagnostic feedback.
 - Expand the hall and progress through deterministic economy, XP, reputation, and unlock rules.
-- Compare 104 released serving profiles through 14 recipe-variant families without changing prices, service timing, XP, reputation, or the dish family's Star rating.
-- Compare the separate 1-to-5 Health and Star ratings assigned across the complete menu. Star rating represents taste and popularity; general and condition-specific Health ratings represent comparative nutrient fit within the reviewed in-game options.
-- Serve customers who may be managing high cholesterol, obesity, diabetes, or hypertension. Their visit-specific condition is independent of archetype and appearance, increases preference for better-fitting options, and applies only a small bounded satisfaction effect from the ordered meal.
+- Plan and debrief Breakfast, Lunch, Tea, and Evening as separate forecast-led service periods with integer-cent SGD reconciliation.
+- Compare 104 released serving profiles through 14 recipe-variant families whose frozen operational terms expose price, ingredient cost, preparation/serving/eating time, Star appeal, and demand trade-offs. Visit XP remains independent of price.
+- Configure level-5 Combo Board offers containing one main plus one side or drink, with no discount and at most two stall stops.
+- Compare separate in-game nutrient comparisons and Star ratings across the reviewed menu. Star rating represents taste and popularity; source-supported overall and condition-aware values are comparative game proxies and become unavailable when evidence is incomplete.
+- Serve customers with fictional visit-specific nutrition requests framed around high cholesterol, obesity, diabetes, or hypertension. Each request is independent of archetype and appearance, is not a diagnosis or prevalence estimate, increases preference for available better-fitting options, and applies only a small bounded satisfaction effect from the ordered meal.
+- Serve visible parties of up to six, respond to eight seeded neighbourhood events, and follow six recurring fictional regulars. Condition-aware needs remain independent of regular identity and events.
+- Play five isolated level-3 scenarios for medals/cosmetics and choose from twelve level-13 mastery templates for titles/cosmetics without changing main-centre rewards.
 - Respond to fictional nutrition intents, inspect nutrient trade-offs, complete rotating nutrition objectives, and read current-day Nutrition Pulse analytics with an educational-not-medical-advice disclosure.
 
 ### Interface and accessibility engineering
@@ -27,18 +31,18 @@ Hawker Balance is a complete, free, local-first browser management and nutrition
 
 ### Saves and offline shell
 
-- IndexedDB active/backup saves use versioned checksummed envelopes and serialized writes.
-- Core V3-to-V4 and runtime V1-to-V2 migrations, newest-save backup recovery, content alias/refund recovery, nutrition variant fallback, export/import, and reset are implemented.
+- IndexedDB V2 stores checksummed active/backup main saves, isolated scenario saves, and separate meta progression with serialized writes.
+- Core V7/runtime V5 migrations, newest-save backup recovery, content alias/refund recovery, nutrition variant fallback, V3 whole-progress export/import, preserved-meta main reset, and separately confirmed erase all are implemented.
 - The PWA includes a manifest, offline fallback, deterministic content-derived cache ID, acknowledged runtime warming, and an explicit save-before-update activation flow.
 
 ### Automated evidence boundary
 
 - The content `1.3.0` working-source contract requires 14 stalls, 54 dishes, 80 placeables, 12 archetypes, and 320 English localization entries.
-- The nutrition contract requires 104 released profiles, 14 variant families with 64 selectable variants, a released base profile and Star rating for every dish, complete Health/condition ratings, provenance hashes, scaling, trace values, quarantine rules, deterministic generation, and incompatible guideline comparisons.
-- The retained automated report covers content `1.2.0`; the complete release gate and both production builds must be rerun before the expanded `1.3.0` contracts can be reported as passing.
-- Deterministic simulation, grid/pathfinding, build/economy/progression, persistence/migration/recovery, target reconciliation, soak, and an 80-agent Node benchmark have automated tests.
+- The nutrition contract requires 104 released profiles, 14 variant families with 64 selectable variants, a released base profile and Star rating for every dish, consistent known/unavailable rating states, provenance hashes, scaling, trace values, quarantine rules, deterministic generation, and incompatible guideline comparisons.
+- The strategic contract adds four period profiles, eight events, six regulars, five scenarios, and twelve mastery templates with deterministic feasibility, migration, and reward-isolation checks.
+- Deterministic simulation, grid/pathfinding, build/economy/progression, periods/drains, forecasts, Combo Board meals, parties, events, regulars, scenarios, mastery, persistence/migration/recovery, target reconciliation, and soak behavior have automated tests.
 - Production-render checks assert the release shell, security headers, PWA update protocol, and absence of starter-facing copy.
-- See `TEST_REPORT.md` and `PERFORMANCE_REPORT.md` for the current supported-runtime automated results, the historical payload baseline, and remaining browser-only measurements.
+- See `TEST_REPORT.md` for current working-source results and `PERFORMANCE_REPORT.md` for the historical pre-Stage-5 performance baseline and remaining browser-only measurements.
 
 ### Not yet approved
 

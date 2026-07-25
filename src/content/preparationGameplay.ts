@@ -119,7 +119,9 @@ export interface PreparationGameplayDefinition {
   readonly mealRole: MealRole;
   readonly terms: PreparationGameplayTerms;
   readonly nutritionFitByIntent: Readonly<Partial<Record<NutritionIntentId, number>>>;
-  readonly conditionFitByCondition: Readonly<Record<HealthCondition, number>>;
+  readonly conditionFitByCondition: Readonly<
+    Partial<Record<HealthCondition, number>>
+  >;
   readonly nutritionAudit: PreparationNutritionAudit;
   readonly operationalReviewNote: string;
   readonly ingredientCostException?: string;

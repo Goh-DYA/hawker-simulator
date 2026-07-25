@@ -1,9 +1,9 @@
 # Graphics and Gameplay Verification
 
 Retained evidence date: 2026-07-16 (content `1.2.0`)
-Current scope aligned: 2026-07-24 (independent-review Stage 4 reviewed working source)
+Current scope aligned: 2026-07-26 (independent-review Stage 5 reviewed working source)
 
-Status: **Stage 4 party, event, regular, and debrief visuals are source-integrated, pass the comprehensive automated gate, and have reviewed multi-viewport and scale evidence. The retained content `1.3.0` nutrition pass and earlier graphics evidence remain targeted rather than exact-production or human approval.**
+Status: **Stage 4 party/event/regular and Stage 5 scenario/mastery/meta visuals are source-integrated with automated and reviewed responsive working-source evidence. The retained content `1.3.0` nutrition pass and earlier graphics evidence remain targeted rather than exact-production or human approval.**
 
 ## Evidence boundary
 
@@ -11,7 +11,7 @@ Status: **Stage 4 party, event, regular, and debrief visuals are source-integrat
 - The stall upgrade targets layered code-native roof, fascia, sign, wall, service-window, counter, equipment, and trim treatments; food and drink props must come from each placed stall's active menu rather than a generic cuisine-colour substitute.
 - Every open stall is intended to contain a code-native vendor whose deterministic idle and cuisine-appropriate preparation/serving actions remain behind the counter. Closing the centre must replace the service scene with an opaque shutter, and reduced motion must freeze the vendor in a readable static work pose without changing service timing.
 - Content `1.3.0` automated coverage verifies 14 vendor identities, tools, emblems, deterministic idle/order/preparation poses, reduced-motion invariants, active-menu prop selection, and 54 food/vessel recipes. Its retained `1.2.0` 1280 × 720 development-browser pass inspected Sunrise Roost, Coconut & Lime, compact Kopi Canopy, and 5 × 3 Harbour Ember together, including a one-to-three dish live menu change, open and opaque-closed states, standard/lower-end quality, normal/high contrast, and full/reduced motion.
-- On bundled Node.js `v24.14.0`, the content `1.3.0` working source passes typecheck, lint, 29 Vitest files / 181 tests, the five-environment Vinext build, 2/2 rendered-output/offline-shell tests, and the native Vercel build.
+- The retained pre-Stage-4/5 content `1.3.0` gate passed typecheck, lint, 29 Vitest files / 181 tests, the five-environment Vinext build, rendered-output/offline-shell tests, and the native Vercel build on bundled Node.js `v24.14.0`. Current programme results are recorded in `TEST_REPORT.md`; the older count is not current Stage 5 evidence.
 - The retained local-browser passes inspected the expanded persona roster, seven live mixed visitors, the Settings customer-status guide, and the preferred-route editor with no client-console errors. At 1024 × 640, the route editor exposed its legend and controls, paused and resumed correctly, accepted keyboard painting, cleared and undid the guide, and restored it after reload. Eight retained screenshots sample earlier queue and expansion behavior but do not cover all 14 current stalls or 54 dishes.
 - A content `1.3.0` 1280 x 720 development-browser pass inspected separate Health and Star badges, all 12 nutrient fields, condition-specific ratings, the six-option Nasi Lemak Variant Lab, and a high-cholesterol customer's personalized fit and satisfaction effect. No browser warning or error messages were recorded. This targeted pass is not the complete stall/dish gallery or an exact-production review.
 - The screenshots also predate the final audit fixes for globally unique queue anchors, live-order-preserving reroutes, utility-adjusted meal depletion, and the restored route overlay. They are targeted evidence, not performance, accessibility, cultural, or exhaustive graphics approval.
@@ -28,6 +28,14 @@ Status: **Stage 4 party, event, regular, and debrief visuals are source-integrat
 - No checked view had application-root horizontal overflow, a product-UI collision, or meaningful informational text below 0.75rem. The responsive cascade was refined so header, clock, dock, catalogue, and modal layers remain distinct across short and narrow layouts.
 - A same-input comparison with the user’s 1908×1072 overlap reference found the prior header, action-strip, catalogue, and dock collision absent in the reviewed planning layout. Dynamic simulation state differs between the two captures.
 - `visualQa` and the `visualQaEvent` Lunch event fixture are deterministic and non-persisting. The same-origin frame allowance used for exact viewport and zoom emulation exists only in development; production continues to send `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
+
+## Stage 5 visual and interaction evidence boundary
+
+- Challenges presents five scenario cards with authored map focus, starting S$, modifiers, planning notes, medal thresholds, isolated-save messaging, and start/resume states. Contribution thresholds use visible `S$` plus full Singapore-dollar accessible labels.
+- Mastery presents exactly three breakfast choices or an explicit locked/unavailable/active state. Completed-template choices are visibly labelled as practice replays, and their controls state that the reward was already earned.
+- The meta gallery distinguishes earned and locked titles/cosmetics without implying cash, XP, treatment, or universal health value. Main reset and erase-all are separate confirmed flows.
+- Reviewed working-source captures at 1280×720, 800×720, and 390×844 show the Challenges route contained within the existing shell. The narrow capture uses the focus overlay and preserves a readable card column, explicit close control, dock access, and internal scrolling without the overlap pattern from the user reference.
+- These captures and automated source/render checks do not establish complete scenario playthrough legibility, screen-reader usability, narrative engagement, clinical/cultural suitability, or exact-production performance.
 
 ## Verification matrix
 
@@ -53,6 +61,9 @@ Status: **Stage 4 party, event, regular, and debrief visuals are source-integrat
 | Neighbourhood event planning choice | Forecast card presents operational modifiers; an untimed semantic dialog contains focus, makes the background inert, and provides explicit choice and neutral-dismissal paths | Runtime tests cover selection, frozen resolution, neutral dismissal, pause intent, caps, exact keyed preference effects, RNG neutrality, and condition neutrality; modal was inspected at 1280×720, 1024×640, 390×844, and combined scale | **Pass automated and reviewed browser gate;** assistive-technology and human narrative review remain external |
 | Recurring regular stories | Six fictional regulars expose encounter/story progression while copy keeps independently sampled condition-aware needs separate from identity | Deterministic content/persistence tests, integrated Insights gallery, and responsive shell inspection | **Pass automated and responsive-shell review;** qualified cultural-tone and long-session story review remain external |
 | Stage 4 debrief | Separates party guest totals, explained splits, partial outcomes, event resolution, and regular story beats while retaining the SGD ledger and forecast causes | Runtime summary contract, UI source, comprehensive regression suite, and responsive containment review | **Pass automated and responsive-shell review;** full long-period narrative playthrough remains a human gate |
+| Stage 5 scenario cards | Five isolated challenges expose map focus, starting S$, modifiers, planning notes, medal thresholds, save state, and reward boundary | Typed content/model/UI tests plus reviewed 1280×720, 800×720, and 390×844 captures | **Pass automated and responsive working-source review;** exact-production scenario playthrough and human difficulty review remain open |
+| Stage 5 mastery choices | Three deterministic feasible choices or explicit state, frozen target/reward copy, and labelled completed-template practice replays | Core offer/reward tests, semantic rendered-markup tests, and responsive Challenges captures | **Pass automated and responsive working-source review;** level-13 live progression, screen-reader, and human engagement review remain open |
+| Meta gallery and destructive flows | Medals, titles, and cosmetics remain visually separate from main-centre rewards; main reset and erase all use distinct confirmation/copy | Persistence and UI integration tests plus source review | **Pass automated/source review;** exact-production keyboard/screen-reader and fault-injection review remain open |
 
 ## Screenshot evidence
 
@@ -68,6 +79,8 @@ All captures are stored outside the shipped repository in a local archive.
 | `hawker-expanded.png` | First expansion with updated floor/perimeter composition |
 | `hawker-expanded-wide.png` | Enlarged hall framing and projected boundary after further expansion |
 | `hawker-expanded-twice.png` | Repeated expansion state, live customers, and expansion control/insight context |
+
+Stage 5 Challenges evidence is retained in `docs/images/independent-review-stage5-challenges-1280x720.png`, `docs/images/independent-review-stage5-challenges-800x720.png`, and `docs/images/independent-review-stage5-challenges-390x844.png`. These are working-source review captures, not production-artifact approval.
 
 ## Further release checks still required
 

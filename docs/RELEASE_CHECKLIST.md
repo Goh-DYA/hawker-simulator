@@ -1,6 +1,6 @@
 # Release Checklist
 
-Status: Content `1.3.0` working-source gate passes; **NO-GO pending source/artifact publication, exact-production browser/offline QA, and human reviews**
+Status: Independent-review Stages 1-5 are source-integrated; **NO-GO pending final source/artifact evidence, exact-production browser/offline/performance QA, and human reviews**
 Rule: check an item only with evidence in `TEST_REPORT.md`, `PERFORMANCE_REPORT.md`, or the named review record. An implementation checkbox is not a browser or compliance claim.
 
 ## Product and content
@@ -9,8 +9,9 @@ Rule: check an item only with evidence in `TEST_REPORT.md`, `PERFORMANCE_REPORT.
 - [x] The current catalogue categories, reciprocal references, unique IDs, localization, unlock bounds/prerequisites, and non-placeholder copy pass the full automated gate.
 - [x] One coherent Community Courtyard theme uses original code-native illustrated visuals and fictional stall identities.
 - [x] Content `1.3.0` automated visual-contract coverage accounts for 80 distinct placeables, unique primary references for 14 stall identities and 54 dishes, 54 dish/vessel recipes, 12 archetype appearances, and all 11 customer states, including reduced-motion signatures.
-- [x] Nutrition validation records 104 released profiles, 14 variant families with 64 selectable variants, complete Health/condition ratings, and a released base profile plus Star rating for every dish.
+- [x] Nutrition validation records 104 released profiles, 14 variant families with 64 selectable variants, source-coverage-gated known/unavailable rating states, and a released base profile plus Star rating for every dish.
 - [x] Player-facing build catalogue, stall/menu manager, objectives/insights, tutorial, progression, settings, and save tools are integrated.
+- [x] Strategic content validation covers four period profiles, eight events, six regulars, five scenarios, and twelve mastery templates with deterministic IDs and references.
 - [x] Asset provenance and third-party dependency notices are present; no real brand or certification mark is intentionally used.
 - [ ] Complete build/open/inspect/customer/progression loop is manually passed on the exact production artifact in a real browser.
 - [ ] Final browser screenshot/visual review confirms no debug, broken, or unintended starter-facing presentation.
@@ -25,15 +26,16 @@ Rule: check an item only with evidence in `TEST_REPORT.md`, `PERFORMANCE_REPORT.
 - [x] Expansion migrates perimeter tiles and entrance/exit endpoints; customers leaving after expansion do not despawn at the old exit in the regression test.
 - [x] All signage/facility definitions apply at least one spatial or global simulation effect, with bounded falloff/satisfaction tests.
 - [x] Purchases, refunds, sales, XP, levels, reputation, unlocks, and trusted expansion prices use deterministic formulas with automated coverage.
+- [x] Period drains, SGD ledger reconciliation, forecasts, frozen serving terms, Combo Board settlement, member-level parties, event/regular state, scenario evaluation, mastery feasibility, and strategic reward isolation have automated coverage.
 - [x] Standard/lower-end fixed-step and crowd limits are enforced by the pure simulation.
 - [ ] Beginning-to-end progression and economy are manually played in the real browser build, including recovery from poor layouts and exploit checks.
 - [ ] Two-hour browser soak confirms no unbounded customer, queue, reservation, or memory growth.
 
 ## Saves and offline
 
-- [x] Versioned save round trip and representative V1-to-V2 migration pass automated core tests.
-- [x] Checksummed active/backup slots, serialized writes, newest-save backup recovery, alias remapping, removed-content refund, and bounded import/export are implemented.
-- [x] Confirmed reset removes the game-owned save/preferences/cache data path and has an export-first warning.
+- [x] Core migrations through V7, runtime-envelope migrations through V5, and IndexedDB V1-to-V2 store creation have automated fixtures.
+- [x] Checksummed active/backup main and scenario slots, separate meta progression, serialized writes, newest-save recovery, alias/refund repair, and V3 whole-progress import/export are implemented.
+- [x] Confirmed main reset preserves scenario/meta rewards; separately confirmed erase all removes main, scenario, and meta progression while retaining preferences.
 - [ ] IndexedDB active/backup writes, interruption, corruption, denied storage, quota, and private-mode behavior pass real-browser fault injection.
 - [ ] Core game reloads and saves offline after first production load.
 - [ ] Browser restart preserves progress offline.
@@ -46,8 +48,8 @@ Rule: check an item only with evidence in `TEST_REPORT.md`, `PERFORMANCE_REPORT.
 - [ ] Every one of the 14 stall identities and 54 dish presentations is inspected in the exact production artifact, with culturally informed findings recorded.
 - [ ] Current stable desktop Chrome exact version and OS are recorded.
 - [ ] Edge and Firefox exact versions and limitations are recorded.
-- [ ] 1280 × 720 and 1024 × 640 layouts pass.
-- [ ] Required browser zoom/text scaling levels pass without clipped essential controls.
+- [ ] 1280 × 720, 1024 × 640, 800 × 720, and 390 × 844 layouts pass on the exact artifact.
+- [ ] 200% in-game text, actual browser zoom at 200%, and a separate combined containment spot-check pass without clipped essential controls.
 - [ ] Keyboard and pointer build/camera flows, dialog focus restoration, and responsive mode pass.
 - [ ] No critical console errors or unexpected network requests occur.
 - [ ] WebGL loss, tab suspension, resize, service-worker update, and unsupported storage/audio conditions recover clearly.
@@ -65,7 +67,8 @@ Rule: check an item only with evidence in `TEST_REPORT.md`, `PERFORMANCE_REPORT.
 
 - [x] The retained content `1.2.0` Node benchmark exercised 80 active agents for 1,200 fixed steps and passed its simulation budget.
 - [x] The content `1.2.0` baseline `benchmark-80-agents` result is recorded in `PERFORMANCE_REPORT.md` from the supported Node.js `v24.14.0` run.
-- [x] The content `1.3.0` Node benchmark exercises 80 active agents for 1,200 fixed steps within its simulation budget.
+- [x] The retained content `1.3.0` Node benchmark exercised 80 active agents for 1,200 fixed steps within its simulation budget before Stage 4/5.
+- [ ] The final Stage 5 party/event/scenario/mastery source is benchmarked and recorded; the older Node result is not treated as current browser evidence.
 - [ ] The browser performance matrix is rerun on the exact production artifact.
 - [ ] The content `1.3.0` production artifact raw/gzip sizes, deterministic content-manifest hash, and service-worker build ID are recorded.
 - [ ] Production payload and time-to-interactive budgets are measured in a real browser.
@@ -92,11 +95,12 @@ Rule: check an item only with evidence in `TEST_REPORT.md`, `PERFORMANCE_REPORT.
 ## Build and operations
 
 - [x] The retained content `1.2.0` baseline release checks passed on bundled Node.js `v24.14.0`: typecheck, lint, 24 Vitest files / 131 tests, five-environment Vinext build, native Vercel build, and 2/2 rendered-output/offline-shell assertions.
-- [x] Content `1.3.0` passes and records the current typecheck, lint, complete test suite, Vinext build, native Vercel build, and rendered-output/offline-shell assertions.
+- [x] Content `1.3.0` passed its recorded historical typecheck, lint, complete test suite, Vinext build, native Vercel build, and rendered-output/offline-shell assertions.
+- [ ] The final committed Stage 5 source and immutable artifact have one consolidated release-gate record with exact command results, hashes, payloads, and service-worker build ID.
 - [x] Previously recorded all-dependencies and production-only npm audits both report 0 vulnerabilities; they were not rerun in this validation update.
 - [x] The earlier content `1.2.0` service-worker build ID `c5ed3679ba56` is recorded as historical evidence.
 - [ ] The content `1.3.0` service-worker build ID, source commit, artifact path/hash, and payload sizes are recorded.
-- [ ] Content `1.3.0` validated-source commit, artifact path/hash/payload sizes, and publication URL are recorded; the existing private preview record predates the expansion.
+- [ ] The final Stage 5 validated-source commit, immutable artifact path/hash/payload sizes, service-worker ID, and final private-preview URL are recorded together; no private preview is treated as public deployment or production promotion.
 - [ ] Vercel project setup, first Preview, staged-production smoke, protected approval, promotion, and rollback rehearsal are recorded with exact deployment URLs.
 - [ ] Browser critical path and offline/update tests pass on that exact artifact.
 - [ ] Private deployment smoke, rollback, and save-forward compatibility are rehearsed.
@@ -105,4 +109,4 @@ Rule: check an item only with evidence in `TEST_REPORT.md`, `PERFORMANCE_REPORT.
 
 ## Current decision
 
-**NO-GO.** Content `1.3.0` passes its supported-runtime working-source gate and both local production builds. Production approval remains withheld until the current commit/artifact record, exact-artifact browser/offline and performance gates, and required human cultural, accessibility, security, and qualified legal/privacy reviews are complete.
+**NO-GO.** Independent-review Stages 1-5 are implemented in the working source, but implementation and development-browser evidence are not production approval. Approval remains withheld until the final commit/artifact record, exact-artifact browser/offline/performance gates, and required human cultural, accessibility, security, clinical-language, balance, and qualified legal/privacy reviews are complete.

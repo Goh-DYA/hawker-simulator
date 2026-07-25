@@ -1,10 +1,76 @@
 # Test Report
 
-Report date: 2026-07-24
-Build/commit: Independent-review Stage 4 working source has passed the comprehensive automated, build, and responsive-browser gate; commit and owner-only publication evidence remain pending
-Release verdict: **Stage 4 gate PASS; production remains NO-GO pending exact-production offline/performance QA and required human reviews**
+Report date: 2026-07-26
+Build/commit: Independent-review Stage 5 validated working source; final commit and owner-only preview version pending
+Release verdict: **Stage 5 working-source engineering, balance, and build gates PASS; owner-only publication pending; production remains NO-GO pending exact-production and required human reviews**
 
-Scope note: this report adds the comprehensive Stage 4 people-and-events validation and retains the content `1.3.0` working-source gate and earlier content `1.2.0` evidence below as labelled historical baselines. Working-source builds and development-browser passes are not exact-production, offline, performance, clinical, cultural, assistive-technology, or human-review evidence.
+Scope note: this report adds the Stage 5 scenarios, mastery, meta-progression, persistence, economy, nutrition-completeness, and responsive-engineering evidence. The Stage 4 people-and-events gate, content `1.3.0` working-source gate, and content `1.2.0` evidence remain below as labelled historical baselines. Working-source tests and development-browser passes are not exact-production, offline, performance, clinical, cultural, assistive-technology, educational-efficacy, or human-review evidence.
+
+## Independent-review Stage 5 focused validation
+
+The Stage 5 working source introduces five executable isolated scenarios, twelve mastery templates, IndexedDB V2 scoped storage, `MetaProgressionV1`, export bundle V3, a Challenges/meta-gallery interface, and conservative source-coverage requirements for nutrition ratings. Canonical gameplay money remains integer SGD cents, and scenario/mastery rewards contain no cash, experience, reputation, premium currency, advertising, payment, or monetization field.
+
+Completed evidence:
+
+- Typecheck, lint, all 63 Vitest files and 546 tests, 17 content validations, two SSR assertions, targeted UI/save tests, focused persistence tests, scenario/state/telemetry tests, and the 30-seed economy test passed on the integrated Stage 5 source.
+- The focused scenario/state/telemetry run passed 4 files and 61 tests. The UI/save focused run passed 3 files and 23 tests, and the Stage 5 persistence group passed 20 tests.
+- `tests/core/scenario-simulation-evidence.test.ts` executes real commands, simulation state, service, drain, cent ledgers, run telemetry, and medal evaluation. For each of Narrow Aisles, Split Hall, Limited Cash, Menu Diversity, and Peak Throughput, a competent first strategy earns exactly Bronze, a deliberate optimization earns exactly Silver, and two materially different legal layouts earn Gold. Seeded replay is exact.
+- Scenario setup exposes only its authored unlocked stalls and dishes, freezes the real active preparation identifier for base and selected variants, and reapplies exact menus/unlocks on restore. A substituted scenario menu is rejected.
+- Scenario telemetry is idempotent across reload, bound to scenario/run/period, requires exact wait observations, survives the retained core rating-history window, and rejects a completed save when terminal telemetry is missing or stale. Terminal reports reconcile sales, costs, upkeep, refunds, contribution, minimum cash, and final cash to the cent.
+- Scenario result tests preserve the better previously earned medal, expose exact score breakdown and next-medal shortfall/constraints, and award only validated cosmetic identifiers. In-progress runs receive no medal or reward.
+- Persistence coverage upgrades IndexedDB V1 in place, keeps the Stage 4 main save readable, isolates main/scenario/meta scopes, validates an entire V3 import bundle before mutation, preserves meta on main reset, removes every game/meta scope on confirmed erase-all, and leaves preferences intact.
+- The interface uses one exclusive local-data operation gate and one queued meta-write chain. Import, erase, reset, scenario restart, reward recording, scope changes, and export await the writes they depend on. Tests cover truthful post-commit import/erase recovery and retry-required reset-meta persistence.
+- Mastery tests cover all twelve metrics, frozen acceptance, deterministic three-choice breakfast offers, seven-day rotation, Skip, expiry, guardrails, debrief idempotency, meta-only rewards, repeat labels when needed to retain three choices, Clean Ledger active-period eligibility, and fully served normally completed party counting.
+- Careful Service and Short Waits freeze a requirement for at least three completed visits in each of their three periods; Tray Team freezes at least four tray-return opportunities in each period. All three periods must qualify, and the requirements, progress, and outcome remain visible. This prevents a single favourable sample plus empty periods from earning a mastery reward.
+- A production-catalogue level-13 reachability witness proves all twelve mastery targets using real service periods, ledger/event/forecast/rating telemetry, valid placement and Combo Board commands, and legal stall controls. Its evidence reaches 294 completed visits, S$1,741 gross sales, S$971.65 contribution, 79 minimum satisfaction, 23.4-second maximum median wait, 301 qualifying-flow seconds, ten distinct preparations, 75 party visits, 84.6% tray returns with every sample floor met, 45 forecast matches, three refund-free periods, and 33 completed combos.
+- Adversarial persistence and scenario checks bind terminal telemetry to exact core arrivals, completions, watchdog timeouts, path and flow aggregates; detach stale runtime controllers before import/reset/erase; and reject semantically contradictory completed outcomes, rotations, rewards, medals, and gallery keepsakes.
+- Nutrition completeness now requires every rating's primary metric and at least 7,500 of 10,000 weighted known-data basis points. Insufficiently supported overall or condition-aware ratings become unavailable rather than a fabricated neutral value; trace and missing nutrients remain non-numeric for scoring.
+- The authoritative read-only food CSV still hashes to `1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e`. Tuning the isolated Menu Diversity scenario removes Soto ayam from that scenario's unlock set so Bronze, Silver, and Gold have distinct feasible preparation spreads. The curated `dish.soto-ayam` mapping was re-checked against one unique, case-sensitive `Food Name` row (`Soto ayam`, default serving `1 bowl(s) = 569g`, Lab Analysis); its existing mapping and serving remain appropriate. No global food, source row, serving interpretation, curated mapping, or generated nutrient value changes, and `tools/nutrition/manifest.mjs` is unchanged. The derived `src/content/nutrition.generated.json` intentionally changes only rating-state/value fields to enforce source completeness; its SHA-256 is `0fa3e4fae448449fb2c6292df6960d3bf6e53d573a348bdc4192d982404defe7`.
+
+Deterministic 30-seed economy evidence:
+
+| Strategy scope | p10 operating margin | Median | p90 |
+|---|---:|---:|---:|
+| Overall | 46.9755% | 56.3295% | 58.7500% |
+| Throughput-led | 46.5385% | 56.6677% | 58.7337% |
+| Value-led | 46.9755% | 54.9160% | 58.7500% |
+| Nutrition-led | 50.2217% | 55.5063% | 57.7492% |
+
+The 30 runs are distributed across levels 1, 5, 13, and 20, include every period at every level, use legally distinct throughput/value/nutrition setups, produce positive sales and resolved visits, and reconcile every ledger with an exact zero-cent delta. The results satisfy the programme's 45–60% overall median, 40–65% per-strategy median, and at-least-25% tenth-percentile contracts without production-balance retuning.
+
+Responsive and graphical evidence:
+
+- `docs/images/independent-review-stage5-challenges-1280x720.png`
+- `docs/images/independent-review-stage5-challenges-1024x640.png`
+- `docs/images/independent-review-stage5-challenges-800x720.png`
+- `docs/images/independent-review-stage5-challenges-390x844.png`
+- `docs/images/independent-review-stage5-text-200-1280x720.png`
+- `docs/images/independent-review-stage5-combined-scale-640x360.png`
+- `docs/images/independent-review-stage5-build-1909x1072.png`
+- `docs/images/independent-review-stage5-reference-comparison.png`
+
+The four required viewport captures, 200% in-game-text capture, effective 200% browser-zoom viewport, and combined containment capture show the Challenges sheet, gallery, scenario cards, wrapped actions, dock separation, and scroll ownership. DOM checks reported no root/body horizontal overflow and no visible meaningful informational text below 0.75rem. The same-input comparison does not reproduce the supplied header, action-strip, catalogue, or dock overlap.
+
+Restart uses a focus-contained confirmation dialog with Escape and invoking-control focus restoration. Leaving a scenario and skipping a mastery offer also restore focus. The Challenges sheet owns its vertical scroll, its flex children may shrink, and fixed confirmations remain internally scrollable at short/enlarged viewports.
+
+The refreshed social-preview card is registered in `docs/ASSET_PROVENANCE.md`: `public/og.png`, 1730×909, SHA-256 `47EF7F3217FC23844222806E1236E18F3A7D4D8938263520CB47EC0175D556B9`. Exact title, tagline, safe composition, and absence of prohibited marks were inspected; qualified human similarity, brand, and cultural review is not claimed.
+
+Pending final Stage 5 record:
+
+- Stage 5 commit identifier, owner-only preview version, access re-verification, and signed-in remote smoke result.
+
+Final working-source build record:
+
+- `npm run build` passed through Vinext/Vite with bundled Node 24.14.0.
+- `npm run build:vercel` passed through native Next.js with bundled Node 24.14.0.
+- Both builds stamped service-worker ID `d863122d476a`.
+- `git diff --check` passed; Windows line-ending notices do not represent whitespace errors.
+
+Known external gates:
+
+- Actual-browser 200% zoom, exact-production critical-path browsing, offline first load/reload/restart/update, storage-fault recovery, and long-session production performance/soak.
+- Qualified screen-reader and other assistive-technology review.
+- Qualified clinical-language, Singapore cultural, sensitivity, narrative, human-balance, educational-efficacy, security, and legal review.
 
 ## Independent-review Stage 4 comprehensive validation
 
@@ -34,6 +100,7 @@ Responsive-browser evidence:
 - Separate checks covered 200% in-game text, effective 200% browser zoom through a 640×360 same-origin iframe scaled to a 1280×720 physical frame, and combined 200% text plus effective 200% zoom. No application-root horizontal overflow, product-UI collision, or meaningful informational text below 0.75rem was observed.
 - A same-input comparison with the supplied 1908×1072 reference confirmed that its header, action-strip, catalogue, and dock overlap is absent in the reviewed planning layout. Dynamic gameplay state differs between the reference and current capture.
 - Deterministic `visualQa` planning and `visualQaEvent` Lunch fixtures do not persist fixture state. Same-origin framing is enabled only by development response headers; production retains `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
+- The private preview records the exact Stage 4 commit and deployed successfully with one explicitly allowed account and no allowed groups. Unauthenticated smoke correctly receives `401`; signed-in remote content smoke remains pending, while the exact committed archive passed the full local test, SSR, Vinext, and native Vercel gates before upload.
 
 Pending before the Stage 4 publication record is complete:
 

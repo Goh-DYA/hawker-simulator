@@ -53,7 +53,23 @@ All ratings use a 1.0-5.0 scale rounded to one decimal place.
 
 `starRating` is independent of nutrition and is calculated from authored dish quality and base demand: `1 + 4 x (0.65 x quality + 0.35 x demand)`.
 
-Nutrition ratings compare the listed serving only with other released profiles in the same class (`meal` or `drink`). For each metric, the importer calculates a deterministic percentile in the beneficial direction, combines those percentiles using the weights below, and maps the result to 1.0-5.0. Unavailable and source-reported `trace` metrics are omitted from numeric percentile ordering and the remaining weights are renormalised. Trace remains visible as `Trace`; it is never converted to a fabricated zero.
+Nutrition ratings compare the listed serving only with other released profiles in the same class (`meal` or `drink`). For each metric, the importer calculates a deterministic percentile in the beneficial direction, combines those percentiles using the weights below, and maps the result to 1.0-5.0. Unavailable and source-reported `trace` metrics are omitted from numeric percentile ordering. Trace remains visible as `Trace`; it is never converted to a fabricated zero.
+
+The importer publishes a numeric rating only when known values cover at least
+75% of that rating's configured weight and its primary metric is known:
+
+- overall and weight-management comparisons require energy;
+- the high-cholesterol-aware comparison requires saturated fat;
+- the diabetes-aware comparison requires both carbohydrate and total sugar;
+- the blood-pressure-aware comparison requires sodium.
+
+When this gate is not met, the rating is `unavailable`; the generated profile
+records its known-weight basis points and missing metrics so the UI can explain
+the limitation. When the gate is met, the remaining known weights are
+renormalised. Meal-composition comparisons apply the same 75% minimum and
+require energy. This is an interim conservative engineering completeness gate,
+not a clinically validated threshold. Qualified clinical review of the
+weights, thresholds, wording, and learning outcomes remains a release gate.
 
 The general `healthRating` weights are:
 
@@ -67,7 +83,7 @@ Condition-specific game ratings deliberately emphasise different trade-offs:
 - diabetes: lower carbohydrate 30% and total sugar 30%; higher fibre 20%; lower energy 12%; higher protein 8%;
 - hypertension: lower sodium 65%, energy 10%, and saturated fat 10%; higher fibre 10% and protein 5%.
 
-These weights are an in-game educational model, not a Health Promotion Board (HPB) formula or certification. Their rationale follows official Singapore guidance about [carbohydrate and fibre for diabetes](https://www.healthhub.sg/programmes/diabetes-hub/understanding-carbohydrates), [dietary fat and fibre for hyperlipidemia](https://www.healthhub.sg/health-conditions/hyperlipidemia), [sodium and balanced eating for blood pressure](https://www.healthhub.sg/well-being-and-lifestyle/food-diet-and-nutrition/what-to-eat-to-lower-blood-pressure), [nutrition-label choices for common health concerns](https://www.healthhub.sg/programmes/nutrition-hub/tools-and-resources/), and [adult dietary guidance on energy, fat, salt, sugar, and variety](https://www.healthhub.sg/well-being-and-lifestyle/food-diet-and-nutrition/dietary_guidelines_adults).
+These weights are an in-game educational model, not a Health Promotion Board (HPB) formula or certification. Their rationale follows official Singapore guidance about [carbohydrate and fibre for diabetes](https://www.healthhub.sg/programmes/diabetes-hub/understanding-carbohydrates), [dietary fat and fibre for hyperlipidemia](https://www.healthhub.sg/health-conditions/hyperlipidemia), [sodium and balanced eating for blood pressure](https://www.healthhub.sg/health-conditions/high-blood-pressure-healthy-eating-guide), [nutrition-label choices for common health concerns](https://www.healthhub.sg/programmes/nutrition-hub/tools-and-resources/), and [adult dietary guidance on energy, fat, salt, sugar, and variety](https://www.healthhub.sg/well-being-and-lifestyle/food-diet-and-nutrition/dietary_guidelines_adults).
 
 ## Guideline boundaries
 

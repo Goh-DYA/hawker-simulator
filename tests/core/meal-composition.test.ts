@@ -194,6 +194,11 @@ describe("meal nutrition and settlement", () => {
     const knownResult = compareMealBalanceAmongUnlockedOptions("single:known", universe);
     expect(tracedResult.availableWeight).toBeLessThan(knownResult.availableWeight);
     expect(tracedResult.explanationCodes).toContain("unavailable:energyKcal");
+    expect(tracedResult.explanationCodes).toContain(
+      "unavailable:insufficient-source-coverage",
+    );
+    expect(tracedResult.rating).toBeUndefined();
+    expect(knownResult.rating).toBeDefined();
   });
 
   it("charges only a served main after the second stall is lost", () => {

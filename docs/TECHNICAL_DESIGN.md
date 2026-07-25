@@ -48,6 +48,8 @@ Persistent state:
 - Map: unlocked cells and placed object instances with stable instance IDs.
 - Progression: unlocks, objectives, tutorial state, stall upgrades, active menus.
 - Nutrition: active reviewed variants plus aggregate and bounded recent-serving metrics; order-time profiles, Health/condition ratings, and a customer's personalized result are snapshotted for historical stability.
+- Service and strategy: period sequence/phase, forecast observations, ledgers, frozen order lines, Combo Board state, party/event/regular state, and active mastery progression.
+- Challenge/meta: isolated scenario slots plus medals, titles, cosmetics, and mastery progress that must not be folded into main-centre rewards.
 
 Runtime-only state:
 
@@ -57,17 +59,19 @@ Commands validate before mutation and commit all related changes atomically. Eve
 
 ## Content contracts
 
-Content definitions include stable IDs, localization keys, footprints, rotations, interaction points, depth anchors, visual/audio references, economy values, unlock requirements, dish Star ratings, and explicit nutrition profile/variant status. Content `1.3.0` requires exactly 14 stalls, 54 dishes, 80 placeables, 12 customer archetypes, and 320 English localization entries. Nutrition schema version 2 requires 104 released profiles and 14 variant families; each profile carries an overall Health rating and ratings for high cholesterol, obesity, diabetes, and hypertension.
+Content definitions include stable IDs, localization keys, footprints, rotations, interaction points, depth anchors, visual/audio references, economy values, unlock requirements, dish Star ratings, and explicit nutrition profile/variant status. Content `1.3.0` requires exactly 14 stalls, 54 dishes, 80 placeables, 12 customer archetypes, and 320 English localization entries. Nutrition schema version 2 requires 104 released profiles and 14 variant families; each profile carries source-coverage states for its overall and high-cholesterol, obesity, diabetes, and hypertension comparisons, with a numeric value only when the reviewed completeness gate passes. Strategic content separately requires four period demand profiles, eight neighbourhood events, six regulars, five isolated scenarios, and twelve mastery templates.
 
 Nutrition source rows are joined only by authored exact, curated-synonym, or explicitly scaled mappings during a deterministic build-time import; raw CSV parsing and fuzzy matching never run in the browser. Health ratings are generated from within-class relative nutrient fits and stored in the reviewed artifact, while Star ratings remain authored content derived from dish quality and demand. Development startup and tests perform Zod parsing, cross-reference checks, uniqueness checks, nutrition plausibility and provenance checks, localization completeness, rating bounds, and exact launch counts. A malformed production definition fails to a readable safe screen, never a partially loaded simulation.
 
 ## Persistence
 
-IndexedDB stores two last-known-good save slots plus metadata. The write sequence is validate snapshot → write staging record in one transaction → read/verify checksum → promote current and retain previous. Saves include schemaVersion, contentVersion, timestamp, payload, and checksum. Autosave is debounced, runs after important build/progression actions and at a safe interval, and surfaces quota/private-mode failures.
+IndexedDB schema V2 stores active/backup main envelopes, scenario-specific envelopes, separate meta progression, and preferences. Writes validate, checksum, serialize, and promote within the relevant transaction while retaining the prior main or scenario backup. Core V7/runtime V5 snapshots carry the period, Combo Board, party/event/regular, scenario, and mastery contracts required by their scope. Autosave is debounced, runs after important build/progression actions and at a safe interval, and surfaces quota/private-mode failures.
 
-Load order is current → backup → new-game prompt. Migrations are one-way pure functions with fixtures. Removed content maps through an explicit ID alias or converts safely to recoverable cash; runtime customers normalize to an empty centre while player/map/progression state is preserved.
+Main and scenario load order is current → backup → new-session fallback. Migrations are one-way pure functions with fixtures from preceding previews and retained baselines. Removed content maps through an explicit ID alias or converts safely to recoverable cash; valid current cohorts and frozen terms are restored where the schema supports them, while unsafe legacy runtime records normalize through the documented migration path.
 
-No save is deleted during a cache update. Reset requires confirmation and clears only game-owned IndexedDB/cache data.
+The V3 progress bundle exports main, scenario, and meta data under one checksum and validates the complete replacement before an import transaction writes. Importing a legacy main-only envelope does not erase newer scenario or meta progress.
+
+No save is deleted during a cache update. Confirmed main reset clears the main centre while preserving scenario saves, medals, titles, and cosmetics; a separate confirmed erase-all action atomically clears main, scenario, and meta progression while retaining display/audio preferences.
 
 ## Offline and update model
 

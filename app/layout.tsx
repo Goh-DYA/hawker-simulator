@@ -33,9 +33,9 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [
         {
           url: socialImage,
-          width: 1731,
-          height: 908,
-          alt: "An illustrated top-down Hawker Balance centre filled with stalls, tables, diners, and nutrition cues.",
+          width: 1730,
+          height: 909,
+          alt: "An illustrated Hawker Balance centre with three stalls, communal tables, diners, and menu trade-off cards.",
         },
       ],
     },

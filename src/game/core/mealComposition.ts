@@ -117,6 +117,8 @@ export interface MealBalanceResult {
 
 export interface MealFitSnapshot {
   readonly mealBalance?: number;
+  /** Frozen completeness evidence for the comparative Meal balance score. */
+  readonly mealBalanceKnownWeightBasisPoints?: number;
   readonly intentId?: NutritionIntent;
   readonly intentFit?: number;
   readonly conditionIds: readonly HealthCondition[];
@@ -474,14 +476,24 @@ export function compareMealBalanceAmongUnlockedOptions(
     availableWeight += scheme.weight;
   }
   const totalWeight = MEAL_BALANCE_SCHEME.reduce((sum, scheme) => sum + scheme.weight, 0);
+  const knownWeightBasisPoints = totalWeight > 0
+    ? Math.round((availableWeight / totalWeight) * 10_000)
+    : 0;
+  const meetsCoverageGate = (
+    knownWeightBasisPoints >= 7_500 &&
+    candidate.nutrients.energyKcal.status === "known"
+  );
   return Object.freeze({
     candidateId,
-    rating: availableWeight === 0
+    rating: !meetsCoverageGate
       ? undefined
       : Math.round((1 + 4 * (weightedFit / availableWeight)) * 10) / 10,
     availableWeight,
     totalWeight,
-    explanationCodes: Object.freeze(unavailableMetrics.map((metric) => `unavailable:${metric}`)),
+    explanationCodes: Object.freeze([
+      ...unavailableMetrics.map((metric) => `unavailable:${metric}`),
+      ...(!meetsCoverageGate ? ["unavailable:insufficient-source-coverage"] : []),
+    ]),
   });
 }
 

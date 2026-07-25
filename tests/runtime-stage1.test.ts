@@ -363,9 +363,38 @@ describe("Stage 1 runtime boundaries", () => {
         unservedDepartures: 2,
         timedOutServedVisits: 1,
       },
-    }, 3);
+    }, 3, {
+      qualifyingFlowMs: 81_000,
+      trayReturns: 4,
+      trayReturnOpportunities: 6,
+      visitRatings: [{
+        customerId: "customer-1",
+        walkingMetricVersion: 2,
+        score: 82,
+        served: true,
+        abandoned: false,
+        reason: "served",
+        components: {
+          foodQuality: 80,
+          wait: 80,
+          value: 80,
+          walking: 80,
+          comfort: 80,
+          cleanliness: 80,
+          ambience: 80,
+        },
+        waitMs: 37_500,
+        day: 1,
+        arrivalPeriodSequenceId: 3,
+      }],
+    });
 
     expect(outcomes[3]).toMatchObject({
+      qualifyingFlowStartMs: 81_000,
+      trayReturnsStart: 4,
+      trayReturnOpportunitiesStart: 6,
+      waitMsByVisitId: { "customer-1": 37_500 },
+      satisfactionByVisitId: { "customer-1": 82 },
       partialMealSecondStallUnavailable: 0,
       partialMealServedTimeout: 0,
       partyVisits: 0,

@@ -9,6 +9,8 @@ export interface RuntimePersistentStateV5 {
   readonly nutritionDataVersion: string;
   readonly activeDishVariants: Readonly<Record<string, string>>;
   readonly periodOutcomes: unknown;
+  /** Optional Stage 5 scenario-only deterministic telemetry. */
+  readonly scenarioTelemetry?: unknown;
 }
 
 export interface DecodedRuntimeSaveEnvelope {
@@ -18,6 +20,7 @@ export interface DecodedRuntimeSaveEnvelope {
   readonly variants?: Readonly<Record<string, string>>;
   readonly nutritionDataVersion?: string;
   readonly periodOutcomes?: unknown;
+  readonly scenarioTelemetry?: unknown;
   /**
    * True when a pre-V5 envelope omitted one or more runtime-owned selections.
    * Callers should retain their existing reviewed-default recovery notice.
@@ -127,6 +130,7 @@ export function decodeRuntimeSaveEnvelope(
     variants,
     nutritionDataVersion,
     periodOutcomes: value.periodOutcomes,
+    scenarioTelemetry: value.scenarioTelemetry,
     incompleteLegacyRuntime: value.runtimeSchemaVersion < 5 && incompleteRuntime,
   };
 }
@@ -150,5 +154,8 @@ export function createRuntimeSaveEnvelopeV5(
     nutritionDataVersion: value.nutritionDataVersion,
     activeDishVariants: { ...value.activeDishVariants },
     periodOutcomes: value.periodOutcomes,
+    ...(value.scenarioTelemetry === undefined
+      ? {}
+      : { scenarioTelemetry: value.scenarioTelemetry }),
   };
 }

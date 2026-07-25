@@ -8,6 +8,8 @@ import type {
   NutritionMetric,
   NutritionMetrics,
   NutritionProfile,
+  NutritionRatingId,
+  NutritionRatingState,
   NutritionRequestResult,
   NutritionValue,
   NutritionVariant,
@@ -19,6 +21,112 @@ export const HEALTH_CONDITIONS: readonly HealthCondition[] = [
   "diabetes",
   "hypertension",
 ];
+
+export const MIN_RATING_KNOWN_WEIGHT_BASIS_POINTS = 7_500;
+
+const RATING_WEIGHT_BASIS_POINTS: Readonly<
+  Record<NutritionRatingId, Readonly<Partial<Record<NutritionMetric, number>>>>
+> = Object.freeze({
+  overall: Object.freeze({
+    energyKcal: 1_600,
+    proteinG: 1_200,
+    totalFatG: 800,
+    saturatedFatG: 1_000,
+    transFatG: 800,
+    totalSugarG: 1_200,
+    dietaryFibreG: 1_400,
+    sodiumMg: 1_200,
+    calciumMg: 400,
+    ironMg: 400,
+  }),
+  "high-cholesterol": Object.freeze({
+    saturatedFatG: 3_500,
+    transFatG: 2_000,
+    totalFatG: 2_000,
+    dietaryFibreG: 1_500,
+    energyKcal: 1_000,
+  }),
+  obesity: Object.freeze({
+    energyKcal: 3_500,
+    totalFatG: 1_800,
+    saturatedFatG: 700,
+    totalSugarG: 1_500,
+    dietaryFibreG: 1_500,
+    proteinG: 1_000,
+  }),
+  diabetes: Object.freeze({
+    carbohydrateG: 3_000,
+    totalSugarG: 3_000,
+    dietaryFibreG: 2_000,
+    energyKcal: 1_200,
+    proteinG: 800,
+  }),
+  hypertension: Object.freeze({
+    sodiumMg: 6_500,
+    energyKcal: 1_000,
+    saturatedFatG: 1_000,
+    dietaryFibreG: 1_000,
+    proteinG: 500,
+  }),
+});
+
+const RATING_PRIMARY_METRICS = Object.freeze({
+  overall: Object.freeze(["energyKcal"] as const),
+  "high-cholesterol": Object.freeze(["saturatedFatG"] as const),
+  obesity: Object.freeze(["energyKcal"] as const),
+  diabetes: Object.freeze(["carbohydrateG", "totalSugarG"] as const),
+  hypertension: Object.freeze(["sodiumMg"] as const),
+}) satisfies Readonly<Record<NutritionRatingId, readonly NutritionMetric[]>>;
+
+/**
+ * Applies the conservative engineering completeness gate shared with the
+ * importer. This is a data-quality safeguard, not a clinically validated rule.
+ */
+export function nutritionRatingStateForProfile(
+  profile: NutritionProfile,
+  ratingId: NutritionRatingId,
+  value: number | undefined,
+): NutritionRatingState {
+  const weights = RATING_WEIGHT_BASIS_POINTS[ratingId];
+  const missingMetrics = Object.keys(weights).filter((metric) => (
+    profile.nutrients[metric as NutritionMetric]?.status !== "known"
+  )) as NutritionMetric[];
+  const knownWeightBasisPoints = Object.entries(weights).reduce(
+    (total, [metric, weight]) => (
+      profile.nutrients[metric as NutritionMetric]?.status === "known"
+        ? total + (weight ?? 0)
+        : total
+    ),
+    0,
+  );
+  const primaryMetricsKnown = RATING_PRIMARY_METRICS[ratingId].every(
+    (metric) => profile.nutrients[metric]?.status === "known",
+  );
+  const bounded = boundedHealthRating(value);
+  if (
+    profile.status !== "released" ||
+    bounded === undefined ||
+    !primaryMetricsKnown ||
+    knownWeightBasisPoints < MIN_RATING_KNOWN_WEIGHT_BASIS_POINTS
+  ) {
+    return {
+      status: "unavailable",
+      reason: profile.status === "released"
+        ? "insufficient-source-coverage"
+        : "profile-unavailable",
+      knownWeightBasisPoints,
+      totalWeightBasisPoints: 10_000,
+      missingMetrics,
+    };
+  }
+  return {
+    status: "known",
+    value: bounded,
+    knownWeightBasisPoints,
+    totalWeightBasisPoints: 10_000,
+    missingMetrics,
+  };
+}
 
 export const NUTRITION_INTENTS: readonly NutritionIntent[] = [
   "lighter-energy",
@@ -162,6 +270,19 @@ export function cloneNutritionProfile(
     conditionRatings: profile.conditionRatings
       ? { ...profile.conditionRatings }
       : undefined,
+    ratingStates: profile.ratingStates
+      ? Object.fromEntries(
+          Object.entries(profile.ratingStates).map(([id, state]) => [
+            id,
+            state
+              ? {
+                  ...state,
+                  missingMetrics: [...state.missingMetrics],
+                }
+              : state,
+          ]),
+        )
+      : undefined,
   };
 }
 
@@ -232,7 +353,6 @@ function nutrientAmount(
   metric: NutritionMetric,
 ): number | undefined {
   const nutrient = profile.nutrients[metric];
-  if (nutrient?.status === "trace") return 0;
   return nutrient?.status === "known" && Number.isFinite(nutrient.value)
     ? Math.max(0, nutrient.value)
     : undefined;
@@ -279,8 +399,14 @@ export function healthConditionRating(
   condition: HealthCondition,
 ): number | undefined {
   if (!profile || profile.status !== "released") return undefined;
+  const frozenState = profile.ratingStates?.[condition];
+  if (frozenState?.status === "unavailable") return undefined;
+  if (frozenState?.status === "known") return boundedHealthRating(frozenState.value);
   const authored = boundedHealthRating(profile.conditionRatings?.[condition]);
-  if (authored !== undefined) return authored;
+  if (
+    authored !== undefined &&
+    nutritionRatingStateForProfile(profile, condition, authored).status === "known"
+  ) return authored;
 
   let nutrientRating: number | undefined;
   switch (condition) {
@@ -314,7 +440,13 @@ export function healthConditionRating(
       break;
   }
 
-  const generalRating = boundedHealthRating(profile.healthRating);
+  const derivedState = nutritionRatingStateForProfile(profile, condition, nutrientRating);
+  if (derivedState.status !== "known") return undefined;
+  const generalCandidate = boundedHealthRating(profile.healthRating);
+  const generalRating = generalCandidate !== undefined &&
+    nutritionRatingStateForProfile(profile, "overall", generalCandidate).status === "known"
+    ? generalCandidate
+    : undefined;
   if (nutrientRating === undefined) return generalRating;
   if (generalRating === undefined) return nutrientRating;
   return generalRating * 0.35 + nutrientRating * 0.65;

@@ -97,12 +97,36 @@ export const HEALTH_RATING_SCHEMES = {
   ],
 };
 
-const NEUTRAL_CONDITION_RATINGS = {
-  "high-cholesterol": 3,
-  obesity: 3,
-  diabetes: 3,
-  hypertension: 3,
+export const MIN_RATING_KNOWN_WEIGHT_BASIS_POINTS = 7_500;
+
+export const RATING_PRIMARY_METRICS = {
+  overall: ["energyKcal"],
+  "high-cholesterol": ["saturatedFatG"],
+  obesity: ["energyKcal"],
+  diabetes: ["carbohydrateG", "totalSugarG"],
+  hypertension: ["sodiumMg"],
 };
+
+const RATING_IDS = Object.freeze(Object.keys(HEALTH_RATING_SCHEMES));
+
+const unavailableRatingState = (
+  scheme,
+  reason = "profile-unavailable",
+) => ({
+  status: "unavailable",
+  reason,
+  knownWeightBasisPoints: 0,
+  totalWeightBasisPoints: 10_000,
+  missingMetrics: scheme.map(([metric]) => metric),
+});
+
+const unavailableRatingStates = (reason = "profile-unavailable") =>
+  Object.fromEntries(
+    RATING_IDS.map((id) => [
+      id,
+      unavailableRatingState(HEALTH_RATING_SCHEMES[id], reason),
+    ]),
+  );
 
 const UNGROUPED_NUMERIC_PATTERN = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
 const GROUPED_NUMERIC_PATTERN = /^[+-]?\d{1,3}(?:,\d{3})+(?:\.\d*)?$/;
@@ -358,8 +382,7 @@ const buildReleasedProfile = ({
     nutritionClass: mapping.nutritionClass,
     ...(serving === undefined ? {} : { serving }),
     nutrients,
-    healthRating: 3,
-    conditionRatings: { ...NEUTRAL_CONDITION_RATINGS },
+    ratingStates: unavailableRatingStates("insufficient-source-coverage"),
     intentFits: {},
     provenance,
     reviewNote: mapping.reviewNote,
@@ -373,8 +396,7 @@ const buildUnavailableProfile = (mapping) => ({
   status: "unavailable",
   nutritionClass: mapping.nutritionClass,
   nutrients: unavailableNutrients("unmapped"),
-  healthRating: 3,
-  conditionRatings: { ...NEUTRAL_CONDITION_RATINGS },
+  ratingStates: unavailableRatingStates(),
   intentFits: {},
   unavailableReason: "unmapped",
   reviewNote: mapping.reviewNote,
@@ -486,31 +508,66 @@ export const addHealthRatings = (profiles) => {
     }
   }
 
-  const rate = (profile, scheme) => {
+  const rate = (profile, ratingId, scheme) => {
     const fits = profileFits.get(profile.id) ?? {};
     let weightedFit = 0;
     let availableWeight = 0;
+    const missingMetrics = [];
     for (const [metric, , weight] of scheme) {
       const fit = fits[metric];
-      if (fit === undefined) continue;
+      if (fit === undefined) {
+        missingMetrics.push(metric);
+        continue;
+      }
       weightedFit += fit * weight;
       availableWeight += weight;
     }
-    const normalizedFit = availableWeight === 0 ? 0.5 : weightedFit / availableWeight;
-    return roundRating(1 + 4 * normalizedFit);
+    const knownWeightBasisPoints = Math.round(availableWeight * 10_000);
+    const primaryMetricsKnown = RATING_PRIMARY_METRICS[ratingId].every(
+      (metric) => fits[metric] !== undefined,
+    );
+    if (
+      !primaryMetricsKnown ||
+      knownWeightBasisPoints < MIN_RATING_KNOWN_WEIGHT_BASIS_POINTS
+    ) {
+      return {
+        status: "unavailable",
+        reason: "insufficient-source-coverage",
+        knownWeightBasisPoints,
+        totalWeightBasisPoints: 10_000,
+        missingMetrics,
+      };
+    }
+    const normalizedFit = weightedFit / availableWeight;
+    return {
+      status: "known",
+      value: roundRating(1 + 4 * normalizedFit),
+      knownWeightBasisPoints,
+      totalWeightBasisPoints: 10_000,
+      missingMetrics,
+    };
   };
 
   for (const profile of profiles) {
     if (profile.status !== "released") {
-      profile.healthRating = 3;
-      profile.conditionRatings = { ...NEUTRAL_CONDITION_RATINGS };
+      delete profile.healthRating;
+      profile.conditionRatings = {};
+      profile.ratingStates = unavailableRatingStates();
       continue;
     }
-    profile.healthRating = rate(profile, HEALTH_RATING_SCHEMES.overall);
+    profile.ratingStates = Object.fromEntries(
+      Object.entries(HEALTH_RATING_SCHEMES).map(([id, scheme]) => [
+        id,
+        rate(profile, id, scheme),
+      ]),
+    );
+    const overallState = profile.ratingStates.overall;
+    if (overallState.status === "known") profile.healthRating = overallState.value;
+    else delete profile.healthRating;
     profile.conditionRatings = Object.fromEntries(
-      Object.entries(HEALTH_RATING_SCHEMES)
-        .filter(([id]) => id !== "overall")
-        .map(([id, scheme]) => [id, rate(profile, scheme)]),
+      Object.entries(profile.ratingStates)
+        .filter(([id, state]) => id !== "overall" && state.status === "known")
+        .map(([id, state]) => [id, state.value]),
     );
   }
 };

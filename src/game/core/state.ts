@@ -160,6 +160,7 @@ const EMPTY_METRICS: SimulationMetrics = {
   pathRequests: 0,
   pathFailures: 0,
   recoveredTargets: 0,
+  qualifyingFlowMs: 0,
   trayReturnOpportunities: 0,
   trayReturns: 0,
   visitRatings: [],

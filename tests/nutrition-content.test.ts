@@ -13,6 +13,7 @@ import {
   getNutritionVariantFamily,
   validateContent,
 } from "../src/content/index";
+import { nutritionProfileSchema } from "../src/content/schemas";
 
 const VARIANT_FAMILY_DISHES = [
   "dish.kopi",
@@ -49,13 +50,25 @@ const VARIANT_IDS: Readonly<Record<string, readonly string[]>> = {
 };
 
 describe("nutrition content", () => {
+  it("rejects numeric ratings that contradict an unavailable rating state", () => {
+    const source = NUTRITION_CONTENT.profiles.find(
+      (profile) => profile.ratingStates.overall.status === "unavailable",
+    );
+    assert.ok(source);
+    const parsed = nutritionProfileSchema.safeParse({
+      ...source,
+      healthRating: 4.8,
+    });
+    assert.equal(parsed.success, false);
+  });
+
   it("keeps the reviewed generated snapshot byte-for-byte deterministic", async () => {
     const bytes = await readFile(
       new URL("../src/content/nutrition.generated.json", import.meta.url),
     );
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
-      "d69662acf1e462abd9b7db4f96a1977a3cdc7c4f87daed072fc23dd8809a046b",
+      "0fa3e4fae448449fb2c6292df6960d3bf6e53d573a348bdc4192d982404defe7",
     );
   });
 
@@ -139,17 +152,50 @@ describe("nutrition content", () => {
       assert.equal(dish.starRating * 10, Math.round(dish.starRating * 10));
     }
     for (const profile of NUTRITION_CONTENT.profiles) {
-      assert.ok(profile.healthRating >= 1 && profile.healthRating <= 5);
-      assert.deepEqual(Object.keys(profile.conditionRatings).sort(), [
+      assert.deepEqual(Object.keys(profile.ratingStates).sort(), [
         "diabetes",
         "high-cholesterol",
         "hypertension",
         "obesity",
+        "overall",
       ]);
-      for (const rating of Object.values(profile.conditionRatings)) {
-        assert.ok(rating >= 1 && rating <= 5);
+      for (const [ratingId, state] of Object.entries(profile.ratingStates)) {
+        assert.equal(state.totalWeightBasisPoints, 10_000);
+        assert.ok(state.knownWeightBasisPoints >= 0);
+        assert.ok(state.knownWeightBasisPoints <= 10_000);
+        if (state.status === "known") {
+          assert.ok(state.value >= 1 && state.value <= 5);
+          assert.ok(state.knownWeightBasisPoints >= 7_500);
+          assert.equal(
+            ratingId === "overall"
+              ? profile.healthRating
+              : profile.conditionRatings[ratingId as keyof typeof profile.conditionRatings],
+            state.value,
+          );
+        }
       }
     }
+    assert.deepEqual(
+      Object.fromEntries(
+        ["overall", "high-cholesterol", "obesity", "diabetes", "hypertension"].map(
+          (ratingId) => [
+            ratingId,
+            NUTRITION_CONTENT.profiles.filter(
+              (profile) => profile.ratingStates[
+                ratingId as keyof typeof profile.ratingStates
+              ].status === "unavailable",
+            ).length,
+          ],
+        ),
+      ),
+      {
+        overall: 17,
+        "high-cholesterol": 3,
+        obesity: 4,
+        diabetes: 13,
+        hypertension: 13,
+      },
+    );
 
     const kopi = getNutritionProfile("dish.kopi");
     const kopiKosong = getNutritionProfile("dish.kopi", "kopi-o-kosong");

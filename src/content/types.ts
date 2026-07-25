@@ -300,6 +300,26 @@ export type HealthCondition =
   | "diabetes"
   | "hypertension";
 
+export type NutritionRatingId = "overall" | HealthCondition;
+
+export type NutritionRatingState =
+  | {
+      readonly status: "known";
+      readonly value: number;
+      readonly knownWeightBasisPoints: number;
+      readonly totalWeightBasisPoints: 10_000;
+      readonly missingMetrics: readonly NutritionMetric[];
+    }
+  | {
+      readonly status: "unavailable";
+      readonly reason:
+        | "insufficient-source-coverage"
+        | "profile-unavailable";
+      readonly knownWeightBasisPoints: number;
+      readonly totalWeightBasisPoints: 10_000;
+      readonly missingMetrics: readonly NutritionMetric[];
+    };
+
 export type NutritionIntentId =
   | "lighter-energy"
   | "protein-forward"
@@ -334,10 +354,12 @@ export interface NutritionProfile {
   readonly nutritionClass: NutritionClass;
   readonly serving?: NutritionServing;
   readonly nutrients: NutritionNutrients;
-  /** Comparative, per-serving game rating within the same nutrition class. */
-  readonly healthRating: number;
-  /** Comparative game ratings using condition-specific nutrient weightings. */
-  readonly conditionRatings: Readonly<Record<HealthCondition, number>>;
+  /** Comparative, per-serving game rating when source coverage passes the gate. */
+  readonly healthRating?: number;
+  /** Comparative game ratings available only after the source-coverage gate. */
+  readonly conditionRatings: Readonly<Partial<Record<HealthCondition, number>>>;
+  /** Deterministic rating availability and source-completeness evidence. */
+  readonly ratingStates: Readonly<Record<NutritionRatingId, NutritionRatingState>>;
   readonly intentFits: Readonly<Partial<Record<NutritionIntentId, number>>>;
   readonly provenance?: NutritionProvenance;
   readonly unavailableReason?: NutritionUnavailableReason;

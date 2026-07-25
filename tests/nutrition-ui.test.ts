@@ -110,7 +110,7 @@ describe("Hawker Balance nutrition education UI", () => {
       healthRating: 4.2,
       starRating: 4.7,
     }));
-    expect(ratings).toContain("Health rating: 4.2/5");
+    expect(ratings).toContain("In-game nutrition comparison: 4.2/5");
     expect(ratings).toContain("Star rating for taste and popularity: 4.7/5");
 
     const profile = renderToStaticMarkup(createElement(NutritionProfileSummary, {
@@ -122,12 +122,37 @@ describe("Hawker Balance nutrition education UI", () => {
           diabetes: 4.4,
           hypertension: 3.8,
         },
+        ratingStates: {
+          overall: {
+            status: "known",
+            value: 4.2,
+            knownWeightBasisPoints: 8_200,
+            totalWeightBasisPoints: 10_000,
+            missingMetrics: ["waterG"],
+          },
+          diabetes: {
+            status: "known",
+            value: 4.4,
+            knownWeightBasisPoints: 8_000,
+            totalWeightBasisPoints: 10_000,
+            missingMetrics: ["proteinG"],
+          },
+          hypertension: {
+            status: "unavailable",
+            reason: "insufficient-source-coverage",
+            knownWeightBasisPoints: 6_500,
+            totalWeightBasisPoints: 10_000,
+            missingMetrics: ["sodiumMg"],
+          },
+        },
       },
       starRating: 4.7,
     }));
-    expect(profile).toContain("Health rating by condition");
-    expect(profile).toContain("Managing diabetes");
-    expect(profile).toContain("Managing hypertension");
+    expect(profile).toContain("Simplified visit-need comparisons");
+    expect(profile).toContain("Diabetes-aware visit need");
+    expect(profile).toContain("Blood-pressure-aware visit need");
+    expect(profile).toContain("80% source coverage");
+    expect(profile).toContain("Not enough source data");
   });
 
   it("renders rank locks, decision reasons, and neutral outcome wording", () => {
@@ -199,7 +224,7 @@ describe("Hawker Balance nutrition education UI", () => {
         healthImpact: -0.02,
         healthPreferenceResult: "missed",
         healthDecisionReasons: [
-          "Managing hypertension fit 2.8/5 is led by sodium and other nutrients",
+          "Blood-pressure-aware visit need fit 2.8/5 is led by sodium and other nutrients",
         ],
         servingTerms: preparationTerms({
           priceCents: 450,
@@ -215,14 +240,14 @@ describe("Hawker Balance nutrition education UI", () => {
     }));
     expect(inspector).toContain("Trade-off · More sodium");
     expect(inspector).toContain("Why this choice");
-    expect(inspector).toContain("Managing hypertension");
-    expect(inspector).toContain("Personal health fit");
+    expect(inspector).toContain("Blood-pressure-aware visit need");
+    expect(inspector).toContain("Visit request fit");
     expect(inspector).toContain("Star rating for taste and popularity: 4.7/5");
     expect(inspector).toContain("Frozen order terms");
     expect(inspector).toContain("Captured when this order was accepted.");
-    expect(inspector).toContain("Customer stat effect");
+    expect(inspector).toContain("Request-fit effect");
     expect(inspector).toContain("-0.02 satisfaction");
-    expect(inspector).toContain("Why this personal health fit");
+    expect(inspector).toContain("Why this visit request fit");
     expect(inspector).not.toContain("Ignored");
   });
 
@@ -273,7 +298,9 @@ describe("Hawker Balance nutrition education UI", () => {
     expect(simulator).toContain('aria-label="Hawker Balance"');
     expect(simulator).toContain("Nutrition edition");
     expect(simulator).toContain("hawker-balance-day-");
-    expect(simulator).toContain("performSave(controller.exportState())");
+    expect(simulator).toContain(
+      "performSave(state, activeScopeRef.current, true)",
+    );
     expect(manifest.name).toBe("Hawker Balance");
     expect(packageJson.name).toBe("hawker-simulator");
     expect(serviceWorker).toContain('const CACHE_PREFIX = "hawker-simulator-"');
@@ -295,7 +322,8 @@ describe("Hawker Balance nutrition education UI", () => {
     expect(simulator).toContain("aria-labelledby={dishTitleId}");
     expect(simulator).toContain("View nutrition for");
     expect(simulator).toContain("Tune recipe for");
-    expect(simulator).toContain('["focus", "◎", "Focus"]');
+    expect(simulator).toContain('["focus", FocusIcon, "Focus"]');
+    expect(simulator).toContain('["challenges", Trophy, "Challenges"]');
     expect(nutritionUi).toContain("Variant Lab");
     expect(nutritionUi).toContain("Accepted orders keep their frozen terms, ledger result, and satisfaction outcome.");
     expect(nutritionUi).toContain("variant.terms.starAppeal");
@@ -305,10 +333,10 @@ describe("Hawker Balance nutrition education UI", () => {
     expect(nutritionUi).toContain('label: "Total sugar"');
     expect(nutritionUi).toContain('label: "Saturated fat"');
     expect(nutritionUi).toContain('label: "Carbohydrate"');
-    expect(nutritionUi).toContain("Health conditions and stat effects are simplified game traits");
+    expect(nutritionUi).toContain("Visit needs and request-fit effects are fictional game traits");
     expect(nutritionUi).toContain("Star rating separately represents");
     expect(nutritionUi).toContain("Why this choice");
-    expect(nutritionUi).toContain("Why this personal health fit");
+    expect(nutritionUi).toContain("Why this visit request fit");
     expect(nutritionUi).toContain('"sodium-aware": "More sodium"');
     expect(nutritionUi).toContain("Trade-off ·");
     expect(nutritionUi).toContain("onRestoreFocus");

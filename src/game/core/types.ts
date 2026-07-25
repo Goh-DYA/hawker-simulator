@@ -249,6 +249,8 @@ export interface Customer {
   readonly movementProgress: number;
   readonly stateElapsedMs: number;
   readonly visitElapsedMs: number;
+  /** Exact elapsed time queued, ordering, or waiting for prepared food. */
+  readonly waitElapsedMs?: number;
   /** Completed grid steps across the guest's full centre journey. */
   readonly walkingDistanceTiles: number;
   readonly patienceRemainingMs: number;
@@ -338,6 +340,8 @@ export interface VisitRating {
   readonly reason: string;
   readonly stallDefinitionId?: string;
   readonly components: VisitRatingComponents;
+  /** Exact service wait captured at settlement for period debriefs. */
+  readonly waitMs?: number;
   readonly day: number;
   readonly arrivalPeriodSequenceId: number;
 }
@@ -413,6 +417,25 @@ export type NutritionValue =
 
 export type NutritionProfileStatus = "released" | "unavailable" | "quarantined";
 export type NutritionClass = "meal" | "drink";
+export type NutritionRatingId = "overall" | HealthCondition;
+
+export type NutritionRatingState =
+  | {
+      readonly status: "known";
+      readonly value: number;
+      readonly knownWeightBasisPoints: number;
+      readonly totalWeightBasisPoints: 10_000;
+      readonly missingMetrics: readonly NutritionMetric[];
+    }
+  | {
+      readonly status: "unavailable";
+      readonly reason:
+        | "insufficient-source-coverage"
+        | "profile-unavailable";
+      readonly knownWeightBasisPoints: number;
+      readonly totalWeightBasisPoints: 10_000;
+      readonly missingMetrics: readonly NutritionMetric[];
+    };
 
 export interface NutritionServing {
   readonly amount: number;
@@ -432,6 +455,10 @@ export interface NutritionProfile {
   readonly healthRating?: number;
   /** Condition-aware ratings in the inclusive 1-5 range. */
   readonly conditionRatings?: Partial<Readonly<Record<HealthCondition, number>>>;
+  /** Frozen availability and source-completeness evidence for every rating. */
+  readonly ratingStates?: Partial<
+    Readonly<Record<NutritionRatingId, NutritionRatingState>>
+  >;
   readonly nutritionClass: NutritionClass;
 }
 
@@ -717,6 +744,8 @@ export interface SimulationMetrics {
   readonly pathRequests: number;
   readonly pathFailures: number;
   readonly recoveredTargets: number;
+  /** Cumulative arrivals time with at least three active guests and 80% flow. */
+  readonly qualifyingFlowMs: number;
   readonly trayReturnOpportunities: number;
   readonly trayReturns: number;
   readonly visitRatings: readonly VisitRating[];

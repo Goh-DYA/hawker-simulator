@@ -8,6 +8,22 @@ export type NutritionValueView =
   | { readonly status: "trace" }
   | { readonly status: "unavailable"; readonly reason?: string };
 
+export type NutritionRatingStateView =
+  | {
+      readonly status: "known";
+      readonly value: number;
+      readonly knownWeightBasisPoints: number;
+      readonly totalWeightBasisPoints: 10_000;
+      readonly missingMetrics: readonly string[];
+    }
+  | {
+      readonly status: "unavailable";
+      readonly reason: "insufficient-source-coverage" | "profile-unavailable";
+      readonly knownWeightBasisPoints: number;
+      readonly totalWeightBasisPoints: 10_000;
+      readonly missingMetrics: readonly string[];
+    };
+
 export interface NutritionProfileView {
   readonly status: "released" | "unavailable" | "quarantined";
   readonly servingLabel?: string;
@@ -25,6 +41,7 @@ export interface NutritionProfileView {
   readonly waterG?: NutritionValueView;
   readonly healthRating?: number;
   readonly conditionRatings?: Readonly<Record<string, number | undefined>>;
+  readonly ratingStates?: Readonly<Record<string, NutritionRatingStateView | undefined>>;
   readonly intentFits?: Readonly<Record<string, number | undefined>>;
 }
 
@@ -170,10 +187,10 @@ const PULSE_METRICS = [
 ] as const satisfies readonly ProfileMetric[];
 
 const HEALTH_CONDITION_LABELS: Readonly<Record<string, string>> = {
-  "high-cholesterol": "Managing high cholesterol",
-  obesity: "Managing obesity",
-  diabetes: "Managing diabetes",
-  hypertension: "Managing hypertension",
+  "high-cholesterol": "High-cholesterol-aware visit need",
+  obesity: "Weight-management-aware visit need",
+  diabetes: "Diabetes-aware visit need",
+  hypertension: "Blood-pressure-aware visit need",
 };
 
 export type DialogFocusAction = "close" | "container" | "first" | "last" | undefined;
@@ -233,21 +250,41 @@ function ratingText(value: number | undefined) {
 
 export function DishRatingSummary({
   healthRating,
+  healthRatingState,
   starRating,
-  healthLabel = "Health rating",
+  healthLabel = "In-game nutrition comparison",
 }: {
   readonly healthRating?: number;
+  readonly healthRatingState?: NutritionRatingStateView;
   readonly starRating?: number;
   readonly healthLabel?: string;
 }) {
+  const healthRatingCopy = healthRatingState?.status === "unavailable"
+    ? "Not enough source data"
+    : ratingText(
+        healthRatingState?.status === "known"
+          ? healthRatingState.value
+          : healthRating,
+      );
+  const healthCoverageCopy = healthRatingState
+    ? `${Math.round(
+        healthRatingState.knownWeightBasisPoints / 100,
+      )}% source coverage`
+    : undefined;
   return (
     <div className="dish-rating-summary" aria-label="Dish health and star ratings">
       <span
         className="dish-rating-badge is-health"
-        aria-label={`${healthLabel}: ${ratingText(healthRating)}`}
+        aria-label={`${healthLabel}: ${healthRatingCopy}${
+          healthCoverageCopy ? `. ${healthCoverageCopy}` : ""
+        }`}
       >
         <i aria-hidden="true">♥</i>
-        <span><small>{healthLabel}</small><strong>{ratingText(healthRating)}</strong></span>
+        <span>
+          <small>{healthLabel}</small>
+          <strong>{healthRatingCopy}</strong>
+          {healthCoverageCopy ? <small>{healthCoverageCopy}</small> : null}
+        </span>
       </span>
       <span
         className="dish-rating-badge is-star"
@@ -262,25 +299,41 @@ export function DishRatingSummary({
 
 function ConditionRatingDetails({
   ratings,
+  states,
 }: {
   readonly ratings?: Readonly<Record<string, number | undefined>>;
+  readonly states?: Readonly<Record<string, NutritionRatingStateView | undefined>>;
 }) {
-  const entries = Object.entries(ratings ?? {}).filter(
-    (entry): entry is [string, number] =>
-      typeof entry[1] === "number" && Number.isFinite(entry[1]),
-  );
+  const entries = Object.keys(HEALTH_CONDITION_LABELS).flatMap((condition) => {
+    const state = states?.[condition];
+    const rating = ratings?.[condition];
+    return state || (typeof rating === "number" && Number.isFinite(rating))
+      ? [{ condition, state, rating }]
+      : [];
+  });
   if (entries.length === 0) return null;
   return (
     <details className="condition-rating-details">
-      <summary>Health rating by condition</summary>
-      <dl aria-label="Condition-specific health ratings">
-        {entries.map(([condition, rating]) => (
+      <summary>Simplified visit-need comparisons</summary>
+      <dl aria-label="Visit-need comparison ratings and source coverage">
+        {entries.map(({ condition, state, rating }) => (
           <div key={condition}>
             <dt>{HEALTH_CONDITION_LABELS[condition] ?? condition.replaceAll("-", " ")}</dt>
-            <dd>{ratingText(rating)}</dd>
+            <dd>
+              {state?.status === "unavailable"
+                ? "Not enough source data"
+                : ratingText(state?.status === "known" ? state.value : rating)}
+              {state
+                ? ` · ${Math.round(state.knownWeightBasisPoints / 100)}% source coverage`
+                : null}
+            </dd>
           </div>
         ))}
       </dl>
+      <p>
+        These are conservative in-game comparisons, not treatment advice or a
+        universal measure of healthfulness.
+      </p>
     </details>
   );
 }
@@ -307,9 +360,23 @@ export function NutritionProfileSummary({
     <div className="nutrition-summary" aria-labelledby={labelledBy}>
       <DishRatingSummary
         healthRating={healthRating ?? profile?.healthRating}
+        healthRatingState={
+          healthRating === undefined ? profile?.ratingStates?.overall : undefined
+        }
         starRating={starRating}
         healthLabel={healthLabel}
       />
+      {healthRating === undefined && profile?.ratingStates?.overall ? (
+        <p className="nutrition-data-state">
+          {profile.ratingStates.overall.status === "known"
+            ? `In-game comparison source coverage: ${Math.round(
+                profile.ratingStates.overall.knownWeightBasisPoints / 100,
+              )}%`
+            : `In-game comparison unavailable: ${Math.round(
+                profile.ratingStates.overall.knownWeightBasisPoints / 100,
+              )}% source coverage`}
+        </p>
+      ) : null}
       <p>Serving · {profile?.servingLabel ?? dataState ?? "Not available"}</p>
       {dataState ? <p className="nutrition-data-state">{dataState}</p> : null}
       <dl aria-label="Key nutrition per listed serving">
@@ -331,7 +398,10 @@ export function NutritionProfileSummary({
           ))}
         </dl>
       </details>
-      <ConditionRatingDetails ratings={profile?.conditionRatings} />
+      <ConditionRatingDetails
+        ratings={profile?.conditionRatings}
+        states={profile?.ratingStates}
+      />
     </div>
   );
 }
@@ -741,7 +811,7 @@ export function CustomerNutritionInspector({
         ) : null}
       </div>
       <div className="customer-health-context">
-        <strong>Health needs affecting this visit</strong>
+        <strong>Fictional visit needs used by the simulation</strong>
         {healthConditions.length > 0 ? (
           <ul aria-label="Customer simulated health conditions">
             {healthConditions.map((condition) => (
@@ -755,13 +825,13 @@ export function CustomerNutritionInspector({
         )}
         {healthImpactCopy ? (
           <p className="customer-health-impact">
-            <strong>Customer stat effect</strong> · {healthImpactCopy}
+            <strong>Request-fit effect</strong> · {healthImpactCopy}
           </p>
         ) : null}
       </div>
       {healthDecisionReasons.length > 0 ? (
         <div className="customer-decision-reasons is-health">
-          <strong>Why this personal health fit</strong>
+          <strong>Why this visit request fit</strong>
           <ul>
             {healthDecisionReasons.slice(0, 4).map((reason) => (
               <li key={reason}>{reason}</li>
@@ -800,10 +870,11 @@ export function CustomerNutritionInspector({
         profile={customer.profile}
         starRating={orderedStarRating}
         healthRating={customer.personalizedHealthRating}
-        healthLabel={healthConditions.length > 0 ? "Personal health fit" : "Health rating"}
+        healthLabel={healthConditions.length > 0 ? "Visit request fit" : "In-game nutrition comparison"}
       />
       <p className="nutrition-fiction-note">
-        Health conditions and stat effects are simplified game traits, not a diagnosis or advice.
+        Visit needs and request-fit effects are fictional game traits, not a
+        diagnosis, prevalence estimate, or treatment advice.
       </p>
     </section>
   );
@@ -818,7 +889,8 @@ export function NutritionDisclosure() {
         describe the listed serving in the supplied CSV data; recipes and portions vary. The Health
         rating is a comparative in-game balance score derived from that serving and can change by
         variant. The Star rating separately represents taste and popularity. A customer&apos;s personal
-        health fit also reflects their fictional condition and can slightly affect satisfaction.
+        request fit also reflects their fictional visit need and can slightly
+        affect satisfaction.
         These scores are game mechanics—not a diagnosis, health certification, or personal medical
         advice. Total sugar is not the same as added sugar.
       </p>

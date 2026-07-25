@@ -1,16 +1,16 @@
 # Performance Report
 
 Report date: 2026-07-20
-Build/commit: Content `1.3.0` working source validated with bundled Node.js `v24.14.0`; commit/publication record pending
-Verdict: **The content `1.3.0` Node simulation budget and both local production builds pass; browser rendering performance remains unverified**
+Build/commit: Retained pre-Stage-4/5 content `1.3.0` working-source baseline on bundled Node.js `v24.14.0`; commit/publication record was not retained
+Verdict: **Historical Node/build baseline only; final Stage 5 simulation and browser rendering performance remain unverified**
 
-Scope note: the current working-source evidence below is not an exact-production browser performance result. The retained content `1.2.0` measurements remain labelled as historical baselines.
+Scope note: the evidence below predates parties, events, regulars, scenarios, mastery, and the expanded strategic UI. It is neither a current working-source benchmark nor an exact-production browser performance result.
 
 ## Automated simulation evidence
 
 The Vitest benchmark starts 80 active customers and advances 1,200 deterministic fixed steps with periodic invariant checks. The recorded baseline includes queue-reservation and obstacle-safe route behavior. It is useful for regression detection in the pure simulation core; it does not include Phaser rendering, browser scheduling, expanded stall/food drawing, audio, IndexedDB, service workers, or DOM work.
 
-Current content `1.3.0` result from the passing 29-file / 181-test run on bundled Node.js `v24.14.0`:
+Recorded content `1.3.0` result from the historical 29-file / 181-test run on bundled Node.js `v24.14.0`:
 
 | Metric | Recorded value |
 |---|---:|
@@ -46,7 +46,7 @@ Retained result from the passing 24-file / 131-test content `1.2.0` Vitest run o
 
 ## Production-build evidence
 
-The content `1.3.0` working-source gate completed the five-environment Vinext build and generated service-worker build ID `7d3da6d67b11`. The native Next.js Vercel build also passed. Raw/gzip payload totals, file count, and deterministic artifact-manifest hash were not retained in this validation output.
+The historical content `1.3.0` working-source gate completed the five-environment Vinext build and generated service-worker build ID `7d3da6d67b11`. The native Next.js Vercel build also passed. These results do not cover the Stage 4/5 source. Raw/gzip payload totals, file count, and deterministic artifact-manifest hash were not retained.
 
 The recorded content `1.2.0` release-equivalent gate also completed both builds and generated service-worker build ID `c5ed3679ba56`. That older result is retained only as a baseline.
 

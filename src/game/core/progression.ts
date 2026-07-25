@@ -598,7 +598,25 @@ export function metMilestoneIds(state: GameState): readonly string[] {
 export function updateProgressionSystems(source: GameState): GameState {
   const day = source.servicePeriod.day;
   const periodSequenceId = source.servicePeriod.sequenceId;
-  let state = source;
+  const activePeriodGuests = Object.values(source.customers).filter(
+    (customer) =>
+      customer.arrivalPeriodSequenceId === source.servicePeriod.sequenceId,
+  ).length;
+  const currentFlowScore = queueFlowScore(source);
+  const flowQualifies =
+    source.servicePeriod.phase === "arrivals" &&
+    currentFlowScore >= 80 &&
+    activePeriodGuests >= 3;
+  let state = flowQualifies
+    ? {
+        ...source,
+        metrics: {
+          ...source.metrics,
+          qualifyingFlowMs:
+            source.metrics.qualifyingFlowMs + source.config.fixedStepMs,
+        },
+      }
+    : source;
   if (state.progression.focusDay !== periodSequenceId || state.progression.dailyObjectives.length !== 3) {
     state = {
       ...state,
@@ -617,15 +635,12 @@ export function updateProgressionSystems(source: GameState): GameState {
   const dailyObjectives = state.progression.dailyObjectives.map((item) => {
     if (item.completed || item.skipped) return item;
     if (item.accepted === false) return item;
-    const activePeriodGuests = Object.values(state.customers).filter(
-      (customer) => customer.arrivalPeriodSequenceId === state.servicePeriod.sequenceId,
-    ).length;
     const flowCanQualify = item.kind === "flow" && state.servicePeriod.phase === "arrivals";
     const flowQualifiedMs = item.kind === "flow"
       ? flowCanQualify
         ? advanceFlowQualification(
             item.flowQualifiedMs ?? 0,
-            queueFlowScore(state),
+            currentFlowScore,
             activePeriodGuests,
             state.config.fixedStepMs,
             item.flowMinimumActiveGuests ?? 3,
