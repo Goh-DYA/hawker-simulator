@@ -1,8 +1,8 @@
 # Independent review implementation record
 
-Status: In progress on `independent-review-strategic-gameplay`
+Status: Complete on `independent-review-strategic-gameplay`
 
-This record tracks implementation of the independent gameplay review without changing the review document itself. Work proceeds continuously through five reviewed private-preview stages: service/economy, forecast/variants, meal composition, people/events, and scenarios/mastery.
+This record tracks the completed implementation of the independent gameplay review across five reviewed private-preview stages: service/economy, forecast/variants, meal composition, people/events, and scenarios/mastery. The independent review document was updated separately after implementation as the final healthcare and educational critique.
 
 ## Locked implementation rules
 
@@ -272,7 +272,7 @@ Private preview: owner-only, successfully deployed from `796c1a731d932f90a804ccd
 
 ## Stage 5 — scenarios, mastery, and meta progression
 
-Status: implementation, adversarial code/gameplay review, deterministic balance evidence, responsive engineering review, and the complete working-source gate are complete. The Stage 5 commit and owner-only preview version remain pending.
+Status: implementation, adversarial code/gameplay review, deterministic balance evidence, responsive engineering review, complete working-source gate, Stage 5 commit, and owner-only preview publication are complete.
 
 ### Implemented contracts
 
@@ -351,8 +351,9 @@ The social-preview provenance row records `public/og.png` at 1730×909 with SHA-
 - Final full-suite file/test totals: 63 files and 546 tests passed.
 - Final content/SSR results: 17 content validations and two SSR assertions passed.
 - Final Vinext and native Vercel builds passed with bundled Node 24.14.0 and shared service-worker stamp `d863122d476a`.
-- Stage 5 commit and owner-only preview version/source record: pending.
+- Stage 5 source was committed as `982a020bf0a44fddd28cacc0be6290b6b6664379`.
+- The private preview records that exact source and deployed successfully with one explicitly allowed owner account and no allowed groups.
 - Final exact-production signed-in smoke, offline restart/update, storage-fault recovery, long-session performance/soak, and actual-browser 200% zoom remain release gates.
 - Qualified screen-reader, clinical-language, Singapore cultural, sensitivity, narrative, human-balance, educational-efficacy, security, legal, and production-performance reviews remain external release gates.
 
-Private preview: pending Stage 5 commit, saved preview version, owner-only deployment, and access verification.
+Private preview: owner-only, successfully deployed from `982a020bf0a44fddd28cacc0be6290b6b6664379`. The unauthenticated access gate was verified; signed-in exact-artifact content smoke remains open because the development browser did not have an authenticated session.

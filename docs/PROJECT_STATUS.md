@@ -1,7 +1,7 @@
 # Project Status
 
 Last updated: 2026-07-26
-Phase: Independent-review Stages 1-5 are source-integrated; final commit/artifact evidence, exact-production verification, and human review remain pending
+Phase: Independent-review Stages 1-5 are implemented, committed, and privately published; exact-production verification and qualified human review remain pending
 Release status: **NO-GO for production approval**
 
 ## Current position
@@ -10,7 +10,7 @@ Hawker Balance is implemented as a deployable, local-first browser game. The Rea
 
 The working source includes layered stall facades, active-menu food displays, 14 vendor identities, per-item and per-variant visual recipes, visible meals and lifecycle animation, progression- and schedule-aware customer personas, balanced stall selection, globally unique obstacle-safe configurable queues, a saved preferred-route editor, geometry-aware queue-flow guidance, distance-based route-efficiency ratings, coherent expansion-boundary migration, functional signage/facility effects, nutrition-aware customer decisions and objectives, the Nutrition Lens, Variant Lab, customer inspector, Nutrition Pulse, and an approval-gated Vercel delivery pipeline. The independent-review programme adds four service periods and cause-coded ledgers, deterministic planning forecasts, frozen operational preparation trade-offs, a three-slot Combo Board, parties of up to six, eight neighbourhood events, six recurring regulars, five isolated scenarios, twelve rotating mastery contracts, and separate main/scenario/meta persistence. Content `1.3.0` still defines 14 stalls, 54 dishes, 80 placeables, 12 customer archetypes, and 320 English localization entries. Its 104 source profiles are released; 14 variant families expose 64 selectable preparations.
 
-Current working-source stage gates cover typecheck, lint, the complete automated suite, content validation, SSR, Vinext and native Vercel builds, diff checks, migrations, and responsive development-browser evidence. Exact commands and results belong in `TEST_REPORT.md`; older content `1.3.0` counts and service-worker IDs are retained only as historical evidence. Final source/artifact hashes, payload totals, exact-production browser/offline evidence, exhaustive galleries, performance measurements, and required human reviews remain pending.
+Current working-source stage gates cover typecheck, lint, the complete automated suite, content validation, SSR, Vinext and native Vercel builds, diff checks, migrations, and responsive development-browser evidence. Stage 5 commit `982a020bf0a44fddd28cacc0be6290b6b6664379` is privately published as an owner-only preview. Exact commands and results belong in `TEST_REPORT.md`; older content `1.3.0` counts and service-worker IDs are retained only as historical evidence. Exact-production signed-in browser/offline evidence, exhaustive galleries, production performance measurements, and required human reviews remain pending.
 
 Package version `1.0.0` remains an internal artifact identifier until the exact-production browser/offline gates and required human reviews close.
 

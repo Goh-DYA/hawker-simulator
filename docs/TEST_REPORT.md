@@ -1,8 +1,8 @@
 # Test Report
 
 Report date: 2026-07-26
-Build/commit: Independent-review Stage 5 validated working source; final commit and owner-only preview version pending
-Release verdict: **Stage 5 working-source engineering, balance, and build gates PASS; owner-only publication pending; production remains NO-GO pending exact-production and required human reviews**
+Build/commit: Independent-review Stage 5 commit `982a020bf0a44fddd28cacc0be6290b6b6664379`; owner-only preview version 7
+Release verdict: **Stage 5 engineering, balance, build, commit, and owner-only publication gates PASS; production remains NO-GO pending exact-production and required human reviews**
 
 Scope note: this report adds the Stage 5 scenarios, mastery, meta-progression, persistence, economy, nutrition-completeness, and responsive-engineering evidence. The Stage 4 people-and-events gate, content `1.3.0` working-source gate, and content `1.2.0` evidence remain below as labelled historical baselines. Working-source tests and development-browser passes are not exact-production, offline, performance, clinical, cultural, assistive-technology, educational-efficacy, or human-review evidence.
 
@@ -55,9 +55,12 @@ Restart uses a focus-contained confirmation dialog with Escape and invoking-cont
 
 The refreshed social-preview card is registered in `docs/ASSET_PROVENANCE.md`: `public/og.png`, 1730×909, SHA-256 `47EF7F3217FC23844222806E1236E18F3A7D4D8938263520CB47EC0175D556B9`. Exact title, tagline, safe composition, and absence of prohibited marks were inspected; qualified human similarity, brand, and cultural review is not claimed.
 
-Pending final Stage 5 record:
+Stage 5 publication record:
 
-- Stage 5 commit identifier, owner-only preview version, access re-verification, and signed-in remote smoke result.
+- Commit `982a020bf0a44fddd28cacc0be6290b6b6664379` contains the validated Stage 5 source and evidence.
+- The private preview records that exact commit and deployed successfully.
+- Access was re-verified as custom owner-only: one allowed account, no allowed groups, no workspace groups, and no tenant groups.
+- The unauthenticated development browser reached the expected “Sign in required” gate with no console errors. A signed-in exact-artifact content smoke remains open because the development browser had no authenticated session.
 
 Final working-source build record:
 

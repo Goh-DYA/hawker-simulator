@@ -100,7 +100,7 @@ Rule: check an item only with evidence in `TEST_REPORT.md`, `PERFORMANCE_REPORT.
 - [x] Previously recorded all-dependencies and production-only npm audits both report 0 vulnerabilities; they were not rerun in this validation update.
 - [x] The earlier content `1.2.0` service-worker build ID `c5ed3679ba56` is recorded as historical evidence.
 - [ ] The content `1.3.0` service-worker build ID, source commit, artifact path/hash, and payload sizes are recorded.
-- [ ] The final Stage 5 validated-source commit, immutable artifact path/hash/payload sizes, service-worker ID, and final private-preview URL are recorded together; no private preview is treated as public deployment or production promotion.
+- [x] Stage 5 validated-source commit `982a020bf0a44fddd28cacc0be6290b6b6664379`, preview version 7 archive provenance, service-worker ID `d863122d476a`, owner-only access verification, and private-preview URL are recorded together. The private preview is not public deployment or production promotion.
 - [ ] Vercel project setup, first Preview, staged-production smoke, protected approval, promotion, and rollback rehearsal are recorded with exact deployment URLs.
 - [ ] Browser critical path and offline/update tests pass on that exact artifact.
 - [ ] Private deployment smoke, rollback, and save-forward compatibility are rehearsed.
