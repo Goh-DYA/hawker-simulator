@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 2,
+  "savedAtTick": 300,
+  "map": {
+    "width": 12,
+    "height": 8,
+    "tileSize": 32,
+    "worldOrigin": {
+      "x": 16,
+      "y": 24
+    },
+    "tiles": [
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor"
+    ]
+  },
+  "entrance": {
+    "x": 0,
+    "y": 3
+  },
+  "exit": {
+    "x": 11,
+    "y": 3
+  },
+  "qualityMode": "standard",
+  "objects": [
+    {
+      "id": "seat-1",
+      "definitionId": "seat",
+      "origin": {
+        "x": 6,
+        "y": 2
+      },
+      "rotation": 0,
+      "open": false
+    },
+    {
+      "id": "seat-2",
+      "definitionId": "seat",
+      "origin": {
+        "x": 7,
+        "y": 4
+      },
+      "rotation": 0,
+      "open": false
+    },
+    {
+      "id": "stall-1",
+      "definitionId": "stall",
+      "origin": {
+        "x": 2,
+        "y": 0
+      },
+      "rotation": 0,
+      "open": true
+    },
+    {
+      "id": "tray-1",
+      "definitionId": "tray",
+      "origin": {
+        "x": 10,
+        "y": 6
+      },
+      "rotation": 0,
+      "open": false
+    }
+  ],
+  "economy": {
+    "currency": 1492,
+    "lifetimeRevenue": 292,
+    "lifetimeSpend": 0,
+    "completedVisits": 42,
+    "abandonedVisits": 0
+  },
+  "progression": {
+    "xp": 760,
+    "level": 3,
+    "reputation": 3.500000000000001,
+    "unlockedDefinitionIds": [
+      "seat",
+      "stall",
+      "table",
+      "tray"
+    ],
+    "expansionCount": 0
+  },
+  "rngState": 83926811,
+  "nextCustomerSequence": 44,
+  "elapsedMs": 30000
+}

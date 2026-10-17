@@ -1,0 +1,1857 @@
+{
+  "schemaVersion": 4,
+  "savedAtTick": 600,
+  "map": {
+    "width": 12,
+    "height": 8,
+    "tileSize": 32,
+    "worldOrigin": {
+      "x": 16,
+      "y": 24
+    },
+    "tiles": [
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor"
+    ]
+  },
+  "accessPoints": [
+    {
+      "id": "entrance-1",
+      "kind": "entrance",
+      "position": {
+        "x": 0,
+        "y": 3
+      }
+    },
+    {
+      "id": "exit-1",
+      "kind": "exit",
+      "position": {
+        "x": 11,
+        "y": 3
+      }
+    }
+  ],
+  "routeGuidePoints": [],
+  "qualityMode": "standard",
+  "objects": [
+    {
+      "id": "seat-1",
+      "definitionId": "seat",
+      "origin": {
+        "x": 6,
+        "y": 2
+      },
+      "rotation": 0,
+      "open": false
+    },
+    {
+      "id": "seat-2",
+      "definitionId": "seat",
+      "origin": {
+        "x": 7,
+        "y": 4
+      },
+      "rotation": 0,
+      "open": false
+    },
+    {
+      "id": "stall-1",
+      "definitionId": "stall",
+      "origin": {
+        "x": 2,
+        "y": 0
+      },
+      "rotation": 0,
+      "open": true
+    },
+    {
+      "id": "tray-1",
+      "definitionId": "tray",
+      "origin": {
+        "x": 10,
+        "y": 6
+      },
+      "rotation": 0,
+      "open": false
+    }
+  ],
+  "economy": {
+    "currency": 2058,
+    "lifetimeRevenue": 608,
+    "lifetimeSpend": 0,
+    "completedVisits": 85,
+    "abandonedVisits": 0
+  },
+  "progression": {
+    "xp": 1406,
+    "level": 4,
+    "reputation": 4.671999999999998,
+    "unlockedDefinitionIds": [
+      "seat",
+      "stall",
+      "table",
+      "tray"
+    ],
+    "expansionCount": 0,
+    "focusDay": 1,
+    "dailyObjectives": [
+      {
+        "id": "day-1-1-serve",
+        "day": 1,
+        "progress": 7,
+        "completed": true,
+        "kind": "serve",
+        "title": "Warm welcome",
+        "description": "Serve 7 neighbours today.",
+        "target": 7,
+        "startValue": 0,
+        "rewardCash": 100,
+        "rewardXp": 30
+      },
+      {
+        "id": "day-1-2-happiness",
+        "day": 1,
+        "progress": 82.4,
+        "completed": true,
+        "kind": "happiness",
+        "title": "Happy tables",
+        "description": "Reach 73% happiness after five new ratings.",
+        "target": 73,
+        "startValue": 0,
+        "rewardCash": 100,
+        "rewardXp": 30
+      },
+      {
+        "id": "day-1-3-nutrition",
+        "day": 1,
+        "progress": 0,
+        "completed": false,
+        "kind": "nutrition",
+        "nutritionCriterion": "profiled-servings",
+        "title": "Read the plate",
+        "description": "Serve 5 meals with reviewed nutrition data today.",
+        "target": 5,
+        "startValue": 0,
+        "rewardCash": 100,
+        "rewardXp": 30
+      }
+    ],
+    "claimedMilestoneIds": [
+      "hospitality-1",
+      "growth-1",
+      "service-1"
+    ],
+    "stallMastery": {
+      "stall": {
+        "points": 1504,
+        "rank": 4,
+        "upgradeLevel": 1
+      }
+    }
+  },
+  "metrics": {
+    "trayReturns": 82,
+    "visitRatings": [
+      {
+        "customerId": "customer-32",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-33",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-34",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-35",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-36",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-37",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-38",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-39",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-40",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-41",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-42",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-43",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-44",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-45",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-46",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-47",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-48",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-49",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-50",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-51",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-52",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-53",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-54",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-55",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-56",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-57",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-58",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-59",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-60",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-61",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-62",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-63",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-64",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-65",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-66",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-67",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-68",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-69",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-70",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-71",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-72",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-73",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-74",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-75",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-76",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-77",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-78",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-79",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-80",
+        "walkingMetricVersion": 2,
+        "score": 80,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 98.33333333333333,
+          "value": 85,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      },
+      {
+        "customerId": "customer-81",
+        "walkingMetricVersion": 2,
+        "score": 86,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 74,
+          "wait": 98.75,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72
+        },
+        "day": 1
+      }
+    ],
+    "nutrition": {
+      "servedMeals": 85,
+      "profiledServings": 0,
+      "nonDefaultVariantServings": 0,
+      "intentRequests": 0,
+      "intentMatches": 0,
+      "intentMisses": 0,
+      "intentUnknowns": 0,
+      "byIntent": {
+        "lighter-energy": {
+          "requests": 0,
+          "matches": 0,
+          "misses": 0,
+          "unknowns": 0
+        },
+        "protein-forward": {
+          "requests": 0,
+          "matches": 0,
+          "misses": 0,
+          "unknowns": 0
+        },
+        "fibre-forward": {
+          "requests": 0,
+          "matches": 0,
+          "misses": 0,
+          "unknowns": 0
+        },
+        "sodium-aware": {
+          "requests": 0,
+          "matches": 0,
+          "misses": 0,
+          "unknowns": 0
+        },
+        "lower-total-sugar-drink": {
+          "requests": 0,
+          "matches": 0,
+          "misses": 0,
+          "unknowns": 0
+        }
+      },
+      "nutrientTotals": {
+        "energyKcal": 0,
+        "proteinG": 0,
+        "totalFatG": 0,
+        "saturatedFatG": 0,
+        "transFatG": 0,
+        "carbohydrateG": 0,
+        "totalSugarG": 0,
+        "dietaryFibreG": 0,
+        "sodiumMg": 0,
+        "calciumMg": 0,
+        "ironMg": 0,
+        "waterG": 0
+      },
+      "nutrientKnownCounts": {
+        "energyKcal": 0,
+        "proteinG": 0,
+        "totalFatG": 0,
+        "saturatedFatG": 0,
+        "transFatG": 0,
+        "carbohydrateG": 0,
+        "totalSugarG": 0,
+        "dietaryFibreG": 0,
+        "sodiumMg": 0,
+        "calciumMg": 0,
+        "ironMg": 0,
+        "waterG": 0
+      },
+      "dishServings": {},
+      "recentOutcomes": [
+        {
+          "customerId": "customer-1",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-2",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-3",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-4",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-5",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-6",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-7",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-8",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-9",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-10",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-11",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-12",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-13",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-14",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-15",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-16",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-17",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-18",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-19",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-20",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-21",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-22",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-23",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-24",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-25",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-26",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-27",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-28",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-29",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-30",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-31",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-32",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-33",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-34",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-35",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-36",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-37",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-38",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-39",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-40",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-41",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-42",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-43",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-44",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-45",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-46",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-47",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-48",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-49",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-50",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-51",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-52",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-53",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-54",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-55",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-56",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-57",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-58",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-59",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-60",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-61",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-62",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-63",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-64",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-65",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-66",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-67",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-68",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-69",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-70",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-71",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-72",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-73",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-74",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-75",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-76",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-77",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-78",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-79",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-80",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-81",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-82",
+          "day": 1,
+          "dishId": "rice",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-83",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-84",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        },
+        {
+          "customerId": "customer-85",
+          "day": 1,
+          "dishId": "noodles",
+          "result": "unknown"
+        }
+      ],
+      "today": {
+        "day": 1,
+        "servedMeals": 85,
+        "profiledServings": 0,
+        "intentRequests": 0,
+        "intentMatches": 0,
+        "intentMisses": 0,
+        "intentUnknowns": 0,
+        "byIntent": {
+          "lighter-energy": {
+            "requests": 0,
+            "matches": 0,
+            "misses": 0,
+            "unknowns": 0
+          },
+          "protein-forward": {
+            "requests": 0,
+            "matches": 0,
+            "misses": 0,
+            "unknowns": 0
+          },
+          "fibre-forward": {
+            "requests": 0,
+            "matches": 0,
+            "misses": 0,
+            "unknowns": 0
+          },
+          "sodium-aware": {
+            "requests": 0,
+            "matches": 0,
+            "misses": 0,
+            "unknowns": 0
+          },
+          "lower-total-sugar-drink": {
+            "requests": 0,
+            "matches": 0,
+            "misses": 0,
+            "unknowns": 0
+          }
+        },
+        "nutrientTotals": {
+          "energyKcal": 0,
+          "proteinG": 0,
+          "totalFatG": 0,
+          "saturatedFatG": 0,
+          "transFatG": 0,
+          "carbohydrateG": 0,
+          "totalSugarG": 0,
+          "dietaryFibreG": 0,
+          "sodiumMg": 0,
+          "calciumMg": 0,
+          "ironMg": 0,
+          "waterG": 0
+        },
+        "nutrientKnownCounts": {
+          "energyKcal": 0,
+          "proteinG": 0,
+          "totalFatG": 0,
+          "saturatedFatG": 0,
+          "transFatG": 0,
+          "carbohydrateG": 0,
+          "totalSugarG": 0,
+          "dietaryFibreG": 0,
+          "sodiumMg": 0,
+          "calciumMg": 0,
+          "ironMg": 0,
+          "waterG": 0
+        },
+        "dishServings": {}
+      }
+    }
+  },
+  "rngState": 4049745649,
+  "nextCustomerSequence": 87,
+  "elapsedMs": 60000
+}

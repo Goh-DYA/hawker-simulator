@@ -1,0 +1,2402 @@
+{
+  "runtimeSchemaVersion": 2,
+  "core": {
+    "schemaVersion": 4,
+    "savedAtTick": 0,
+    "map": {
+      "width": 40,
+      "height": 24,
+      "tileSize": 48,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "tiles": [
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "floor",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall"
+      ]
+    },
+    "accessPoints": [
+      {
+        "id": "entrance-1",
+        "kind": "entrance",
+        "position": {
+          "x": 0,
+          "y": 7
+        }
+      },
+      {
+        "id": "exit-1",
+        "kind": "exit",
+        "position": {
+          "x": 39,
+          "y": 7
+        }
+      }
+    ],
+    "routeGuidePoints": [],
+    "qualityMode": "standard",
+    "objects": [
+      {
+        "id": "placed-1",
+        "definitionId": "stall.sunrise-roost",
+        "origin": {
+          "x": 1,
+          "y": 1
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-10",
+        "definitionId": "stall.tamarind-leaf",
+        "origin": {
+          "x": 6,
+          "y": 8
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-11",
+        "definitionId": "stall.bamboo-basket",
+        "origin": {
+          "x": 11,
+          "y": 8
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-12",
+        "definitionId": "stall.straits-hearth",
+        "origin": {
+          "x": 16,
+          "y": 8
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-13",
+        "definitionId": "stall.herbal-cauldron",
+        "origin": {
+          "x": 22,
+          "y": 8
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-14",
+        "definitionId": "stall.harbour-ember",
+        "origin": {
+          "x": 28,
+          "y": 8
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-15",
+        "definitionId": "item.compact-square-table",
+        "origin": {
+          "x": 11,
+          "y": 4
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-16",
+        "definitionId": "item.round-cafe-table",
+        "origin": {
+          "x": 30,
+          "y": 4
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-17",
+        "definitionId": "item.long-communal-table",
+        "origin": {
+          "x": 1,
+          "y": 5
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-18",
+        "definitionId": "item.family-trestle-table",
+        "origin": {
+          "x": 6,
+          "y": 5
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-19",
+        "definitionId": "item.accessible-end-table",
+        "origin": {
+          "x": 13,
+          "y": 5
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-2",
+        "definitionId": "stall.coconut-lime",
+        "origin": {
+          "x": 6,
+          "y": 1
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-20",
+        "definitionId": "item.standing-snack-ledge",
+        "origin": {
+          "x": 16,
+          "y": 5
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-21",
+        "definitionId": "item.folding-overflow-table",
+        "origin": {
+          "x": 19,
+          "y": 5
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-22",
+        "definitionId": "item.terrazzo-feature-table",
+        "origin": {
+          "x": 22,
+          "y": 5
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-23",
+        "definitionId": "item.stacking-stool",
+        "origin": {
+          "x": 25,
+          "y": 5
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-24",
+        "definitionId": "item.moulded-back-chair",
+        "origin": {
+          "x": 27,
+          "y": 5
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-25",
+        "definitionId": "item.two-person-bench",
+        "origin": {
+          "x": 33,
+          "y": 5
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-26",
+        "definitionId": "item.easy-rise-arm-chair",
+        "origin": {
+          "x": 36,
+          "y": 5
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-27",
+        "definitionId": "item.high-counter-stool",
+        "origin": {
+          "x": 38,
+          "y": 5
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-28",
+        "definitionId": "item.booster-family-chair",
+        "origin": {
+          "x": 10,
+          "y": 6
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-29",
+        "definitionId": "item.cushioned-dining-chair",
+        "origin": {
+          "x": 34,
+          "y": 8
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-3",
+        "definitionId": "stall.kopi-canopy",
+        "origin": {
+          "x": 11,
+          "y": 1
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-30",
+        "definitionId": "item.three-person-communal-bench",
+        "origin": {
+          "x": 36,
+          "y": 8
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-31",
+        "definitionId": "item.acoustic-booth-seat",
+        "origin": {
+          "x": 34,
+          "y": 10
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-32",
+        "definitionId": "item.swivel-perch-seat",
+        "origin": {
+          "x": 37,
+          "y": 10
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-33",
+        "definitionId": "item.queue-ticket-dispenser",
+        "origin": {
+          "x": 1,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-34",
+        "definitionId": "item.condiment-counter",
+        "origin": {
+          "x": 3,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-35",
+        "definitionId": "item.cutlery-napkin-station",
+        "origin": {
+          "x": 6,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-36",
+        "definitionId": "item.water-carafe-station",
+        "origin": {
+          "x": 8,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-37",
+        "definitionId": "item.order-pickup-shelf",
+        "origin": {
+          "x": 11,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-38",
+        "definitionId": "item.heated-display-case",
+        "origin": {
+          "x": 14,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-39",
+        "definitionId": "item.chilled-display-case",
+        "origin": {
+          "x": 17,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-4",
+        "definitionId": "stall.cinder-wok",
+        "origin": {
+          "x": 15,
+          "y": 1
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-40",
+        "definitionId": "item.mobile-prep-cart",
+        "origin": {
+          "x": 20,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-41",
+        "definitionId": "item.single-bay-tray-return",
+        "origin": {
+          "x": 23,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-42",
+        "definitionId": "item.dual-bay-tray-return",
+        "origin": {
+          "x": 26,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-43",
+        "definitionId": "item.dish-drop-counter",
+        "origin": {
+          "x": 30,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-44",
+        "definitionId": "item.recycling-sorter",
+        "origin": {
+          "x": 34,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-45",
+        "definitionId": "item.covered-food-waste-bin",
+        "origin": {
+          "x": 38,
+          "y": 12
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-46",
+        "definitionId": "item.general-waste-bin",
+        "origin": {
+          "x": 1,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-47",
+        "definitionId": "item.cleaning-trolley-bay",
+        "origin": {
+          "x": 3,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-48",
+        "definitionId": "item.clean-tray-stack-rack",
+        "origin": {
+          "x": 6,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-49",
+        "definitionId": "item.ceiling-tube-light",
+        "origin": {
+          "x": 8,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-5",
+        "definitionId": "stall.mee-pok-junction",
+        "origin": {
+          "x": 20,
+          "y": 1
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-50",
+        "definitionId": "item.pendant-dining-light",
+        "origin": {
+          "x": 11,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-51",
+        "definitionId": "item.woven-lantern-cluster",
+        "origin": {
+          "x": 13,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-52",
+        "definitionId": "item.counter-task-light",
+        "origin": {
+          "x": 16,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-53",
+        "definitionId": "item.low-path-light",
+        "origin": {
+          "x": 19,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-54",
+        "definitionId": "item.skylight-diffuser",
+        "origin": {
+          "x": 21,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-55",
+        "definitionId": "item.festive-string-lights",
+        "origin": {
+          "x": 25,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-56",
+        "definitionId": "item.wall-circulation-fan",
+        "origin": {
+          "x": 30,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-57",
+        "definitionId": "item.ceiling-fan",
+        "origin": {
+          "x": 32,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-58",
+        "definitionId": "item.column-fan",
+        "origin": {
+          "x": 36,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-59",
+        "definitionId": "item.high-volume-air-fan",
+        "origin": {
+          "x": 1,
+          "y": 16
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-6",
+        "definitionId": "stall.tiffin-lantern",
+        "origin": {
+          "x": 25,
+          "y": 1
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-60",
+        "definitionId": "item.quiet-corner-fan",
+        "origin": {
+          "x": 38,
+          "y": 14
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-61",
+        "definitionId": "item.stall-exhaust-booster",
+        "origin": {
+          "x": 4,
+          "y": 16
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-62",
+        "definitionId": "item.table-herb-planter",
+        "origin": {
+          "x": 7,
+          "y": 16
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-63",
+        "definitionId": "item.tall-areca-planter",
+        "origin": {
+          "x": 9,
+          "y": 16
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-64",
+        "definitionId": "item.fern-trough",
+        "origin": {
+          "x": 16,
+          "y": 16
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-65",
+        "definitionId": "item.vine-trellis",
+        "origin": {
+          "x": 25,
+          "y": 16
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-66",
+        "definitionId": "item.rain-garden-pot",
+        "origin": {
+          "x": 28,
+          "y": 16
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-67",
+        "definitionId": "item.hanging-pothos",
+        "origin": {
+          "x": 11,
+          "y": 16
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-68",
+        "definitionId": "item.dwarf-banana-planter",
+        "origin": {
+          "x": 36,
+          "y": 16
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-69",
+        "definitionId": "item.pandan-border-bed",
+        "origin": {
+          "x": 4,
+          "y": 18
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-7",
+        "definitionId": "stall.sweet-monsoon",
+        "origin": {
+          "x": 30,
+          "y": 1
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-70",
+        "definitionId": "item.entrance-directory",
+        "origin": {
+          "x": 13,
+          "y": 17
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-71",
+        "definitionId": "item.stall-row-marker",
+        "origin": {
+          "x": 9,
+          "y": 18
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-72",
+        "definitionId": "item.tray-return-arrow-sign",
+        "origin": {
+          "x": 16,
+          "y": 18
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-73",
+        "definitionId": "item.accessible-wayfinding-sign",
+        "origin": {
+          "x": 18,
+          "y": 18
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-74",
+        "definitionId": "item.queue-etiquette-sign",
+        "origin": {
+          "x": 20,
+          "y": 18
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-75",
+        "definitionId": "item.menu-preview-board",
+        "origin": {
+          "x": 22,
+          "y": 18
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-76",
+        "definitionId": "item.centre-identity-sign",
+        "origin": {
+          "x": 31,
+          "y": 18
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-77",
+        "definitionId": "item.low-timber-screen",
+        "origin": {
+          "x": 24,
+          "y": 18
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-78",
+        "definitionId": "item.tiled-half-wall",
+        "origin": {
+          "x": 12,
+          "y": 19
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-79",
+        "definitionId": "item.clear-wind-screen",
+        "origin": {
+          "x": 36,
+          "y": 19
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-8",
+        "definitionId": "stall.satay-meridian",
+        "origin": {
+          "x": 34,
+          "y": 1
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-80",
+        "definitionId": "item.integrated-planter-divider",
+        "origin": {
+          "x": 1,
+          "y": 20
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-81",
+        "definitionId": "item.retractable-queue-rail",
+        "origin": {
+          "x": 5,
+          "y": 20
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-82",
+        "definitionId": "item.acoustic-screen",
+        "origin": {
+          "x": 28,
+          "y": 19
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-83",
+        "definitionId": "item.public-handwash-sink",
+        "origin": {
+          "x": 9,
+          "y": 20
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-84",
+        "definitionId": "item.drinking-water-fountain",
+        "origin": {
+          "x": 16,
+          "y": 20
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-85",
+        "definitionId": "item.locked-cleaning-cupboard",
+        "origin": {
+          "x": 18,
+          "y": 20
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-86",
+        "definitionId": "item.staff-mop-sink",
+        "origin": {
+          "x": 21,
+          "y": 20
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-87",
+        "definitionId": "item.first-aid-cabinet",
+        "origin": {
+          "x": 24,
+          "y": 20
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-88",
+        "definitionId": "item.accessible-wash-basin",
+        "origin": {
+          "x": 31,
+          "y": 20
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-89",
+        "definitionId": "item.protected-utility-point",
+        "origin": {
+          "x": 26,
+          "y": 20
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-9",
+        "definitionId": "stall.pick-and-mix",
+        "origin": {
+          "x": 1,
+          "y": 8
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "placed-90",
+        "definitionId": "item.geometric-tile-mural",
+        "origin": {
+          "x": 34,
+          "y": 21
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-91",
+        "definitionId": "item.community-noticeboard",
+        "origin": {
+          "x": 12,
+          "y": 21
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-92",
+        "definitionId": "item.fabric-ceiling-bunting",
+        "origin": {
+          "x": 1,
+          "y": 22
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-93",
+        "definitionId": "item.tabletop-flower-vase",
+        "origin": {
+          "x": 28,
+          "y": 21
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-94",
+        "definitionId": "item.feature-centre-clock",
+        "origin": {
+          "x": 6,
+          "y": 22
+        },
+        "rotation": 0,
+        "open": false
+      }
+    ],
+    "economy": {
+      "currency": 99930188,
+      "lifetimeRevenue": 0,
+      "lifetimeSpend": 69812,
+      "completedVisits": 0,
+      "abandonedVisits": 0
+    },
+    "progression": {
+      "xp": 16900,
+      "level": 14,
+      "reputation": 5,
+      "unlockedDefinitionIds": [
+        "item.accessible-end-table",
+        "item.accessible-wash-basin",
+        "item.accessible-wayfinding-sign",
+        "item.acoustic-booth-seat",
+        "item.acoustic-screen",
+        "item.booster-family-chair",
+        "item.ceiling-fan",
+        "item.ceiling-tube-light",
+        "item.centre-identity-sign",
+        "item.chilled-display-case",
+        "item.clean-tray-stack-rack",
+        "item.cleaning-trolley-bay",
+        "item.clear-wind-screen",
+        "item.column-fan",
+        "item.community-noticeboard",
+        "item.compact-square-table",
+        "item.condiment-counter",
+        "item.counter-task-light",
+        "item.covered-food-waste-bin",
+        "item.cushioned-dining-chair",
+        "item.cutlery-napkin-station",
+        "item.dish-drop-counter",
+        "item.drinking-water-fountain",
+        "item.dual-bay-tray-return",
+        "item.dwarf-banana-planter",
+        "item.easy-rise-arm-chair",
+        "item.entrance-directory",
+        "item.fabric-ceiling-bunting",
+        "item.family-trestle-table",
+        "item.feature-centre-clock",
+        "item.fern-trough",
+        "item.festive-string-lights",
+        "item.first-aid-cabinet",
+        "item.folding-overflow-table",
+        "item.general-waste-bin",
+        "item.geometric-tile-mural",
+        "item.hanging-pothos",
+        "item.heated-display-case",
+        "item.high-counter-stool",
+        "item.high-volume-air-fan",
+        "item.integrated-planter-divider",
+        "item.locked-cleaning-cupboard",
+        "item.long-communal-table",
+        "item.low-path-light",
+        "item.low-timber-screen",
+        "item.menu-preview-board",
+        "item.mobile-prep-cart",
+        "item.moulded-back-chair",
+        "item.order-pickup-shelf",
+        "item.pandan-border-bed",
+        "item.pendant-dining-light",
+        "item.protected-utility-point",
+        "item.public-handwash-sink",
+        "item.queue-etiquette-sign",
+        "item.queue-ticket-dispenser",
+        "item.quiet-corner-fan",
+        "item.rain-garden-pot",
+        "item.recycling-sorter",
+        "item.retractable-queue-rail",
+        "item.round-cafe-table",
+        "item.single-bay-tray-return",
+        "item.skylight-diffuser",
+        "item.stacking-stool",
+        "item.staff-mop-sink",
+        "item.stall-exhaust-booster",
+        "item.stall-row-marker",
+        "item.standing-snack-ledge",
+        "item.swivel-perch-seat",
+        "item.table-herb-planter",
+        "item.tabletop-flower-vase",
+        "item.tall-areca-planter",
+        "item.terrazzo-feature-table",
+        "item.three-person-communal-bench",
+        "item.tiled-half-wall",
+        "item.tray-return-arrow-sign",
+        "item.two-person-bench",
+        "item.vine-trellis",
+        "item.wall-circulation-fan",
+        "item.water-carafe-station",
+        "item.woven-lantern-cluster",
+        "stall.bamboo-basket",
+        "stall.cinder-wok",
+        "stall.coconut-lime",
+        "stall.harbour-ember",
+        "stall.herbal-cauldron",
+        "stall.kopi-canopy",
+        "stall.mee-pok-junction",
+        "stall.pick-and-mix",
+        "stall.satay-meridian",
+        "stall.straits-hearth",
+        "stall.sunrise-roost",
+        "stall.sweet-monsoon",
+        "stall.tamarind-leaf",
+        "stall.tiffin-lantern"
+      ],
+      "expansionCount": 4,
+      "focusDay": 1,
+      "dailyObjectives": [
+        {
+          "id": "day-1-1-serve",
+          "day": 1,
+          "kind": "serve",
+          "title": "Warm welcome",
+          "description": "Serve 7 neighbours today.",
+          "target": 7,
+          "progress": 0,
+          "startValue": 0,
+          "rewardCash": 100,
+          "rewardXp": 30,
+          "completed": false
+        },
+        {
+          "id": "day-1-2-happiness",
+          "day": 1,
+          "kind": "happiness",
+          "title": "Happy tables",
+          "description": "Reach 73% happiness after five new ratings.",
+          "target": 73,
+          "progress": 0,
+          "startValue": 0,
+          "rewardCash": 100,
+          "rewardXp": 30,
+          "completed": false
+        },
+        {
+          "id": "day-1-3-nutrition",
+          "day": 1,
+          "kind": "nutrition",
+          "title": "Read the plate",
+          "description": "Serve 5 meals with reviewed nutrition data today.",
+          "target": 5,
+          "progress": 0,
+          "startValue": 0,
+          "rewardCash": 100,
+          "rewardXp": 30,
+          "completed": false,
+          "nutritionCriterion": "profiled-servings"
+        }
+      ],
+      "claimedMilestoneIds": [],
+      "stallMastery": {
+        "stall.sunrise-roost": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.coconut-lime": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.kopi-canopy": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.cinder-wok": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.mee-pok-junction": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.tiffin-lantern": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.sweet-monsoon": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.satay-meridian": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.pick-and-mix": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.tamarind-leaf": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.bamboo-basket": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.straits-hearth": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.herbal-cauldron": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        },
+        "stall.harbour-ember": {
+          "points": 3600,
+          "rank": 7,
+          "upgradeLevel": 1
+        }
+      }
+    },
+    "metrics": {
+      "trayReturns": 0,
+      "visitRatings": [],
+      "nutrition": {
+        "servedMeals": 0,
+        "profiledServings": 0,
+        "nonDefaultVariantServings": 0,
+        "intentRequests": 0,
+        "intentMatches": 0,
+        "intentMisses": 0,
+        "intentUnknowns": 0,
+        "byIntent": {
+          "lighter-energy": {
+            "requests": 0,
+            "matches": 0,
+            "misses": 0,
+            "unknowns": 0
+          },
+          "protein-forward": {
+            "requests": 0,
+            "matches": 0,
+            "misses": 0,
+            "unknowns": 0
+          },
+          "fibre-forward": {
+            "requests": 0,
+            "matches": 0,
+            "misses": 0,
+            "unknowns": 0
+          },
+          "sodium-aware": {
+            "requests": 0,
+            "matches": 0,
+            "misses": 0,
+            "unknowns": 0
+          },
+          "lower-total-sugar-drink": {
+            "requests": 0,
+            "matches": 0,
+            "misses": 0,
+            "unknowns": 0
+          }
+        },
+        "nutrientTotals": {
+          "energyKcal": 0,
+          "proteinG": 0,
+          "totalFatG": 0,
+          "saturatedFatG": 0,
+          "transFatG": 0,
+          "carbohydrateG": 0,
+          "totalSugarG": 0,
+          "dietaryFibreG": 0,
+          "sodiumMg": 0,
+          "calciumMg": 0,
+          "ironMg": 0,
+          "waterG": 0
+        },
+        "nutrientKnownCounts": {
+          "energyKcal": 0,
+          "proteinG": 0,
+          "totalFatG": 0,
+          "saturatedFatG": 0,
+          "transFatG": 0,
+          "carbohydrateG": 0,
+          "totalSugarG": 0,
+          "dietaryFibreG": 0,
+          "sodiumMg": 0,
+          "calciumMg": 0,
+          "ironMg": 0,
+          "waterG": 0
+        },
+        "dishServings": {},
+        "recentOutcomes": [],
+        "today": {
+          "day": 0,
+          "servedMeals": 0,
+          "profiledServings": 0,
+          "intentRequests": 0,
+          "intentMatches": 0,
+          "intentMisses": 0,
+          "intentUnknowns": 0,
+          "byIntent": {
+            "lighter-energy": {
+              "requests": 0,
+              "matches": 0,
+              "misses": 0,
+              "unknowns": 0
+            },
+            "protein-forward": {
+              "requests": 0,
+              "matches": 0,
+              "misses": 0,
+              "unknowns": 0
+            },
+            "fibre-forward": {
+              "requests": 0,
+              "matches": 0,
+              "misses": 0,
+              "unknowns": 0
+            },
+            "sodium-aware": {
+              "requests": 0,
+              "matches": 0,
+              "misses": 0,
+              "unknowns": 0
+            },
+            "lower-total-sugar-drink": {
+              "requests": 0,
+              "matches": 0,
+              "misses": 0,
+              "unknowns": 0
+            }
+          },
+          "nutrientTotals": {
+            "energyKcal": 0,
+            "proteinG": 0,
+            "totalFatG": 0,
+            "saturatedFatG": 0,
+            "transFatG": 0,
+            "carbohydrateG": 0,
+            "totalSugarG": 0,
+            "dietaryFibreG": 0,
+            "sodiumMg": 0,
+            "calciumMg": 0,
+            "ironMg": 0,
+            "waterG": 0
+          },
+          "nutrientKnownCounts": {
+            "energyKcal": 0,
+            "proteinG": 0,
+            "totalFatG": 0,
+            "saturatedFatG": 0,
+            "transFatG": 0,
+            "carbohydrateG": 0,
+            "totalSugarG": 0,
+            "dietaryFibreG": 0,
+            "sodiumMg": 0,
+            "calciumMg": 0,
+            "ironMg": 0,
+            "waterG": 0
+          },
+          "dishServings": {}
+        }
+      }
+    },
+    "rngState": 2381321234,
+    "nextCustomerSequence": 1,
+    "elapsedMs": 0
+  },
+  "stallMenus": {
+    "stall.sunrise-roost": [
+      "dish.poached-chicken-rice",
+      "dish.roast-chicken-rice",
+      "dish.soya-tofu-rice"
+    ],
+    "stall.coconut-lime": [
+      "dish.nasi-lemak",
+      "dish.mee-rebus",
+      "dish.soto-ayam"
+    ],
+    "stall.kopi-canopy": [
+      "dish.kopi",
+      "dish.sugarcane-juice",
+      "dish.ice-kacang"
+    ],
+    "stall.cinder-wok": [
+      "dish.fried-carrot-cake",
+      "dish.char-kway-teow",
+      "dish.hokkien-prawn-mee"
+    ],
+    "stall.mee-pok-junction": [
+      "dish.bak-chor-mee",
+      "dish.fishball-mee-pok",
+      "dish.lor-mee"
+    ],
+    "stall.tiffin-lantern": [
+      "dish.roti-prata",
+      "dish.chicken-murtabak",
+      "dish.nasi-briyani"
+    ],
+    "stall.sweet-monsoon": [
+      "dish.teh-tarik",
+      "dish.chendol",
+      "dish.tau-huay"
+    ],
+    "stall.satay-meridian": [
+      "dish.chicken-satay-set",
+      "dish.bbq-chicken-wings",
+      "dish.beef-satay-set"
+    ],
+    "stall.pick-and-mix": [
+      "dish.yong-tau-foo",
+      "dish.ban-mian",
+      "dish.thunder-tea-rice"
+    ],
+    "stall.tamarind-leaf": [
+      "dish.masala-thosai",
+      "dish.idli-sambar",
+      "dish.vadai-set"
+    ],
+    "stall.bamboo-basket": [
+      "dish.har-gow",
+      "dish.siew-mai",
+      "dish.char-siew-bao"
+    ],
+    "stall.straits-hearth": [
+      "dish.nyonya-laksa",
+      "dish.ayam-buah-keluak",
+      "dish.chap-chye"
+    ],
+    "stall.herbal-cauldron": [
+      "dish.bak-kut-teh",
+      "dish.duck-rice",
+      "dish.kway-chap"
+    ],
+    "stall.harbour-ember": [
+      "dish.sliced-fish-soup",
+      "dish.sambal-stingray",
+      "dish.black-pepper-crab"
+    ]
+  },
+  "nutritionDataVersion": "sg-1bc212db6eda-c87987b4281c",
+  "activeDishVariants": {
+    "dish.kopi": "kopi-default",
+    "dish.teh-tarik": "teh-tarik",
+    "dish.nasi-lemak": "nasi-lemak-chicken-wing",
+    "dish.fried-carrot-cake": "carrot-cake-white",
+    "dish.roti-prata": "prata-two-plain-curry",
+    "dish.sliced-fish-soup": "fish-soup-beehoon-no-milk",
+    "dish.bak-chor-mee": "bak-chor-mee-dry",
+    "dish.chicken-murtabak": "murtabak-chicken",
+    "dish.nasi-briyani": "briyani-chicken",
+    "dish.masala-thosai": "thosai-masala",
+    "dish.yong-tau-foo": "ytf-clear-boiled",
+    "dish.ban-mian": "ban-mian-soup",
+    "dish.bak-kut-teh": "bak-kut-teh-soup",
+    "dish.duck-rice": "duck-rice-braised"
+  }
+}

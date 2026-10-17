@@ -22,6 +22,7 @@ All notable project changes are recorded here. The project is pre-release; seman
 
 ### Changed
 
+- Reorganised the test suite to mirror the source tree (`tests/game/core`, `tests/game/runtime`, `tests/app/game`, `tests/content`, `tests/tools`, and so on) and added the first phase of a structural refactor: behaviour-pinning goldens for the seeded simulation, saves, the runtime controller, draw calls, input, the save store, server-rendered markup, the jsdom UI, content and the nutrition importer. Unexpected console output and process warnings now fail tests. Player-visible behaviour is unchanged.
 - Expanded content `1.3.0` from 12 to 14 fictional stalls, from 46 to 54 dishes, and from 300 to 320 English localization entries, adding Pick & Mix and Herbal Cauldron with dataset-backed yong tau foo, ban mian, thunder tea rice, popiah, bak kut teh, duck rice, kway chap, and claypot chicken rice options.
 - Replaced partial nutrition coverage with 104 released source profiles: every base dish is profiled, 14 reviewed variant families expose 64 selectable preparations, and every profile carries an overall Health rating plus condition-specific ratings for high cholesterol, obesity, diabetes, and hypertension.
 - Added a distinct Star rating to every dish for taste and popularity, while customers with independently assigned health conditions use their relevant Health rating when choosing stalls and dishes and receive a small bounded satisfaction effect from the meal selected.

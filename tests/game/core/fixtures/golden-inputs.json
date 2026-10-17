@@ -1,0 +1,713 @@
+{
+  "testCatalog": {
+    "dishes": {
+      "noodles": {
+        "id": "noodles",
+        "price": 8,
+        "preparationMs": 200,
+        "eatingMs": 300,
+        "quality": 4,
+        "preferenceTags": [
+          "noodles"
+        ]
+      },
+      "rice": {
+        "id": "rice",
+        "price": 6,
+        "preparationMs": 100,
+        "eatingMs": 200,
+        "quality": 3,
+        "preferenceTags": [
+          "rice"
+        ]
+      }
+    },
+    "archetypes": {
+      "regular": {
+        "id": "regular",
+        "budget": 30,
+        "patienceMs": 8000,
+        "walkingSpeed": 8,
+        "priceSensitivity": 0.1,
+        "qualitySensitivity": 1,
+        "queueSensitivity": 0.25,
+        "distanceSensitivity": 0.05,
+        "preferenceTags": [
+          "noodles"
+        ]
+      },
+      "valueSeeker": {
+        "id": "valueSeeker",
+        "budget": 12,
+        "patienceMs": 6000,
+        "walkingSpeed": 6,
+        "priceSensitivity": 0.5,
+        "qualitySensitivity": 0.4,
+        "queueSensitivity": 0.5,
+        "distanceSensitivity": 0.1,
+        "preferenceTags": [
+          "rice"
+        ]
+      }
+    },
+    "placeables": {
+      "stall": {
+        "id": "stall",
+        "kind": "stall",
+        "footprint": {
+          "width": 2,
+          "height": 2
+        },
+        "allowedRotations": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "blocksMovement": true,
+        "price": 100,
+        "refundRate": 0.5,
+        "servicePoint": {
+          "x": 1,
+          "y": 2
+        },
+        "queueAnchor": {
+          "x": 0,
+          "y": 2
+        },
+        "stall": {
+          "dishIds": [
+            "noodles",
+            "rice"
+          ],
+          "orderMs": 100,
+          "preparationCapacity": 1,
+          "queueCapacity": 4,
+          "popularity": 1,
+          "quality": 3
+        }
+      },
+      "seat": {
+        "id": "seat",
+        "kind": "seat",
+        "footprint": {
+          "width": 1,
+          "height": 1
+        },
+        "allowedRotations": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "blocksMovement": false,
+        "price": 20,
+        "seatPoints": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ]
+      },
+      "tray": {
+        "id": "tray",
+        "kind": "tray-return",
+        "footprint": {
+          "width": 1,
+          "height": 1
+        },
+        "allowedRotations": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "blocksMovement": true,
+        "price": 30,
+        "trayReturnPoint": {
+          "x": -1,
+          "y": 0
+        }
+      },
+      "table": {
+        "id": "table",
+        "kind": "table",
+        "footprint": {
+          "width": 2,
+          "height": 1
+        },
+        "allowedRotations": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "blocksMovement": true,
+        "price": 40
+      }
+    }
+  },
+  "nutritionCatalog": {
+    "dishes": {
+      "rice": {
+        "id": "rice",
+        "price": 6,
+        "preparationMs": 100,
+        "eatingMs": 200,
+        "quality": 3,
+        "preferenceTags": [],
+        "baseDemand": 0.5,
+        "defaultNutritionVariantId": "rice-default",
+        "activeNutritionVariantId": "rice-default",
+        "nutritionVariants": [
+          {
+            "id": "rice-default",
+            "label": "Default",
+            "unlockRank": 1,
+            "profileId": "rice-profile-default",
+            "visualKey": "default",
+            "profile": {
+              "id": "rice-profile-default",
+              "dishId": "rice",
+              "status": "released",
+              "nutritionClass": "meal",
+              "serving": {
+                "amount": 300,
+                "unit": "g",
+                "label": "1 plate (300 g)"
+              },
+              "nutrients": {
+                "energyKcal": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "proteinG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "totalFatG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "saturatedFatG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "transFatG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "carbohydrateG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "totalSugarG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "dietaryFibreG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "sodiumMg": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "calciumMg": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "ironMg": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "waterG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                }
+              },
+              "intentFits": {
+                "fibre-forward": 0.1
+              },
+              "healthRating": 3,
+              "conditionRatings": {
+                "high-cholesterol": 3,
+                "obesity": 3,
+                "diabetes": 3,
+                "hypertension": 3
+              }
+            }
+          },
+          {
+            "id": "rice-alt",
+            "label": "Alternative",
+            "unlockRank": 2,
+            "profileId": "rice-profile-alt",
+            "visualKey": "alternative",
+            "profile": {
+              "id": "rice-profile-alt",
+              "dishId": "rice",
+              "status": "released",
+              "nutritionClass": "meal",
+              "serving": {
+                "amount": 300,
+                "unit": "g",
+                "label": "1 plate (300 g)"
+              },
+              "nutrients": {
+                "energyKcal": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "proteinG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "totalFatG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "saturatedFatG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "transFatG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "carbohydrateG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "totalSugarG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "dietaryFibreG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "sodiumMg": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "calciumMg": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "ironMg": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "waterG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                }
+              },
+              "intentFits": {
+                "fibre-forward": 0.9
+              },
+              "healthRating": 3,
+              "conditionRatings": {
+                "high-cholesterol": 3,
+                "obesity": 3,
+                "diabetes": 3,
+                "hypertension": 3
+              }
+            }
+          }
+        ]
+      },
+      "noodles": {
+        "id": "noodles",
+        "price": 6,
+        "preparationMs": 200,
+        "eatingMs": 300,
+        "quality": 3,
+        "preferenceTags": [],
+        "baseDemand": 0.5,
+        "defaultNutritionVariantId": "noodles-default",
+        "activeNutritionVariantId": "noodles-default",
+        "nutritionVariants": [
+          {
+            "id": "noodles-default",
+            "label": "Default",
+            "unlockRank": 1,
+            "profileId": "noodles-profile-default",
+            "visualKey": "default",
+            "profile": {
+              "id": "noodles-profile-default",
+              "dishId": "noodles",
+              "status": "released",
+              "nutritionClass": "meal",
+              "serving": {
+                "amount": 300,
+                "unit": "g",
+                "label": "1 plate (300 g)"
+              },
+              "nutrients": {
+                "energyKcal": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "proteinG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "totalFatG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "saturatedFatG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "transFatG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "carbohydrateG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "totalSugarG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "dietaryFibreG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "sodiumMg": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "calciumMg": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "ironMg": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "waterG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                }
+              },
+              "intentFits": {
+                "fibre-forward": 0.95
+              },
+              "healthRating": 3,
+              "conditionRatings": {
+                "high-cholesterol": 3,
+                "obesity": 3,
+                "diabetes": 3,
+                "hypertension": 3
+              }
+            }
+          },
+          {
+            "id": "noodles-alt",
+            "label": "Alternative",
+            "unlockRank": 2,
+            "profileId": "noodles-profile-alt",
+            "visualKey": "alternative",
+            "profile": {
+              "id": "noodles-profile-alt",
+              "dishId": "noodles",
+              "status": "released",
+              "nutritionClass": "meal",
+              "serving": {
+                "amount": 300,
+                "unit": "g",
+                "label": "1 plate (300 g)"
+              },
+              "nutrients": {
+                "energyKcal": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "proteinG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "totalFatG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "saturatedFatG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "transFatG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "carbohydrateG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "totalSugarG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "dietaryFibreG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "sodiumMg": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "calciumMg": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "ironMg": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                },
+                "waterG": {
+                  "status": "unavailable",
+                  "reason": "not-reported"
+                }
+              },
+              "intentFits": {
+                "fibre-forward": 0.050000000000000044
+              },
+              "healthRating": 3,
+              "conditionRatings": {
+                "high-cholesterol": 3,
+                "obesity": 3,
+                "diabetes": 3,
+                "hypertension": 3
+              }
+            }
+          }
+        ]
+      }
+    },
+    "archetypes": {
+      "regular": {
+        "id": "regular",
+        "budget": 30,
+        "patienceMs": 8000,
+        "walkingSpeed": 8,
+        "priceSensitivity": 0,
+        "qualitySensitivity": 1,
+        "queueSensitivity": 0.25,
+        "distanceSensitivity": 0.05,
+        "preferenceTags": []
+      }
+    },
+    "placeables": {
+      "stall": {
+        "id": "stall",
+        "kind": "stall",
+        "footprint": {
+          "width": 2,
+          "height": 2
+        },
+        "allowedRotations": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "blocksMovement": true,
+        "price": 100,
+        "refundRate": 0.5,
+        "servicePoint": {
+          "x": 1,
+          "y": 2
+        },
+        "queueAnchor": {
+          "x": 0,
+          "y": 2
+        },
+        "stall": {
+          "dishIds": [
+            "rice",
+            "noodles"
+          ],
+          "orderMs": 1,
+          "preparationCapacity": 1,
+          "queueCapacity": 4,
+          "popularity": 1,
+          "quality": 3,
+          "allDishIds": [
+            "rice",
+            "noodles"
+          ]
+        }
+      },
+      "seat": {
+        "id": "seat",
+        "kind": "seat",
+        "footprint": {
+          "width": 1,
+          "height": 1
+        },
+        "allowedRotations": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "blocksMovement": false,
+        "price": 20,
+        "seatPoints": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ]
+      },
+      "tray": {
+        "id": "tray",
+        "kind": "tray-return",
+        "footprint": {
+          "width": 1,
+          "height": 1
+        },
+        "allowedRotations": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "blocksMovement": true,
+        "price": 30,
+        "trayReturnPoint": {
+          "x": -1,
+          "y": 0
+        }
+      },
+      "table": {
+        "id": "table",
+        "kind": "table",
+        "footprint": {
+          "width": 2,
+          "height": 1
+        },
+        "allowedRotations": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "blocksMovement": true,
+        "price": 40
+      }
+    }
+  },
+  "fixture": {
+    "map": {
+      "width": 12,
+      "height": 8,
+      "tileSize": 32,
+      "worldOrigin": {
+        "x": 16,
+        "y": 24
+      }
+    },
+    "entrance": {
+      "x": 0,
+      "y": 3
+    },
+    "exit": {
+      "x": 11,
+      "y": 3
+    },
+    "seed": "test-seed",
+    "startingCurrency": 500,
+    "initialObjects": [
+      {
+        "id": "stall-1",
+        "definitionId": "stall",
+        "origin": {
+          "x": 2,
+          "y": 0
+        },
+        "rotation": 0,
+        "open": true
+      },
+      {
+        "id": "seat-1",
+        "definitionId": "seat",
+        "origin": {
+          "x": 6,
+          "y": 2
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "seat-2",
+        "definitionId": "seat",
+        "origin": {
+          "x": 7,
+          "y": 4
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "tray-1",
+        "definitionId": "tray",
+        "origin": {
+          "x": 10,
+          "y": 6
+        },
+        "rotation": 0,
+        "open": false
+      }
+    ],
+    "config": {
+      "fixedStepMs": 100,
+      "spawnIntervalMs": 700,
+      "stuckRecoveryMs": 1000,
+      "maxVisitMs": 30000,
+      "standard": {
+        "maxActiveCustomers": 20,
+        "maxFixedStepsPerAdvance": 100
+      },
+      "lowerEnd": {
+        "maxActiveCustomers": 8,
+        "maxFixedStepsPerAdvance": 50
+      }
+    }
+  },
+  "adaptiveConfig": {
+    "fixedStepMs": 100,
+    "spawnIntervalMs": 700,
+    "stuckRecoveryMs": 1000,
+    "maxVisitMs": 30000,
+    "standard": {
+      "maxFixedStepsPerAdvance": 100
+    },
+    "lowerEnd": {
+      "maxFixedStepsPerAdvance": 50
+    }
+  },
+  "eightyAgentStart": {
+    "seed": "benchmark-80-agents",
+    "config": {
+      "fixedStepMs": 100,
+      "spawnIntervalMs": 100000,
+      "standard": {
+        "maxActiveCustomers": 80,
+        "maxFixedStepsPerAdvance": 100
+      },
+      "lowerEnd": {
+        "maxActiveCustomers": 40,
+        "maxFixedStepsPerAdvance": 50
+      }
+    },
+    "agentCount": 80,
+    "agentIdPrefix": "benchmark-",
+    "spawnCountdownMs": 100000,
+    "nextCustomerSequence": 81
+  }
+}

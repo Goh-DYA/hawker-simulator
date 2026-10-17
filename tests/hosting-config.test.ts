@@ -1,10 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import nextConfig from "../next.config";
+import nextConfig from "@/next.config";
 import {
   createNextSecurityHeaders,
   SECURITY_HEADERS,
-} from "../src/config/securityHeaders";
+} from "@/src/config/securityHeaders";
 
 const root = new URL("../", import.meta.url);
 
