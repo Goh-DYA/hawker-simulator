@@ -418,7 +418,14 @@ export const nutritionValueForComparison = (nutrient) => {
   return undefined;
 };
 
-const addIntentFits = (profiles) => {
+/**
+ * Writes each released profile's relative fit for every nutrition intent of its
+ * class into `profile.intentFits`, mutating the profiles in place. Profiles
+ * without a comparable value for an intent's metric get no entry for it.
+ *
+ * @param profiles - Profiles whose `intentFits` objects already exist.
+ */
+export const addIntentFits = (profiles) => {
   for (const intent of NUTRITION_INTENTS) {
     const candidates = profiles
       .filter(

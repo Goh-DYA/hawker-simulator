@@ -1,0 +1,1713 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HawkerSimulator panels > renders the Activity panel for a captured runtime snapshot 1`] = `
+"<aside class="catalogue-panel" aria-label="Activity panel">
+<div class="catalogue-heading">
+<div>
+<span>Recent events</span>
+<h2>Activity</h2>
+</div>
+<span class="count-badge">2</span>
+<button type="button" class="sheet-close-button" aria-label="Close management sheet">×</button>
+</div>
+<div class="activity-panel">
+<div class="activity-toolbar">
+<span>Latest first · routine events stay here</span>
+<button type="button">Clear</button>
+</div>
+<div class="activity-list">
+<article data-kind="warning" data-importance="routine">
+<span aria-hidden="true">!</span>
+<div>
+<strong>Attention</strong>
+<p>A guest rerouted after the layout changed.</p>
+</div>
+</article>
+<article data-kind="success" data-importance="routine">
+<span aria-hidden="true">✓</span>
+<div>
+<strong>Completed</strong>
+<p>2 neighbours enjoyed their meals · +$11</p>
+</div>
+<em>×2</em>
+</article>
+</div>
+</div>
+</aside>"
+`;
+
+exports[`HawkerSimulator panels > renders the Build panel for a captured runtime snapshot 1`] = `
+"<aside class="catalogue-panel" aria-label="Make it yours panel">
+<div class="catalogue-heading">
+<div>
+<span>Build catalogue</span>
+<h2>Make it yours</h2>
+</div>
+<span class="count-badge">80</span>
+<button type="button" class="sheet-close-button" aria-label="Close management sheet">×</button>
+</div>
+<label class="search-field">
+<span class="sr-only">Search catalogue</span>
+<span aria-hidden="true">⌕</span>
+<input placeholder="Search tables, fans, plants…" value="">
+</label>
+<div class="category-scroller" aria-label="Catalogue categories">
+<button type="button" class="is-active" aria-pressed="true">All</button>
+<button type="button" class="" aria-pressed="false">table</button>
+<button type="button" class="" aria-pressed="false">seat</button>
+<button type="button" class="" aria-pressed="false">stall fixture</button>
+<button type="button" class="" aria-pressed="false">tray waste</button>
+<button type="button" class="" aria-pressed="false">lighting</button>
+<button type="button" class="" aria-pressed="false">fan</button>
+<button type="button" class="" aria-pressed="false">plant</button>
+<button type="button" class="" aria-pressed="false">signage</button>
+<button type="button" class="" aria-pressed="false">divider</button>
+<button type="button" class="" aria-pressed="false">facility</button>
+<button type="button" class="" aria-pressed="false">decor</button>
+</div>
+<div class="catalogue-grid" data-testid="build-catalogue">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Compact Square Table, $90">
+<span class="item-art item-table" data-motif="compact-square-table" data-form="compact-square-top" data-material="laminate" style="--preview-accent:#c8624c" aria-hidden="true">
+<span>▦</span>
+</span>
+<strong>Compact Square Table</strong>
+<small>$90 · Ambience +1</small>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Round Café Table, $190, locked: Rep 10">
+<span class="item-art item-table" data-motif="round-cafe-table" data-form="round-pedestal" data-material="timber" style="--preview-accent:#56875c" aria-hidden="true">
+<span>▦</span>
+</span>
+<strong>Round Café Table</strong>
+<small>Rep 10</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Long Communal Table, $330, locked: Level 3">
+<span class="item-art item-table" data-motif="long-communal-table" data-form="long-communal-slab" data-material="timber" style="--preview-accent:#477c86" aria-hidden="true">
+<span>▦</span>
+</span>
+<strong>Long Communal Table</strong>
+<small>Level 3</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Family Trestle Table, $420, locked: Level 5">
+<span class="item-art item-table" data-motif="family-trestle-table" data-form="wide-trestle" data-material="timber" style="--preview-accent:#d69a35" aria-hidden="true">
+<span>▦</span>
+</span>
+<strong>Family Trestle Table</strong>
+<small>Level 5</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Accessible End Table, $240, locked: Level 3">
+<span class="item-art item-table" data-motif="accessible-end-table" data-form="accessible-notched-top" data-material="glass" style="--preview-accent:#287f75" aria-hidden="true">
+<span>▦</span>
+</span>
+<strong>Accessible End Table</strong>
+<small>Level 3</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Standing Snack Ledge, $160, locked: Level 4">
+<span class="item-art item-table" data-motif="standing-snack-ledge" data-form="raised-narrow-ledge" data-material="timber" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>▦</span>
+</span>
+<strong>Standing Snack Ledge</strong>
+<small>Level 4</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Folding Overflow Table, $125, locked: Level 6">
+<span class="item-art item-table" data-motif="folding-overflow-table" data-form="folding-cross-brace" data-material="timber" style="--preview-accent:#4d7390" aria-hidden="true">
+<span>▦</span>
+</span>
+<strong>Folding Overflow Table</strong>
+<small>Level 6</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Terrazzo Feature Table, $720, locked: Level 11">
+<span class="item-art item-table" data-motif="terrazzo-feature-table" data-form="round-pedestal" data-material="terrazzo" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>▦</span>
+</span>
+<strong>Terrazzo Feature Table</strong>
+<small>Level 11</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Stacking Stool, $35">
+<span class="item-art item-seat" data-motif="stacking-stool" data-form="pedestal-stool" data-material="moulded-plastic" style="--preview-accent:#4d7390" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>Stacking Stool</strong>
+<small>$35 · Provides usable seating</small>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Moulded Back Chair, $60">
+<span class="item-art item-seat" data-motif="moulded-back-chair" data-form="backed-chair" data-material="moulded-plastic" style="--preview-accent:#477c86" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>Moulded Back Chair</strong>
+<small>$60 · Ambience +1</small>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Two-Person Bench, $115, locked: Level 3">
+<span class="item-art item-seat" data-motif="two-person-bench" data-form="multi-place-bench" data-material="timber" style="--preview-accent:#56875c" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>Two-Person Bench</strong>
+<small>Level 3</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Easy-Rise Arm Chair, $130, locked: Level 4">
+<span class="item-art item-seat" data-motif="easy-rise-arm-chair" data-form="support-arm-chair" data-material="powder-coated-metal" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>Easy-Rise Arm Chair</strong>
+<small>Level 4</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="High Counter Stool, $75, locked: Level 4">
+<span class="item-art item-seat" data-motif="high-counter-stool" data-form="pedestal-stool" data-material="powder-coated-metal" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>High Counter Stool</strong>
+<small>Level 4</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Booster Family Chair, $105, locked: Level 5">
+<span class="item-art item-seat" data-motif="booster-family-chair" data-form="backed-chair" data-material="moulded-plastic" style="--preview-accent:#477c86" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>Booster Family Chair</strong>
+<small>Level 5</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Cushioned Dining Chair, $145, locked: Level 7">
+<span class="item-art item-seat" data-motif="cushioned-dining-chair" data-form="backed-chair" data-material="upholstery" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>Cushioned Dining Chair</strong>
+<small>Level 7</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Three-Person Communal Bench, $210, locked: Level 7">
+<span class="item-art item-seat" data-motif="three-person-communal-bench" data-form="multi-place-bench" data-material="timber" style="--preview-accent:#c8624c" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>Three-Person Communal Bench</strong>
+<small>Level 7</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Acoustic Booth Seat, $390, locked: Level 10">
+<span class="item-art item-seat" data-motif="acoustic-booth-seat" data-form="high-back-booth" data-material="upholstery" style="--preview-accent:#287f75" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>Acoustic Booth Seat</strong>
+<small>Level 10</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Swivel Perch Seat, $185, locked: Level 12">
+<span class="item-art item-seat" data-motif="swivel-perch-seat" data-form="pedestal-stool" data-material="powder-coated-metal" style="--preview-accent:#56875c" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>Swivel Perch Seat</strong>
+<small>Level 12</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Queue Ticket Dispenser, $280, locked: Level 4">
+<span class="item-art item-stall-fixture" data-motif="queue-ticket-dispenser" data-form="ticket-pedestal" data-material="stainless-steel" style="--preview-accent:#6e7e42" aria-hidden="true">
+<span>▤</span>
+</span>
+<strong>Queue Ticket Dispenser</strong>
+<small>Level 4</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Condiment Counter, $190, locked: Rep 10">
+<span class="item-art item-stall-fixture" data-motif="condiment-counter" data-form="service-counter" data-material="stainless-steel" style="--preview-accent:#287f75" aria-hidden="true">
+<span>▤</span>
+</span>
+<strong>Condiment Counter</strong>
+<small>Rep 10</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Cutlery &amp; Napkin Station, $145, locked: Level 3">
+<span class="item-art item-stall-fixture" data-motif="cutlery-napkin-station" data-form="stall-fixture-form" data-material="stainless-steel" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>▤</span>
+</span>
+<strong>Cutlery &amp; Napkin Station</strong>
+<small>Level 3</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Water Carafe Station, $260, locked: Level 5">
+<span class="item-art item-stall-fixture" data-motif="water-carafe-station" data-form="stall-fixture-form" data-material="stainless-steel" style="--preview-accent:#7b669b" aria-hidden="true">
+<span>▤</span>
+</span>
+<strong>Water Carafe Station</strong>
+<small>Level 5</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Order Pickup Shelf, $340, locked: Level 6">
+<span class="item-art item-stall-fixture" data-motif="order-pickup-shelf" data-form="open-rack" data-material="stainless-steel" style="--preview-accent:#4d7390" aria-hidden="true">
+<span>▤</span>
+</span>
+<strong>Order Pickup Shelf</strong>
+<small>Level 6</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Heated Display Case, $620, locked: Level 8">
+<span class="item-art item-stall-fixture" data-motif="heated-display-case" data-form="glazed-display-case" data-material="glass" style="--preview-accent:#c8624c" aria-hidden="true">
+<span>▤</span>
+</span>
+<strong>Heated Display Case</strong>
+<small>Level 8</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Chilled Display Case, $780, locked: Level 9">
+<span class="item-art item-stall-fixture" data-motif="chilled-display-case" data-form="glazed-display-case" data-material="glass" style="--preview-accent:#c8624c" aria-hidden="true">
+<span>▤</span>
+</span>
+<strong>Chilled Display Case</strong>
+<small>Level 9</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Mobile Prep Cart, $480, locked: Level 10">
+<span class="item-art item-stall-fixture" data-motif="mobile-prep-cart" data-form="wheeled-cart" data-material="stainless-steel" style="--preview-accent:#7b669b" aria-hidden="true">
+<span>▤</span>
+</span>
+<strong>Mobile Prep Cart</strong>
+<small>Level 10</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Single-Bay Tray Return, $260">
+<span class="item-art item-tray-waste" data-motif="single-bay-tray-return" data-form="open-rack" data-material="stainless-steel" style="--preview-accent:#287f75" aria-hidden="true">
+<span>↺</span>
+</span>
+<strong>Single-Bay Tray Return</strong>
+<small>$260 · Cleanliness +11</small>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Dual-Bay Tray Return, $520, locked: Level 4">
+<span class="item-art item-tray-waste" data-motif="dual-bay-tray-return" data-form="open-rack" data-material="stainless-steel" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>↺</span>
+</span>
+<strong>Dual-Bay Tray Return</strong>
+<small>Level 4</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Dish Drop Counter, $690, locked: Level 7">
+<span class="item-art item-tray-waste" data-motif="dish-drop-counter" data-form="service-counter" data-material="stainless-steel" style="--preview-accent:#d69a35" aria-hidden="true">
+<span>↺</span>
+</span>
+<strong>Dish Drop Counter</strong>
+<small>Level 7</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Recycling Sorter, $440, locked: Level 5">
+<span class="item-art item-tray-waste" data-motif="recycling-sorter" data-form="multi-stream-receptacle" data-material="stainless-steel" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>↺</span>
+</span>
+<strong>Recycling Sorter</strong>
+<small>Level 5</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Covered Food-Waste Bin, $180, locked: Level 3">
+<span class="item-art item-tray-waste" data-motif="covered-food-waste-bin" data-form="lidded-receptacle" data-material="stainless-steel" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>↺</span>
+</span>
+<strong>Covered Food-Waste Bin</strong>
+<small>Level 3</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Covered General-Waste Bin, $120">
+<span class="item-art item-tray-waste" data-motif="general-waste-bin" data-form="lidded-receptacle" data-material="stainless-steel" style="--preview-accent:#d69a35" aria-hidden="true">
+<span>↺</span>
+</span>
+<strong>Covered General-Waste Bin</strong>
+<small>$120 · Ambience -1</small>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Cleaning Trolley Bay, $380, locked: Level 6">
+<span class="item-art item-tray-waste" data-motif="cleaning-trolley-bay" data-form="wheeled-cart" data-material="stainless-steel" style="--preview-accent:#6e7e42" aria-hidden="true">
+<span>↺</span>
+</span>
+<strong>Cleaning Trolley Bay</strong>
+<small>Level 6</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Clean Tray Stack Rack, $230, locked: Level 4">
+<span class="item-art item-tray-waste" data-motif="clean-tray-stack-rack" data-form="open-rack" data-material="stainless-steel" style="--preview-accent:#287f75" aria-hidden="true">
+<span>↺</span>
+</span>
+<strong>Clean Tray Stack Rack</strong>
+<small>Level 4</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Efficient Ceiling Tube Light, $150">
+<span class="item-art item-lighting" data-motif="ceiling-tube-light" data-form="linear-light" data-material="powder-coated-metal" style="--preview-accent:#c8624c" aria-hidden="true">
+<span>✦</span>
+</span>
+<strong>Efficient Ceiling Tube Light</strong>
+<small>$150 · Ambience +1</small>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Pendant Dining Light, $220, locked: Level 3">
+<span class="item-art item-lighting" data-motif="pendant-dining-light" data-form="suspended-shade" data-material="powder-coated-metal" style="--preview-accent:#7b669b" aria-hidden="true">
+<span>✦</span>
+</span>
+<strong>Pendant Dining Light</strong>
+<small>Level 3</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Woven Lantern Cluster, $440, locked: Level 6">
+<span class="item-art item-lighting" data-motif="woven-lantern-cluster" data-form="lantern-cluster" data-material="woven-fibre" style="--preview-accent:#d69a35" aria-hidden="true">
+<span>✦</span>
+</span>
+<strong>Woven Lantern Cluster</strong>
+<small>Level 6</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Counter Task Light, $180, locked: Rep 10">
+<span class="item-art item-lighting" data-motif="counter-task-light" data-form="service-counter" data-material="powder-coated-metal" style="--preview-accent:#477c86" aria-hidden="true">
+<span>✦</span>
+</span>
+<strong>Counter Task Light</strong>
+<small>Rep 10</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Low Path Light, $170, locked: Level 5">
+<span class="item-art item-lighting" data-motif="low-path-light" data-form="low-bollard" data-material="powder-coated-metal" style="--preview-accent:#d69a35" aria-hidden="true">
+<span>✦</span>
+</span>
+<strong>Low Path Light</strong>
+<small>Level 5</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Skylight Diffuser, $780, locked: Level 9">
+<span class="item-art item-lighting" data-motif="skylight-diffuser" data-form="glazed-ceiling-panel" data-material="glass" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>✦</span>
+</span>
+<strong>Skylight Diffuser</strong>
+<small>Level 9</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Festive String Lights, $360, locked: Level 8">
+<span class="item-art item-lighting" data-motif="festive-string-lights" data-form="festoon-cable" data-material="powder-coated-metal" style="--preview-accent:#6e7e42" aria-hidden="true">
+<span>✦</span>
+</span>
+<strong>Festive String Lights</strong>
+<small>Level 8</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Wall Circulation Fan, $210">
+<span class="item-art item-fan" data-motif="wall-circulation-fan" data-form="caged-wall-rotor" data-material="powder-coated-metal" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>✣</span>
+</span>
+<strong>Wall Circulation Fan</strong>
+<small>$210 · Ambience +1</small>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Wide Ceiling Fan, $390, locked: Level 4">
+<span class="item-art item-fan" data-motif="ceiling-fan" data-form="suspended-rotor" data-material="powder-coated-metal" style="--preview-accent:#6e7e42" aria-hidden="true">
+<span>✣</span>
+</span>
+<strong>Wide Ceiling Fan</strong>
+<small>Level 4</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Column Fan, $280, locked: Level 5">
+<span class="item-art item-fan" data-motif="column-fan" data-form="tower-fan" data-material="powder-coated-metal" style="--preview-accent:#287f75" aria-hidden="true">
+<span>✣</span>
+</span>
+<strong>Column Fan</strong>
+<small>Level 5</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="High-Volume Air Fan, $720, locked: Level 8">
+<span class="item-art item-fan" data-motif="high-volume-air-fan" data-form="caged-floor-rotor" data-material="powder-coated-metal" style="--preview-accent:#4d7390" aria-hidden="true">
+<span>✣</span>
+</span>
+<strong>High-Volume Air Fan</strong>
+<small>Level 8</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Quiet Corner Fan, $540, locked: Level 10">
+<span class="item-art item-fan" data-motif="quiet-corner-fan" data-form="caged-floor-rotor" data-material="powder-coated-metal" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>✣</span>
+</span>
+<strong>Quiet Corner Fan</strong>
+<small>Level 10</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Stall Exhaust Booster, $880, locked: Level 11">
+<span class="item-art item-fan" data-motif="stall-exhaust-booster" data-form="boxed-extractor" data-material="moulded-plastic" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>✣</span>
+</span>
+<strong>Stall Exhaust Booster</strong>
+<small>Level 11</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Table Herb Planter, $75">
+<span class="item-art item-plant" data-motif="table-herb-planter" data-form="floor-planter" data-material="living-foliage" style="--preview-accent:#d69a35" aria-hidden="true">
+<span>♧</span>
+</span>
+<strong>Table Herb Planter</strong>
+<small>$75 · Ambience +3</small>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Tall Areca Planter, $190, locked: Level 3">
+<span class="item-art item-plant" data-motif="tall-areca-planter" data-form="floor-planter" data-material="living-foliage" style="--preview-accent:#c8624c" aria-hidden="true">
+<span>♧</span>
+</span>
+<strong>Tall Areca Planter</strong>
+<small>Level 3</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Fern Trough, $310, locked: Level 5">
+<span class="item-art item-plant" data-motif="fern-trough" data-form="linear-planter" data-material="living-foliage" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>♧</span>
+</span>
+<strong>Fern Trough</strong>
+<small>Level 5</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Vine Trellis, $360, locked: Level 6">
+<span class="item-art item-plant" data-motif="vine-trellis" data-form="climbing-trellis" data-material="living-foliage" style="--preview-accent:#c8624c" aria-hidden="true">
+<span>♧</span>
+</span>
+<strong>Vine Trellis</strong>
+<small>Level 6</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Rain-Garden Pot, $420, locked: Level 7">
+<span class="item-art item-plant" data-motif="rain-garden-pot" data-form="floor-planter" data-material="living-foliage" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>♧</span>
+</span>
+<strong>Rain-Garden Pot</strong>
+<small>Level 7</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Hanging Pothos Basket, $155, locked: Level 4">
+<span class="item-art item-plant" data-motif="hanging-pothos" data-form="hanging-basket" data-material="living-foliage" style="--preview-accent:#56875c" aria-hidden="true">
+<span>♧</span>
+</span>
+<strong>Hanging Pothos Basket</strong>
+<small>Level 4</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Dwarf Banana Planter, $520, locked: Level 9">
+<span class="item-art item-plant" data-motif="dwarf-banana-planter" data-form="floor-planter" data-material="living-foliage" style="--preview-accent:#4d7390" aria-hidden="true">
+<span>♧</span>
+</span>
+<strong>Dwarf Banana Planter</strong>
+<small>Level 9</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Pandan Border Bed, $610, locked: Level 10">
+<span class="item-art item-plant" data-motif="pandan-border-bed" data-form="linear-planter" data-material="living-foliage" style="--preview-accent:#287f75" aria-hidden="true">
+<span>♧</span>
+</span>
+<strong>Pandan Border Bed</strong>
+<small>Level 10</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Entrance Directory, $240, locked: Rep 10">
+<span class="item-art item-signage" data-motif="entrance-directory" data-form="information-board" data-material="painted-board" style="--preview-accent:#7b669b" aria-hidden="true">
+<span>▱</span>
+</span>
+<strong>Entrance Directory</strong>
+<small>Rep 10</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Stall Row Marker, $145, locked: Level 3">
+<span class="item-art item-signage" data-motif="stall-row-marker" data-form="wayfinding-sign" data-material="painted-board" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>▱</span>
+</span>
+<strong>Stall Row Marker</strong>
+<small>Level 3</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Tray-Return Arrow Sign, $95">
+<span class="item-art item-signage" data-motif="tray-return-arrow-sign" data-form="open-rack" data-material="painted-board" style="--preview-accent:#56875c" aria-hidden="true">
+<span>▱</span>
+</span>
+<strong>Tray-Return Arrow Sign</strong>
+<small>$95 · Cleanliness +2</small>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Accessible Route Sign, $120, locked: Level 3">
+<span class="item-art item-signage" data-motif="accessible-wayfinding-sign" data-form="wayfinding-sign" data-material="painted-board" style="--preview-accent:#6e7e42" aria-hidden="true">
+<span>▱</span>
+</span>
+<strong>Accessible Route Sign</strong>
+<small>Level 3</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Queue Courtesy Sign, $105, locked: Level 4">
+<span class="item-art item-signage" data-motif="queue-etiquette-sign" data-form="wayfinding-sign" data-material="painted-board" style="--preview-accent:#56875c" aria-hidden="true">
+<span>▱</span>
+</span>
+<strong>Queue Courtesy Sign</strong>
+<small>Level 4</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Menu Preview Board, $190, locked: Level 5">
+<span class="item-art item-signage" data-motif="menu-preview-board" data-form="information-board" data-material="painted-board" style="--preview-accent:#477c86" aria-hidden="true">
+<span>▱</span>
+</span>
+<strong>Menu Preview Board</strong>
+<small>Level 5</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Centre Identity Sign, $680, locked: Level 9">
+<span class="item-art item-signage" data-motif="centre-identity-sign" data-form="information-board" data-material="painted-board" style="--preview-accent:#6e7e42" aria-hidden="true">
+<span>▱</span>
+</span>
+<strong>Centre Identity Sign</strong>
+<small>Level 9</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Low Timber Screen, $240, locked: Level 3">
+<span class="item-art item-divider" data-motif="low-timber-screen" data-form="freestanding-screen" data-material="timber" style="--preview-accent:#4d7390" aria-hidden="true">
+<span>╫</span>
+</span>
+<strong>Low Timber Screen</strong>
+<small>Level 3</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Tiled Half Wall, $360, locked: Level 5">
+<span class="item-art item-divider" data-motif="tiled-half-wall" data-form="solid-half-wall" data-material="ceramic" style="--preview-accent:#287f75" aria-hidden="true">
+<span>╫</span>
+</span>
+<strong>Tiled Half Wall</strong>
+<small>Level 5</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Clear Wind Screen, $410, locked: Level 6">
+<span class="item-art item-divider" data-motif="clear-wind-screen" data-form="transparent-screen" data-material="glass" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>╫</span>
+</span>
+<strong>Clear Wind Screen</strong>
+<small>Level 6</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Integrated Planter Divider, $520, locked: Level 8">
+<span class="item-art item-divider" data-motif="integrated-planter-divider" data-form="floor-planter" data-material="timber" style="--preview-accent:#d69a35" aria-hidden="true">
+<span>╫</span>
+</span>
+<strong>Integrated Planter Divider</strong>
+<small>Level 8</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Retractable Queue Rail, $210, locked: Rep 10">
+<span class="item-art item-divider" data-motif="retractable-queue-rail" data-form="post-and-belt" data-material="timber" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>╫</span>
+</span>
+<strong>Retractable Queue Rail</strong>
+<small>Rep 10</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Acoustic Screen, $620, locked: Level 11">
+<span class="item-art item-divider" data-motif="acoustic-screen" data-form="freestanding-screen" data-material="upholstery" style="--preview-accent:#56875c" aria-hidden="true">
+<span>╫</span>
+</span>
+<strong>Acoustic Screen</strong>
+<small>Level 11</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Public Handwash Sink, $480">
+<span class="item-art item-facility" data-motif="public-handwash-sink" data-form="wash-basin" data-material="stainless-steel" style="--preview-accent:#d69a35" aria-hidden="true">
+<span>⬡</span>
+</span>
+<strong>Public Handwash Sink</strong>
+<small>$480 · Ambience +1</small>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Drinking-Water Fountain, $390, locked: Level 4">
+<span class="item-art item-facility" data-motif="drinking-water-fountain" data-form="drinking-fountain" data-material="stainless-steel" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>⬡</span>
+</span>
+<strong>Drinking-Water Fountain</strong>
+<small>Level 4</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Locked Cleaning Cupboard, $320, locked: Level 3">
+<span class="item-art item-facility" data-motif="locked-cleaning-cupboard" data-form="wall-cabinet" data-material="stainless-steel" style="--preview-accent:#4d7390" aria-hidden="true">
+<span>⬡</span>
+</span>
+<strong>Locked Cleaning Cupboard</strong>
+<small>Level 3</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Staff Mop Sink, $560, locked: Level 6">
+<span class="item-art item-facility" data-motif="staff-mop-sink" data-form="wash-basin" data-material="stainless-steel" style="--preview-accent:#477c86" aria-hidden="true">
+<span>⬡</span>
+</span>
+<strong>Staff Mop Sink</strong>
+<small>Level 6</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="First-Aid Cabinet, $180, locked: Rep 10">
+<span class="item-art item-facility" data-motif="first-aid-cabinet" data-form="wall-cabinet" data-material="stainless-steel" style="--preview-accent:#c8624c" aria-hidden="true">
+<span>⬡</span>
+</span>
+<strong>First-Aid Cabinet</strong>
+<small>Rep 10</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Accessible Wash Basin, $640, locked: Level 7">
+<span class="item-art item-facility" data-motif="accessible-wash-basin" data-form="wash-basin" data-material="glass" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>⬡</span>
+</span>
+<strong>Accessible Wash Basin</strong>
+<small>Level 7</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Protected Utility Point, $450, locked: Level 9">
+<span class="item-art item-facility" data-motif="protected-utility-point" data-form="protected-service-box" data-material="stainless-steel" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>⬡</span>
+</span>
+<strong>Protected Utility Point</strong>
+<small>Level 9</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Geometric Tile Mural, $560, locked: Level 6">
+<span class="item-art item-decor" data-motif="geometric-tile-mural" data-form="wall-mural" data-material="ceramic" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>◆</span>
+</span>
+<strong>Geometric Tile Mural</strong>
+<small>Level 6</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Community Noticeboard, $230, locked: Level 3">
+<span class="item-art item-decor" data-motif="community-noticeboard" data-form="pin-board" data-material="timber" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>◆</span>
+</span>
+<strong>Community Noticeboard</strong>
+<small>Level 3</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Fabric Ceiling Bunting, $280, locked: Level 5">
+<span class="item-art item-decor" data-motif="fabric-ceiling-bunting" data-form="hanging-bunting" data-material="fabric" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>◆</span>
+</span>
+<strong>Fabric Ceiling Bunting</strong>
+<small>Level 5</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Tabletop Flower Vase, $95, locked: Level 4">
+<span class="item-art item-decor" data-motif="tabletop-flower-vase" data-form="tabletop-vase" data-material="painted-board" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>◆</span>
+</span>
+<strong>Tabletop Flower Vase</strong>
+<small>Level 4</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Feature Centre Clock, $420, locked: Level 8">
+<span class="item-art item-decor" data-motif="feature-centre-clock" data-form="feature-clock" data-material="painted-board" style="--preview-accent:#56875c" aria-hidden="true">
+<span>◆</span>
+</span>
+<strong>Feature Centre Clock</strong>
+<small>Level 8</small>
+<i aria-hidden="true">●</i>
+</button>
+</div>
+</aside>"
+`;
+
+exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtime snapshot 1`] = `
+"<aside class="catalogue-panel" aria-label="Menu planning panel">
+<div class="catalogue-heading">
+<div>
+<span>Dishes &amp; nutrition</span>
+<h2>Menu planning</h2>
+</div>
+<span class="count-badge">54</span>
+<button type="button" class="sheet-close-button" aria-label="Close management sheet">×</button>
+</div>
+<div class="menu-manager">
+<label class="menu-stall-picker">Operating stall<select>
+<option value="stall.sunrise-roost">Sunrise Roost</option>
+<option value="stall.coconut-lime">Coconut &amp; Lime</option>
+<option value="stall.kopi-canopy" disabled="">Kopi Canopy</option>
+<option value="stall.cinder-wok" disabled="">Cinder Wok</option>
+<option value="stall.mee-pok-junction" disabled="">Mee Pok Junction</option>
+<option value="stall.tiffin-lantern" disabled="">Tiffin Lantern</option>
+<option value="stall.sweet-monsoon" disabled="">Sweet Monsoon</option>
+<option value="stall.satay-meridian" disabled="">Satay Meridian</option>
+<option value="stall.pick-and-mix" disabled="">Pick &amp; Mix</option>
+<option value="stall.tamarind-leaf" disabled="">Tamarind Leaf</option>
+<option value="stall.bamboo-basket" disabled="">Bamboo Basket</option>
+<option value="stall.straits-hearth" disabled="">Straits Hearth</option>
+<option value="stall.herbal-cauldron" disabled="">Herbal Cauldron</option>
+<option value="stall.harbour-ember" disabled="">Harbour Ember</option>
+</select>
+</label>
+<div class="nutrition-lens-toolbar">
+<label>
+<span>Nutrition Lens</span>
+<input type="checkbox" checked="">
+</label>
+<p>Compare health, popularity, and every nutrient per listed serving.</p>
+</div>
+<div class="dish-list">
+<p class="menu-capacity">1 of 3 menu slots active</p>
+<article class="dish-row menu-dish-row" aria-labelledby="dish-menu-title-poached-chicken-rice">
+<span class="dish-preview" data-dish="poached-chicken-rice" data-form="rice" data-motif="poached-chicken-slices-beside-rice" data-presentation="composed-rice" data-semantic="poached-chicken-slices-beside-rice:ceramic-plate:rice-mound:fragrant-rice+poached-chicken+cucumber:dark-soy+chilli-cup" data-vessel="ceramic-plate" style="--dish-portion: #e8d6b3; --dish-garnish: #b8667a;" aria-hidden="true">
+<i class="dish-preview-portion">
+</i>
+<i class="dish-preview-garnish">
+</i>
+<i class="dish-preview-side">
+</i>
+</span>
+<div class="dish-menu-main">
+<h3 id="dish-menu-title-poached-chicken-rice">Poached Chicken Rice</h3>
+<small>rice · $7 · demand 86%</small>
+</div>
+<div class="nutrition-summary">
+<div class="dish-rating-summary" aria-label="Dish health and star ratings">
+<span class="dish-rating-badge is-health" aria-label="Health rating: 3.2/5">
+<i aria-hidden="true">♥</i>
+<span>
+<small>Health rating</small>
+<strong>3.2/5</strong>
+</span>
+</span>
+<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.1/5">
+<i aria-hidden="true">★</i>
+<span>
+<small>Star rating</small>
+<strong>4.1/5</strong>
+</span>
+</span>
+</div>
+<p>Serving · 1 plate(s) = 346g</p>
+<dl aria-label="Key nutrition per listed serving">
+<div>
+<dt>Energy</dt>
+<dd>488 kcal</dd>
+</div>
+<div>
+<dt>Protein</dt>
+<dd>19.2 g</dd>
+</div>
+<div>
+<dt>Total fat</dt>
+<dd>11.6 g</dd>
+</div>
+<div>
+<dt>Carbohydrate</dt>
+<dd>75.7 g</dd>
+</div>
+<div>
+<dt>Total sugar</dt>
+<dd>Trace amount</dd>
+</div>
+<div>
+<dt>Fibre</dt>
+<dd>5.1 g</dd>
+</div>
+<div>
+<dt>Sodium</dt>
+<dd>1,227 mg</dd>
+</div>
+</dl>
+<details class="nutrition-more-details">
+<summary>More nutrition details</summary>
+<dl aria-label="Additional nutrition per listed serving">
+<div>
+<dt>Saturated fat</dt>
+<dd>4.3 g</dd>
+</div>
+<div>
+<dt>Trans fat</dt>
+<dd>0.03 g</dd>
+</div>
+<div>
+<dt>Calcium</dt>
+<dd>16 mg</dd>
+</div>
+<div>
+<dt>Iron</dt>
+<dd>Trace amount</dd>
+</div>
+<div>
+<dt>Water</dt>
+<dd>209.9 g</dd>
+</div>
+</dl>
+</details>
+<details class="condition-rating-details">
+<summary>Health rating by condition</summary>
+<dl aria-label="Condition-specific health ratings">
+<div>
+<dt>Managing high cholesterol</dt>
+<dd>3.6/5</dd>
+</div>
+<div>
+<dt>Managing obesity</dt>
+<dd>3.4/5</dd>
+</div>
+<div>
+<dt>Managing diabetes</dt>
+<dd>3.3/5</dd>
+</div>
+<div>
+<dt>Managing hypertension</dt>
+<dd>3.3/5</dd>
+</div>
+</dl>
+</details>
+</div>
+<div class="dish-menu-actions">
+<button type="button" aria-label="View nutrition for Poached Chicken Rice">View nutrition</button>
+<label class="dish-offer-control">
+<span>Offer</span>
+<input aria-label="Offer Poached Chicken Rice" type="checkbox" checked="">
+</label>
+</div>
+</article>
+<article class="dish-row menu-dish-row" aria-labelledby="dish-menu-title-roast-chicken-rice">
+<span class="dish-preview" data-dish="roast-chicken-rice" data-form="rice" data-motif="roast-chicken-slices-over-rice" data-presentation="composed-rice" data-semantic="roast-chicken-slices-over-rice:ceramic-plate:rice-mound:fragrant-rice+roast-chicken+cucumber:crisp-skin+dark-soy" data-vessel="ceramic-plate" style="--dish-portion: #b66a3c; --dish-garnish: #d69a35;" aria-hidden="true">
+<i class="dish-preview-portion">
+</i>
+<i class="dish-preview-garnish">
+</i>
+<i class="dish-preview-side">
+</i>
+</span>
+<div class="dish-menu-main">
+<h3 id="dish-menu-title-roast-chicken-rice">Roast Chicken Rice</h3>
+<small>rice · $8 · demand 82%</small>
+</div>
+<div class="nutrition-summary">
+<div class="dish-rating-summary" aria-label="Dish health and star ratings">
+<span class="dish-rating-badge is-health" aria-label="Health rating: 2.9/5">
+<i aria-hidden="true">♥</i>
+<span>
+<small>Health rating</small>
+<strong>2.9/5</strong>
+</span>
+</span>
+<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.1/5">
+<i aria-hidden="true">★</i>
+<span>
+<small>Star rating</small>
+<strong>4.1/5</strong>
+</span>
+</span>
+</div>
+<p>Serving · 1 plate(s) = 363g</p>
+<dl aria-label="Key nutrition per listed serving">
+<div>
+<dt>Energy</dt>
+<dd>643 kcal</dd>
+</div>
+<div>
+<dt>Protein</dt>
+<dd>29.7 g</dd>
+</div>
+<div>
+<dt>Total fat</dt>
+<dd>20.9 g</dd>
+</div>
+<div>
+<dt>Carbohydrate</dt>
+<dd>84.1 g</dd>
+</div>
+<div>
+<dt>Total sugar</dt>
+<dd>0.7 g</dd>
+</div>
+<div>
+<dt>Fibre</dt>
+<dd>Trace amount</dd>
+</div>
+<div>
+<dt>Sodium</dt>
+<dd>1,061 mg</dd>
+</div>
+</dl>
+<details class="nutrition-more-details">
+<summary>More nutrition details</summary>
+<dl aria-label="Additional nutrition per listed serving">
+<div>
+<dt>Saturated fat</dt>
+<dd>7.0 g</dd>
+</div>
+<div>
+<dt>Trans fat</dt>
+<dd>0.04 g</dd>
+</div>
+<div>
+<dt>Calcium</dt>
+<dd>32 mg</dd>
+</div>
+<div>
+<dt>Iron</dt>
+<dd>Trace amount</dd>
+</div>
+<div>
+<dt>Water</dt>
+<dd>222.6 g</dd>
+</div>
+</dl>
+</details>
+<details class="condition-rating-details">
+<summary>Health rating by condition</summary>
+<dl aria-label="Condition-specific health ratings">
+<div>
+<dt>Managing high cholesterol</dt>
+<dd>2.7/5</dd>
+</div>
+<div>
+<dt>Managing obesity</dt>
+<dd>2.8/5</dd>
+</div>
+<div>
+<dt>Managing diabetes</dt>
+<dd>2.7/5</dd>
+</div>
+<div>
+<dt>Managing hypertension</dt>
+<dd>3.2/5</dd>
+</div>
+</dl>
+</details>
+</div>
+<div class="dish-menu-actions">
+<button type="button" aria-label="View nutrition for Roast Chicken Rice">View nutrition</button>
+<label class="dish-offer-control">
+<span>Offer</span>
+<input disabled="" aria-label="Offer Roast Chicken Rice, unavailable: Rep 10" aria-describedby="dish-menu-reason-roast-chicken-rice" type="checkbox">
+</label>
+</div>
+<em id="dish-menu-reason-roast-chicken-rice">Rep 10</em>
+</article>
+<article class="dish-row menu-dish-row" aria-labelledby="dish-menu-title-soya-tofu-rice">
+<span class="dish-preview" data-dish="soya-tofu-rice" data-form="rice" data-motif="vegetarian-chicken-and-greens-over-rice" data-presentation="composed-rice" data-semantic="vegetarian-chicken-and-greens-over-rice:ceramic-plate:rice-mound:rice+plant-based-chicken+leafy-greens:soy-glaze+spring-onion" data-vessel="ceramic-plate" style="--dish-portion: #c8a96a; --dish-garnish: #4d7390;" aria-hidden="true">
+<i class="dish-preview-portion">
+</i>
+<i class="dish-preview-garnish">
+</i>
+<i class="dish-preview-side">
+</i>
+</span>
+<div class="dish-menu-main">
+<h3 id="dish-menu-title-soya-tofu-rice">Vegetarian Chicken Rice</h3>
+<small>rice · $6 · demand 61%</small>
+</div>
+<div class="nutrition-summary">
+<div class="dish-rating-summary" aria-label="Dish health and star ratings">
+<span class="dish-rating-badge is-health" aria-label="Health rating: 3.4/5">
+<i aria-hidden="true">♥</i>
+<span>
+<small>Health rating</small>
+<strong>3.4/5</strong>
+</span>
+</span>
+<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 3.7/5">
+<i aria-hidden="true">★</i>
+<span>
+<small>Star rating</small>
+<strong>3.7/5</strong>
+</span>
+</span>
+</div>
+<p>Serving · 1 plate(s) = 290g</p>
+<dl aria-label="Key nutrition per listed serving">
+<div>
+<dt>Energy</dt>
+<dd>400 kcal</dd>
+</div>
+<div>
+<dt>Protein</dt>
+<dd>16.6 g</dd>
+</div>
+<div>
+<dt>Total fat</dt>
+<dd>8.7 g</dd>
+</div>
+<div>
+<dt>Carbohydrate</dt>
+<dd>61.6 g</dd>
+</div>
+<div>
+<dt>Total sugar</dt>
+<dd>1.9 g</dd>
+</div>
+<div>
+<dt>Fibre</dt>
+<dd>2.5 g</dd>
+</div>
+<div>
+<dt>Sodium</dt>
+<dd>261 mg</dd>
+</div>
+</dl>
+<details class="nutrition-more-details">
+<summary>More nutrition details</summary>
+<dl aria-label="Additional nutrition per listed serving">
+<div>
+<dt>Saturated fat</dt>
+<dd>1.9 g</dd>
+</div>
+<div>
+<dt>Trans fat</dt>
+<dd>0.00 g</dd>
+</div>
+<div>
+<dt>Calcium</dt>
+<dd>23 mg</dd>
+</div>
+<div>
+<dt>Iron</dt>
+<dd>0.5 mg</dd>
+</div>
+<div>
+<dt>Water</dt>
+<dd>11.1 g</dd>
+</div>
+</dl>
+</details>
+<details class="condition-rating-details">
+<summary>Health rating by condition</summary>
+<dl aria-label="Condition-specific health ratings">
+<div>
+<dt>Managing high cholesterol</dt>
+<dd>4.0/5</dd>
+</div>
+<div>
+<dt>Managing obesity</dt>
+<dd>3.4/5</dd>
+</div>
+<div>
+<dt>Managing diabetes</dt>
+<dd>3.1/5</dd>
+</div>
+<div>
+<dt>Managing hypertension</dt>
+<dd>4.2/5</dd>
+</div>
+</dl>
+</details>
+</div>
+<div class="dish-menu-actions">
+<button type="button" aria-label="View nutrition for Vegetarian Chicken Rice">View nutrition</button>
+<label class="dish-offer-control">
+<span>Offer</span>
+<input disabled="" aria-label="Offer Vegetarian Chicken Rice, unavailable: Level 3" aria-describedby="dish-menu-reason-soya-tofu-rice" type="checkbox">
+</label>
+</div>
+<em id="dish-menu-reason-soya-tofu-rice">Level 3</em>
+</article>
+<article class="dish-row menu-dish-row" aria-labelledby="dish-menu-title-chicken-congee">
+<span class="dish-preview" data-dish="chicken-congee" data-form="rice" data-motif="silky-congee-with-chicken-shreds" data-presentation="porridge" data-semantic="silky-congee-with-chicken-shreds:deep-ceramic-bowl:porridge:rice-porridge+shredded-chicken+ginger:fried-shallot+spring-onion" data-vessel="deep-ceramic-bowl" style="--dish-portion: #f4ebd0; --dish-garnish: #287f75;" aria-hidden="true">
+<i class="dish-preview-portion">
+</i>
+<i class="dish-preview-garnish">
+</i>
+<i class="dish-preview-side">
+</i>
+</span>
+<div class="dish-menu-main">
+<h3 id="dish-menu-title-chicken-congee">Chicken Congee</h3>
+<small>rice · $6 · demand 66%</small>
+</div>
+<div class="nutrition-summary">
+<div class="dish-rating-summary" aria-label="Dish health and star ratings">
+<span class="dish-rating-badge is-health" aria-label="Health rating: 3.2/5">
+<i aria-hidden="true">♥</i>
+<span>
+<small>Health rating</small>
+<strong>3.2/5</strong>
+</span>
+</span>
+<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 3.8/5">
+<i aria-hidden="true">★</i>
+<span>
+<small>Star rating</small>
+<strong>3.8/5</strong>
+</span>
+</span>
+</div>
+<p>Serving · 1 bowl(s) = 556g</p>
+<dl aria-label="Key nutrition per listed serving">
+<div>
+<dt>Energy</dt>
+<dd>311 kcal</dd>
+</div>
+<div>
+<dt>Protein</dt>
+<dd>15.6 g</dd>
+</div>
+<div>
+<dt>Total fat</dt>
+<dd>10.3 g</dd>
+</div>
+<div>
+<dt>Carbohydrate</dt>
+<dd>38.9 g</dd>
+</div>
+<div>
+<dt>Total sugar</dt>
+<dd>Trace amount</dd>
+</div>
+<div>
+<dt>Fibre</dt>
+<dd>Trace amount</dd>
+</div>
+<div>
+<dt>Sodium</dt>
+<dd>1,434 mg</dd>
+</div>
+</dl>
+<details class="nutrition-more-details">
+<summary>More nutrition details</summary>
+<dl aria-label="Additional nutrition per listed serving">
+<div>
+<dt>Saturated fat</dt>
+<dd>3.5 g</dd>
+</div>
+<div>
+<dt>Trans fat</dt>
+<dd>Trace amount</dd>
+</div>
+<div>
+<dt>Calcium</dt>
+<dd>22 mg</dd>
+</div>
+<div>
+<dt>Iron</dt>
+<dd>Trace amount</dd>
+</div>
+<div>
+<dt>Water</dt>
+<dd>486.2 g</dd>
+</div>
+</dl>
+</details>
+<details class="condition-rating-details">
+<summary>Health rating by condition</summary>
+<dl aria-label="Condition-specific health ratings">
+<div>
+<dt>Managing high cholesterol</dt>
+<dd>3.7/5</dd>
+</div>
+<div>
+<dt>Managing obesity</dt>
+<dd>3.6/5</dd>
+</div>
+<div>
+<dt>Managing diabetes</dt>
+<dd>3.5/5</dd>
+</div>
+<div>
+<dt>Managing hypertension</dt>
+<dd>3.1/5</dd>
+</div>
+</dl>
+</details>
+</div>
+<div class="dish-menu-actions">
+<button type="button" aria-label="View nutrition for Chicken Congee">View nutrition</button>
+<label class="dish-offer-control">
+<span>Offer</span>
+<input disabled="" aria-label="Offer Chicken Congee, unavailable: Level 4" aria-describedby="dish-menu-reason-chicken-congee" type="checkbox">
+</label>
+</div>
+<em id="dish-menu-reason-chicken-congee">Level 4</em>
+</article>
+<p class="nutrition-lens-note">Nutrition values are estimates for the listed serving. Actual recipes and portions vary.</p>
+<details class="nutrition-disclosure">
+<summary>Nutrition data &amp; education note</summary>
+<p>Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed serving in the supplied CSV data; recipes and portions vary. The Health rating is a comparative in-game balance score derived from that serving and can change by variant. The Star rating separately represents taste and popularity. A customer's personal health fit also reflects their fictional condition and can slightly affect satisfaction. These scores are game mechanics—not a diagnosis, health certification, or personal medical advice. Total sugar is not the same as added sugar.</p>
+</details>
+</div>
+</div>
+</aside>"
+`;
+
+exports[`HawkerSimulator panels > renders the Focus panel for a captured runtime snapshot 1`] = `
+"<aside class="catalogue-panel" aria-label="Focus panel">
+<div class="catalogue-heading">
+<div>
+<span>Today at a glance</span>
+<h2>Focus</h2>
+</div>
+<span class="count-badge">3</span>
+<button type="button" class="sheet-close-button" aria-label="Close management sheet">×</button>
+</div>
+<div class="focus-panel">
+<section class="objective-card">
+<div class="card-kicker">
+<span>Today's focus</span>
+<span>Refresh 7h 0m</span>
+</div>
+<h2>Three ways to grow</h2>
+<div class="objective-list">
+<article data-complete="false">
+<strong>Warm welcome</strong>
+<p>Serve 7 neighbours today.</p>
+<div class="objective-progress">
+<span style="width: 57.14285714285714%;">
+</span>
+</div>
+<small>4 / 7 · $100 + 30 XP</small>
+</article>
+<article data-complete="false">
+<strong>Happy tables</strong>
+<p>Reach 73% happiness after five new ratings.</p>
+<div class="objective-progress">
+<span style="width: 0%;">
+</span>
+</div>
+<small>0 / 73 · $100 + 30 XP</small>
+</article>
+<article data-complete="false">
+<strong>Read the plate</strong>
+<p>Serve 5 meals with reviewed nutrition data today.</p>
+<div class="objective-progress">
+<span style="width: 80%;">
+</span>
+</div>
+<small>4 / 5 · $100 + 30 XP</small>
+</article>
+</div>
+</section>
+<section class="nutrition-pulse-card">
+<div class="nutrition-pulse-heading">
+<div class="nutrition-pulse-heading-meta">
+<span class="nutrition-pulse-kicker">Today's menu read</span>
+<span class="nutrition-neutral-badge">Health ≠ popularity</span>
+</div>
+<h2>Nutrition pulse</h2>
+</div>
+<dl class="nutrition-pulse-totals">
+<div>
+<dt>Profiled servings</dt>
+<dd>4/4</dd>
+</div>
+<div>
+<dt>Intent matches</dt>
+<dd>0/2</dd>
+</div>
+<div>
+<dt>Missed</dt>
+<dd>2</dd>
+</div>
+<div>
+<dt>Unknown data</dt>
+<dd>0</dd>
+</div>
+</dl>
+<dl class="nutrition-average-list" aria-label="Average nutrition per profiled serving">
+<div>
+<dt>Energy</dt>
+<dd>488 kcal<small>4 known</small>
+</dd>
+</div>
+<div>
+<dt>Protein</dt>
+<dd>19.2 g<small>4 known</small>
+</dd>
+</div>
+<div>
+<dt>Fibre</dt>
+<dd>5.1 g<small>4 known</small>
+</dd>
+</div>
+<div>
+<dt>Sodium</dt>
+<dd>1,227 mg<small>4 known</small>
+</dd>
+</div>
+</dl>
+<div class="nutrition-pulse-note">
+<strong>Most served</strong>
+<p>Poached Chicken Rice is today’s most-served profiled dish.</p>
+</div>
+<div class="nutrition-pulse-note">
+<strong>Next menu action</strong>
+<p>Lighter energy is the leading unmet visit intent. Compare reviewed variants in Menu planning.</p>
+</div>
+<button type="button" class="nutrition-review-button">Review menu trade-offs <span aria-hidden="true">→</span>
+</button>
+</section>
+<section class="service-pulse-card" aria-label="Service pulse">
+<h3>Service pulse</h3>
+<dl>
+<div>
+<dt>Guests inside</dt>
+<dd>14</dd>
+</div>
+<div>
+<dt>Free seats</dt>
+<dd>2/6</dd>
+</div>
+<div>
+<dt>Happiness</dt>
+<dd>17%</dd>
+</div>
+<div>
+<dt>Cleanliness</dt>
+<dd>99%</dd>
+</div>
+</dl>
+</section>
+<details class="nutrition-disclosure">
+<summary>Nutrition data &amp; education note</summary>
+<p>Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed serving in the supplied CSV data; recipes and portions vary. The Health rating is a comparative in-game balance score derived from that serving and can change by variant. The Star rating separately represents taste and popularity. A customer's personal health fit also reflects their fictional condition and can slightly affect satisfaction. These scores are game mechanics—not a diagnosis, health certification, or personal medical advice. Total sugar is not the same as added sugar.</p>
+</details>
+</div>
+</aside>"
+`;
+
+exports[`HawkerSimulator panels > renders the Insights panel for a captured runtime snapshot 1`] = `
+"<aside class="catalogue-panel" aria-label="Centre insights panel">
+<div class="catalogue-heading">
+<div>
+<span>Service review</span>
+<h2>Centre insights</h2>
+</div>
+<span class="count-badge">14</span>
+<button type="button" class="sheet-close-button" aria-label="Close management sheet">×</button>
+</div>
+<div class="insights-list">
+<article data-state="good">
+<span aria-hidden="true">↝</span>
+<div>
+<strong>Queue flow</strong>
+<p>Approach paths are clear and queue pressure is comfortable.</p>
+</div>
+<em>21% used</em>
+</article>
+<article data-state="good">
+<span aria-hidden="true">◒</span>
+<div>
+<strong>Communal seating</strong>
+<p>2 seats are ready for arriving diners.</p>
+</div>
+<em>2/6</em>
+</article>
+<article data-state="good">
+<span aria-hidden="true">★</span>
+<div>
+<strong>Centre journey</strong>
+<p>1 permanent milestones completed.</p>
+<dl class="milestone-progress-list">
+<div>
+<dt>Service tier 0</dt>
+<dd>4 / 50</dd>
+</div>
+<div>
+<dt>Hospitality tier 0</dt>
+<dd>17 / 75</dd>
+</div>
+<div>
+<dt>Variety tier 1</dt>
+<dd>2 / 4</dd>
+</div>
+<div>
+<dt>Growth tier 0</dt>
+<dd>2 / 3</dd>
+</div>
+</dl>
+</div>
+<em>1/16</em>
+</article>
+<article data-state="warning">
+<span aria-hidden="true">♥</span>
+<div>
+<strong>Guest happiness</strong>
+<p>Recent guest visits average 17%.</p>
+<dl class="happiness-breakdown" aria-label="Guest happiness factors">
+<div>
+<dt>Food</dt>
+<dd aria-label="Food 0 out of 100">0/100</dd>
+</div>
+<div>
+<dt>Wait</dt>
+<dd aria-label="Wait 100 out of 100">100/100</dd>
+</div>
+<div>
+<dt>Value</dt>
+<dd aria-label="Value 20 out of 100">20/100</dd>
+</div>
+<div>
+<dt>Route efficiency</dt>
+<dd aria-label="Route efficiency 96 out of 100">96/100</dd>
+</div>
+<div>
+<dt>Comfort</dt>
+<dd aria-label="Comfort 20 out of 100">20/100</dd>
+</div>
+<div>
+<dt>Cleanliness</dt>
+<dd aria-label="Cleanliness 70 out of 100">70/100</dd>
+</div>
+<div>
+<dt>Ambience</dt>
+<dd aria-label="Ambience 65 out of 100">65/100</dd>
+</div>
+</dl>
+<div class="happiness-advice">
+<b>Ways to improve</b>
+<ul>
+<li>
+<strong>Food quality · 0</strong>
+<span>Choose higher-quality dishes and buy stall mastery upgrades that raise quality.</span>
+</li>
+<li>
+<strong>Value · 20</strong>
+<span>Add a lower-cost menu option and choose dishes whose prices better suit visitor budgets.</span>
+</li>
+</ul>
+</div>
+</div>
+<em>17%</em>
+</article>
+<article data-state="good">
+<span aria-hidden="true">↺</span>
+<div>
+<strong>Tray return</strong>
+<p>1 return point is visible and tables are turning over cleanly.</p>
+</div>
+<em>99%</em>
+</article>
+<article data-state="neutral">
+<span aria-hidden="true">◎</span>
+<div>
+<strong>Customer personas</strong>
+<p>2 of 12 distinct behaviour profiles can currently visit.</p>
+<details class="persona-roster">
+<summary>Browse the persona roster</summary>
+<ul>
+<li data-locked="false">
+<strong>Early-Shift Regular</strong>
+<span>Arrives early, knows what they want, values familiar breakfasts, and leaves quickly when a short queue stops moving.</span>
+<small>Can visit now</small>
+</li>
+<li data-locked="false">
+<strong>Office Lunch Sprinter</strong>
+<span>Visits in the lunch rush with a firm time budget, preferring fast service and a seat close to the chosen stall.</span>
+<small>Can visit now</small>
+</li>
+<li data-locked="true">
+<strong>Student Saver</strong>
+<span>Compares prices carefully, often arrives with friends, and will walk farther for filling food at a fair price.</span>
+<small>Rep 8</small>
+</li>
+<li data-locked="true">
+<strong>Afternoon Treat Stopper</strong>
+<span>Drops in for a cooling drink or small sweet bite between commitments, prioritizing value and a fast-moving queue.</span>
+<small>Level 3</small>
+</li>
+<li data-locked="true">
+<strong>Family Table</strong>
+<span>Arrives in a larger group, waits patiently for adjacent seats, and rewards menu variety, comfort, and cleanliness.</span>
+<small>Level 3</small>
+</li>
+<li data-locked="true">
+<strong>Plant-Forward Planner</strong>
+<span>Chooses vegetable-forward meals based on quality, variety, and value, with a willingness to explore unfamiliar dishes.</span>
+<small>Level 4</small>
+</li>
+<li data-locked="true">
+<strong>Curious Food Explorer</strong>
+<span>Actively seeks unfamiliar dishes, tolerates a celebrated queue, and responds strongly to quality and menu breadth.</span>
+<small>Level 5</small>
+</li>
+<li data-locked="true">
+<strong>Comfort-Seeking Regular</strong>
+<span>Returns for familiar comfort dishes and places extra value on clear routes, supportive seating, shade, airflow, and a clean table.</span>
+<small>Level 6</small>
+</li>
+<li data-locked="true">
+<strong>Quiet Break Regular</strong>
+<span>Takes an unhurried meal during quieter hours, accepting a modest queue and favouring familiar light dishes.</span>
+<small>Level 7</small>
+</li>
+<li data-locked="true">
+<strong>Evening Social Diner</strong>
+<span>Meets friends after work, seeks breezy group seating, and lingers over shareable plates and drinks.</span>
+<small>Level 8</small>
+</li>
+<li data-locked="true">
+<strong>Night-Shift Recharger</strong>
+<span>Visits near closing for a warm, dependable meal, preferring a direct route before the next part of the night.</span>
+<small>Level 9</small>
+</li>
+<li data-locked="true">
+<strong>Quality Treat Seeker</strong>
+<span>Visits less often but spends freely on excellent signature dishes, polished surroundings, and attentive service.</span>
+<small>Level 11</small>
+</li>
+</ul>
+</details>
+</div>
+<em>2/12</em>
+</article>
+<button type="button" class="expansion-button" disabled="">
+<span>Expand hall · plot 1</span>
+<strong>Unlocks at level 3</strong>
+<small>Add 4 × 2 buildable tiles</small>
+</button>
+</div>
+</aside>"
+`;
+
+exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtime snapshot 1`] = `
+"<aside class="catalogue-panel" aria-label="Stalls panel">
+<div class="catalogue-heading">
+<div>
+<span>Food &amp; drink</span>
+<h2>Stalls</h2>
+</div>
+<span class="count-badge">14</span>
+<button type="button" class="sheet-close-button" aria-label="Close management sheet">×</button>
+</div>
+<div class="stall-list" data-testid="stall-catalogue">
+<section class="operating-stalls" aria-labelledby="operating-stalls-title">
+<h3 id="operating-stalls-title">Operating queue plans</h3>
+<article class="queue-manager-row">
+<div>
+<strong>Sunrise Roost</strong>
+<small>2 queueing · south auto-line</small>
+<small>Mastery rank 1 · Upgrade 1/4</small>
+</div>
+<div class="queue-direction-group" aria-label="Sunrise Roost queue direction">
+<button type="button" class="" aria-pressed="false" aria-label="Route Sunrise Roost queue north">↑</button>
+<button type="button" class="" aria-pressed="false" aria-label="Route Sunrise Roost queue east">→</button>
+<button type="button" class="is-active" aria-pressed="true" aria-label="Route Sunrise Roost queue south">↓</button>
+<button type="button" class="" aria-pressed="false" aria-label="Route Sunrise Roost queue west">←</button>
+<button type="button" class="edit-queue-button">Bend line</button>
+</div>
+<button type="button" class="stall-upgrade-button" disabled="">
+<span class="stall-upgrade-copy">Upgrade to level 2<small>Requires mastery rank 2</small>
+</span>
+<strong>$720</strong>
+</button>
+</article>
+<article class="queue-manager-row">
+<div>
+<strong>Coconut &amp; Lime</strong>
+<small>1 queueing · south auto-line</small>
+<small>Mastery rank 1 · Upgrade 1/4</small>
+</div>
+<div class="queue-direction-group" aria-label="Coconut &amp; Lime queue direction">
+<button type="button" class="" aria-pressed="false" aria-label="Route Coconut &amp; Lime queue north">↑</button>
+<button type="button" class="" aria-pressed="false" aria-label="Route Coconut &amp; Lime queue east">→</button>
+<button type="button" class="is-active" aria-pressed="true" aria-label="Route Coconut &amp; Lime queue south">↓</button>
+<button type="button" class="" aria-pressed="false" aria-label="Route Coconut &amp; Lime queue west">←</button>
+<button type="button" class="edit-queue-button">Bend line</button>
+</div>
+<button type="button" class="stall-upgrade-button" disabled="">
+<span class="stall-upgrade-copy">Upgrade to level 2<small>Requires mastery rank 2</small>
+</span>
+<strong>$780</strong>
+</button>
+</article>
+</section>
+<h3 class="catalogue-subheading">Add another stall</h3>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="sunrise-roost" style="background: linear-gradient(145deg, rgb(244, 201, 93), rgb(255, 243, 208));" aria-hidden="true">▰</span>
+<span>
+<strong>Sunrise Roost</strong>
+<small>4 dishes · 68 quality</small>
+</span>
+<em>$1,200</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="coconut-lime" style="background: linear-gradient(145deg, rgb(58, 125, 68), rgb(242, 232, 207));" aria-hidden="true">▰</span>
+<span>
+<strong>Coconut &amp; Lime</strong>
+<small>4 dishes · 70 quality</small>
+</span>
+<em>$1,350</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="kopi-canopy" style="background: linear-gradient(145deg, rgb(111, 78, 55), rgb(168, 218, 220));" aria-hidden="true">▰</span>
+<span>
+<strong>Kopi Canopy</strong>
+<small>3 dishes · 64 quality</small>
+</span>
+<em>Rep 10</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="cinder-wok" style="background: linear-gradient(145deg, rgb(196, 69, 54), rgb(34, 34, 59));" aria-hidden="true">▰</span>
+<span>
+<strong>Cinder Wok</strong>
+<small>4 dishes · 75 quality</small>
+</span>
+<em>Level 3</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="mee-pok-junction" style="background: linear-gradient(145deg, rgb(217, 108, 47), rgb(246, 232, 200));" aria-hidden="true">▰</span>
+<span>
+<strong>Mee Pok Junction</strong>
+<small>4 dishes · 76 quality</small>
+</span>
+<em>Level 4</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="tiffin-lantern" style="background: linear-gradient(145deg, rgb(224, 122, 95), rgb(244, 241, 222));" aria-hidden="true">▰</span>
+<span>
+<strong>Tiffin Lantern</strong>
+<small>4 dishes · 76 quality</small>
+</span>
+<em>Level 5</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="sweet-monsoon" style="background: linear-gradient(145deg, rgb(181, 23, 158), rgb(205, 231, 127));" aria-hidden="true">▰</span>
+<span>
+<strong>Sweet Monsoon</strong>
+<small>4 dishes · 72 quality</small>
+</span>
+<em>Level 5</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="satay-meridian" style="background: linear-gradient(145deg, rgb(198, 93, 46), rgb(48, 37, 28));" aria-hidden="true">▰</span>
+<span>
+<strong>Satay Meridian</strong>
+<small>4 dishes · 78 quality</small>
+</span>
+<em>Level 6</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="pick-and-mix" style="background: linear-gradient(145deg, rgb(77, 144, 142), rgb(246, 232, 177));" aria-hidden="true">▰</span>
+<span>
+<strong>Pick &amp; Mix</strong>
+<small>4 dishes · 77 quality</small>
+</span>
+<em>Level 6</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="tamarind-leaf" style="background: linear-gradient(145deg, rgb(96, 108, 56), rgb(254, 250, 224));" aria-hidden="true">▰</span>
+<span>
+<strong>Tamarind Leaf</strong>
+<small>4 dishes · 78 quality</small>
+</span>
+<em>Level 7</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="bamboo-basket" style="background: linear-gradient(145deg, rgb(47, 107, 79), rgb(200, 70, 48));" aria-hidden="true">▰</span>
+<span>
+<strong>Bamboo Basket</strong>
+<small>4 dishes · 82 quality</small>
+</span>
+<em>Level 8</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="straits-hearth" style="background: linear-gradient(145deg, rgb(42, 157, 143), rgb(244, 162, 97));" aria-hidden="true">▰</span>
+<span>
+<strong>Straits Hearth</strong>
+<small>4 dishes · 86 quality</small>
+</span>
+<em>Level 9</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="herbal-cauldron" style="background: linear-gradient(145deg, rgb(92, 61, 46), rgb(221, 174, 126));" aria-hidden="true">▰</span>
+<span>
+<strong>Herbal Cauldron</strong>
+<small>4 dishes · 85 quality</small>
+</span>
+<em>Level 11</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="harbour-ember" style="background: linear-gradient(145deg, rgb(29, 53, 87), rgb(230, 57, 70));" aria-hidden="true">▰</span>
+<span>
+<strong>Harbour Ember</strong>
+<small>3 dishes · 90 quality</small>
+</span>
+<em>Level 12</em>
+</button>
+</div>
+</aside>"
+`;

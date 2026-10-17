@@ -1,0 +1,246 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`createHawkerRuntime rendering > (1) draws a fresh centre on boot 1`] = `
+[
+  "58 339 #17352e ENTRY",
+  "1094 339 #17352e EXIT",
+  "192 63 #17352e Sunrise Roost",
+  "192 136 #9a3e31 CLOSED",
+  "576 63 #17352e Coconut & Lime",
+  "576 136 #9a3e31 CLOSED",
+  "1008 334 #17352e RETURN",
+  "263 73 #17352e 0 guests",
+  "647 73 #17352e 0 guests",
+]
+`;
+
+exports[`createHawkerRuntime rendering > (2) draws an open centre through 20 spawns and 50 frames 1`] = `
+[
+  "58 339 #17352e ENTRY",
+  "1094 339 #17352e EXIT",
+  "192 63 #17352e Sunrise Roost",
+  "576 63 #17352e Coconut & Lime",
+  "1008 334 #17352e RETURN",
+  "263 73 #9a3e31 7 guests",
+  "647 73 #17352e 0 guests",
+]
+`;
+
+exports[`createHawkerRuntime rendering > (3) redraws the busy centre in high contrast 1`] = `
+[
+  "58 339 #17352e ENTRY",
+  "1094 339 #17352e EXIT",
+  "192 63 #17352e Sunrise Roost",
+  "576 63 #17352e Coconut & Lime",
+  "1008 334 #17352e RETURN",
+  "263 73 #9a3e31 7 guests",
+  "647 73 #17352e 0 guests",
+]
+`;
+
+exports[`createHawkerRuntime rendering > (4) redraws the busy centre with reduced motion 1`] = `
+[
+  "58 339 #17352e ENTRY",
+  "1094 339 #17352e EXIT",
+  "192 63 #17352e Sunrise Roost",
+  "576 63 #17352e Coconut & Lime",
+  "1008 334 #17352e RETURN",
+  "263 73 #9a3e31 7 guests",
+  "647 73 #17352e 0 guests",
+]
+`;
+
+exports[`createHawkerRuntime rendering > (5) redraws the busy centre at lower-end quality 1`] = `
+[
+  "58 339 #17352e ENTRY",
+  "1094 339 #17352e EXIT",
+  "192 63 #17352e Sunrise Roost",
+  "576 63 #17352e Coconut & Lime",
+  "1008 334 #17352e RETURN",
+  "263 73 #9a3e31 7 guests",
+  "647 73 #17352e 0 guests",
+]
+`;
+
+exports[`createHawkerRuntime rendering > (6) redraws the busy centre with the debug overlay 1`] = `
+[
+  "58 339 #17352e ENTRY",
+  "1094 339 #17352e EXIT",
+  "192 63 #17352e Sunrise Roost",
+  "576 63 #17352e Coconut & Lime",
+  "1008 334 #17352e RETURN",
+  "263 73 #9a3e31 7 guests",
+  "647 73 #17352e 0 guests",
+]
+`;
+
+exports[`createHawkerRuntime rendering > (7a) previews a placement on a clear tile 1`] = `
+[
+  "58 339 #17352e ENTRY",
+  "1094 339 #17352e EXIT",
+  "192 63 #17352e Sunrise Roost",
+  "192 136 #9a3e31 CLOSED",
+  "576 63 #17352e Coconut & Lime",
+  "576 136 #9a3e31 CLOSED",
+  "1008 334 #17352e RETURN",
+  "263 73 #17352e 0 guests",
+  "647 73 #17352e 0 guests",
+]
+`;
+
+exports[`createHawkerRuntime rendering > (7b) previews a placement over an existing table 1`] = `
+[
+  "58 339 #17352e ENTRY",
+  "1094 339 #17352e EXIT",
+  "192 63 #17352e Sunrise Roost",
+  "192 136 #9a3e31 CLOSED",
+  "576 63 #17352e Coconut & Lime",
+  "576 136 #9a3e31 CLOSED",
+  "1008 334 #17352e RETURN",
+  "263 73 #17352e 0 guests",
+  "647 73 #17352e 0 guests",
+]
+`;
+
+exports[`createHawkerRuntime rendering > (8a) previews a route tile on a clear tile 1`] = `
+[
+  "58 339 #17352e ENTRY",
+  "1094 339 #17352e EXIT",
+  "192 63 #17352e Sunrise Roost",
+  "192 136 #9a3e31 CLOSED",
+  "576 63 #17352e Coconut & Lime",
+  "576 136 #9a3e31 CLOSED",
+  "1008 334 #17352e RETURN",
+  "263 73 #17352e 0 guests",
+  "647 73 #17352e 0 guests",
+]
+`;
+
+exports[`createHawkerRuntime rendering > (8b) previews a route tile over an existing table 1`] = `
+[
+  "58 339 #17352e ENTRY",
+  "1094 339 #17352e EXIT",
+  "192 63 #17352e Sunrise Roost",
+  "192 136 #9a3e31 CLOSED",
+  "576 63 #17352e Coconut & Lime",
+  "576 136 #9a3e31 CLOSED",
+  "1008 334 #17352e RETURN",
+  "263 73 #17352e 0 guests",
+  "647 73 #17352e 0 guests",
+]
+`;
+
+exports[`createHawkerRuntime rendering > (9a) draws the gallery save on boot 1`] = `
+[
+  "58 339 #17352e ENTRY",
+  "1862 339 #17352e EXIT",
+  "144 63 #17352e Sunrise Roost",
+  "384 63 #17352e Coconut & Lime",
+  "600 63 #17352e Kopi Canopy",
+  "816 63 #17352e Cinder Wok",
+  "1056 63 #17352e Mee Pok Junction",
+  "1296 63 #17352e Tiffin Lantern",
+  "1512 63 #17352e Sweet Monsoon",
+  "1752 63 #17352e Satay Meridian",
+  "144 399 #17352e Pick & Mix",
+  "384 399 #17352e Tamarind Leaf",
+  "624 399 #17352e Bamboo Basket",
+  "888 399 #17352e Straits Hearth",
+  "1176 399 #17352e Herbal Cauldron",
+  "1464 399 #17352e Harbour Ember",
+  "1152 574 #17352e RETURN",
+  "1320 574 #17352e RETURN",
+  "1512 574 #17352e DISH DROP",
+  "312 670 #17352e CLEAN TRAYS",
+  "672 821 #17352e DIRECTORY",
+  "480 869 #17352e ROW",
+  "792 869 #17352e RETURN →",
+  "888 869 #17352e ACCESS",
+  "984 869 #17352e QUEUE",
+  "1080 869 #17352e MENU",
+  "1584 869 #17352e WELCOME",
+  "215 73 #17352e 0 guests",
+  "455 409 #17352e 0 guests",
+  "695 409 #17352e 0 guests",
+  "983 409 #17352e 0 guests",
+  "1271 409 #17352e 0 guests",
+  "1559 409 #17352e 0 guests",
+  "455 73 #17352e 0 guests",
+  "647 73 #17352e 0 guests",
+  "887 73 #17352e 0 guests",
+  "1127 73 #17352e 0 guests",
+  "1367 73 #17352e 0 guests",
+  "1559 73 #17352e 0 guests",
+  "1847 73 #17352e 0 guests",
+  "215 409 #17352e 0 guests",
+]
+`;
+
+exports[`createHawkerRuntime rendering > (9b) draws every reviewed variant on the gallery counters 1`] = `
+[
+  "58 339 #17352e ENTRY",
+  "1862 339 #17352e EXIT",
+  "144 63 #17352e Sunrise Roost",
+  "384 63 #17352e Coconut & Lime",
+  "600 63 #17352e Kopi Canopy",
+  "816 63 #17352e Cinder Wok",
+  "1056 63 #17352e Mee Pok Junction",
+  "1296 63 #17352e Tiffin Lantern",
+  "1512 63 #17352e Sweet Monsoon",
+  "1752 63 #17352e Satay Meridian",
+  "144 399 #17352e Pick & Mix",
+  "384 399 #17352e Tamarind Leaf",
+  "624 399 #17352e Bamboo Basket",
+  "888 399 #17352e Straits Hearth",
+  "1176 399 #17352e Herbal Cauldron",
+  "1464 399 #17352e Harbour Ember",
+  "1152 574 #17352e RETURN",
+  "1320 574 #17352e RETURN",
+  "1512 574 #17352e DISH DROP",
+  "312 670 #17352e CLEAN TRAYS",
+  "672 821 #17352e DIRECTORY",
+  "480 869 #17352e ROW",
+  "792 869 #17352e RETURN →",
+  "888 869 #17352e ACCESS",
+  "984 869 #17352e QUEUE",
+  "1080 869 #17352e MENU",
+  "1584 869 #17352e WELCOME",
+  "215 73 #17352e 0 guests",
+  "455 409 #17352e 0 guests",
+  "695 409 #17352e 0 guests",
+  "983 409 #17352e 0 guests",
+  "1271 409 #17352e 0 guests",
+  "1559 409 #17352e 0 guests",
+  "455 73 #17352e 0 guests",
+  "647 73 #17352e 0 guests",
+  "887 73 #17352e 0 guests",
+  "1127 73 #17352e 0 guests",
+  "1367 73 #17352e 0 guests",
+  "1559 73 #17352e 0 guests",
+  "1847 73 #17352e 0 guests",
+  "215 409 #17352e 0 guests",
+]
+`;
+
+exports[`createHawkerRuntime rendering > (10) draws frames 480 and 960 of the two-day run at speed 10 1`] = `
+{
+  "480": [
+    "58 339 #17352e ENTRY",
+    "1094 339 #17352e EXIT",
+    "192 63 #17352e Sunrise Roost",
+    "576 63 #17352e Coconut & Lime",
+    "1008 334 #17352e RETURN",
+    "263 73 #17352e 0 guests",
+    "647 73 #17352e 1 guest",
+  ],
+  "960": [
+    "58 339 #17352e ENTRY",
+    "1094 339 #17352e EXIT",
+    "192 63 #17352e Sunrise Roost",
+    "576 63 #17352e Coconut & Lime",
+    "1008 334 #17352e RETURN",
+    "263 73 #17352e 1 guest",
+    "647 73 #17352e 1 guest",
+  ],
+}
+`;

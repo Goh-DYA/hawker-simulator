@@ -18,6 +18,42 @@ Commands are expected to converge on:
 
 Only scripts present in package.json may be reported as run. Missing scripts are implementation tasks, not implicit passes.
 
+## Test layout and behaviour-pinning goldens
+
+The Vitest suites under `tests/` mirror the source tree:
+
+| Source | Tests |
+|---|---|
+| `src/game/core/` | `tests/game/core/` |
+| `src/game/runtime/` | `tests/game/runtime/` |
+| `src/game/persistence/` | `tests/game/persistence/` |
+| `src/game/audio/` | `tests/game/audio/` |
+| `src/content/` | `tests/content/` |
+| `app/game/` | `tests/app/game/` |
+| `tools/nutrition/` | `tests/tools/nutrition/` |
+
+Two suites stay at the root: `tests/hosting-config.test.ts`, and the Node-runner check `tests/rendered-html.test.mjs`.
+
+`tests/setup.ts` fails any test that writes unexpected `console.warn` or `console.error` output, or that raises a Node process warning. A test that deliberately exercises a logging path declares it with `expect_console_warning`, from `tests/console.ts`. `npm run test:ssr` runs with `--throw-deprecation`.
+
+Before the structural refactor, the following suites were written to pin the behaviour of the time. They mostly assert sha256 literals of raw digest strings. Snapshots keep key insertion order (`snapshotFormat.compareKeys: null`), so key-order drift is caught too.
+
+| Suite | What it pins |
+|---|---|
+| `tests/game/core/golden.test.ts` | Seeded simulation and state digests for six scenarios. One of them runs the production adaptive-arrival model across two operating-day rollovers. |
+| `tests/game/core/persistence/index.test.ts`, `migrations.test.ts` | Frozen V1–V4 save fixtures, migration output and the serialisation contract. |
+| `tests/game/core/simulation.recovery.test.ts` | In-step customer recovery branches. |
+| `tests/game/runtime/createHawkerRuntime.test.ts` | The headless runtime controller, using a deferred Phaser boot and a test-owned clock: export, import and reset, save fallback, and progression across several days. |
+| `tests/game/runtime/createHawkerRuntime.render.test.ts` | Exact draw-call logs for each render scenario, including every placeable and every recipe variant. |
+| `tests/game/runtime/createHawkerRuntime.input.test.ts` | Build-tool, keyboard, pointer and wheel input flows. |
+| `tests/game/persistence/saveStore.test.ts` | The save envelope format, the checksum, active/backup slot rotation and preference ordering, tested on `fake-indexeddb`. |
+| `tests/app/game/HawkerSimulator.ssr.test.ts` | Byte-exact server-rendered markup of the game component. |
+| `tests/app/game/HawkerSimulator.test.ts` | A jsdom interaction suite: panels, autosave debounce, failures, import, reset, settings clamping, and focus and Escape order. |
+| `tests/content/golden.test.ts`, `tests/content/validate.test.ts` | Derived content data, localisation order and validator issues. |
+| `tests/tools/nutrition/ratings.test.ts` | Nutrition importer ratings and serialised output from a varied fixture CSV. |
+
+Run the suites with `CI=true npm test`, so that a missing snapshot fails instead of being written. A golden literal or snapshot should change only in a commit that intentionally changes behaviour or balance, and that commit should state the reason.
+
 ## Automated test inventory
 
 ### World and build

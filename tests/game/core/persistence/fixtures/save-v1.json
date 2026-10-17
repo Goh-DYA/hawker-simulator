@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "map": {
+    "width": 12,
+    "height": 8,
+    "tileSize": 32,
+    "worldOrigin": {
+      "x": 16,
+      "y": 24
+    },
+    "tiles": [
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor",
+      "floor"
+    ]
+  },
+  "entrance": {
+    "x": 0,
+    "y": 3
+  },
+  "exit": {
+    "x": 11,
+    "y": 3
+  },
+  "objects": [
+    {
+      "id": "seat-1",
+      "definitionId": "seat",
+      "origin": {
+        "x": 6,
+        "y": 2
+      },
+      "rotation": 0,
+      "open": false
+    },
+    {
+      "id": "seat-2",
+      "definitionId": "seat",
+      "origin": {
+        "x": 7,
+        "y": 4
+      },
+      "rotation": 0,
+      "open": false
+    },
+    {
+      "id": "stall-1",
+      "definitionId": "stall",
+      "origin": {
+        "x": 2,
+        "y": 0
+      },
+      "rotation": 0,
+      "open": true
+    },
+    {
+      "id": "tray-1",
+      "definitionId": "tray",
+      "origin": {
+        "x": 10,
+        "y": 6
+      },
+      "rotation": 0,
+      "open": false
+    }
+  ],
+  "money": 2058,
+  "xp": 1406,
+  "seed": 4049745649
+}
