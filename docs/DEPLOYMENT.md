@@ -313,4 +313,4 @@ Copy this block into the release record and replace every placeholder with obser
 - Open blockers or waivers:
 ```
 
-Do not translate a successful build, deployment, or automated smoke check into production approval. `docs/RELEASE_CHECKLIST.md` remains the authority for GO/NO-GO.
+Do not translate a successful build, deployment, or automated smoke check into production approval. `docs/release/RELEASE_CHECKLIST.md` remains the authority for GO/NO-GO.

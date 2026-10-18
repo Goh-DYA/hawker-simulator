@@ -38,7 +38,7 @@ The Route editor lets players paint preferred walking lanes across clear floor t
 - 1 top-down neighbourhood-hall map theme
 - English localization for every record
 
-The current counts are in the [content catalogue](docs/CONTENT_CATALOGUE.md#roster-counts).
+The current counts are in the [content catalogue](docs/design/CONTENT_CATALOGUE.md#roster-counts).
 
 The validator counts catalogue entries by distinct gameplay definition, not by recolour. It checks links, IDs, assets, localization, collisions, rotations, unlocks, affordability, and behavioural uniqueness.
 
@@ -110,7 +110,7 @@ npm run start        # serve the Vinext production build
 
 GitHub Actions verifies both production targets, publishes pull-request previews to Vercel, stages `main` as an immutable Production deployment, and waits for a protected approval before promotion. The Cloudflare Worker output is written to `dist/`; Vercel packages the native Next.js build separately. Both paths stamp the service worker with a deterministic content hash so code, content, and cached assets move together.
 
-Before enabling deployments, follow every **User action** in the [deployment and rollback runbook](docs/DEPLOYMENT.md). Also review the [release checklist](docs/RELEASE_CHECKLIST.md) and [known issues](docs/KNOWN_ISSUES.md).
+Before enabling deployments, follow every **User action** in the [deployment and rollback runbook](docs/DEPLOYMENT.md). Also review the [release checklist](docs/release/RELEASE_CHECKLIST.md) and [known issues](docs/KNOWN_ISSUES.md).
 
 ## Offline and saves
 
@@ -122,22 +122,23 @@ Private browsing, denied storage, or quota failures can make persistence tempora
 
 The [documentation index](docs/README.md) lists every document and the facts each one owns. Start with:
 
-- [Project status](docs/PROJECT_STATUS.md)
-- [Game design](docs/GAME_DESIGN_DOCUMENT.md)
+- [Project status](docs/KNOWN_ISSUES.md#project-status)
+- [Game design](docs/design/GAME_DESIGN.md)
 - [Technical design](docs/TECHNICAL_DESIGN.md)
-- [Art bible](docs/ART_BIBLE.md)
-- [Content catalogue](docs/CONTENT_CATALOGUE.md)
-- [Nutrition data and educational-use policy](docs/NUTRITION_DATA.md)
-- [Cultural review checklist](docs/CULTURAL_REVIEW.md)
-- [Accessibility](docs/ACCESSIBILITY.md)
-- [Test plan and report](docs/TEST_PLAN.md)
-- [Performance budget and report](docs/PERFORMANCE_BUDGET.md)
+- [Art bible](docs/design/ART_BIBLE.md)
+- [Content catalogue](docs/design/CONTENT_CATALOGUE.md)
+- [Nutrition data and educational-use policy](docs/design/NUTRITION_DATA.md)
+- [Cultural review checklist](docs/release/CULTURAL_REVIEW.md)
+- [Accessibility](docs/release/ACCESSIBILITY.md)
+- [Test plan](docs/TEST_PLAN.md) and [test report](docs/TEST_REPORT.md)
+- [Performance budget](docs/TEST_PLAN.md#performance-budget) and [performance evidence](docs/TEST_REPORT.md#performance-evidence)
 - [Security and privacy](docs/SECURITY_AND_PRIVACY.md)
+- [Changelog](docs/CHANGELOG.md)
 
 ## Release status
 
-The working content `1.3.0` source expands the stall, dish, and nutrition catalogue ([counts](docs/CONTENT_CATALOGUE.md#roster-counts)), with condition-aware Health ratings alongside taste-and-popularity Star ratings. Its supported-runtime working-source gate and both local production builds pass ([test report](docs/TEST_REPORT.md)), and the remaining blockers are in [known issues](docs/KNOWN_ISSUES.md). The project must not be described as production-approved until the current source/artifact publication record and exact Chrome/Edge/Firefox, offline restart/update, render performance, long-soak, accessibility, cultural, security, and qualified legal/privacy review evidence are complete. The Node benchmark does not measure the renderer's full-frame redraw and per-frame text recreation, and no human or external approval is implied by the internal checklists.
+The working content `1.3.0` source expands the stall, dish, and nutrition catalogue ([counts](docs/design/CONTENT_CATALOGUE.md#roster-counts)), with condition-aware Health ratings alongside taste-and-popularity Star ratings. Its supported-runtime working-source gate and both local production builds pass ([test report](docs/TEST_REPORT.md)), and the remaining blockers are in [known issues](docs/KNOWN_ISSUES.md). The project must not be described as production-approved until the current source/artifact publication record and exact Chrome/Edge/Firefox, offline restart/update, render performance, long-soak, accessibility, cultural, security, and qualified legal/privacy review evidence are complete. The Node benchmark does not measure the renderer's full-frame redraw and per-frame text recreation, and no human or external approval is implied by the internal checklists.
 
 ## License and provenance
 
-All game identity, code-native visual assets, procedural audio cues, copy, and stall names are original project work. Generated nutrition content is a reviewed transformation of operator-supplied source snapshots; the raw datasets are not redistributed. Dependency notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); asset provenance is in [docs/ASSET_PROVENANCE.md](docs/ASSET_PROVENANCE.md).
+All game identity, code-native visual assets, procedural audio cues, copy, and stall names are original project work. Generated nutrition content is a reviewed transformation of operator-supplied source snapshots; the raw datasets are not redistributed. Dependency versions and licenses come from `package-lock.json` and each package's license file; before distribution, a complete license and attribution inventory must be generated from the lockfile and bundled, as the [release checklist](docs/release/RELEASE_CHECKLIST.md#security-privacy-culture-and-legal) requires. Asset provenance is in [docs/release/ASSET_PROVENANCE.md](docs/release/ASSET_PROVENANCE.md).

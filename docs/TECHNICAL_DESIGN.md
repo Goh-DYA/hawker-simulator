@@ -1,7 +1,7 @@
 # Technical Design
 
 Status: Accepted architecture implemented in the release candidate; browser verification pending
-Decision records: adr/0001, adr/0002, adr/0003, adr/0004
+Decision records: [ADR 0001](decisions/0001-browser-game-stack.md), [ADR 0002](decisions/0002-art-style-and-perspective.md), [ADR 0003](decisions/0003-local-first-persistence-and-offline.md), [ADR 0004](decisions/0004-simulation-and-ui-boundaries.md)
 
 ## Stack
 
@@ -68,7 +68,7 @@ Commands validate before mutation and commit all related changes atomically. Eve
 
 ## Content contracts
 
-Content definitions include stable IDs, localization keys, footprints, rotations, interaction points, depth anchors, visual/audio references, economy values, unlock requirements, dish Star ratings, and explicit nutrition profile/variant status. The validator checks the record counts in `LAUNCH_ROSTER` (`src/content/roster.ts`): every count is exact except placeables, which are a minimum. The current counts are in [CONTENT_CATALOGUE.md](CONTENT_CATALOGUE.md#roster-counts). Nutrition schema version 2 requires every profile to be released; each profile carries an overall Health rating and ratings for high cholesterol, obesity, diabetes, and hypertension.
+Content definitions include stable IDs, localization keys, footprints, rotations, interaction points, depth anchors, visual/audio references, economy values, unlock requirements, dish Star ratings, and explicit nutrition profile/variant status. The validator checks the record counts in `LAUNCH_ROSTER` (`src/content/roster.ts`): every count is exact except placeables, which are a minimum. The current counts are in [CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md#roster-counts). Nutrition schema version 2 requires every profile to be released; each profile carries an overall Health rating and ratings for high cholesterol, obesity, diabetes, and hypertension.
 
 Nutrition source rows are joined only by authored exact, curated-synonym, or explicitly scaled mappings during a deterministic build-time import; raw CSV parsing and fuzzy matching never run in the browser. Health ratings are generated from within-class relative nutrient fits and stored in the reviewed artifact, while Star ratings remain authored content derived from dish quality and demand. Startup (in every build) and tests perform Zod parsing, cross-reference checks, uniqueness checks, nutrition plausibility and provenance checks, localization completeness, rating bounds, and exact launch counts. A malformed production definition fails to a readable safe screen, never a partially loaded simulation.
 

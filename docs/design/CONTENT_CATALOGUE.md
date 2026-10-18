@@ -5,7 +5,7 @@ Counting rule: unique ID plus meaningful functional, footprint, interaction, unl
 
 ## Roster counts
 
-This document owns the launch content counts. Other documents link here, except the requirement and evidence documents that the [documentation index](README.md#single-owners-for-volatile-facts) lists as still restating them as acceptance criteria. The validator reads the record counts from `LAUNCH_ROSTER` in `src/content/roster.ts`, so a roster change updates that file, the tests that pin it, this table, and every restating document the index lists.
+This document owns the launch content counts. Other documents link here, except the requirement and evidence documents that the [documentation index](../README.md#single-owners-for-volatile-facts) lists as still restating them as acceptance criteria. The validator reads the record counts from `LAUNCH_ROSTER` in `src/content/roster.ts`, so a roster change updates that file, the tests that pin it, this table, and every restating document the index lists.
 
 | Record | Count | Validator rule |
 |---|---:|---|
