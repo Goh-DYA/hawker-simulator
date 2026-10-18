@@ -58,6 +58,8 @@ const fakes = vi.hoisted(() => {
   const calls: FakeCall[] = [];
   const failing_methods = new Set<StoreMethod>();
   const preferences = new Map<string, unknown>();
+  /** The data URL the fake controller paints for each preview key; others are not ready. */
+  const preview_urls = new Map<string, string>();
 
   function record_call(method: string, ...args: unknown[]): void {
     calls.push([method, ...args]);
@@ -153,8 +155,9 @@ const fakes = vi.hoisted(() => {
     removeSelectedAccessPoint: create_recorder("removeSelectedAccessPoint", true),
     clearGuestRoute: create_recorder("clearGuestRoute", true),
     upgradeStall: create_recorder("upgradeStall", true),
-    renderPreview: () => undefined,
-    renderDishPreview: () => undefined,
+    renderPreview: (definition_id: string) => preview_urls.get(definition_id),
+    renderDishPreview: (dish_id: string, variant_id?: string) =>
+      preview_urls.get(variant_id ? `${dish_id}@${variant_id}` : dish_id),
   };
 
   const runtime = {
@@ -193,6 +196,7 @@ const fakes = vi.hoisted(() => {
     store.release_saves();
     failing_methods.clear();
     preferences.clear();
+    preview_urls.clear();
     runtime.options = undefined;
     for (const mock of [
       store.saveGame,
@@ -207,7 +211,7 @@ const fakes = vi.hoisted(() => {
     }
   }
 
-  return { calls, store, runtime, pwa, FakeAudioDirector, reset };
+  return { calls, store, runtime, pwa, previewUrls: preview_urls, FakeAudioDirector, reset };
 });
 
 vi.mock("@/src/game/runtime/createHawkerRuntime", () => ({
@@ -777,6 +781,30 @@ describe("HawkerSimulator catalogue choices", () => {
     expect(fakes.calls.filter(([method]) => method.startsWith("controller."))).toEqual([
       ["controller.setQueueDirection", "starter-1", "east"],
     ]);
+  });
+});
+
+describe("HawkerSimulator painted thumbnails", () => {
+  it("shows the runtime's painted thumbnail on a Build card, keeping its name", async () => {
+    fakes.previewUrls.set("item.compact-square-table", "data:image/png;base64,VEFCTEU=");
+    const panel = open_dock_tab(await boot_running_centre(), "Build");
+
+    flush_frames();
+    const card = within(panel).getByRole("button", { name: "Compact Square Table, $90" });
+
+    expect({
+      painted: card.querySelector(".item-art.has-painting img")?.getAttribute("src"),
+      glyph: card.querySelector(".item-art > span")?.textContent,
+      others_painted: panel.querySelectorAll(".has-painting").length,
+    }).toEqual({ painted: "data:image/png;base64,VEFCTEU=", glyph: undefined, others_painted: 1 });
+  });
+
+  it("keeps the glyphs while the runtime cannot paint yet", async () => {
+    const panel = open_dock_tab(await boot_running_centre(), "Build");
+
+    flush_frames();
+
+    expect(panel.querySelectorAll("img.painted-preview").length).toBe(0);
   });
 });
 

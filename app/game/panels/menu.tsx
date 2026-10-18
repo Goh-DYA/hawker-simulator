@@ -6,7 +6,9 @@
  * and `MenuPanel` renders the stall picker, the Nutrition Lens toggle and one row per dish
  * from it. The `HawkerSimulator` shell keeps the chosen stall, the lens and the Variant Lab
  * state behind the callbacks. The markup, its IDs (`dish-menu-title-…`, `dish-menu-reason-…`),
- * ARIA attributes and copy are the shell's former inline markup.
+ * ARIA attributes and copy are the shell's former inline markup. Each row shows the serving the
+ * runtime painted in its active variant once it is in `previewUrls`, and keeps its CSS preview
+ * until then.
  */
 import type { RefObject } from "react";
 import { DISHES, STALLS, type DishDefinition, type StallDefinition } from "@/src/content";
@@ -32,6 +34,7 @@ import {
   nutritionProfileView,
   unlockLabel,
 } from "../display";
+import { NO_PREVIEWS, PaintedPreview, preview_key, type PreviewUrls } from "../previews";
 
 /** The snapshot fields the menu rows read. */
 type MenuProgress = Pick<
@@ -138,6 +141,8 @@ export interface MenuPanelProps {
   readonly snapshot: MenuProgress & Pick<RuntimeSnapshot, "nutritionFamilies">;
   /** The runtime controller that offers or withdraws dishes. */
   readonly controllerRef: RefObject<RuntimeController | undefined>;
+  /** The painted servings, by preview key; a row keeps its CSS preview while its own is missing. */
+  readonly previewUrls?: PreviewUrls;
   /** Called with a dish ID when the player opens its Variant Lab. */
   onTuneRecipe(dishId: string): void;
 }
@@ -155,6 +160,7 @@ export function MenuPanel({
   onNutritionLensChange,
   snapshot,
   controllerRef,
+  previewUrls = NO_PREVIEWS,
   onTuneRecipe,
 }: MenuPanelProps) {
   return (
@@ -197,6 +203,8 @@ export function MenuPanel({
             </p>
             {rows.map((row) => {
               const { dish, preview, activeVariant, profile, starRating } = row;
+              const paintedUrl =
+                previewUrls[preview_key({ kind: "dish", id: dish.id, variantId: activeVariant?.id })];
               return (
                 <article
                   key={dish.id}
@@ -204,7 +212,7 @@ export function MenuPanel({
                   aria-labelledby={row.titleId}
                 >
                   <span
-                    className="dish-preview"
+                    className={paintedUrl ? "dish-preview has-painting" : "dish-preview"}
                     data-dish={dish.id.slice("dish.".length)}
                     data-variant={activeVariant?.visualKey}
                     data-form={preview.recipe.foodForm}
@@ -215,9 +223,15 @@ export function MenuPanel({
                     style={preview.style}
                     aria-hidden="true"
                   >
-                    <i className="dish-preview-portion" />
-                    <i className="dish-preview-garnish" />
-                    <i className="dish-preview-side" />
+                    {paintedUrl ? (
+                      <PaintedPreview src={paintedUrl} />
+                    ) : (
+                      <>
+                        <i className="dish-preview-portion" />
+                        <i className="dish-preview-garnish" />
+                        <i className="dish-preview-side" />
+                      </>
+                    )}
                   </span>
                   <div className="dish-menu-main">
                     <h3 id={row.titleId}>{localize(dish.nameKey)}</h3>
