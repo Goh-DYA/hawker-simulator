@@ -21,6 +21,11 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { nutritionContentSchema } from "@/src/content/schemas";
+import type {
+  NutritionClass,
+  NutritionProfileStatus,
+  NutritionValue,
+} from "@/src/content/types";
 import {
   addHealthRatings,
   addIntentFits,
@@ -53,9 +58,15 @@ const GUIDELINE_HEADERS = [
   "Source",
 ] as const;
 
-/** The derived fields that the importer's rating passes write onto each profile. */
+/**
+ * The fields that the importer's rating passes read from each profile, and the derived
+ * fields that they write onto it.
+ */
 interface RatedProfile {
   id: string;
+  status: NutritionProfileStatus;
+  nutritionClass: NutritionClass;
+  nutrients: Record<string, NutritionValue>;
   healthRating?: number;
   conditionRatings?: Record<string, number>;
   intentFits: Record<string, number>;

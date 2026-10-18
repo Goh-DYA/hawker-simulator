@@ -28,11 +28,13 @@ The Vitest suites under `tests/` mirror the source tree:
 | `src/game/runtime/` | `tests/game/runtime/` |
 | `src/game/persistence/` | `tests/game/persistence/` |
 | `src/game/audio/` | `tests/game/audio/` |
+| `src/game/pwa/` | `tests/game/pwa/` |
+| `src/config/` | `tests/config/` |
 | `src/content/` | `tests/content/` |
 | `app/game/` | `tests/app/game/` |
 | `tools/nutrition/` | `tests/tools/nutrition/` |
 
-Two suites stay at the root: `tests/hosting-config.test.ts`, and the Node-runner check `tests/rendered-html.test.mjs`.
+Three suites stay at the root: `tests/hosting-config.test.ts`, `tests/module-docs.test.ts` (every `src/`, `app/`, `tools/` and `worker/` module has a module JSDoc header), and the Node-runner check `tests/rendered-html.test.mjs`.
 
 `tests/setup.ts` fails any test that writes unexpected `console.warn` or `console.error` output, or that raises a Node process warning. A test that deliberately exercises a logging path declares it with `expect_console_warning`, from `tests/console.ts`. `npm run test:ssr` runs with `--throw-deprecation`.
 
@@ -100,7 +102,7 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 
 - Zod parse and safe error for malformed definitions.
 - Unique IDs/keys and valid cross-references.
-- Exact 14 stalls, 54 dishes, 80 placeables, 12 archetypes, and 320 English localization entries.
+- The [roster counts](CONTENT_CATALOGUE.md#roster-counts): exactly 14 stalls, 54 dishes, and 12 archetypes, at least 80 placeables, and 320 English localization entries.
 - Every dish assigned, every stall has a menu item available at its unlock, every required English key present, no unlock cycles.
 - Footprint/interaction/depth anchors valid, every referenced visual/audio/animation known, and every stall/dish primary visual reference unique.
 - Catalogue duplicate policy check.

@@ -1,28 +1,51 @@
 /** Pure simulation-domain types. Rendering and UI state intentionally live elsewhere. */
 
+import type {
+  HEALTH_CONDITIONS,
+  NUTRITION_INTENTS,
+  NUTRITION_METRICS,
+  NUTRITION_OBJECTIVE_CRITERIA,
+  NUTRITION_UNAVAILABLE_REASONS,
+  OBJECTIVE_KINDS,
+  PERSISTENT_SCHEMA_VERSION,
+  QUALITY_MODES,
+  QUEUE_DIRECTIONS,
+  ROTATIONS,
+  TILE_KINDS,
+} from "./enums";
+
+/** A tile position in map coordinates, with x to the right and y downwards. */
 export interface GridPoint {
   readonly x: number;
   readonly y: number;
 }
 
+/** Whether an access point admits guests or lets them leave. */
 export type AccessPointKind = "entrance" | "exit";
 
+/** An entrance or exit on the map boundary. */
 export interface AccessPoint {
   readonly id: string;
   readonly kind: AccessPointKind;
   readonly position: GridPoint;
 }
 
+/** A position in world (pixel) coordinates. */
 export interface WorldPoint {
   readonly x: number;
   readonly y: number;
 }
 
-export type Rotation = 0 | 90 | 180 | 270;
-export type TileKind = "floor" | "wall" | "void";
-export type QualityMode = "standard" | "lower-end";
-export type QueueDirection = "north" | "east" | "south" | "west";
+/** A supported clockwise rotation in degrees: 0, 90, 180 or 270. */
+export type Rotation = (typeof ROTATIONS)[number];
+/** The kind of a map tile; only `floor` can be walked on or built on. */
+export type TileKind = (typeof TILE_KINDS)[number];
+/** The simulation quality mode, which selects the per-mode settings in `SimulationConfig`. */
+export type QualityMode = (typeof QUALITY_MODES)[number];
+/** A cardinal direction for an automatically planned queue. */
+export type QueueDirection = (typeof QUEUE_DIRECTIONS)[number];
 
+/** The tiles an unrotated placeable covers. */
 export interface Footprint {
   readonly width: number;
   readonly height: number;
@@ -30,6 +53,7 @@ export interface Footprint {
   readonly cells?: readonly GridPoint[];
 }
 
+/** The hall's tile map: its size, tile size, world origin and row-major tiles. */
 export interface GridMap {
   readonly width: number;
   readonly height: number;
@@ -39,6 +63,10 @@ export interface GridMap {
   readonly tiles: readonly TileKind[];
 }
 
+/**
+ * A dish as the simulation sees it: price, timings, quality, ratings, preference tags, gates and
+ * nutrition variants.
+ */
 export interface DishDefinition {
   readonly id: string;
   readonly price: number;
@@ -59,6 +87,10 @@ export interface DishDefinition {
   readonly activeNutritionVariantId?: string;
 }
 
+/**
+ * The stall behaviour of a placeable: its menu, service timings, capacities, appeal and upgrade
+ * ladder.
+ */
 export interface StallDefinition {
   readonly dishIds: readonly string[];
   /** Full authored menu, retained when dishIds is narrowed to the active menu. */
@@ -72,6 +104,7 @@ export interface StallDefinition {
   readonly upgradeLevels?: readonly StallUpgradeDefinition[];
 }
 
+/** One level of a stall's upgrade ladder and the changes it applies. */
 export interface StallUpgradeDefinition {
   readonly level: 2 | 3 | 4;
   readonly cost: number;
@@ -81,6 +114,7 @@ export interface StallUpgradeDefinition {
   readonly menuSlotsBonus: number;
 }
 
+/** The spatial effects a placeable has on guests within its radius. */
 export interface UtilityEffects {
   readonly radius: number;
   readonly ambience: number;
@@ -93,6 +127,7 @@ export interface UtilityEffects {
   readonly wayfinding: number;
 }
 
+/** The gameplay role of a placeable definition. */
 export type PlaceableKind =
   | "stall"
   | "seat"
@@ -101,6 +136,10 @@ export type PlaceableKind =
   | "facility"
   | "decoration";
 
+/**
+ * A placeable as the simulation sees it: footprint, rotations, collision, price, unlock,
+ * interaction points, and optional stall and utility data.
+ */
 export interface PlaceableDefinition {
   readonly id: string;
   readonly kind: PlaceableKind;
@@ -120,6 +159,10 @@ export interface PlaceableDefinition {
   readonly utility?: UtilityEffects;
 }
 
+/**
+ * A customer behaviour profile: budget, patience, speed, choice sensitivities, preferences,
+ * progression gates and visit schedule.
+ */
 export interface CustomerArchetype {
   readonly id: string;
   readonly budget: number;
@@ -144,12 +187,14 @@ export interface CustomerArchetype {
   };
 }
 
+/** The definitions the simulation runs on, keyed by ID. */
 export interface SimulationCatalog {
   readonly placeables: Readonly<Record<string, PlaceableDefinition>>;
   readonly dishes: Readonly<Record<string, DishDefinition>>;
   readonly archetypes: Readonly<Record<string, CustomerArchetype>>;
 }
 
+/** A placeable instance on the map, with its stall state and queue settings. */
 export interface PlacedObject {
   readonly id: string;
   readonly definitionId: string;
@@ -166,6 +211,7 @@ export interface PlacedObject {
   readonly queuePath?: readonly GridPoint[];
 }
 
+/** The lifecycle states a customer moves through during a visit. */
 export type CustomerStatus =
   | "choosing-stall"
   | "walking-to-queue"
@@ -179,6 +225,10 @@ export type CustomerStatus =
   | "walking-to-tray-return"
   | "walking-to-exit";
 
+/**
+ * A guest in the hall: lifecycle state, movement, timers, targets, order, nutrition outcome and
+ * rating inputs. Customers exist only at runtime and are not saved.
+ */
 export interface Customer {
   readonly id: string;
   readonly archetypeId: string;
@@ -222,6 +272,7 @@ export interface Customer {
   readonly stuckMs: number;
 }
 
+/** The 0-100 component scores combined into a visit rating. */
 export interface VisitRatingComponents {
   readonly foodQuality: number;
   readonly wait: number;
@@ -232,6 +283,7 @@ export interface VisitRatingComponents {
   readonly ambience: number;
 }
 
+/** The settled rating of one finished visit. */
 export interface VisitRating {
   readonly customerId: string;
   readonly walkingMetricVersion: 2;
@@ -244,13 +296,13 @@ export interface VisitRating {
   readonly day: number;
 }
 
-export type ObjectiveKind = "serve" | "revenue" | "happiness" | "flow" | "variety" | "facility" | "nutrition";
+/** The kind of a daily objective, which selects how its progress is measured. */
+export type ObjectiveKind = (typeof OBJECTIVE_KINDS)[number];
 
-export type NutritionObjectiveCriterion =
-  | "profiled-servings"
-  | "intent-matches"
-  | "variant-servings";
+/** What a nutrition objective counts. */
+export type NutritionObjectiveCriterion = (typeof NUTRITION_OBJECTIVE_CRITERIA)[number];
 
+/** One of the day's objectives, with its target, progress and reward. */
 export interface DailyObjective {
   readonly id: string;
   readonly day: number;
@@ -266,52 +318,44 @@ export interface DailyObjective {
   readonly nutritionCriterion?: NutritionObjectiveCriterion;
 }
 
-export type NutritionIntent =
-  | "lighter-energy"
-  | "protein-forward"
-  | "fibre-forward"
-  | "sodium-aware"
-  | "lower-total-sugar-drink";
+/** A fictional nutrition request a guest can bring to a visit. */
+export type NutritionIntent = (typeof NUTRITION_INTENTS)[number];
 
-export type HealthCondition =
-  | "high-cholesterol"
-  | "obesity"
-  | "diabetes"
-  | "hypertension";
+/**
+ * A simplified health condition a guest can be assigned for a visit; a game trait, not a diagnosis.
+ */
+export type HealthCondition = (typeof HEALTH_CONDITIONS)[number];
 
+/** Whether the served meal met a guest's health preference. */
 export type HealthPreferenceResult = "matched" | "missed" | "unknown";
 
-export type NutritionMetric =
-  | "energyKcal"
-  | "proteinG"
-  | "totalFatG"
-  | "saturatedFatG"
-  | "transFatG"
-  | "carbohydrateG"
-  | "totalSugarG"
-  | "dietaryFibreG"
-  | "sodiumMg"
-  | "calciumMg"
-  | "ironMg"
-  | "waterG";
+/** A nutrient tracked by nutrition profiles. */
+export type NutritionMetric = (typeof NUTRITION_METRICS)[number];
 
+/** One nutrient value: a known amount, a trace amount, or unavailable with a reason. */
 export type NutritionValue =
   | { readonly status: "known"; readonly value: number }
   | { readonly status: "trace" }
   | {
       readonly status: "unavailable";
-      readonly reason?: "not-reported" | "invalid-source" | "unmapped";
+      readonly reason?: (typeof NUTRITION_UNAVAILABLE_REASONS)[number];
     };
 
+/** The review status of a nutrition profile; only released profiles are used. */
 export type NutritionProfileStatus = "released" | "unavailable" | "quarantined";
+/** Whether a profile is rated among meals or among drinks. */
 export type NutritionClass = "meal" | "drink";
 
+/** The serving a profile's nutrient values refer to. */
 export interface NutritionServing {
   readonly amount: number;
   readonly unit: "g" | "ml";
   readonly label: string;
 }
 
+/**
+ * The nutrition data of one dish preparation: serving, nutrients, intent fits and health ratings.
+ */
 export interface NutritionProfile {
   readonly id: string;
   readonly dishId: string;
@@ -327,6 +371,7 @@ export interface NutritionProfile {
   readonly nutritionClass: NutritionClass;
 }
 
+/** One reviewed preparation of a dish, with its unlock rank and profile. */
 export interface NutritionVariant {
   readonly id: string;
   readonly label: string;
@@ -336,8 +381,10 @@ export interface NutritionVariant {
   readonly profile?: NutritionProfile;
 }
 
+/** Whether the served meal met a guest's nutrition intent. */
 export type NutritionRequestResult = "matched" | "missed" | "unknown";
 
+/** The nutrition result of one served meal, kept in the recent-outcomes list. */
 export interface NutritionOutcome {
   readonly customerId: string;
   readonly day: number;
@@ -348,6 +395,7 @@ export interface NutritionOutcome {
   readonly profile?: NutritionProfile;
 }
 
+/** Request, match, miss and unknown counts for one nutrition intent. */
 export interface NutritionIntentMetrics {
   readonly requests: number;
   readonly matches: number;
@@ -355,6 +403,7 @@ export interface NutritionIntentMetrics {
   readonly unknowns: number;
 }
 
+/** Lifetime nutrition metrics, with today's metrics nested. */
 export interface NutritionMetrics {
   readonly servedMeals: number;
   readonly profiledServings: number;
@@ -371,6 +420,7 @@ export interface NutritionMetrics {
   readonly today: NutritionDailyMetrics;
 }
 
+/** Nutrition metrics for one operating day. */
 export interface NutritionDailyMetrics {
   readonly day: number;
   readonly servedMeals: number;
@@ -385,12 +435,14 @@ export interface NutritionDailyMetrics {
   readonly dishServings: Readonly<Record<string, number>>;
 }
 
+/** A stall definition's mastery points, rank and upgrade level. */
 export interface StallMasteryState {
   readonly points: number;
   readonly rank: number;
   readonly upgradeLevel: 1 | 2 | 3 | 4;
 }
 
+/** The centre's currency and lifetime economy counters. */
 export interface EconomyState {
   readonly currency: number;
   readonly lifetimeRevenue: number;
@@ -399,6 +451,7 @@ export interface EconomyState {
   readonly abandonedVisits: number;
 }
 
+/** XP, level, reputation, unlocks, expansions, daily objectives, milestones and stall mastery. */
 export interface ProgressionState {
   readonly xp: number;
   readonly level: number;
@@ -411,6 +464,7 @@ export interface ProgressionState {
   readonly stallMastery: Readonly<Record<string, StallMasteryState>>;
 }
 
+/** Simulation counters and recent visit ratings; only an explicit subset is saved. */
 export interface SimulationMetrics {
   readonly spawnedCustomers: number;
   readonly despawnedCustomers: number;
@@ -423,17 +477,24 @@ export interface SimulationMetrics {
   readonly nutrition: NutritionMetrics;
 }
 
+/** Per-quality-mode simulation settings. */
 export interface QualitySettings {
-  /** @deprecated Ignored; arrival demand no longer uses a fixed customer ceiling. */
+  /**
+   * Arrival-model switch, not a cap. When present, customers arrive at the fixed
+   * `SimulationConfig.spawnIntervalMs` and the adaptive demand model is off; when absent,
+   * the adaptive model scales the interval. The numeric value itself is never read.
+   */
   readonly maxActiveCustomers?: number;
   readonly maxFixedStepsPerAdvance: number;
 }
 
+/** Simulation timing, cost and quality-mode settings. */
 export interface SimulationConfig {
   readonly fixedStepMs: number;
   readonly spawnIntervalMs: number;
   readonly stuckRecoveryMs: number;
   readonly maxVisitMs: number;
+  /** @deprecated Not read; visit reputation comes from settleVisitRating. */
   readonly reputationGainPerVisit: number;
   readonly expansionBaseCostPerTile: number;
   readonly expansionCostGrowth: number;
@@ -442,11 +503,13 @@ export interface SimulationConfig {
   readonly lowerEnd: QualitySettings;
 }
 
+/** Partial overrides of `SimulationConfig`, including partial quality settings. */
 export type SimulationConfigOverrides = Omit<Partial<SimulationConfig>, "standard" | "lowerEnd"> & {
   readonly standard?: Partial<QualitySettings>;
   readonly lowerEnd?: Partial<QualitySettings>;
 };
 
+/** An event emitted by a command or simulation step, for the activity feed and UI. */
 export interface SimulationEvent {
   readonly type:
     | "command-applied"
@@ -462,6 +525,7 @@ export interface SimulationEvent {
     | "target-recovered"
     | "objective-completed"
     | "milestone-completed"
+    /** Never emitted: stall upgrades currently report through `command-applied`. */
     | "stall-upgraded";
   readonly tick: number;
   readonly entityId?: string;
@@ -469,6 +533,7 @@ export interface SimulationEvent {
   readonly amount?: number;
 }
 
+/** The parts of the state a build undo restores. */
 export interface UndoSnapshot {
   readonly map: GridMap;
   readonly accessPoints: readonly AccessPoint[];
@@ -481,6 +546,7 @@ export interface UndoSnapshot {
   readonly xp: number;
 }
 
+/** One undoable build command, with its snapshot and economy deltas. */
 export interface UndoEntry {
   readonly commandType: BuildCommand["type"];
   readonly snapshot: UndoSnapshot;
@@ -491,8 +557,9 @@ export interface UndoEntry {
   readonly createdAtTick: number;
 }
 
+/** The complete simulation state. It is immutable; commands and steps return a new state. */
 export interface GameState {
-  readonly schemaVersion: 4;
+  readonly schemaVersion: typeof PERSISTENT_SCHEMA_VERSION;
   readonly map: GridMap;
   readonly accessPoints: readonly AccessPoint[];
   readonly routeGuidePoints: readonly GridPoint[];
@@ -520,6 +587,7 @@ export interface GameState {
   readonly events: readonly SimulationEvent[];
 }
 
+/** The inputs to `createNewGame`. */
 export interface NewGameOptions {
   readonly map: GridMap;
   readonly entrance?: GridPoint;
@@ -535,6 +603,7 @@ export interface NewGameOptions {
   readonly initiallyUnlockedDefinitionIds?: readonly string[];
 }
 
+/** Places a new object. */
 export interface PlaceObjectCommand {
   readonly type: "place-object";
   readonly objectId: string;
@@ -543,6 +612,7 @@ export interface PlaceObjectCommand {
   readonly rotation?: Rotation;
 }
 
+/** Moves, and optionally rotates, a placed object. */
 export interface MoveObjectCommand {
   readonly type: "move-object";
   readonly objectId: string;
@@ -550,23 +620,27 @@ export interface MoveObjectCommand {
   readonly rotation?: Rotation;
 }
 
+/** Rotates a placed object to its next allowed rotation, clockwise unless `clockwise` is false. */
 export interface RotateObjectCommand {
   readonly type: "rotate-object";
   readonly objectId: string;
   readonly clockwise?: boolean;
 }
 
+/** Removes a placed object and refunds part of its price. */
 export interface RemoveObjectCommand {
   readonly type: "remove-object";
   readonly objectId: string;
 }
 
+/** Buys extra columns on the right and rows at the bottom. */
 export interface ExpandMapCommand {
   readonly type: "expand-map";
   readonly addColumns: number;
   readonly addRows: number;
 }
 
+/** Sets a stall's authored queue route. */
 export interface ConfigureQueueCommand {
   readonly type: "configure-queue";
   readonly objectId: string;
@@ -574,38 +648,45 @@ export interface ConfigureQueueCommand {
   readonly points: readonly GridPoint[];
 }
 
+/** Sets the direction of a stall's automatic queue. */
 export interface SetStallQueueDirectionCommand {
   readonly type: "set-stall-queue-direction";
   readonly objectId: string;
   readonly direction: QueueDirection;
 }
 
+/** Replaces the preferred guest route tiles. */
 export interface ConfigureGuestRouteCommand {
   readonly type: "configure-guest-route";
   readonly points: readonly GridPoint[];
 }
 
+/** Adds an entrance or exit on the boundary. */
 export interface AddAccessPointCommand {
   readonly type: "add-access-point";
   readonly accessPoint: AccessPoint;
 }
 
+/** Moves an entrance or exit along the boundary. */
 export interface MoveAccessPointCommand {
   readonly type: "move-access-point";
   readonly accessPointId: string;
   readonly position: GridPoint;
 }
 
+/** Removes an entrance or exit. */
 export interface RemoveAccessPointCommand {
   readonly type: "remove-access-point";
   readonly accessPointId: string;
 }
 
+/** Upgrades every stall of one definition to its next level. */
 export interface UpgradeStallCommand {
   readonly type: "upgrade-stall";
   readonly definitionId: string;
 }
 
+/** The undoable build commands. */
 export type BuildCommand =
   | PlaceObjectCommand
   | MoveObjectCommand
@@ -619,6 +700,7 @@ export type BuildCommand =
   | MoveAccessPointCommand
   | RemoveAccessPointCommand;
 
+/** Every command `dispatchCommand` accepts. */
 export type GameCommand =
   | BuildCommand
   | { readonly type: "undo" }
@@ -626,6 +708,10 @@ export type GameCommand =
   | { readonly type: "set-quality-mode"; readonly mode: QualityMode }
   | UpgradeStallCommand;
 
+/**
+ * The outcome of `dispatchCommand`: the next state, whether it was accepted, the rejection reason
+ * and the events.
+ */
 export interface CommandResult {
   readonly state: GameState;
   readonly accepted: boolean;
@@ -633,6 +719,10 @@ export interface CommandResult {
   readonly events: readonly SimulationEvent[];
 }
 
+/**
+ * The outcome of `advanceSimulation`: the next state, the fixed steps run, the time dropped by the
+ * step cap, and the events.
+ */
 export interface AdvanceResult {
   readonly state: GameState;
   readonly fixedSteps: number;
@@ -640,8 +730,9 @@ export interface AdvanceResult {
   readonly events: readonly SimulationEvent[];
 }
 
+/** A read-only, deep-copied projection of the state for the UI and saves. */
 export interface GameSnapshot {
-  readonly schemaVersion: 4;
+  readonly schemaVersion: typeof PERSISTENT_SCHEMA_VERSION;
   readonly tick: number;
   readonly elapsedMs: number;
   readonly map: GridMap;
@@ -677,6 +768,7 @@ export interface PersistentGameStateV2 {
   readonly elapsedMs: number;
 }
 
+/** Save V3: adds access points, route guides and the saved visit metrics. */
 export interface PersistentGameStateV3 {
   readonly schemaVersion: 3;
   readonly savedAtTick: number;
@@ -693,6 +785,7 @@ export interface PersistentGameStateV3 {
   readonly elapsedMs: number;
 }
 
+/** Save V4, the current core save shape: adds the saved nutrition metrics. */
 export interface PersistentGameStateV4 {
   readonly schemaVersion: 4;
   readonly savedAtTick: number;
@@ -709,6 +802,7 @@ export interface PersistentGameStateV4 {
   readonly elapsedMs: number;
 }
 
+/** Save V1, the original core save shape. */
 export interface PersistentGameStateV1 {
   readonly schemaVersion: 1;
   readonly map: GridMap;
@@ -721,6 +815,7 @@ export interface PersistentGameStateV1 {
   readonly seed: number;
 }
 
+/** Any core save version that `deserializeGameState` can migrate. */
 export type AnyPersistentGameState =
   | PersistentGameStateV1
   | PersistentGameStateV2

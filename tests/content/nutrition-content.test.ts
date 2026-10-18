@@ -6,6 +6,7 @@ import { describe, it } from "vitest";
 import {
   DISHES,
   LAUNCH_CONTENT,
+  LAUNCH_ROSTER,
   NUTRITION_CONTENT,
   getNutritionIntent,
   getNutritionProfile,
@@ -66,7 +67,10 @@ describe("nutrition content", () => {
     assert.equal(LAUNCH_CONTENT.nutrition, NUTRITION_CONTENT);
     assert.equal(NUTRITION_CONTENT.schemaVersion, 2);
     assert.equal(report.counts.nutritionProfiles, 104);
-    assert.equal(report.counts.nutritionVariantFamilies, 14);
+    assert.equal(
+      report.counts.nutritionVariantFamilies,
+      LAUNCH_ROSTER.nutritionVariantFamilies,
+    );
     assert.equal(NUTRITION_CONTENT.dataVersion, "sg-1bc212db6eda-c87987b4281c");
     assert.deepEqual(
       NUTRITION_CONTENT.sourceSnapshots.map((snapshot) => snapshot.rowCount),
@@ -86,7 +90,7 @@ describe("nutrition content", () => {
     const primary = NUTRITION_CONTENT.profiles.filter(
       (profile) => profile.id === profile.dishId,
     );
-    assert.equal(primary.length, 54);
+    assert.equal(primary.length, LAUNCH_ROSTER.dishes);
     assert.deepEqual(
       primary.map((profile) => profile.dishId).sort(),
       DISHES.map((dish) => dish.id).sort(),
@@ -241,7 +245,7 @@ describe("nutrition content", () => {
   });
 
   it("keeps adult guidelines contextual and excludes incompatible comparisons", () => {
-    assert.equal(NUTRITION_CONTENT.guidelines.length, 11);
+    assert.equal(NUTRITION_CONTENT.guidelines.length, LAUNCH_ROSTER.nutritionGuidelines);
     for (const id of ["added-sugar", "cholesterol", "drinking-water"]) {
       const guideline = NUTRITION_CONTENT.guidelines.find(
         (candidate) => candidate.id === id,

@@ -71,6 +71,10 @@ Also target:
 
 Avoid unsafe-eval and unsafe-inline. If the framework build cannot meet that initially, document the narrow exception, use report-only evaluation, and create a removal task. Reference: [OWASP CSP Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html).
 
+### Current CSP exception (as of 2026-10-17)
+
+The enforced policy in `src/config/securityHeaders.ts`, which both hosting targets apply, currently allows `'unsafe-inline'` in `script-src` and in `style-src`. It is enforced directly rather than evaluated in report-only mode. In development builds of the Next.js target only, `createNextSecurityHeaders` also adds `'unsafe-eval'` to `script-src`; production headers never include it. Some other directives also differ from the target above (for example `base-uri 'self'`, `form-action 'self'` and `media-src 'self' blob:`); that file is the authority for the current policy. Removing the inline exception is an open hardening item; no removal work has been scheduled.
+
 ## Dependency and release checks
 
 - npm ci from the lockfile on a clean workspace.

@@ -1,3 +1,25 @@
+/**
+ * Service-worker registration, offline-cache warming and the update protocol.
+ *
+ * This module owns the messages the page sends to `public/sw.js` and the activation of a
+ * waiting update. Saving before an update stays with the UI, which calls
+ * {@link activate_waiting_update} only once the save has succeeded.
+ */
+import { IS_PRODUCTION_BUILD } from "@/src/config/env";
+
+/** The message types `public/sw.js` handles. */
+export const SW_MESSAGE = {
+  WARM_CACHE: "WARM_CACHE",
+  ACTIVATE_UPDATE: "ACTIVATE_UPDATE",
+} as const;
+
+/** How long the page waits for the worker to answer a cache-warming request. */
+export const WARM_CACHE_TIMEOUT_MS = 20_000;
+
+/**
+ * Callbacks for the offline status the UI shows: the offline cache is ready, an update is ready,
+ * connectivity changed, or caching failed.
+ */
 export interface PwaStatusHandlers {
   onOfflineReady(): void;
   onUpdateReady(): void;
@@ -19,24 +41,33 @@ async function warmRuntimeCache(
   const result = await new Promise<{ ok: boolean; failed: number }>((resolve, reject) => {
     const timeout = window.setTimeout(
       () => reject(new Error("Offline caching timed out.")),
-      20_000,
+      WARM_CACHE_TIMEOUT_MS,
     );
     channel.port1.onmessage = (event) => {
       window.clearTimeout(timeout);
       resolve(event.data as { ok: boolean; failed: number });
     };
-    worker.postMessage({ type: "WARM_CACHE", urls }, [channel.port2]);
+    worker.postMessage({ type: SW_MESSAGE.WARM_CACHE, urls }, [channel.port2]);
   });
   if (!result.ok) throw new Error(`${result.failed} game files could not be cached.`);
 }
 
+/**
+ * Tracks connectivity and, in production builds with service-worker support, registers `/sw.js`,
+ * warms the offline cache and reports a waiting update once its cache is warm.
+ *
+ * Registration and caching failures are reported through `onOfflineError` rather than thrown.
+ *
+ * @param handlers - The status callbacks.
+ * @returns A function that removes the connectivity listeners.
+ */
 export function registerPwa(handlers: PwaStatusHandlers): () => void {
   const updateConnectivity = () => handlers.onConnectivityChange(navigator.onLine);
   window.addEventListener("online", updateConnectivity);
   window.addEventListener("offline", updateConnectivity);
   updateConnectivity();
 
-  if (!("serviceWorker" in navigator) || process.env.NODE_ENV !== "production") {
+  if (!("serviceWorker" in navigator) || !IS_PRODUCTION_BUILD) {
     return () => {
       window.removeEventListener("online", updateConnectivity);
       window.removeEventListener("offline", updateConnectivity);
@@ -80,4 +111,27 @@ export function registerPwa(handlers: PwaStatusHandlers): () => void {
     window.removeEventListener("online", updateConnectivity);
     window.removeEventListener("offline", updateConnectivity);
   };
+}
+
+/**
+ * Activate the waiting service worker, then reload once it takes control.
+ *
+ * When no worker is waiting, it reloads at once. Callers save the game first.
+ *
+ * @param reload - Reloads the page; replaced in tests.
+ * @returns A promise that resolves once the activation message is sent, or the reload is
+ * requested.
+ */
+export async function activate_waiting_update(reload = () => location.reload()): Promise<void> {
+  const registration = await navigator.serviceWorker?.getRegistration();
+  if (!registration?.waiting) {
+    reload();
+    return;
+  }
+  navigator.serviceWorker.addEventListener(
+    "controllerchange",
+    () => reload(),
+    { once: true },
+  );
+  registration.waiting.postMessage({ type: SW_MESSAGE.ACTIVATE_UPDATE });
 }

@@ -1,25 +1,35 @@
+/**
+ * Bridge types between the Phaser runtime and the React UI: the HUD snapshot, runtime events
+ * and settings, the controller the UI drives, and the runtime options.
+ *
+ * The UI depends on these types only, never on the runtime's internals. `RuntimePersistentState`
+ * is re-exported here so the UI can name the save shape.
+ */
 import type {
   AccessPoint,
   GridPoint,
+  HealthCondition,
   NutritionIntent,
   NutritionProfileStatus,
   NutritionRequestResult,
   NutritionValue,
+  QualityMode,
   QueueDirection,
   VisitRatingComponents,
 } from "@/src/game/core";
 import type { SatisfactionTip } from "./satisfactionInsight";
 import type { QueueFlowState } from "./queueInsight";
+import type { RuntimePersistentState } from "./saves";
 
-export type QualityMode = "standard" | "lower-end";
+export type { QualityMode, RuntimePersistentState };
+/** A simulation speed multiplier; 0 pauses. */
 export type GameSpeed = 0 | 1 | 2 | 4 | 10;
+/** The active world tool, which decides what a tile click does. */
 export type BuildTool = "select" | "place" | "move" | "remove" | "queue" | "access" | "route";
-export type HealthConditionId =
-  | "high-cholesterol"
-  | "obesity"
-  | "diabetes"
-  | "hypertension";
+/** A health condition ID as the UI names it; the same values as the core `HealthCondition`. */
+export type HealthConditionId = HealthCondition;
 
+/** A daily objective as the HUD shows it. */
 export interface RuntimeObjective {
   readonly id: string;
   readonly title: string;
@@ -31,6 +41,7 @@ export interface RuntimeObjective {
   readonly completed: boolean;
 }
 
+/** A nutrition profile flattened for display: its status, serving, nutrient values and ratings. */
 export interface RuntimeNutritionProfileSummary {
   readonly status: NutritionProfileStatus;
   readonly servingLabel?: string;
@@ -53,6 +64,7 @@ export interface RuntimeNutritionProfileSummary {
   readonly intentFits?: Partial<Readonly<Record<NutritionIntent, number>>>;
 }
 
+/** One variant of a dish family for the Variant Lab, with its unlock and selection state. */
 export interface RuntimeNutritionVariantSummary {
   readonly id: string;
   readonly label: string;
@@ -64,6 +76,7 @@ export interface RuntimeNutritionVariantSummary {
   readonly profile?: RuntimeNutritionProfileSummary;
 }
 
+/** A dish's nutrition variant family for the Variant Lab. */
 export interface RuntimeNutritionFamilySummary {
   readonly dishId: string;
   /** Taste and popularity score; unlike health ratings, this is shared by every variant. */
@@ -73,6 +86,7 @@ export interface RuntimeNutritionFamilySummary {
   readonly variants: readonly RuntimeNutritionVariantSummary[];
 }
 
+/** The Nutrition Pulse summary: today's servings, intent results and nutrient averages. */
 export interface RuntimeNutritionPulse {
   readonly servedMeals: number;
   readonly profiledMeals: number;
@@ -96,6 +110,7 @@ export interface RuntimeNutritionPulse {
   readonly leadingUnmetIntent?: NutritionIntent;
 }
 
+/** The nutrition details of the selected customer for the customer inspector. */
 export interface RuntimeCustomerNutritionSummary {
   readonly customerId: string;
   readonly archetypeId: string;
@@ -114,6 +129,7 @@ export interface RuntimeCustomerNutritionSummary {
   readonly profile?: RuntimeNutritionProfileSummary;
 }
 
+/** A stall definition's mastery for the HUD, with the cost and rank needed for its next upgrade. */
 export interface RuntimeStallMastery {
   readonly definitionId: string;
   readonly points: number;
@@ -123,6 +139,7 @@ export interface RuntimeStallMastery {
   readonly requiredRank?: number;
 }
 
+/** The next unclaimed tier of a milestone track and the progress towards it. */
 export interface RuntimeMilestoneTrack {
   readonly id: string;
   readonly title: string;
@@ -131,6 +148,7 @@ export interface RuntimeMilestoneTrack {
   readonly target: number;
 }
 
+/** A placed stall for the stalls panel. */
 export interface RuntimeStallSummary {
   readonly objectId: string;
   readonly definitionId: string;
@@ -141,6 +159,10 @@ export interface RuntimeStallSummary {
   readonly open: boolean;
 }
 
+/**
+ * Everything the HUD shows, pushed through `RuntimeOptions.onSnapshot` after each change and
+ * periodically while running.
+ */
 export interface RuntimeSnapshot {
   cash: number;
   reputation: number;
@@ -196,14 +218,19 @@ export interface RuntimeSnapshot {
   pausedReason?: string;
 }
 
+/**
+ * A player-facing message for the activity feed and toasts; `groupKey` merges repeats into one feed
+ * entry.
+ */
 export interface RuntimeEvent {
-  kind: "info" | "success" | "warning" | "error";
-  message: string;
-  importance?: "routine" | "important";
-  groupKey?: string;
-  amount?: number;
+  readonly kind: "info" | "success" | "warning" | "error";
+  readonly message: string;
+  readonly importance?: "routine" | "important";
+  readonly groupKey?: string;
+  readonly amount?: number;
 }
 
+/** The player settings the runtime starts with. */
 export interface RuntimeSettings {
   quality: QualityMode;
   reducedMotion: boolean;
@@ -215,39 +242,111 @@ export interface RuntimeSettings {
   masterMuted: boolean;
 }
 
+/**
+ * The interface the UI uses to drive the runtime.
+ *
+ * `createHawkerRuntime` returns the controller before the Phaser scene has booted. Every method is
+ * safe to call before boot: state changes, saves, events and HUD snapshots happen at once, while
+ * drawing waits for the scene and camera-only calls (`zoomBy`, `centreCamera`) do nothing until it
+ * exists. Methods that return a boolean return true when the change was made or was already in
+ * effect, and false when it was rejected; a rejection usually also emits a warning or error event.
+ */
 export interface RuntimeController {
+  /** Destroys the Phaser game and releases the scene. */
   destroy(): void;
+  /**
+   * Chooses the catalogue item to place, resetting its rotation and switching to the place tool; no
+   * item clears the choice.
+   */
   selectBuildItem(itemId?: string): void;
+  /**
+   * Switches the world tool. Entering the access or route tool pauses the simulation, and leaving
+   * it restores the earlier speed.
+   */
   setBuildTool(tool: BuildTool): void;
+  /** Rotates the selected object, or, with nothing selected, the next placement. */
   rotateSelection(): void;
+  /** Undoes the most recent build command while its undo window is open. */
   undo(): void;
+  /**
+   * Opens every placed stall, or closes them all when the centre is open; false when no stall is
+   * placed.
+   */
   toggleOpen(): boolean;
+  /** Sets the simulation speed. */
   setSpeed(speed: GameSpeed): void;
+  /** Sets the simulation quality mode and the matching frame-rate cap. */
   setQuality(quality: QualityMode): void;
+  /** Turns reduced motion on or off for the world rendering. */
   setReducedMotion(enabled: boolean): void;
+  /** Turns the high-contrast world rendering on or off. */
   setHighContrast(enabled: boolean): void;
+  /** Shows or hides the developer debug overlay. */
   setDebugOverlay(enabled: boolean): void;
+  /** Changes the camera zoom by `delta`, within the zoom limits. */
   zoomBy(delta: number): void;
+  /** Centres the camera on the hall. */
   centreCamera(): void;
+  /** Returns the current save payload (`RuntimePersistentState`). */
   exportState(): unknown;
+  /**
+   * Replaces the session with a save payload and clears the customer selection.
+   *
+   * @throws Error When the payload cannot be loaded; the current session is then unchanged.
+   */
   importState(value: unknown): void;
+  /**
+   * Replaces the session with a fresh centre, returns to the select tool at normal speed, and
+   * saves.
+   */
   reset(): void;
+  /**
+   * Developer action: spawns a customer by running one fixed step with the spawn countdown cleared.
+   */
   spawnCustomer(): void;
+  /** Developer action: adds cash, never going below zero, and saves. */
   addCash(amount: number): void;
+  /**
+   * Buys the next map expansion; false below the required level or when the purchase is rejected.
+   */
   expandMap(): boolean;
+  /**
+   * Starts editing a placed stall's queue route with the queue tool; false when the object is not a
+   * placed stall with a queue anchor.
+   */
   beginQueueEdit(objectId: string): boolean;
+  /** Sets a stall's automatic queue direction and ends any queue edit; false when rejected. */
   setQueueDirection(objectId: string, direction: QueueDirection): boolean;
+  /** Ends the current queue edit; does nothing unless the queue tool is active. */
   finishQueueEdit(): void;
+  /**
+   * Adds a dish to or removes it from a stall's menu; false for an unknown or locked dish, a full
+   * menu, or removing the last dish.
+   */
   setDishEnabled(stallId: string, dishId: string, enabled: boolean): boolean;
+  /**
+   * Selects the nutrition variant a dish serves for future orders; false for an unknown variant or
+   * one above the stall's mastery rank.
+   */
   setDishVariant(dishId: string, variantId: string): boolean;
+  /** Selects a customer for the inspector; an unknown or missing ID clears the selection. */
   selectCustomer(customerId?: string): void;
+  /** Arms the access tool so the next boundary tile clicked becomes a new entrance or exit. */
   addAccessPoint(kind: AccessPoint["kind"]): void;
+  /** Selects an access point with the access tool; an unknown ID is ignored. */
   selectAccessPoint(accessPointId?: string): void;
+  /** Removes the selected access point; false when none is selected or the removal is rejected. */
   removeSelectedAccessPoint(): boolean;
+  /** Clears every preferred guest route tile. */
   clearGuestRoute(): boolean;
+  /** Buys the next mastery upgrade for a stall definition; false when rejected. */
   upgradeStall(definitionId: string): boolean;
 }
 
+/**
+ * The inputs to `createHawkerRuntime`: the parent element, the starting settings, the save
+ * candidates to try in order, and the callbacks for snapshots, events and save payloads.
+ */
 export interface RuntimeOptions {
   parent: HTMLElement;
   settings: RuntimeSettings;

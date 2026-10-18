@@ -114,6 +114,53 @@ const REJECTED_SAVE_CASES: readonly RejectedSaveCase[] = [
     },
     message: "progression.level must be a finite number >= 1",
   },
+  {
+    name: "a fractional lifetime nutrition intent counter",
+    buildInput: () => {
+      const save = load_save_fixture("save-v4.json");
+      const metrics = save.metrics as SaveRecord;
+      const nutrition = metrics.nutrition as SaveRecord;
+      const by_intent = nutrition.byIntent as SaveRecord;
+      return {
+        ...save,
+        metrics: {
+          ...metrics,
+          nutrition: {
+            ...nutrition,
+            byIntent: {
+              ...by_intent,
+              "protein-forward": { ...(by_intent["protein-forward"] as SaveRecord), matches: 1.5 },
+            },
+          },
+        },
+      };
+    },
+    message:
+      "metrics.nutrition.byIntent.protein-forward.matches must be a safe integer between 0 and 9007199254740991",
+  },
+  {
+    name: "a negative nutrient total for today",
+    buildInput: () => {
+      const save = load_save_fixture("save-v4.json");
+      const metrics = save.metrics as SaveRecord;
+      const nutrition = metrics.nutrition as SaveRecord;
+      const today = nutrition.today as SaveRecord;
+      return {
+        ...save,
+        metrics: {
+          ...metrics,
+          nutrition: {
+            ...nutrition,
+            today: {
+              ...today,
+              nutrientTotals: { ...(today.nutrientTotals as SaveRecord), sodiumMg: -1 },
+            },
+          },
+        },
+      };
+    },
+    message: "metrics.nutrition.today.nutrientTotals.sodiumMg must be a finite number >= 0",
+  },
 ];
 
 describe("persistentStateFromGame", () => {

@@ -1,3 +1,13 @@
+/**
+ * Smoke-checks a live deployment: `npm run smoke:deployment -- <base URL>`.
+ *
+ * It fetches the root page, the web manifest, the service worker and two static assets,
+ * and asserts the status codes, the security headers, the shell's title and copy, that
+ * the shell links no third-party origins, and the manifest and service-worker markers.
+ * When `VERCEL_AUTOMATION_BYPASS_SECRET` is set, it is sent as the Vercel protection
+ * bypass header so protected preview deployments can be checked. Any failed assertion
+ * exits non-zero.
+ */
 import assert from "node:assert/strict";
 
 const deployment = process.argv[2];
@@ -15,6 +25,14 @@ const requestHeaders = bypass
     }
   : undefined;
 
+/**
+ * Fetches a deployment path and requires a 200 response.
+ *
+ * @param {string} path - The path to fetch, relative to the deployment's base URL.
+ * @returns {Promise<Response>} The response.
+ * @throws {Error} When the request fails, naming whether the bypass header was sent.
+ * @throws {import("node:assert").AssertionError} When the status is not 200.
+ */
 async function request(path) {
   const url = new URL(path, baseUrl);
   let response;

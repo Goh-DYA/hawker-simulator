@@ -1,4 +1,13 @@
-import { createHash } from "node:crypto";
+/**
+ * Builds `src/content/nutrition.generated.json` from the reviewed Singapore food and
+ * adult daily guideline CSV files, and runs as the `node tools/nutrition/importer.mjs` CLI.
+ *
+ * It verifies the source hashes against the manifest, maps each dish (and each variant)
+ * to its reviewed source row, quarantines implausible rows, and then rates every profile.
+ * CSV parsing lives in `csv.mjs` and the rating passes in `ratings.mjs`; both are
+ * re-exported here so callers keep one entry point.
+ */
+// @ts-check
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,10 +16,104 @@ import {
   EXPECTED_FOOD_FILE_SHA256,
   EXPECTED_GUIDELINE_FILE_SHA256,
   NUTRITION_DISCLOSURE,
+  NUTRITION_GUIDELINE_COUNT,
   NUTRITION_INTENTS,
   PRIMARY_PROFILE_MAPPINGS,
   VARIANT_FAMILY_MAPPINGS,
 } from "./manifest.mjs";
+import { canonicalRowHash, parseCsv, sha256 } from "./csv.mjs";
+import {
+  addHealthRatings,
+  addIntentFits,
+  NEUTRAL_CONDITION_RATINGS,
+  round,
+} from "./ratings.mjs";
+
+export { canonicalRowHash, parseCsv } from "./csv.mjs";
+export {
+  addHealthRatings,
+  addIntentFits,
+  computeRelativeFits,
+  HEALTH_RATING_SCHEMES,
+  nutritionValueForComparison,
+} from "./ratings.mjs";
+
+/**
+ * @import {
+ *   NutritionClass,
+ *   NutritionIntentId,
+ *   NutritionProfileStatus,
+ *   NutritionProvenance,
+ *   NutritionUnavailableReason,
+ *   NutritionValue,
+ * } from "../../src/content/types"
+ * @import { CsvRow, ParsedCsv } from "./csv.mjs"
+ */
+
+/**
+ * A parsed per-serving size. `unit` is the lowercased source unit, `g` or `ml`.
+ *
+ * @typedef {object} Serving
+ * @property {number} amount
+ * @property {string} unit
+ * @property {string} label
+ */
+
+/**
+ * A manifest mapping from a dish (or one of its variants) to a reviewed source food row.
+ *
+ * @typedef {object} SourceMapping
+ * @property {string} dishId
+ * @property {string} foodName - The exact, case-sensitive `Food Name` of the source row.
+ * @property {NutritionClass} nutritionClass
+ * @property {string} reviewNote
+ * @property {NutritionProvenance["mappingKind"]} mappingKind
+ * @property {number} [multiplier] - Scale from the source serving to the game serving.
+ * @property {string} [servingLabel] - Serving label to use instead of the source's.
+ */
+
+/**
+ * A source file's identity as recorded in the generated content.
+ *
+ * @typedef {object} SourceSnapshot
+ * @property {string} id
+ * @property {string} fileName
+ * @property {string} sha256
+ * @property {number} rowCount
+ */
+
+/**
+ * A nutrition profile while the importer builds and rates it. It becomes one
+ * `NutritionProfile` in the generated content.
+ *
+ * @typedef {object} DraftProfile
+ * @property {string} id
+ * @property {string} dishId
+ * @property {string} [variantId]
+ * @property {NutritionProfileStatus} status
+ * @property {NutritionClass} nutritionClass
+ * @property {Serving} [serving]
+ * @property {Record<string, NutritionValue>} nutrients
+ * @property {number} healthRating
+ * @property {Record<string, number>} conditionRatings
+ * @property {Partial<Record<NutritionIntentId, number>>} intentFits
+ * @property {NutritionProvenance} [provenance]
+ * @property {NutritionUnavailableReason} [unavailableReason]
+ * @property {string} reviewNote
+ * @property {string[]} [quarantineReasons]
+ */
+
+/**
+ * Validated command-line options. `parseArguments` guarantees that exactly one of
+ * `guidelinePath` and `preservedGuidelinesPath` is set.
+ *
+ * @typedef {object} ImporterOptions
+ * @property {boolean} acceptSourceUpdate
+ * @property {string} outputPath
+ * @property {string} foodPath
+ * @property {string} [guidelinePath]
+ * @property {string} [preservedGuidelinesPath]
+ */
 
 const TOOL_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
 export const DEFAULT_OUTPUT_PATH = path.resolve(
@@ -18,6 +121,7 @@ export const DEFAULT_OUTPUT_PATH = path.resolve(
   "../../src/content/nutrition.generated.json",
 );
 
+/** The food source's per-serving column for each nutrient metric, in output order. */
 export const NUTRIENT_COLUMNS = {
   energyKcal: "Energy (kcal) - Per Serving",
   proteinG: "Protein (g) - Per Serving",
@@ -33,6 +137,11 @@ export const NUTRIENT_COLUMNS = {
   waterG: "Water (g) - Per Serving",
 };
 
+/**
+ * Stable guideline ids keyed by the guideline source's `Nutrient` cell.
+ *
+ * @type {Readonly<Record<string, string>>}
+ */
 const GUIDELINE_IDS = {
   "kcal (Energy)": "energy",
   Fats: "fats",
@@ -47,142 +156,39 @@ const GUIDELINE_IDS = {
   Water: "drinking-water",
 };
 
-const sha256 = (input) =>
-  createHash("sha256").update(input).digest("hex");
-
-const round = (value) => Math.round((value + Number.EPSILON) * 10_000) / 10_000;
-const roundRating = (value) => Math.round((value + Number.EPSILON) * 10) / 10;
-
-export const HEALTH_RATING_SCHEMES = {
-  overall: [
-    ["energyKcal", "lower", 0.16],
-    ["proteinG", "higher", 0.12],
-    ["totalFatG", "lower", 0.08],
-    ["saturatedFatG", "lower", 0.1],
-    ["transFatG", "lower", 0.08],
-    ["totalSugarG", "lower", 0.12],
-    ["dietaryFibreG", "higher", 0.14],
-    ["sodiumMg", "lower", 0.12],
-    ["calciumMg", "higher", 0.04],
-    ["ironMg", "higher", 0.04],
-  ],
-  "high-cholesterol": [
-    ["saturatedFatG", "lower", 0.35],
-    ["transFatG", "lower", 0.2],
-    ["totalFatG", "lower", 0.2],
-    ["dietaryFibreG", "higher", 0.15],
-    ["energyKcal", "lower", 0.1],
-  ],
-  obesity: [
-    ["energyKcal", "lower", 0.35],
-    ["totalFatG", "lower", 0.18],
-    ["saturatedFatG", "lower", 0.07],
-    ["totalSugarG", "lower", 0.15],
-    ["dietaryFibreG", "higher", 0.15],
-    ["proteinG", "higher", 0.1],
-  ],
-  diabetes: [
-    ["carbohydrateG", "lower", 0.3],
-    ["totalSugarG", "lower", 0.3],
-    ["dietaryFibreG", "higher", 0.2],
-    ["energyKcal", "lower", 0.12],
-    ["proteinG", "higher", 0.08],
-  ],
-  hypertension: [
-    ["sodiumMg", "lower", 0.65],
-    ["energyKcal", "lower", 0.1],
-    ["saturatedFatG", "lower", 0.1],
-    ["dietaryFibreG", "higher", 0.1],
-    ["proteinG", "higher", 0.05],
-  ],
-};
-
-const NEUTRAL_CONDITION_RATINGS = {
-  "high-cholesterol": 3,
-  obesity: 3,
-  diabetes: 3,
-  hypertension: 3,
-};
-
 const UNGROUPED_NUMERIC_PATTERN = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
 const GROUPED_NUMERIC_PATTERN = /^[+-]?\d{1,3}(?:,\d{3})+(?:\.\d*)?$/;
 
 /**
- * Parses RFC 4180-style CSV, including quoted commas, escaped quotes, embedded
- * newlines, CRLF input, and an optional UTF-8 byte-order mark.
+ * Grams by which a component (saturated or trans fat, sugar, fibre) may exceed its parent
+ * (total fat or carbohydrate) before the row is quarantined, to allow for source rounding.
  */
-export const parseCsv = (text) => {
-  const input = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
-  const records = [];
-  let record = [];
-  let cell = "";
-  let quoted = false;
+const COMPONENT_TOLERANCE_G = 0.1;
+/** How far the protein, fat and carbohydrate mass may exceed the serving mass, as a ratio. */
+const MAX_MACRONUTRIENT_SERVING_RATIO = 1.05;
+/** The Atwater energy factor for protein, in kcal per gram, for the energy cross-check. */
+const PROTEIN_KCAL_PER_G = 4;
+/** The Atwater energy factor for fat, in kcal per gram, for the energy cross-check. */
+const FAT_KCAL_PER_G = 9;
+/** The Atwater energy factor for carbohydrate, in kcal per gram, for the energy cross-check. */
+const CARBOHYDRATE_KCAL_PER_G = 4;
+/** Lowest permitted ratio of reported energy to the macronutrient energy estimate. */
+const MIN_ENERGY_ESTIMATE_RATIO = 0.5;
+/** Highest permitted ratio of reported energy to the macronutrient energy estimate. */
+const MAX_ENERGY_ESTIMATE_RATIO = 2;
+/** Energy per serving, in kcal, above which a row needs manual review. */
+const MANUAL_REVIEW_ENERGY_KCAL = 5_000;
+/** Dietary fibre per serving, in grams, above which a row needs manual review. */
+const MANUAL_REVIEW_DIETARY_FIBRE_G = 50;
 
-  const pushRecord = () => {
-    record.push(cell);
-    cell = "";
-    if (record.some((value) => value.length > 0)) records.push(record);
-    record = [];
-  };
-
-  for (let index = 0; index < input.length; index += 1) {
-    const character = input[index];
-    if (quoted) {
-      if (character === '"') {
-        if (input[index + 1] === '"') {
-          cell += '"';
-          index += 1;
-        } else {
-          quoted = false;
-        }
-      } else {
-        cell += character;
-      }
-      continue;
-    }
-
-    if (character === '"' && cell.length === 0) {
-      quoted = true;
-    } else if (character === ",") {
-      record.push(cell);
-      cell = "";
-    } else if (character === "\n" || character === "\r") {
-      if (character === "\r" && input[index + 1] === "\n") index += 1;
-      pushRecord();
-    } else {
-      cell += character;
-    }
-  }
-
-  if (quoted) throw new Error("CSV input ends inside a quoted field.");
-  if (cell.length > 0 || record.length > 0) pushRecord();
-  if (records.length === 0) throw new Error("CSV input has no records.");
-
-  const headers = records[0].map((header) => header.trim());
-  if (new Set(headers).size !== headers.length) {
-    throw new Error("CSV input contains duplicate column headings.");
-  }
-
-  const rows = records.slice(1).map((values, index) => {
-    if (values.length !== headers.length) {
-      throw new Error(
-        `CSV record ${index + 2} has ${values.length} fields; expected ${headers.length}.`,
-      );
-    }
-    return {
-      sourceRowNumber: index + 2,
-      values: Object.fromEntries(
-        headers.map((header, columnIndex) => [header, values[columnIndex]]),
-      ),
-    };
-  });
-
-  return { headers, rows };
-};
-
-export const canonicalRowHash = (headers, row) =>
-  sha256(JSON.stringify(headers.map((header) => [header, row[header]])));
-
+/**
+ * Parses one nutrient cell. Blank and `-` cells are unreported, `Trace` is kept as trace,
+ * and anything that is not a non-negative plain or comma-grouped number is invalid.
+ *
+ * @param {string} rawValue - The raw cell text.
+ * @param {number} [multiplier] - Scale from the source serving to the game serving.
+ * @returns {NutritionValue} The parsed value, rounded to four decimal places when known.
+ */
 export const parseNutritionValue = (rawValue, multiplier = 1) => {
   const value = rawValue.trim();
   if (value === "" || value === "-") {
@@ -205,6 +211,15 @@ export const parseNutritionValue = (rawValue, multiplier = 1) => {
   return { status: "known", value: round(numericValue) };
 };
 
+/**
+ * Parses a `Per Serving (<amount> g|ml)` cell.
+ *
+ * @param {string} rawValue - The raw `Per Serving Size` cell.
+ * @param {number} [multiplier] - Scale from the source serving to the game serving.
+ * @param {string} [labelOverride] - Label to use instead of `<amount> <unit>`.
+ * @returns {Serving | undefined} The scaled serving, or undefined when the cell does not
+ *   match the expected form.
+ */
 export const parseServing = (rawValue, multiplier = 1, labelOverride) => {
   const match = rawValue
     .trim()
@@ -218,12 +233,25 @@ export const parseServing = (rawValue, multiplier = 1, labelOverride) => {
   };
 };
 
+/**
+ * @param {Readonly<Record<string, NutritionValue>>} nutrients
+ * @param {string} metric
+ * @returns {number | undefined} The metric's amount when known.
+ */
 const knownValue = (nutrients, metric) => {
   const value = nutrients[metric];
   return value.status === "known" ? value.value : undefined;
 };
 
+/**
+ * Lists every reason a source row is implausible and must be quarantined for review.
+ *
+ * @param {Serving | undefined} serving - The parsed serving, if any.
+ * @param {Readonly<Record<string, NutritionValue>>} nutrients - The parsed nutrients.
+ * @returns {string[]} Distinct reasons in check order; empty when the row is plausible.
+ */
 export const findQuarantineReasons = (serving, nutrients) => {
+  /** @type {string[]} */
   const reasons = [];
   if (!serving || !Number.isFinite(serving.amount) || serving.amount <= 0) {
     reasons.push("Serving amount is missing or invalid.");
@@ -247,16 +275,16 @@ export const findQuarantineReasons = (serving, nutrients) => {
   const protein = knownValue(nutrients, "proteinG");
   const energy = knownValue(nutrients, "energyKcal");
 
-  if (totalFat !== undefined && saturatedFat !== undefined && saturatedFat > totalFat + 0.1) {
+  if (totalFat !== undefined && saturatedFat !== undefined && saturatedFat > totalFat + COMPONENT_TOLERANCE_G) {
     reasons.push("Saturated fat exceeds total fat.");
   }
-  if (totalFat !== undefined && transFat !== undefined && transFat > totalFat + 0.1) {
+  if (totalFat !== undefined && transFat !== undefined && transFat > totalFat + COMPONENT_TOLERANCE_G) {
     reasons.push("Trans fat exceeds total fat.");
   }
-  if (carbohydrate !== undefined && totalSugar !== undefined && totalSugar > carbohydrate + 0.1) {
+  if (carbohydrate !== undefined && totalSugar !== undefined && totalSugar > carbohydrate + COMPONENT_TOLERANCE_G) {
     reasons.push("Total sugar exceeds carbohydrate.");
   }
-  if (carbohydrate !== undefined && dietaryFibre !== undefined && dietaryFibre > carbohydrate + 0.1) {
+  if (carbohydrate !== undefined && dietaryFibre !== undefined && dietaryFibre > carbohydrate + COMPONENT_TOLERANCE_G) {
     reasons.push("Dietary fibre exceeds carbohydrate.");
   }
 
@@ -265,7 +293,7 @@ export const findQuarantineReasons = (serving, nutrients) => {
     protein !== undefined &&
     totalFat !== undefined &&
     carbohydrate !== undefined &&
-    protein + totalFat + carbohydrate > serving.amount * 1.05
+    protein + totalFat + carbohydrate > serving.amount * MAX_MACRONUTRIENT_SERVING_RATIO
   ) {
     reasons.push("Macronutrient mass exceeds the listed serving mass.");
   }
@@ -276,22 +304,33 @@ export const findQuarantineReasons = (serving, nutrients) => {
     totalFat !== undefined &&
     carbohydrate !== undefined
   ) {
-    const estimatedEnergy = protein * 4 + totalFat * 9 + carbohydrate * 4;
-    if (estimatedEnergy > 0 && (energy < estimatedEnergy * 0.5 || energy > estimatedEnergy * 2)) {
+    const estimatedEnergy =
+      protein * PROTEIN_KCAL_PER_G +
+      totalFat * FAT_KCAL_PER_G +
+      carbohydrate * CARBOHYDRATE_KCAL_PER_G;
+    if (
+      estimatedEnergy > 0 &&
+      (energy < estimatedEnergy * MIN_ENERGY_ESTIMATE_RATIO ||
+        energy > estimatedEnergy * MAX_ENERGY_ESTIMATE_RATIO)
+    ) {
       reasons.push("Energy falls outside the permitted macronutrient cross-check range.");
     }
   }
 
-  if (energy !== undefined && energy > 5_000) {
+  if (energy !== undefined && energy > MANUAL_REVIEW_ENERGY_KCAL) {
     reasons.push("Energy exceeds the manual-review threshold.");
   }
-  if (dietaryFibre !== undefined && dietaryFibre > 50) {
+  if (dietaryFibre !== undefined && dietaryFibre > MANUAL_REVIEW_DIETARY_FIBRE_G) {
     reasons.push("Dietary fibre exceeds the manual-review threshold.");
   }
 
   return [...new Set(reasons)];
 };
 
+/**
+ * @param {NutritionUnavailableReason} reason
+ * @returns {Record<string, NutritionValue>} Every metric unavailable for the same reason.
+ */
 const unavailableNutrients = (reason) =>
   Object.fromEntries(
     Object.keys(NUTRIENT_COLUMNS).map((metric) => [
@@ -300,6 +339,14 @@ const unavailableNutrients = (reason) =>
     ]),
   );
 
+/**
+ * Finds the one food row whose `Food Name` matches exactly, case included.
+ *
+ * @param {ParsedCsv} parsedFood - The parsed food source.
+ * @param {string} foodName - The reviewed food name.
+ * @returns {CsvRow} The matching row.
+ * @throws {Error} When no row or more than one row matches.
+ */
 export const findUniqueFoodRow = (parsedFood, foodName) => {
   const matches = parsedFood.rows.filter(
     ({ values }) => values["Food Name"] === foodName,
@@ -312,6 +359,19 @@ export const findUniqueFoodRow = (parsedFood, foodName) => {
   return matches[0];
 };
 
+/**
+ * Builds the profile for a mapped food row: released when the row is plausible and
+ * quarantined otherwise, with placeholder ratings until the rating passes run.
+ *
+ * @param {{
+ *   mapping: SourceMapping;
+ *   profileId: string;
+ *   variantId?: string;
+ *   parsedFood: ParsedCsv;
+ *   foodSnapshot: SourceSnapshot;
+ * }} options
+ * @returns {DraftProfile}
+ */
 const buildReleasedProfile = ({
   mapping,
   profileId,
@@ -367,6 +427,10 @@ const buildReleasedProfile = ({
   };
 };
 
+/**
+ * @param {Pick<SourceMapping, "dishId" | "nutritionClass" | "reviewNote">} mapping
+ * @returns {DraftProfile} An unavailable profile for a dish with no reviewed source row.
+ */
 const buildUnavailableProfile = (mapping) => ({
   id: mapping.dishId,
   dishId: mapping.dishId,
@@ -380,148 +444,10 @@ const buildUnavailableProfile = (mapping) => ({
   reviewNote: mapping.reviewNote,
 });
 
-export const computeRelativeFits = (entries, direction) => {
-  const fits = new Map();
-  if (entries.length === 0) return fits;
-  const sorted = [...entries].sort(
-    (left, right) => left.value - right.value || left.id.localeCompare(right.id, "en"),
-  );
-  let index = 0;
-  while (index < sorted.length) {
-    const value = sorted[index].value;
-    let end = index;
-    while (end + 1 < sorted.length && sorted[end + 1].value === value) end += 1;
-    const averageIndex = (index + end) / 2;
-    const ascendingPercentile =
-      sorted.length === 1 ? 1 : averageIndex / (sorted.length - 1);
-    const fit =
-      direction === "higher"
-        ? ascendingPercentile
-        : sorted.length === 1
-          ? 1
-          : 1 - ascendingPercentile;
-    for (let candidateIndex = index; candidateIndex <= end; candidateIndex += 1) {
-      fits.set(sorted[candidateIndex].id, round(fit));
-    }
-    index = end + 1;
-  }
-  return fits;
-};
-
 /**
- * Keeps the source-facing `trace` state intact while giving it the lowest
- * numeric amount for relative comparisons. Unavailable values stay excluded.
+ * @param {ParsedCsv} parsedGuidelines - The parsed adult daily guideline source.
+ * @throws {Error} When a row names a nutrient with no known guideline id.
  */
-export const nutritionValueForComparison = (nutrient) => {
-  if (nutrient.status === "known") return nutrient.value;
-  if (nutrient.status === "trace") return 0;
-  return undefined;
-};
-
-/**
- * Writes each released profile's relative fit for every nutrition intent of its
- * class into `profile.intentFits`, mutating the profiles in place. Profiles
- * without a comparable value for an intent's metric get no entry for it.
- *
- * @param profiles - Profiles whose `intentFits` objects already exist.
- */
-export const addIntentFits = (profiles) => {
-  for (const intent of NUTRITION_INTENTS) {
-    const candidates = profiles
-      .filter(
-        (profile) =>
-          profile.status === "released" &&
-          profile.nutritionClass === intent.nutritionClass,
-      )
-      .map((profile) => ({
-        profile,
-        value: nutritionValueForComparison(profile.nutrients[intent.metric]),
-      }))
-      .filter((candidate) => candidate.value !== undefined);
-    if (candidates.length === 0) continue;
-
-    const fits = computeRelativeFits(
-      candidates.map((candidate) => ({
-        id: candidate.profile.id,
-        value: candidate.value,
-      })),
-      intent.direction,
-    );
-    for (const { profile } of candidates) {
-      profile.intentFits[intent.id] = fits.get(profile.id);
-    }
-  }
-};
-
-export const addHealthRatings = (profiles) => {
-  const profileFits = new Map();
-  const directionsByMetric = new Map();
-  for (const scheme of Object.values(HEALTH_RATING_SCHEMES)) {
-    for (const [metric, direction] of scheme) {
-      const previous = directionsByMetric.get(metric);
-      if (previous && previous !== direction) {
-        throw new Error(`Nutrition metric ${metric} has conflicting rating directions.`);
-      }
-      directionsByMetric.set(metric, direction);
-    }
-  }
-
-  for (const nutritionClass of ["meal", "drink"]) {
-    const classProfiles = profiles.filter(
-      (profile) =>
-        profile.status === "released" && profile.nutritionClass === nutritionClass,
-    );
-    for (const [metric, direction] of directionsByMetric) {
-      const candidates = classProfiles
-        .map((profile) => ({
-          profile,
-          value: nutritionValueForComparison(profile.nutrients[metric]),
-        }))
-        .filter((candidate) => candidate.value !== undefined);
-      const fits = computeRelativeFits(
-        candidates.map((candidate) => ({
-          id: candidate.profile.id,
-          value: candidate.value,
-        })),
-        direction,
-      );
-      for (const { profile } of candidates) {
-        const existing = profileFits.get(profile.id) ?? {};
-        existing[metric] = fits.get(profile.id);
-        profileFits.set(profile.id, existing);
-      }
-    }
-  }
-
-  const rate = (profile, scheme) => {
-    const fits = profileFits.get(profile.id) ?? {};
-    let weightedFit = 0;
-    let availableWeight = 0;
-    for (const [metric, , weight] of scheme) {
-      const fit = fits[metric];
-      if (fit === undefined) continue;
-      weightedFit += fit * weight;
-      availableWeight += weight;
-    }
-    const normalizedFit = availableWeight === 0 ? 0.5 : weightedFit / availableWeight;
-    return roundRating(1 + 4 * normalizedFit);
-  };
-
-  for (const profile of profiles) {
-    if (profile.status !== "released") {
-      profile.healthRating = 3;
-      profile.conditionRatings = { ...NEUTRAL_CONDITION_RATINGS };
-      continue;
-    }
-    profile.healthRating = rate(profile, HEALTH_RATING_SCHEMES.overall);
-    profile.conditionRatings = Object.fromEntries(
-      Object.entries(HEALTH_RATING_SCHEMES)
-        .filter(([id]) => id !== "overall")
-        .map(([id, scheme]) => [id, rate(profile, scheme)]),
-    );
-  }
-};
-
 const buildGuidelines = (parsedGuidelines) =>
   parsedGuidelines.rows.map(({ values }) => {
     const nutrient = values.Nutrient;
@@ -549,6 +475,16 @@ const buildGuidelines = (parsedGuidelines) =>
     };
   });
 
+/**
+ * Stops the import when a source file's hash differs from the reviewed one, unless the
+ * update was explicitly accepted.
+ *
+ * @param {string} label - The source's name in the error message.
+ * @param {string} actual - The hash of the file being imported.
+ * @param {string} expected - The reviewed hash from the manifest.
+ * @param {boolean} acceptSourceUpdate - Whether `--accept-source-update` was passed.
+ * @throws {Error} When the hashes differ and the update was not accepted.
+ */
 export const verifySourceHash = (label, actual, expected, acceptSourceUpdate) => {
   if (actual === expected) return;
   if (!acceptSourceUpdate) {
@@ -558,6 +494,16 @@ export const verifySourceHash = (label, actual, expected, acceptSourceUpdate) =>
   }
 };
 
+/**
+ * Reads the guideline snapshot and rows from previously generated content, so a food-only
+ * refresh can keep them without the guideline CSV.
+ *
+ * @param {{ sourceSnapshots?: unknown; guidelines?: unknown }} content - Parsed generated
+ *   nutrition JSON.
+ * @returns {{ snapshot: SourceSnapshot; guidelines: Array<Record<string, unknown>> }}
+ *   Deep copies of the guideline snapshot and rows.
+ * @throws {Error} When the content, the snapshot metadata or any row is malformed.
+ */
 export const extractPreservedGuidelines = (content) => {
   if (!content || typeof content !== "object") {
     throw new Error("Preserved guideline content must be a generated nutrition object.");
@@ -572,8 +518,13 @@ export const extractPreservedGuidelines = (content) => {
       typeof candidate.id === "string" &&
       candidate.id.startsWith("guidelines-"),
   );
-  if (!Array.isArray(content.guidelines) || content.guidelines.length !== 11) {
-    throw new Error("Preserved guideline content must contain exactly 11 rows.");
+  if (
+    !Array.isArray(content.guidelines) ||
+    content.guidelines.length !== NUTRITION_GUIDELINE_COUNT
+  ) {
+    throw new Error(
+      `Preserved guideline content must contain exactly ${NUTRITION_GUIDELINE_COUNT} rows.`,
+    );
   }
   if (
     !snapshot ||
@@ -607,6 +558,8 @@ export const extractPreservedGuidelines = (content) => {
 };
 
 /**
+ * Builds the generated nutrition content from the source texts.
+ *
  * @param {{
  *   foodText: string;
  *   guidelineText?: string;
@@ -625,6 +578,9 @@ export const extractPreservedGuidelines = (content) => {
  *   expectedGuidelineSha256?: string;
  *   acceptSourceUpdate?: boolean;
  * }} options
+ * @throws {Error} When the guideline inputs are not exactly one of text and preserved rows,
+ *   a source hash differs without approval, a required column is missing, or a mapping
+ *   does not resolve.
  */
 export const buildNutritionContent = ({
   foodText,
@@ -644,7 +600,7 @@ export const buildNutritionContent = ({
   }
   const guidelineSha256 =
     guidelineText === undefined
-      ? preservedGuidelines.snapshot.sha256
+      ? /** @type {NonNullable<typeof preservedGuidelines>} */ (preservedGuidelines).snapshot.sha256
       : sha256(guidelineText);
   if (expectedFoodSha256) {
     verifySourceHash("Food source", foodSha256, expectedFoodSha256, acceptSourceUpdate);
@@ -700,7 +656,7 @@ export const buildNutritionContent = ({
         sha256: guidelineSha256,
         rowCount: parsedGuidelines.rows.length,
       }
-    : structuredClone(preservedGuidelines.snapshot);
+    : structuredClone(/** @type {NonNullable<typeof preservedGuidelines>} */ (preservedGuidelines).snapshot);
 
   const profiles = PRIMARY_PROFILE_MAPPINGS.map((mapping) =>
     mapping.foodName
@@ -771,12 +727,19 @@ export const buildNutritionContent = ({
     intents: NUTRITION_INTENTS,
     guidelines: parsedGuidelines
       ? buildGuidelines(parsedGuidelines)
-      : structuredClone(preservedGuidelines.guidelines),
+      : structuredClone(/** @type {NonNullable<typeof preservedGuidelines>} */ (preservedGuidelines).guidelines),
     disclosure: NUTRITION_DISCLOSURE,
   };
 };
 
+/**
+ * @param {readonly string[]} argumentsList - The CLI arguments after the script path.
+ * @returns {ImporterOptions}
+ * @throws {Error} On an unknown argument, or when `--food` or exactly one guideline
+ *   source is missing.
+ */
 const parseArguments = (argumentsList) => {
+  /** @type {Partial<ImporterOptions> & Pick<ImporterOptions, "acceptSourceUpdate" | "outputPath">} */
   const options = { acceptSourceUpdate: false, outputPath: DEFAULT_OUTPUT_PATH };
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
@@ -798,15 +761,21 @@ const parseArguments = (argumentsList) => {
       "Usage: node tools/nutrition/importer.mjs --food <food.csv> (--guidelines <guidelines.csv> | --preserve-guidelines-from <generated.json>) [--output <json>] [--accept-source-update]",
     );
   }
-  return options;
+  return /** @type {ImporterOptions} */ (options);
 };
 
+/**
+ * Runs the importer CLI: reads the sources, builds the content and writes it as JSON.
+ *
+ * @param {readonly string[]} argumentsList - The CLI arguments after the script path.
+ * @returns {Promise<ReturnType<typeof buildNutritionContent>>} The written content.
+ */
 export const runImporter = async (argumentsList) => {
   const options = parseArguments(argumentsList);
   const [foodText, guidelineSourceText] = await Promise.all([
     readFile(options.foodPath, "utf8"),
     readFile(
-      options.guidelinePath ?? options.preservedGuidelinesPath,
+      /** @type {string} */ (options.guidelinePath ?? options.preservedGuidelinesPath),
       "utf8",
     ),
   ]);

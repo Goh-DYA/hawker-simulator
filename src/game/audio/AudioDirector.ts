@@ -1,3 +1,11 @@
+/**
+ * The procedural Web Audio director: score, ambience and sound cues.
+ *
+ * Its default mix and voice limit come from the player preference defaults, so a new
+ * director matches the settings a new player starts with.
+ */
+import { DEFAULT_MIX, get_voice_limit_for_quality } from "@/src/game/persistence/preferences";
+
 /** Original, deterministic Web Audio score and sound palette. No audio assets are downloaded. */
 export class AudioDirector {
   private context?: AudioContext;
@@ -11,16 +19,28 @@ export class AudioDirector {
   private intensity = 0;
   private muted = false;
   private activeVoices = 0;
-  private voiceLimit = 16;
-  private musicVolume = 0.32;
-  private ambienceVolume = 0.24;
-  private sfxVolume = 0.55;
+  private voiceLimit = get_voice_limit_for_quality("standard");
+  private musicVolume: number = DEFAULT_MIX.music;
+  private ambienceVolume: number = DEFAULT_MIX.ambience;
+  private sfxVolume: number = DEFAULT_MIX.sfx;
   private readonly lastCueAt = new Map<string, number>();
 
+  /**
+   * Creates a silent director. No `AudioContext` exists until {@link AudioDirector.unlock}; in a
+   * browser it starts listening for page visibility changes.
+   */
   constructor() {
     if (typeof document !== "undefined") document.addEventListener("visibilitychange", this.handleVisibility);
   }
 
+  /**
+   * Sets the bus volumes and the master mute.
+   *
+   * @param music - The music volume, clamped to 0 to 1.
+   * @param ambience - The ambience volume, clamped to 0 to 1.
+   * @param sfx - The effects volume, clamped to 0 to 1.
+   * @param muted - True to silence the master bus.
+   */
   setVolumes(music: number, ambience: number, sfx: number, muted = false) {
     this.musicVolume = clamp01(music);
     this.ambienceVolume = clamp01(ambience);
@@ -29,33 +49,62 @@ export class AudioDirector {
     this.applyMix();
   }
 
+  /**
+   * Updates the state the score follows: whether the centre is open, and an intensity from the
+   * crowd size and queue pressure.
+   *
+   * @param isOpen - Whether the centre is open.
+   * @param activeCustomers - The number of guests in the hall.
+   * @param queuePressure - The queue pressure from 0 to 100.
+   */
   setGameplayState(isOpen: boolean, activeCustomers: number, queuePressure: number) {
     this.isOpen = isOpen;
     const crowd = 1 - Math.exp(-Math.max(0, activeCustomers) / 24);
     this.intensity = clamp01(crowd * 0.7 + clamp01(queuePressure / 100) * 0.3);
   }
 
+  /**
+   * Caps the number of simultaneous tones; new tones beyond the cap are skipped.
+   *
+   * @param limit - The cap, floored to an integer of at least 1.
+   */
   setVoiceLimit(limit: number) {
     this.voiceLimit = Math.max(1, Math.floor(limit));
   }
 
+  /**
+   * Creates or resumes the `AudioContext`. Call it from a user gesture, because browsers keep audio
+   * suspended until one.
+   *
+   * @returns A promise that settles once the context is running.
+   */
   async unlock() {
     this.context ??= new AudioContext();
     this.ensureBuses();
     if (this.context.state === "suspended") await this.context.resume();
   }
 
+  /**
+   * Starts the scheduled score and ambience; does nothing before {@link AudioDirector.unlock} or
+   * when already running.
+   */
   startAmbience() {
     if (this.scheduler || !this.context) return;
     this.scheduler = window.setInterval(() => this.scheduleStep(), 680);
     this.scheduleStep();
   }
 
+  /** Stops the scheduled score and ambience. */
   stopAmbience() {
     if (this.scheduler) window.clearInterval(this.scheduler);
     this.scheduler = undefined;
   }
 
+  /**
+   * Plays a short sound cue. Repeats of a cue within its minimum gap are skipped.
+   *
+   * @param cue - The cue to play.
+   */
   play(cue: "place" | "invalid" | "sale" | "reward" | "ui" | "open" | "close") {
     const now = performance.now();
     const minimumGap = cue === "sale" ? 260 : cue === "ui" ? 45 : 100;
@@ -75,10 +124,14 @@ export class AudioDirector {
     });
   }
 
+  /**
+   * Stops the score, removes the visibility listener and closes the `AudioContext`; a close failure
+   * is logged.
+   */
   destroy() {
     this.stopAmbience();
     if (typeof document !== "undefined") document.removeEventListener("visibilitychange", this.handleVisibility);
-    void this.context?.close();
+    this.context?.close().catch((error) => console.warn("[audio] close failed", error));
     this.context = undefined;
     this.masterGain = undefined;
     this.musicGain = undefined;
@@ -88,8 +141,8 @@ export class AudioDirector {
 
   private readonly handleVisibility = () => {
     if (!this.context) return;
-    if (document.hidden) void this.context.suspend();
-    else void this.context.resume();
+    if (document.hidden) this.context.suspend().catch((error) => console.warn("[audio] suspend failed", error));
+    else this.context.resume().catch((error) => console.warn("[audio] resume failed", error));
   };
 
   private ensureBuses() {

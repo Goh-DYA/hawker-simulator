@@ -1,0 +1,224 @@
+/**
+ * Visit settlement: completing a sale and scoring a visit when the guest leaves.
+ *
+ * Internal to core; it is not re-exported from the barrel. `completeSale` books the purchase
+ * and its nutrition metrics, and `settleVisitRating` turns a visit's rating factors into a score
+ * that moves reputation and stall mastery. Both edit the step draft in place in a fixed order, so
+ * seeded runs stay identical.
+ */
+import { applySale, getUnlockedDefinitionIds, MAX_REPUTATION } from "./economy";
+import { event, getArchetype, removeFromAllQueues, transition, type Draft } from "./draft";
+import { recordIntentRequest } from "./arrivals";
+import { VISIT_RATING_WEIGHTS, walkingSatisfactionScore } from "./satisfaction";
+import {
+  cloneNutritionProfile,
+  dishStarRating,
+  healthImpactFromRating,
+  healthPreferenceResultForRating,
+  nutritionRequestResult,
+  personalizedHealthRating,
+  record_nutrition_sale,
+} from "./nutrition";
+import { awardStallMastery, operatingDay, VISIT_HISTORY_LIMIT } from "./progression";
+import type { Customer, DishDefinition } from "./types";
+
+// Visit rating (settleVisitRating). Defaults apply to components no earlier step supplied.
+
+/** Default food-quality component for a served guest. */
+const SERVED_FOOD_QUALITY_DEFAULT = 70;
+/** Default food-quality component for a guest who was never served. */
+const UNSERVED_FOOD_QUALITY_DEFAULT = 0;
+/** Default value component for a served guest. */
+const SERVED_VALUE_DEFAULT = 70;
+/** Default value component for a guest who was never served. */
+const UNSERVED_VALUE_DEFAULT = 20;
+/** Default comfort component for a served guest. */
+const SERVED_COMFORT_DEFAULT = 65;
+/** Default comfort component for a guest who was never served. */
+const UNSERVED_COMFORT_DEFAULT = 20;
+/** Default cleanliness component. */
+const CLEANLINESS_DEFAULT = 70;
+/** Default ambience component. */
+const AMBIENCE_DEFAULT = 65;
+/** Highest rating an abandoned visit can score after the guest was served. */
+const ABANDONED_SERVED_SCORE_CAP = 62;
+/** Highest rating an abandoned visit can score when the guest was never served. */
+const ABANDONED_UNSERVED_SCORE_CAP = 45;
+/** Rating penalty for abandoning a visit after being served. */
+const ABANDONED_SERVED_PENALTY = 12;
+/** Rating penalty for abandoning a visit without being served. */
+const ABANDONED_UNSERVED_PENALTY = 28;
+/** Visit rating that leaves reputation unchanged. */
+const REPUTATION_NEUTRAL_SCORE = 70;
+/** Rating points per whole point of reputation change. */
+const REPUTATION_SCORE_DIVISOR = 500;
+/** Visit rating points per point on the zero-to-five satisfaction scale. */
+const RATING_POINTS_PER_SATISFACTION = 20;
+
+function normalizeQuality(value: number): number {
+  return Math.max(0, Math.min(100, value <= 1 ? value * 100 : value * 20));
+}
+
+/**
+ * Scores a finished or abandoned visit once and applies it to metrics, economy and progression.
+ *
+ * Appends the visit rating, counts an abandoned visit, nudges reputation towards the score and
+ * awards stall mastery for a served guest. A customer whose rating is already settled is returned
+ * unchanged, so a visit is never scored twice.
+ *
+ * @param draft - The draft whose metrics, economy and progression are edited.
+ * @param source - The customer whose visit is scored.
+ * @param abandoned - Whether the guest gave up, which caps and penalises the score.
+ * @param reason - The reason recorded on the rating.
+ * @returns The customer with its satisfaction set from the score and the rating marked settled.
+ */
+export function settleVisitRating(draft: Draft, source: Customer, abandoned: boolean, reason: string): Customer {
+  if (source.ratingSettled) return source;
+  const archetype = getArchetype(draft, source);
+  const supplied = source.ratingFactors ?? {};
+  const components = {
+    foodQuality: supplied.foodQuality ?? (source.served ? SERVED_FOOD_QUALITY_DEFAULT : UNSERVED_FOOD_QUALITY_DEFAULT),
+    wait: supplied.wait ?? Math.max(0, Math.min(100, (source.patienceRemainingMs / Math.max(1, archetype.patienceMs)) * 100)),
+    value: supplied.value ?? (source.served ? SERVED_VALUE_DEFAULT : UNSERVED_VALUE_DEFAULT),
+    walking: supplied.walking ?? walkingSatisfactionScore(source.walkingDistanceTiles),
+    comfort: supplied.comfort ?? (source.served ? SERVED_COMFORT_DEFAULT : UNSERVED_COMFORT_DEFAULT),
+    cleanliness: supplied.cleanliness ?? CLEANLINESS_DEFAULT,
+    ambience: supplied.ambience ?? AMBIENCE_DEFAULT,
+  };
+  let score =
+    components.foodQuality * VISIT_RATING_WEIGHTS.foodQuality +
+    components.wait * VISIT_RATING_WEIGHTS.wait +
+    components.value * VISIT_RATING_WEIGHTS.value +
+    components.walking * VISIT_RATING_WEIGHTS.walking +
+    components.comfort * VISIT_RATING_WEIGHTS.comfort +
+    components.cleanliness * VISIT_RATING_WEIGHTS.cleanliness +
+    components.ambience * VISIT_RATING_WEIGHTS.ambience;
+  if (abandoned) {
+    score = Math.min(
+      source.served ? ABANDONED_SERVED_SCORE_CAP : ABANDONED_UNSERVED_SCORE_CAP,
+      score - (source.served ? ABANDONED_SERVED_PENALTY : ABANDONED_UNSERVED_PENALTY),
+    );
+  }
+  score = Math.round(Math.max(0, Math.min(100, score)));
+  const rating = {
+    customerId: source.id,
+    walkingMetricVersion: 2 as const,
+    score,
+    served: source.served,
+    abandoned,
+    reason,
+    stallDefinitionId: source.servedStallDefinitionId,
+    components,
+    day: operatingDay(draft.source.elapsedMs),
+  };
+  draft.metrics = { ...draft.metrics, visitRatings: [...draft.metrics.visitRatings, rating].slice(-VISIT_HISTORY_LIMIT) };
+  if (abandoned) draft.economy = { ...draft.economy, abandonedVisits: draft.economy.abandonedVisits + 1 };
+  const reputation = Math.max(
+    0,
+    Math.min(MAX_REPUTATION, draft.progression.reputation + (score - REPUTATION_NEUTRAL_SCORE) / REPUTATION_SCORE_DIVISOR),
+  );
+  draft.progression = { ...draft.progression, reputation };
+  if (source.served && source.servedStallDefinitionId) {
+    draft.progression = awardStallMastery(
+      { progression: draft.progression },
+      source.servedStallDefinitionId,
+      score,
+    );
+  }
+  return { ...source, satisfaction: score / RATING_POINTS_PER_SATISFACTION, ratingSettled: true };
+}
+
+/**
+ * Completes a customer's purchase: books the sale, counts nutrition metrics and hands over the tray.
+ *
+ * The intent request is recorded before the sale's nutrition outcome, and the customer leaves
+ * every queue before the sale events are emitted.
+ *
+ * @param draft - The draft whose economy, progression, queues, metrics and events are edited.
+ * @param source - The customer being served.
+ * @param dish - The dish the customer ordered.
+ * @returns The served customer, now seeking a seat with its food-quality and value factors set.
+ */
+export function completeSale(draft: Draft, source: Customer, dish: DishDefinition): Customer {
+  const servedStall = source.targetStallId ? draft.objects[source.targetStallId] : undefined;
+  const stallDefinition = servedStall ? draft.source.catalog.placeables[servedStall.definitionId]?.stall : undefined;
+  const tasteRating = dishStarRating(dish);
+  const healthRating = source.personalizedHealthRating ?? personalizedHealthRating(
+    source.orderedNutritionProfile,
+    source.healthConditions,
+  );
+  const healthImpact = source.healthConditions.length > 0
+    ? healthImpactFromRating(healthRating)
+    : undefined;
+  const healthPreferenceResult = source.healthConditions.length > 0
+    ? healthPreferenceResultForRating(healthRating)
+    : undefined;
+  const update = applySale(
+    draft.economy,
+    draft.progression,
+    dish.price,
+    dish.quality,
+    0,
+  );
+  draft.economy = update.economy;
+  draft.progression = {
+    ...update.progression,
+    unlockedDefinitionIds: getUnlockedDefinitionIds(
+      draft.source.catalog,
+      update.progression.level,
+      update.progression.unlockedDefinitionIds,
+    ),
+  };
+  removeFromAllQueues(draft, source.id);
+  event(draft, { type: "sale-completed", entityId: source.id, amount: dish.price, message: dish.id });
+  if (update.levelUp) event(draft, { type: "level-up", entityId: source.id, message: String(update.progression.level) });
+  const profile = cloneNutritionProfile(source.orderedNutritionProfile);
+  const requestResult = source.nutritionIntentId
+    ? nutritionRequestResult(source.nutritionIntentId, profile)
+    : undefined;
+  recordIntentRequest(draft, source.nutritionIntentId);
+  draft.metrics = {
+    ...draft.metrics,
+    nutrition: record_nutrition_sale(
+      draft.metrics.nutrition,
+      dish,
+      profile,
+      source,
+      requestResult,
+      operatingDay(draft.source.elapsedMs),
+    ),
+  };
+  return {
+    ...transition(draft, source, "seeking-seat"),
+    targetStallId: undefined,
+    servedStallDefinitionId: servedStall?.definitionId,
+    orderedDishId: dish.id,
+    nutritionRequestResult: requestResult,
+    hasTray: true,
+    served: true,
+    spent: source.spent + dish.price,
+    personalizedHealthRating: healthRating,
+    healthImpact,
+    healthPreferenceResult,
+    satisfaction: Math.max(
+      0,
+      Math.min(
+        5,
+        source.satisfaction + normalizeQuality(tasteRating) / 100 + (healthImpact ?? 0),
+      ),
+    ),
+    ratingFactors: {
+      ...source.ratingFactors,
+      foodQuality: Math.max(
+        0,
+        Math.min(
+          100,
+          normalizeQuality(tasteRating) * 0.7 +
+            normalizeQuality(stallDefinition?.quality ?? dish.quality) * 0.3 +
+            (healthImpact ?? 0) * 20,
+        ),
+      ),
+      value: Math.max(25, Math.min(100, 120 - (dish.price / Math.max(1, getArchetype(draft, source).budget)) * 70)),
+    },
+  };
+}

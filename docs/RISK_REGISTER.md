@@ -6,7 +6,7 @@ Scale: probability and impact are Low / Medium / High. Owner is the solo develop
 |---|---|---|---|---|---|
 | R-01 | Scope exceeds solo capacity | H | H | Lock 1.0 non-goals; data-driven reuse; phase gates; cut optional polish first | Open |
 | R-02 | Customer reservation/path deadlock | H | H | Explicit ownership/release, map revisions, stuck recovery, seeded soak assertions | Open |
-| R-03 | Save corruption or migration loss | M | H | Staging/current/backup, checksum, fixtures, non-destructive failure UI | Open |
+| R-03 | Save corruption or migration loss | M | H | Single-transaction active/backup slots, envelope checksum, frozen V1-V4 fixtures and migration tests, documented invariants in SAVE_FORMAT.md, non-destructive failure UI | Open |
 | R-04 | Service-worker mixed versions or stale shell | M | H | Atomic precache, version manifest, waiting-worker save/reload, update E2E | Open |
 | R-05 | Cultural flattening, misattribution, or certification misuse | M | H | CULTURAL_REVIEW checklist, no marks/claims, compensated human review | Open; release blocker |
 | R-06 | Canvas blocks keyboard/screen-reader access | H | H | DOM command layer, grid cursor, reason summaries, human AT audit | Open |

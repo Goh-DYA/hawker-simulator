@@ -20,7 +20,7 @@ import { IDBFactory } from "fake-indexeddb";
 import { openDB } from "idb";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { exportSave, importSave } from "@/src/game/persistence/saveStore";
+import { build_save_file_name, exportSave, importSave } from "@/src/game/persistence/saveStore";
 
 /** The clock that `writtenAt` records in every export of this suite. */
 const FIXED_NOW = new Date("2026-01-02T03:04:05.678Z");
@@ -191,6 +191,12 @@ describe("saveStore export envelope", () => {
     const exported = exportSave({ ...(create_fixed_payload() as object), queuePath: undefined });
 
     expect(() => importSave(exported)).toThrow(DAMAGED_SAVE_MESSAGE);
+  });
+});
+
+describe("saveStore export file name", () => {
+  it("names the exported file for the centre's day", () => {
+    expect(build_save_file_name(12)).toBe("hawker-balance-day-12.json");
   });
 });
 

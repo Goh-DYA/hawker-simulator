@@ -1,0 +1,621 @@
+/**
+ * The game screen's modal dialogs: the first-run tutorial, the nutrition tour, Settings (with
+ * the customer status icon guide), Help and the reset confirmation.
+ *
+ * The dialogs are presentational and moved out of the `HawkerSimulator` shell with their
+ * markup, classes, ARIA attributes and copy unchanged. The shell keeps which dialog is open,
+ * the tutorial and tour steps, the settings state and the focus trap; it passes each dialog's
+ * section ref as a React 19 `ref` prop, so the trap still installs on the same `section`, and
+ * the primary buttons keep `autoFocus`. The Settings switches and sliders are `SettingSwitch`
+ * and `SettingSlider`, which hand each change to the shell's `update_setting(key, value)`.
+ */
+import { type ChangeEvent, type Ref, useRef, useState } from "react";
+import {
+  TEXT_SCALE_MAX,
+  TEXT_SCALE_MIN,
+  TEXT_SCALE_STEP,
+} from "@/src/game/persistence/preferences";
+import type { RuntimeSettings } from "@/src/game/runtime/types";
+import {
+  CUSTOMER_INDICATOR_LEGEND,
+  type CustomerIndicator,
+} from "@/src/game/runtime/visuals/customer";
+import { NutritionDisclosure } from "./NutritionEducation";
+import { type NutritionTourStep, TUTORIAL_DONE_STEP, type TutorialStep } from "./focus";
+
+type CustomerLegendSymbol = CustomerIndicator | "patience";
+
+function CustomerIndicatorIcon({ indicator }: { indicator: CustomerLegendSymbol }) {
+  if (indicator === "patience") {
+    return (
+      <svg
+        className="customer-indicator-icon is-patience"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <circle cx="12" cy="12" r="3.5" fill="currentColor" opacity="0.28" />
+        <circle
+          cx="12"
+          cy="12"
+          r="8"
+          fill="none"
+          stroke="#e8b94f"
+          strokeWidth="2.5"
+          strokeDasharray="30 21"
+          transform="rotate(-90 12 12)"
+        />
+        <circle
+          cx="12"
+          cy="12"
+          r="8"
+          fill="none"
+          stroke="#c75542"
+          strokeWidth="2.5"
+          strokeDasharray="10 41"
+          strokeDashoffset="-31"
+          transform="rotate(-90 12 12)"
+        />
+      </svg>
+    );
+  }
+
+  let glyph;
+  if (indicator === "question") {
+    glyph = (
+      <>
+        <circle cx="12" cy="9" r="3.5" />
+        <circle cx="12" cy="17" r="1.5" fill="currentColor" stroke="none" />
+      </>
+    );
+  } else if (indicator === "footsteps") {
+    glyph = (
+      <>
+        <ellipse cx="8.5" cy="14" rx="1.8" ry="3.6" fill="currentColor" stroke="none" />
+        <ellipse cx="15.5" cy="10" rx="1.8" ry="3.6" fill="currentColor" stroke="none" />
+      </>
+    );
+  } else if (indicator === "queue") {
+    glyph = [7, 12, 17].map((cx) => (
+      <circle key={cx} cx={cx} cy="12" r="1.7" fill="currentColor" stroke="none" />
+    ));
+  } else if (indicator === "order") {
+    glyph = (
+      <>
+        <rect x="6" y="6.5" width="12" height="8.5" rx="2" />
+        <path d="M10 15 8 19 8.5 15" />
+      </>
+    );
+  } else if (indicator === "clock") {
+    glyph = (
+      <>
+        <circle cx="12" cy="12" r="6" />
+        <path d="M12 12V8M12 12l4 2" />
+      </>
+    );
+  } else if (indicator === "seat") {
+    glyph = <path d="M7 6v11M7 13h10M17 13v5" />;
+  } else if (indicator === "meal") {
+    glyph = (
+      <>
+        <circle cx="13" cy="12" r="5.5" />
+        <path d="M6 6v12" />
+      </>
+    );
+  } else if (indicator === "return") {
+    glyph = <path d="M18 12H6m0 0 4-4m-4 4 4 4" />;
+  } else {
+    glyph = <path d="M6 12h12m0 0-4-4m4 4-4 4" />;
+  }
+
+  return (
+    <svg
+      className={`customer-indicator-icon is-${indicator}`}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle className="customer-indicator-bubble" cx="12" cy="12" r="10" />
+      <g
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {glyph}
+      </g>
+    </svg>
+  );
+}
+
+function CustomerStatusLegend() {
+  return (
+    <div className="customer-status-legend">
+      <p>The bubble above each customer shows what they are doing now.</p>
+      <ul data-testid="customer-status-legend">
+        {CUSTOMER_INDICATOR_LEGEND.map((entry) => (
+          <li key={entry.indicator}>
+            <CustomerIndicatorIcon indicator={entry.indicator} />
+            <span>
+              <strong>{entry.label}</strong>
+              <small>{entry.description}</small>
+            </span>
+          </li>
+        ))}
+        <li>
+          <CustomerIndicatorIcon indicator="patience" />
+          <span>
+            <strong>Patience ring</strong>
+            <small>
+              Shows patience remaining from the queue. It turns red when low and remains visible
+              while food is prepared.
+            </small>
+          </span>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+function CustomerStatusGuide() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <section className="settings-guide" aria-label="Customer status icon guide">
+      <button
+        type="button"
+        aria-label="Customer status bubbles"
+        aria-expanded={open}
+        aria-controls="customer-status-legend-content"
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span>
+          <strong>Customer status bubbles</strong>
+          <small>See what every on-map symbol means</small>
+        </span>
+      </button>
+      {open ? (
+        <div id="customer-status-legend-content">
+          <CustomerStatusLegend />
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+/** The tutorial cards, in order; there is one card per step before `TUTORIAL_DONE_STEP`. */
+const TUTORIAL_COPY = [
+  {
+    eyebrow: "Welcome, neighbour",
+    title: "Run the centre. Read the plate.",
+    body: "Your community dining hall is ready for its first lunch crowd. Every choice changes how people move, queue, eat, and compare menu trade-offs.",
+    action: "Show me around",
+  },
+  {
+    eyebrow: "Step 1 of 4",
+    title: "Move around the centre",
+    body: "Drag the floor to pan. Use the wheel or the camera controls to zoom. Keyboard players can use the arrow keys and + or −.",
+    action: "Got it",
+  },
+  {
+    eyebrow: "Step 2 of 4",
+    title: "Choose something to place",
+    body: "Open Build, choose an unlocked item, then select a highlighted tile. Press R to rotate and Escape to cancel.",
+    action: "Next",
+  },
+  {
+    eyebrow: "Step 3 of 4",
+    title: "Read the living layout",
+    body: "Dotted paths show routes. Numbered queue markers show pressure. Seat rings show reservations. Centre insights explains every bottleneck.",
+    action: "Next",
+  },
+  {
+    eyebrow: "Step 4 of 4",
+    title: "Open when you are ready",
+    body: "Customers arrive automatically, choose a stall, queue, collect food, reserve a seat, eat, return their tray, and leave. You can pause at any time.",
+    action: "Open my centre",
+  },
+] as const satisfies { readonly length: typeof TUTORIAL_DONE_STEP };
+
+/** The props of {@link TutorialDialog}. */
+export interface TutorialDialogProps {
+  /** The dialog section, which the shell's focus trap installs on. */
+  readonly ref: Ref<HTMLElement>;
+  /** The card to show; below `TUTORIAL_DONE_STEP`. */
+  readonly step: TutorialStep;
+  /** Finish the tutorial, opening the centre when `openCentre` is set (the last card). */
+  readonly onFinish: (openCentre: boolean) => void;
+  /** Move to another card. */
+  readonly onStepChange: (step: TutorialStep) => void;
+}
+
+/**
+ * The first-run tutorial: one card per step, a skip button and a primary button that advances
+ * and, on the last card, opens the centre.
+ *
+ * @param props - See {@link TutorialDialogProps}.
+ * @returns The tutorial's backdrop and dialog.
+ */
+export function TutorialDialog({ ref, step, onFinish, onStepChange }: TutorialDialogProps) {
+  const tutorialCopy = TUTORIAL_COPY[Math.min(step, 4)]!;
+
+  return (
+    <div className="modal-backdrop tutorial-backdrop" role="presentation">
+      <section
+        ref={ref}
+        className="tutorial-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tutorial-title"
+        tabIndex={-1}
+      >
+        <div className="tutorial-art" aria-hidden="true">
+          <div className="awning"><i /><i /><i /><i /></div>
+          <div className="mini-floor">
+            <span className="mini-stall" />
+            <span className="mini-table one" />
+            <span className="mini-table two" />
+            <span className="mini-person a" />
+            <span className="mini-person b" />
+            <span className="mini-plant" />
+          </div>
+        </div>
+        <div className="tutorial-copy">
+          <span>{tutorialCopy.eyebrow}</span>
+          <h2 id="tutorial-title">{tutorialCopy.title}</h2>
+          <p>{tutorialCopy.body}</p>
+          <div className="tutorial-dots" aria-label={`Tutorial step ${step + 1} of 5`}>
+            {TUTORIAL_COPY.map((_, index) => (
+              <i key={index} className={index === step ? "is-active" : ""} />
+            ))}
+          </div>
+          <div className="tutorial-actions">
+            <button type="button" className="text-button" onClick={() => onFinish(false)}>
+              Skip tutorial
+            </button>
+            <button
+              type="button"
+              className="primary-button"
+              autoFocus
+              onClick={() => {
+                if (step === 4) onFinish(true);
+                else onStepChange((step + 1) as TutorialStep);
+              }}
+            >
+              {tutorialCopy.action} <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/** The props of {@link NutritionTourDialog}. */
+export interface NutritionTourDialogProps {
+  /** The dialog section, which the shell's focus trap installs on. */
+  readonly ref: Ref<HTMLElement>;
+  /** The card to show; below `NUTRITION_TOUR_DONE_STEP`. */
+  readonly step: NutritionTourStep;
+  /** Finish the tour, from the skip button or the last card. */
+  readonly onFinish: () => void;
+  /** Move to another card. */
+  readonly onStepChange: (step: NutritionTourStep) => void;
+}
+
+/**
+ * The two-card nutrition tour shown after the tutorial: the two ratings, then guest health
+ * needs.
+ *
+ * @param props - See {@link NutritionTourDialogProps}.
+ * @returns The tour's backdrop and dialog.
+ */
+export function NutritionTourDialog({
+  ref,
+  step,
+  onFinish,
+  onStepChange,
+}: NutritionTourDialogProps) {
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <section
+        ref={ref}
+        className="nutrition-tour-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="nutrition-tour-title"
+        tabIndex={-1}
+      >
+        <div className="nutrition-tour-art" aria-hidden="true">
+          {step === 0 ? "◉" : "☺"}
+        </div>
+        <div className="nutrition-tour-copy">
+          <span>Nutrition tour · {step + 1} of 2</span>
+          <h2 id="nutrition-tour-title">
+            {step === 0 ? "Two ratings, one serving" : "Meet each guest’s health needs"}
+          </h2>
+          <p>
+            {step === 0
+              ? "Open Menu planning to compare every listed nutrient. Health ratings show in-game balance; Star ratings separately show taste and popularity. Variants can change nutrition and health without changing popularity."
+              : "Some guests fictionally manage a chronic condition. Select one to see their personal health fit, the nutrients considered, and the small satisfaction effect. Taste, price, queues, and distance still matter."}
+          </p>
+          <div className="tutorial-actions">
+            <button type="button" className="text-button" onClick={() => onFinish()}>
+              Skip tour
+            </button>
+            <button
+              type="button"
+              className="primary-button"
+              autoFocus
+              onClick={() => {
+                if (step === 1) onFinish();
+                else onStepChange(1);
+              }}
+            >
+              {step === 1 ? "Start balancing" : "Show guest health needs"}
+              <span aria-hidden="true"> →</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/** The settings whose value is a boolean, shown as switches. */
+export type BooleanSettingKey = {
+  [K in keyof RuntimeSettings]: RuntimeSettings[K] extends boolean ? K : never;
+}[keyof RuntimeSettings];
+
+/** The settings whose value is a number, shown as sliders. */
+export type NumberSettingKey = {
+  [K in keyof RuntimeSettings]: RuntimeSettings[K] extends number ? K : never;
+}[keyof RuntimeSettings];
+
+/** Store one setting; the shell's `update_setting`. */
+export type UpdateSetting = <K extends keyof RuntimeSettings>(
+  key: K,
+  value: RuntimeSettings[K],
+) => void;
+
+/** The props of {@link SettingSwitch}. */
+export interface SettingSwitchProps {
+  /** The boolean setting the switch controls. */
+  readonly settingKey: BooleanSettingKey;
+  /** The current settings. */
+  readonly settings: RuntimeSettings;
+  /** The switch's visible name. */
+  readonly label: string;
+  /** The hint under the name, if any. */
+  readonly description?: string;
+  /** Store a changed value. */
+  readonly onUpdateSetting: UpdateSetting;
+}
+
+/**
+ * A Settings switch row: a checkbox bound to one boolean setting.
+ *
+ * @param props - See {@link SettingSwitchProps}.
+ * @returns The labelled checkbox.
+ */
+export function SettingSwitch({
+  settingKey,
+  settings,
+  label,
+  description,
+  onUpdateSetting,
+}: SettingSwitchProps) {
+  return (
+    <label className="switch-row">
+      <span><strong>{label}</strong>{description === undefined ? null : <small>{description}</small>}</span>
+      <input type="checkbox" checked={settings[settingKey]} onChange={(event) => onUpdateSetting(settingKey, event.target.checked)} />
+    </label>
+  );
+}
+
+/** The props of {@link SettingSlider}. */
+export interface SettingSliderProps {
+  /** The numeric setting the slider controls, shown as a percentage. */
+  readonly settingKey: NumberSettingKey;
+  /** The current settings. */
+  readonly settings: RuntimeSettings;
+  /** The slider's visible name, before the percentage. */
+  readonly label: string;
+  /** The range's `min` attribute. */
+  readonly min: number | string;
+  /** The range's `max` attribute. */
+  readonly max: number | string;
+  /** The range's `step` attribute. */
+  readonly step: number | string;
+  /** Store a changed value. */
+  readonly onUpdateSetting: UpdateSetting;
+}
+
+/**
+ * A Settings slider: a range bound to one numeric setting, labelled with its percentage.
+ *
+ * @param props - See {@link SettingSliderProps}.
+ * @returns The labelled range.
+ */
+export function SettingSlider({
+  settingKey,
+  settings,
+  label,
+  min,
+  max,
+  step,
+  onUpdateSetting,
+}: SettingSliderProps) {
+  return (
+    <label>{`${label} `}<strong>{Math.round(settings[settingKey] * 100)}%</strong><input type="range" min={min} max={max} step={step} value={settings[settingKey]} onChange={(event) => onUpdateSetting(settingKey, Number(event.target.value))} /></label>
+  );
+}
+
+/** The props of {@link SettingsDialog}. */
+export interface SettingsDialogProps {
+  /** The dialog section, which the shell's focus trap installs on. */
+  readonly ref: Ref<HTMLElement>;
+  /** The current settings. */
+  readonly settings: RuntimeSettings;
+  /** Whether the reset confirmation is open above Settings, which makes Settings inert. */
+  readonly isResetOpen: boolean;
+  /** Store one changed setting. */
+  readonly onUpdateSetting: UpdateSetting;
+  /** Close Settings. */
+  readonly onClose: () => void;
+  /** Download the current save. */
+  readonly onExportSave: () => void;
+  /** Import the save file the player picked. */
+  readonly onImportSave: (event: ChangeEvent<HTMLInputElement>) => void;
+  /** Open the reset confirmation. */
+  readonly onOpenReset: () => void;
+}
+
+/**
+ * The Settings dialog: the customer status guide, performance, readability and audio
+ * settings, and the local save actions.
+ *
+ * @param props - See {@link SettingsDialogProps}.
+ * @returns The Settings backdrop and dialog.
+ */
+export function SettingsDialog({
+  ref,
+  settings,
+  isResetOpen,
+  onUpdateSetting,
+  onClose,
+  onExportSave,
+  onImportSave,
+  onOpenReset,
+}: SettingsDialogProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <section ref={ref} className="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabIndex={-1} inert={isResetOpen} aria-hidden={isResetOpen}>
+        <header>
+          <div><span>Preferences &amp; guide</span><h2 id="settings-title">Settings</h2></div>
+          <button type="button" aria-label="Close settings" onClick={onClose}>×</button>
+        </header>
+        <div className="settings-content">
+          <CustomerStatusGuide />
+          <fieldset>
+            <legend>Performance</legend>
+            <label>
+              Quality mode
+              <select
+                value={settings.quality}
+                onChange={(event) => onUpdateSetting("quality", event.target.value as RuntimeSettings["quality"])}
+              >
+                <option value="standard">Standard · target 60 FPS</option>
+                <option value="lower-end">Lower-end · target 30 FPS</option>
+              </select>
+            </label>
+            <SettingSwitch settingKey="reducedMotion" settings={settings} label="Reduced motion" description="Calmer camera and fewer ambient animations" onUpdateSetting={onUpdateSetting} />
+          </fieldset>
+          <fieldset>
+            <legend>Readability</legend>
+            <SettingSlider settingKey="textScale" settings={settings} label="Text size" min={TEXT_SCALE_MIN} max={TEXT_SCALE_MAX} step={TEXT_SCALE_STEP} onUpdateSetting={onUpdateSetting} />
+            <SettingSwitch settingKey="highContrast" settings={settings} label="High contrast" description="Deeper outlines and stronger status patterns" onUpdateSetting={onUpdateSetting} />
+          </fieldset>
+          <fieldset>
+            <legend>Audio</legend>
+            <SettingSwitch settingKey="masterMuted" settings={settings} label="Mute all audio" onUpdateSetting={onUpdateSetting} />
+            <SettingSlider settingKey="musicVolume" settings={settings} label="Music volume" min="0" max="1" step="0.05" onUpdateSetting={onUpdateSetting} />
+            <SettingSlider settingKey="ambienceVolume" settings={settings} label="Ambience volume" min="0" max="1" step="0.05" onUpdateSetting={onUpdateSetting} />
+            <SettingSlider settingKey="sfxVolume" settings={settings} label="Effects volume" min="0" max="1" step="0.05" onUpdateSetting={onUpdateSetting} />
+          </fieldset>
+          <fieldset>
+            <legend>Local data</legend>
+            <div className="button-row">
+              <button type="button" onClick={onExportSave}>Export save</button>
+              <button type="button" onClick={() => fileInputRef.current?.click()}>Import save</button>
+              <input ref={fileInputRef} className="sr-only" type="file" accept="application/json" onChange={onImportSave} />
+            </div>
+            <button type="button" className="danger-button" onClick={onOpenReset}>Reset game…</button>
+          </fieldset>
+        </div>
+        <footer><button type="button" className="primary-button" onClick={onClose}>Done</button></footer>
+      </section>
+    </div>
+  );
+}
+
+/** The props of {@link HelpDialog}. */
+export interface HelpDialogProps {
+  /** The dialog section, which the shell's focus trap installs on. */
+  readonly ref: Ref<HTMLElement>;
+  /** Close Help. */
+  readonly onClose: () => void;
+  /** Close Help and restart the tutorial. */
+  readonly onReplayTutorial: () => void;
+  /** Close Help and restart the nutrition tour. */
+  readonly onReplayNutritionTour: () => void;
+}
+
+/**
+ * The Help dialog: the controls guide, the nutrition disclosure and the replay buttons.
+ *
+ * @param props - See {@link HelpDialogProps}.
+ * @returns The Help backdrop and dialog.
+ */
+export function HelpDialog({
+  ref,
+  onClose,
+  onReplayTutorial,
+  onReplayNutritionTour,
+}: HelpDialogProps) {
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <section ref={ref} className="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title" tabIndex={-1}>
+        <header><div><span>How to play</span><h2 id="help-title">Neighbourhood guide</h2></div><button type="button" aria-label="Close help" onClick={onClose}>×</button></header>
+        <div className="help-grid">
+          <article><kbd>Drag</kbd><strong>Pan the map</strong><p>Or use the arrow keys while the world is focused.</p></article>
+          <article><kbd>Wheel</kbd><strong>Zoom</strong><p>Use + and − on the keyboard too.</p></article>
+          <article><kbd>R</kbd><strong>Rotate</strong><p>Multi-tile footprints preview before purchase.</p></article>
+          <article><kbd>Esc</kbd><strong>Cancel</strong><p>Leave build mode without spending anything.</p></article>
+          <article><kbd>Space</kbd><strong>Pause</strong><p>The simulation clamps time after a suspended tab.</p></article>
+          <article><kbd>U</kbd><strong>Undo</strong><p>Restore the most recent build change safely.</p></article>
+          <article><kbd>Menu</kbd><strong>Compare two ratings</strong><p>Health reflects nutrition balance; Stars reflect taste and popularity.</p></article>
+          <article><kbd>Guest</kbd><strong>Inspect a visit</strong><p>See fictional health needs, personal fit, reasons, and stat effects.</p></article>
+        </div>
+        <NutritionDisclosure />
+        <footer>
+          <button type="button" onClick={onReplayTutorial}>Replay tutorial</button>
+          <button type="button" onClick={onReplayNutritionTour}>Replay nutrition tour</button>
+          <button type="button" className="primary-button" onClick={onClose}>Back to centre</button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
+/** The props of {@link ResetDialog}. */
+export interface ResetDialogProps {
+  /** The dialog section, which the shell's focus trap installs on. */
+  readonly ref: Ref<HTMLElement>;
+  /** Close the confirmation and keep the centre. */
+  readonly onCancel: () => void;
+  /** Reset the centre. */
+  readonly onConfirm: () => void;
+}
+
+/**
+ * The reset confirmation, nested above Settings.
+ *
+ * @param props - See {@link ResetDialogProps}.
+ * @returns The confirmation's backdrop and alert dialog.
+ */
+export function ResetDialog({ ref, onCancel, onConfirm }: ResetDialogProps) {
+  return (
+    <div className="modal-backdrop nested" role="presentation">
+      <section ref={ref} className="confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="reset-title" aria-describedby="reset-description" tabIndex={-1}>
+        <span aria-hidden="true">!</span>
+        <h2 id="reset-title">Reset this centre?</h2>
+        <p id="reset-description">This removes the local save and starts again. Export first if you may want it later.</p>
+        <div><button type="button" onClick={onCancel}>Keep playing</button><button type="button" className="danger-button" onClick={onConfirm}>Reset game</button></div>
+      </section>
+    </div>
+  );
+}

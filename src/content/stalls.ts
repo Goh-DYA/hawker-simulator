@@ -1,3 +1,14 @@
+/**
+ * The launch hawker stalls and their upgrade levels.
+ *
+ * Each stall is authored as a seed with its English copy inline; the seed helpers derive
+ * its localization keys and collect the English copy.
+ */
+import {
+  build_english_entries,
+  build_localization_keys,
+  strip_localized_copy,
+} from "./seeds";
 import type {
   LocalizedSeed,
   StallDefinition,
@@ -7,27 +18,38 @@ import type {
 type StallSeed = Omit<StallDefinition, "nameKey" | "descriptionKey"> &
   LocalizedSeed;
 
+/** Service-time multiplier at stall upgrade level 2. */
+const LEVEL_2_SERVICE_TIME_MULTIPLIER = 0.9;
+/** Service-time multiplier at stall upgrade level 3. */
+const LEVEL_3_SERVICE_TIME_MULTIPLIER = 0.8;
+/** Service-time multiplier at stall upgrade level 4. */
+const LEVEL_4_SERVICE_TIME_MULTIPLIER = 0.7;
+/** Level 3 upgrade cost as a multiple of the stall's level 2 base cost. */
+const LEVEL_3_COST_FACTOR = 1.75;
+/** Level 4 upgrade cost as a multiple of the stall's level 2 base cost. */
+const LEVEL_4_COST_FACTOR = 2.7;
+
 const upgrades = (baseCost: number): readonly StallUpgradeLevel[] => [
   {
     level: 2,
     cost: baseCost,
-    serviceTimeMultiplier: 0.9,
+    serviceTimeMultiplier: LEVEL_2_SERVICE_TIME_MULTIPLIER,
     capacityBonus: 1,
     qualityBonus: 0.04,
     menuSlotsBonus: 0,
   },
   {
     level: 3,
-    cost: Math.round(baseCost * 1.75),
-    serviceTimeMultiplier: 0.8,
+    cost: Math.round(baseCost * LEVEL_3_COST_FACTOR),
+    serviceTimeMultiplier: LEVEL_3_SERVICE_TIME_MULTIPLIER,
     capacityBonus: 1,
     qualityBonus: 0.07,
     menuSlotsBonus: 1,
   },
   {
     level: 4,
-    cost: Math.round(baseCost * 2.7),
-    serviceTimeMultiplier: 0.7,
+    cost: Math.round(baseCost * LEVEL_4_COST_FACTOR),
+    serviceTimeMultiplier: LEVEL_4_SERVICE_TIME_MULTIPLIER,
     capacityBonus: 2,
     qualityBonus: 0.1,
     menuSlotsBonus: 1,
@@ -625,21 +647,12 @@ const stallSeeds = [
   },
 ] as const satisfies readonly StallSeed[];
 
-export const STALLS: readonly StallDefinition[] = stallSeeds.map(
-  ({ name, description, ...stall }) => {
-    void name;
-    void description;
-    return {
-      ...stall,
-      nameKey: `stall.${stall.id.slice("stall.".length)}.name`,
-      descriptionKey: `stall.${stall.id.slice("stall.".length)}.description`,
-    };
-  },
-);
+/** The launch stalls, in authored order, with localization keys in place of copy. */
+export const STALLS: readonly StallDefinition[] = stallSeeds.map((seed) => ({
+  ...strip_localized_copy(seed),
+  ...build_localization_keys(seed.id),
+}));
 
-export const STALL_ENGLISH: Readonly<Record<string, string>> = Object.fromEntries(
-  stallSeeds.flatMap((stall) => [
-    [`stall.${stall.id.slice("stall.".length)}.name`, stall.name],
-    [`stall.${stall.id.slice("stall.".length)}.description`, stall.description],
-  ]),
-);
+/** The English names and descriptions of the stalls, keyed by localization key. */
+export const STALL_ENGLISH: Readonly<Record<string, string>> =
+  build_english_entries(stallSeeds);

@@ -1,3 +1,7 @@
+/**
+ * Projects authored placeable content (category, tags, interaction roles and modifiers) into
+ * the core `UtilityEffects` the simulation applies.
+ */
 import type { PlaceableDefinition } from "@/src/content";
 import type { UtilityEffects } from "@/src/game/core";
 
@@ -5,7 +9,13 @@ function hasAny(values: ReadonlySet<string>, candidates: readonly string[]) {
   return candidates.some((candidate) => values.has(candidate));
 }
 
-/** Converts authored catalogue utility metadata into simulation-ready effects. */
+/**
+ * Converts authored catalogue utility metadata into simulation-ready effects.
+ *
+ * @param item - The authored placeable.
+ * @returns Its category-based radius and its effects: the authored modifiers plus the category, tag
+ *   and role bonuses.
+ */
 export function utilityEffectsForPlaceable(item: PlaceableDefinition): UtilityEffects {
   const roles = new Set(item.interactionPoints.map((point) => point.role));
   const tags = new Set(item.tags);
@@ -76,6 +86,12 @@ export function utilityEffectsForPlaceable(item: PlaceableDefinition): UtilityEf
   };
 }
 
+/**
+ * Tests whether a placeable has any non-zero utility effect besides its radius.
+ *
+ * @param item - The authored placeable.
+ * @returns True when at least one effect is non-zero.
+ */
 export function hasMeaningfulUtility(item: PlaceableDefinition): boolean {
   const utility = utilityEffectsForPlaceable(item);
   return Object.entries(utility).some(

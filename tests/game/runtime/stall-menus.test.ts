@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DISHES, STALLS } from "@/src/content";
 import {
+  compute_menu_slots,
   defaultStallMenusForProgression,
   isDishUnlockedForMenu,
   resolveStallMenus,
@@ -62,5 +63,20 @@ describe("stall menu progression", () => {
     );
 
     expect(menus[stall.id]).toEqual(selected);
+  });
+});
+
+describe("compute_menu_slots", () => {
+  it("matches the authored slots plus the upgrade bonus for every stall and level", () => {
+    const upgrade_levels = [undefined, 1, 2, 3, 4, 5];
+    for (const stall of STALLS) {
+      for (const upgrade_level of upgrade_levels) {
+        const upgrade = stall.upgradeLevels.find((candidate) => candidate.level === upgrade_level);
+        const expected_slots = stall.menuSlots + (upgrade?.menuSlotsBonus ?? 0);
+        expect(compute_menu_slots(stall, upgrade_level), `${stall.id} at ${upgrade_level}`).toBe(
+          expected_slots,
+        );
+      }
+    }
   });
 });

@@ -1,406 +1,136 @@
+/**
+ * The content types, derived from the Zod schemas in `schemas.ts`.
+ *
+ * Each type is the deeply readonly output of its schema, so a field is described once and
+ * a schema change updates its type. The field comments live on the schema keys.
+ * `ContentId` and `LocalizedSeed` have no schema and stay hand-written.
+ */
+import type { z } from "zod";
+
+import type {
+  audioReferenceSchema,
+  cardinalDirectionSchema,
+  customerArchetypeSchema,
+  dietaryTagSchema,
+  dishCategorySchema,
+  dishSchema,
+  economySchema,
+  footprintSchema,
+  gridPointSchema,
+  healthConditionSchema,
+  interactionPointSchema,
+  interactionRoleSchema,
+  launchContentSchema,
+  nutritionClassSchema,
+  nutritionContentSchema,
+  nutritionGuidelineSchema,
+  nutritionIntentIdSchema,
+  nutritionIntentSchema,
+  nutritionMetricSchema,
+  nutritionNutrientsSchema,
+  nutritionProfileSchema,
+  nutritionProfileStatusSchema,
+  nutritionProvenanceSchema,
+  nutritionServingSchema,
+  nutritionSourceSnapshotSchema,
+  nutritionUnavailableReasonSchema,
+  nutritionValueSchema,
+  nutritionVariantFamilySchema,
+  nutritionVariantSchema,
+  placeableCategorySchema,
+  placeableSchema,
+  rotationSchema,
+  seatPointSchema,
+  seatPreferenceSchema,
+  spriteReferenceSchema,
+  stallSchema,
+  stallUpgradeSchema,
+  unlockRequirementSchema,
+} from "./schemas";
+
+/** A deeply readonly view of `T`: objects, arrays and tuples become readonly at every level. */
+export type ReadonlyDeep<T> = T extends object
+  ? { readonly [K in keyof T]: ReadonlyDeep<T[K]> }
+  : T;
+
 export type ContentId = string;
 
-export type CardinalDirection = "north" | "east" | "south" | "west";
-export type Rotation = 0 | 90 | 180 | 270;
+export type CardinalDirection = ReadonlyDeep<z.output<typeof cardinalDirectionSchema>>;
+export type Rotation = ReadonlyDeep<z.output<typeof rotationSchema>>;
 
-export interface GridPoint {
-  readonly x: number;
-  readonly y: number;
-}
+export type GridPoint = ReadonlyDeep<z.output<typeof gridPointSchema>>;
 
-export interface Footprint {
-  readonly width: number;
-  readonly height: number;
-}
+export type Footprint = ReadonlyDeep<z.output<typeof footprintSchema>>;
 
-export interface UnlockRequirement {
-  readonly level: number;
-  readonly reputation: number;
-  readonly prerequisiteIds: readonly ContentId[];
-}
+export type UnlockRequirement = ReadonlyDeep<z.output<typeof unlockRequirementSchema>>;
 
-export interface SpriteReference {
-  readonly atlas: string;
-  readonly frame: string;
-}
+export type SpriteReference = ReadonlyDeep<z.output<typeof spriteReferenceSchema>>;
 
-export interface AudioReference {
-  readonly event: string;
-  readonly volume: number;
-}
+export type AudioReference = ReadonlyDeep<z.output<typeof audioReferenceSchema>>;
 
-export interface StallUpgradeLevel {
-  readonly level: 2 | 3 | 4;
-  readonly cost: number;
-  readonly serviceTimeMultiplier: number;
-  readonly capacityBonus: number;
-  readonly qualityBonus: number;
-  readonly menuSlotsBonus: number;
-}
+export type StallUpgradeLevel = ReadonlyDeep<z.output<typeof stallUpgradeSchema>>;
 
-export interface StallDefinition {
-  readonly id: ContentId;
-  readonly nameKey: string;
-  readonly descriptionKey: string;
-  readonly cuisineTags: readonly string[];
-  readonly footprint: Footprint;
-  readonly servicePoint: GridPoint;
-  readonly queueAnchor: GridPoint;
-  readonly queueDirection: CardinalDirection;
-  readonly menuSlots: number;
-  readonly dishIds: readonly ContentId[];
-  readonly serviceTimeMs: number;
-  readonly preparationCapacity: number;
-  readonly quality: number;
-  readonly popularity: number;
-  readonly purchaseCost: number;
-  readonly operatingCostPerMinute: number;
-  readonly upgradeLevels: readonly StallUpgradeLevel[];
-  readonly unlockRequirement: UnlockRequirement;
-  readonly visual: {
-    readonly sprite: SpriteReference;
-    readonly palette: readonly [string, string, string];
-    readonly signShape: "awning" | "lightbox" | "painted-board" | "tile-panel";
-    readonly counterFacing: CardinalDirection;
-    readonly depthSortAnchor: GridPoint;
-  };
-  readonly animationReferences: readonly string[];
-  readonly audioReferences: readonly AudioReference[];
-  readonly tags: readonly string[];
-}
+export type StallDefinition = ReadonlyDeep<z.output<typeof stallSchema>>;
 
-export type DishCategory =
-  | "rice"
-  | "noodles"
-  | "bread"
-  | "soup"
-  | "small-plate"
-  | "seafood"
-  | "drink"
-  | "dessert";
+export type DishCategory = ReadonlyDeep<z.output<typeof dishCategorySchema>>;
 
-export type DietaryTag =
-  | "contains-egg"
-  | "contains-pork"
-  | "contains-seafood"
-  | "contains-dairy"
-  | "contains-peanuts"
-  | "plant-based-recipe"
-  | "spicy";
+export type DietaryTag = ReadonlyDeep<z.output<typeof dietaryTagSchema>>;
 
-export interface DishDefinition {
-  readonly id: ContentId;
-  readonly nameKey: string;
-  readonly descriptionKey: string;
-  readonly stallIds: readonly ContentId[];
-  readonly category: DishCategory;
-  readonly price: number;
-  readonly baseDemand: number;
-  readonly preparationTimeMs: number;
-  readonly servingTimeMs: number;
-  readonly eatingTimeMs: number;
-  readonly quality: number;
-  /** Taste and popularity rating, independent from nutritional suitability. */
-  readonly starRating: number;
-  readonly preferenceTags: readonly string[];
-  readonly dietaryTags: readonly DietaryTag[];
-  readonly unlockRequirement: UnlockRequirement;
-  readonly foodSprite: SpriteReference;
-  readonly containerSprite: SpriteReference;
-  readonly portionColour: string;
-  readonly steamEffect: "none" | "light" | "full";
-}
+export type DishDefinition = ReadonlyDeep<z.output<typeof dishSchema>>;
 
-export type PlaceableCategory =
-  | "table"
-  | "seat"
-  | "stall-fixture"
-  | "tray-waste"
-  | "lighting"
-  | "fan"
-  | "plant"
-  | "signage"
-  | "divider"
-  | "facility"
-  | "decor";
+export type PlaceableCategory = ReadonlyDeep<z.output<typeof placeableCategorySchema>>;
 
-export type InteractionRole =
-  | "use"
-  | "sit"
-  | "queue"
-  | "return-tray"
-  | "dispose-waste"
-  | "wash-hands"
-  | "collect-water"
-  | "inspect-menu";
+export type InteractionRole = ReadonlyDeep<z.output<typeof interactionRoleSchema>>;
 
-export interface InteractionPoint extends GridPoint {
-  readonly role: InteractionRole;
-  readonly facing: CardinalDirection;
-}
+export type InteractionPoint = ReadonlyDeep<z.output<typeof interactionPointSchema>>;
 
-export interface SeatPoint extends GridPoint {
-  readonly facing: CardinalDirection;
-  readonly comfort: number;
-  readonly accessible: boolean;
-}
+export type SeatPoint = ReadonlyDeep<z.output<typeof seatPointSchema>>;
 
-export interface PlaceableDefinition {
-  readonly id: ContentId;
-  readonly nameKey: string;
-  readonly descriptionKey: string;
-  readonly category: PlaceableCategory;
-  readonly footprint: Footprint;
-  readonly rotations: readonly Rotation[];
-  readonly price: number;
-  readonly resaleValue: number;
-  readonly upkeepPerMinute: number;
-  readonly unlockRequirement: UnlockRequirement;
-  readonly walkability: "blocked" | "pass-through" | "underpass";
-  readonly collision: readonly GridPoint[];
-  readonly interactionPoints: readonly InteractionPoint[];
-  readonly seatPoints: readonly SeatPoint[];
-  readonly queuePoints: readonly GridPoint[];
-  readonly pivot: GridPoint;
-  readonly depthSortAnchor: GridPoint;
-  readonly spriteReferences: readonly SpriteReference[];
-  readonly animationReferences: readonly string[];
-  readonly audioReferences: readonly AudioReference[];
-  readonly ambienceValue: number;
-  readonly cleanlinessModifier: number;
-  readonly serviceModifiers: {
-    readonly queuePatience: number;
-    readonly eatingSpeed: number;
-    readonly cleaningEfficiency: number;
-    readonly movementSpeed: number;
-  };
-  readonly lightRadius: number;
-  readonly tags: readonly string[];
-}
+export type PlaceableDefinition = ReadonlyDeep<z.output<typeof placeableSchema>>;
 
-export type SeatPreference =
-  | "any"
-  | "quiet"
-  | "near-stall"
-  | "group-table"
-  | "accessible"
-  | "breezy"
-  | "bright";
+export type SeatPreference = ReadonlyDeep<z.output<typeof seatPreferenceSchema>>;
 
-export interface CustomerArchetypeDefinition {
-  readonly id: ContentId;
-  readonly nameKey: string;
-  readonly descriptionKey: string;
-  readonly gameplayRole: string;
-  readonly budgetRange: readonly [number, number];
-  readonly patienceSeconds: number;
-  readonly walkingSpeedTilesPerSecond: number;
-  readonly priceSensitivity: number;
-  readonly qualitySensitivity: number;
-  readonly queueSensitivity: number;
-  readonly distanceSensitivity: number;
-  readonly noveltyPreference: number;
-  readonly seatPreference: SeatPreference;
-  readonly dishPreferenceTags: readonly string[];
-  readonly groupSizeRange: readonly [number, number];
-  readonly visualRules: {
-    readonly outfitSilhouette:
-      | "compact"
-      | "relaxed"
-      | "structured"
-      | "layered"
-      | "sporty"
-      | "classic";
-    readonly garmentPattern:
-      | "plain"
-      | "banded"
-      | "panelled"
-      | "sashed"
-      | "piped"
-      | "pocketed";
-    readonly accessoryChance: number;
-    readonly carryProp: "none" | "tote" | "briefcase" | "backpack" | "walking-aid";
-  };
-  readonly visitSchedule: {
-    readonly startHour: number;
-    readonly endHour: number;
-    readonly peakMultiplier: number;
-  };
-  readonly satisfactionModifiers: {
-    readonly value: number;
-    readonly speed: number;
-    readonly comfort: number;
-    readonly variety: number;
-    readonly cleanliness: number;
-  };
-  readonly spendMultiplier: number;
-  readonly trayReturnChance: number;
-  readonly unlockRequirement: UnlockRequirement;
-  readonly tags: readonly string[];
-}
+export type CustomerArchetypeDefinition = ReadonlyDeep<z.output<typeof customerArchetypeSchema>>;
 
-export interface EconomyDefinition {
-  readonly startingCash: number;
-  readonly startingReputation: number;
-  readonly maxLevel: number;
-  readonly maxReputation: number;
-  readonly minimumVisitEarnings: number;
-  readonly starterRequiredSeats: number;
-  readonly recoveryGrant: number;
-  readonly levelXpThresholds: readonly number[];
-}
+export type EconomyDefinition = ReadonlyDeep<z.output<typeof economySchema>>;
 
-export type NutritionMetric =
-  | "energyKcal"
-  | "proteinG"
-  | "totalFatG"
-  | "saturatedFatG"
-  | "transFatG"
-  | "carbohydrateG"
-  | "totalSugarG"
-  | "dietaryFibreG"
-  | "sodiumMg"
-  | "calciumMg"
-  | "ironMg"
-  | "waterG";
+export type NutritionMetric = ReadonlyDeep<z.output<typeof nutritionMetricSchema>>;
 
-export type NutritionUnavailableReason =
-  | "not-reported"
-  | "invalid-source"
-  | "unmapped";
-
-export type NutritionValue =
-  | { readonly status: "known"; readonly value: number }
-  | { readonly status: "trace" }
-  | {
-      readonly status: "unavailable";
-      readonly reason: NutritionUnavailableReason;
-    };
-
-export type NutritionNutrients = Readonly<
-  Record<NutritionMetric, NutritionValue>
+export type NutritionUnavailableReason = ReadonlyDeep<
+  z.output<typeof nutritionUnavailableReasonSchema>
 >;
 
-export type NutritionProfileStatus =
-  | "released"
-  | "unavailable"
-  | "quarantined";
+export type NutritionValue = ReadonlyDeep<z.output<typeof nutritionValueSchema>>;
 
-export type NutritionClass = "meal" | "drink";
+export type NutritionNutrients = ReadonlyDeep<z.output<typeof nutritionNutrientsSchema>>;
 
-export type HealthCondition =
-  | "high-cholesterol"
-  | "obesity"
-  | "diabetes"
-  | "hypertension";
+export type NutritionProfileStatus = ReadonlyDeep<z.output<typeof nutritionProfileStatusSchema>>;
 
-export type NutritionIntentId =
-  | "lighter-energy"
-  | "protein-forward"
-  | "fibre-forward"
-  | "sodium-aware"
-  | "lower-total-sugar-drink";
+export type NutritionClass = ReadonlyDeep<z.output<typeof nutritionClassSchema>>;
 
-export interface NutritionServing {
-  readonly amount: number;
-  readonly unit: "g" | "ml";
-  readonly label: string;
-}
+export type HealthCondition = ReadonlyDeep<z.output<typeof healthConditionSchema>>;
 
-export interface NutritionProvenance {
-  readonly snapshotId: string;
-  readonly sourceFile: string;
-  readonly sourceFileSha256: string;
-  readonly sourceRowNumber: number;
-  readonly sourceFoodName: string;
-  readonly sourceRowSha256: string;
-  readonly sourceDataType: string;
-  readonly mappingKind: "exact" | "curated-synonym" | "scaled-exact";
-  readonly multiplier: number;
-  readonly reviewNote: string;
-}
+export type NutritionIntentId = ReadonlyDeep<z.output<typeof nutritionIntentIdSchema>>;
 
-export interface NutritionProfile {
-  readonly id: string;
-  readonly dishId: ContentId;
-  readonly variantId?: string;
-  readonly status: NutritionProfileStatus;
-  readonly nutritionClass: NutritionClass;
-  readonly serving?: NutritionServing;
-  readonly nutrients: NutritionNutrients;
-  /** Comparative, per-serving game rating within the same nutrition class. */
-  readonly healthRating: number;
-  /** Comparative game ratings using condition-specific nutrient weightings. */
-  readonly conditionRatings: Readonly<Record<HealthCondition, number>>;
-  readonly intentFits: Readonly<Partial<Record<NutritionIntentId, number>>>;
-  readonly provenance?: NutritionProvenance;
-  readonly unavailableReason?: NutritionUnavailableReason;
-  readonly reviewNote: string;
-  readonly quarantineReasons?: readonly string[];
-}
+export type NutritionServing = ReadonlyDeep<z.output<typeof nutritionServingSchema>>;
 
-export interface NutritionVariant {
-  readonly id: string;
-  readonly name: string;
-  readonly profileId: string;
-  readonly unlockRank: 1 | 2 | 4 | 7;
-  readonly visualKey: string;
-}
+export type NutritionProvenance = ReadonlyDeep<z.output<typeof nutritionProvenanceSchema>>;
 
-export interface NutritionVariantFamily {
-  readonly dishId: ContentId;
-  readonly defaultVariantId: string;
-  readonly variants: readonly NutritionVariant[];
-}
+export type NutritionProfile = ReadonlyDeep<z.output<typeof nutritionProfileSchema>>;
 
-export interface NutritionIntentDefinition {
-  readonly id: NutritionIntentId;
-  readonly name: string;
-  readonly description: string;
-  readonly metric: NutritionMetric;
-  readonly direction: "lower" | "higher";
-  readonly nutritionClass: NutritionClass;
-}
+export type NutritionVariant = ReadonlyDeep<z.output<typeof nutritionVariantSchema>>;
 
-export interface NutritionSourceSnapshot {
-  readonly id: string;
-  readonly fileName: string;
-  readonly sha256: string;
-  readonly rowCount: number;
-}
+export type NutritionVariantFamily = ReadonlyDeep<z.output<typeof nutritionVariantFamilySchema>>;
 
-export interface NutritionGuideline {
-  readonly id: string;
-  readonly nutrient: string;
-  readonly lowerLimit: string;
-  readonly upperLimit: string;
-  readonly remarks: string;
-  readonly source: string;
-  readonly comparison: "context-only" | "not-comparable";
-  readonly notComparableReason?: string;
-}
+export type NutritionIntentDefinition = ReadonlyDeep<z.output<typeof nutritionIntentSchema>>;
 
-export interface NutritionContent {
-  readonly schemaVersion: 2;
-  readonly dataVersion: string;
-  readonly sourceSnapshots: readonly NutritionSourceSnapshot[];
-  readonly profiles: readonly NutritionProfile[];
-  readonly variantFamilies: readonly NutritionVariantFamily[];
-  readonly intents: readonly NutritionIntentDefinition[];
-  readonly guidelines: readonly NutritionGuideline[];
-  readonly disclosure: string;
-}
+export type NutritionSourceSnapshot = ReadonlyDeep<z.output<typeof nutritionSourceSnapshotSchema>>;
 
-export interface LaunchContent {
-  readonly version: string;
-  readonly economy: EconomyDefinition;
-  readonly stalls: readonly StallDefinition[];
-  readonly dishes: readonly DishDefinition[];
-  readonly placeables: readonly PlaceableDefinition[];
-  readonly customerArchetypes: readonly CustomerArchetypeDefinition[];
-  readonly nutrition: NutritionContent;
-  readonly localization: Readonly<Record<string, string>>;
-}
+export type NutritionGuideline = ReadonlyDeep<z.output<typeof nutritionGuidelineSchema>>;
+
+export type NutritionContent = ReadonlyDeep<z.output<typeof nutritionContentSchema>>;
+
+export type LaunchContent = ReadonlyDeep<z.output<typeof launchContentSchema>>;
 
 export interface LocalizedSeed {
   readonly name: string;

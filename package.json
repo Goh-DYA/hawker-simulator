@@ -17,7 +17,8 @@
     "test:watch": "vitest --config vitest.config.ts",
     "test:release": "npm run typecheck && npm run lint && npm run test && npm run build && npm run test:ssr",
     "smoke:deployment": "node tools/smoke-deployment.mjs",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "lint": "eslint . --max-warnings=0",
+    "format:check": "prettier --check",
     "validate:content": "vitest run --config vitest.config.ts tests/content/content.test.ts"
   },
   "dependencies": {
@@ -42,6 +43,7 @@
     "eslint-config-next": "16.2.6",
     "fake-indexeddb": "6.2.5",
     "jsdom": "29.1.1",
+    "prettier": "3.9.9",
     "react-server-dom-webpack": "19.2.6",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",

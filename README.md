@@ -30,13 +30,15 @@ The Route editor lets players paint preferred walking lanes across clear floor t
 
 ## Launch content
 
-- 14 original operational stalls
-- 54 named dishes, each with a released source nutrition profile and separate Health and Star ratings
-- 104 released nutrition profiles across 14 reviewed variant families
-- 80 meaningfully distinct placeable catalogue items
-- 12 customer archetypes
+- Original operational stalls, each with its own menu
+- Named dishes, each with a released source nutrition profile and separate Health and Star ratings
+- Reviewed nutrition variant families that expose selectable recipe preparations
+- Meaningfully distinct placeable catalogue items
+- Customer archetypes described by visit goals
 - 1 top-down neighbourhood-hall map theme
-- 320 English localization entries
+- English localization for every record
+
+The current counts are in the [content catalogue](docs/CONTENT_CATALOGUE.md#roster-counts).
 
 The validator counts catalogue entries by distinct gameplay definition, not by recolour. It checks links, IDs, assets, localization, collisions, rotations, unlocks, affordability, and behavioural uniqueness.
 
@@ -118,7 +120,7 @@ Private browsing, denied storage, or quota failures can make persistence tempora
 
 ## Project documentation
 
-Start with:
+The [documentation index](docs/README.md) lists every document and the facts each one owns. Start with:
 
 - [Project status](docs/PROJECT_STATUS.md)
 - [Game design](docs/GAME_DESIGN_DOCUMENT.md)
@@ -134,7 +136,7 @@ Start with:
 
 ## Release status
 
-The working content `1.3.0` source expands the catalogue to 14 stalls and 54 dishes, with 104 released nutrition profiles, 14 variant families, and condition-aware Health ratings alongside taste-and-popularity Star ratings. Its supported-runtime working-source gate and both local production builds pass. The project must not be described as production-approved until the current source/artifact publication record and exact Chrome/Edge/Firefox, offline restart/update, render performance, long-soak, accessibility, cultural, security, and qualified legal/privacy review evidence are complete. The Node benchmark does not measure the renderer's full-frame redraw and per-frame text recreation, and no human or external approval is implied by the internal checklists.
+The working content `1.3.0` source expands the stall, dish, and nutrition catalogue ([counts](docs/CONTENT_CATALOGUE.md#roster-counts)), with condition-aware Health ratings alongside taste-and-popularity Star ratings. Its supported-runtime working-source gate and both local production builds pass ([test report](docs/TEST_REPORT.md)), and the remaining blockers are in [known issues](docs/KNOWN_ISSUES.md). The project must not be described as production-approved until the current source/artifact publication record and exact Chrome/Edge/Firefox, offline restart/update, render performance, long-soak, accessibility, cultural, security, and qualified legal/privacy review evidence are complete. The Node benchmark does not measure the renderer's full-frame redraw and per-frame text recreation, and no human or external approval is implied by the internal checklists.
 
 ## License and provenance
 

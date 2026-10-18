@@ -1,0 +1,13 @@
+# Prettier formats only newly authored source and test files; existing and moved code keeps its formatting.
+# Ignore everything at the root except the source and test trees.
+/*
+!/src/
+!/app/
+!/tools/
+!/worker/
+!/tests/
+
+# Generated data and frozen goldens are never reformatted.
+*.generated.json
+__snapshots__/
+fixtures/
