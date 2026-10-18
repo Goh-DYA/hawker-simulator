@@ -3,6 +3,24 @@
 Status: Content `1.3.0` typed roster passes automated validation; exact-production browser and human cultural verification pending
 Counting rule: unique ID plus meaningful functional, footprint, interaction, unlock, or constructed-visual difference. Palette-only recolours do not count.
 
+## Roster counts
+
+This document owns the launch content counts. Other documents link here, except the requirement and evidence documents that the [documentation index](README.md#single-owners-for-volatile-facts) lists as still restating them as acceptance criteria. The validator reads the record counts from `LAUNCH_ROSTER` in `src/content/roster.ts`, so a roster change updates that file, the tests that pin it, this table, and every restating document the index lists.
+
+| Record | Count | Validator rule |
+|---|---:|---|
+| Fictional stalls | 14 | Exact |
+| Dishes | 54 | Exact |
+| Placeables | 80 | At least 80, with a minimum per category (see [Eighty placeables](#eighty-placeables)) |
+| Customer archetypes | 12 | Exact |
+| Customer lifecycle states | 11 | Fixed by the simulation's customer status type |
+| English localization entries | 320 | Pinned by the content tests |
+| Released nutrition profiles | 104 | Derived: one per dish plus each additional variant preparation |
+| Nutrition variant families | 14 | Exact; together they expose 64 selectable variants |
+| Nutrition source snapshots | 2 | Exact |
+| Nutrition intents | 5 | Exact |
+| Nutrition guidelines | 11 | Exact |
+
 ## Nutrition coverage
 
 Content `1.3.0` provides a released source profile for every one of the 54 dishes. Fourteen dish families add reviewed, rank-gated preparations for comparison: kopi, teh tarik, nasi lemak, fried carrot cake, roti prata, sliced fish soup, bak chor mee, chicken murtabak, chicken nasi briyani, masala thosai, yong tau foo, ban mian, bak kut teh, and duck rice. Together, the 54 base profiles and 50 additional preparation profiles produce 104 released nutrition profiles; the 14 families expose 64 selectable variants when their default preparations are included.
@@ -120,7 +138,7 @@ The active simulation consumes each persona's budget, patience, walking speed, s
 
 ## Eighty placeables
 
-The names below mirror the current typed content. Each definition carries its own price, footprint, interaction points, accessibility flags, ambience/cleanliness/service modifiers, unlock, and procedural sprite reference.
+The names below mirror the current typed content. Each definition carries its own price, footprint, interaction points, accessibility flags, ambience/cleanliness/service modifiers, unlock, and procedural sprite reference. Each category heading gives the category's current count, which is also its validator minimum (`PLACEABLE_CATEGORY_MINIMUMS`); the roster may grow past 80, but no category may fall below its minimum.
 
 ### Tables — 8
 
@@ -243,4 +261,4 @@ Sign copy and symbols require legibility, translation/cultural, and accessible-w
 
 ## Validation requirements
 
-Automated tests must prove the exact 14 / 54 / 80 / 12 roster and 320 English keys, unique IDs and primary stall/food visual references, a playable dish when each stall unlocks, exact placeable category counts, valid rotations/footprints, interaction points outside blocking collisions, known asset/audio references, reachable required interactions, a valid unlock graph, and no palette-only duplicate counted as content. Nutrition validation must additionally prove 104 released profiles, 14 variant families with 64 selectable variants, a released base profile and Star rating for every dish, complete Health and condition ratings, deterministic source generation, and valid provenance.
+Automated tests must prove the [roster counts](#roster-counts): exactly 14 stalls, 54 dishes, and 12 customer archetypes, at least 80 placeables with at least the listed number in each placeable category, and 320 English keys. They must also prove unique IDs and primary stall/food visual references, a playable dish when each stall unlocks, valid rotations/footprints, interaction points outside blocking collisions, known asset/audio references, reachable required interactions, a valid unlock graph, and no palette-only duplicate counted as content. Nutrition validation must additionally prove 104 released profiles, 14 variant families with 64 selectable variants, a released base profile and Star rating for every dish, complete Health and condition ratings, deterministic source generation, and valid provenance.

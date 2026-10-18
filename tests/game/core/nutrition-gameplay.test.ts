@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  averageRankPercentiles,
   bestEnabledNutritionIntentFit,
   createDailyObjectives,
   createEmptyNutritionMetrics,
@@ -279,19 +278,6 @@ describe("nutrition education rules", () => {
     };
     expect(healthConditionRating(legacy, "hypertension")).toBe(1);
     expect(healthConditionRating(legacy, "diabetes")).toBeUndefined();
-  });
-
-  it("computes relative fits with average-rank ties and a single-option score of one", () => {
-    expect(averageRankPercentiles({ a: 10 }, "higher")).toEqual({ a: 1 });
-    expect(averageRankPercentiles({ a: 10, b: 10, c: 20 }, "higher")).toEqual({
-      a: 0.25,
-      b: 0.25,
-      c: 1,
-    });
-    expect(averageRankPercentiles({ a: 10, b: undefined, c: 20 }, "lower")).toEqual({
-      c: 0,
-      a: 1,
-    });
   });
 
   it("lets an intent influence an otherwise equal dish choice and freezes the order-time variant", () => {

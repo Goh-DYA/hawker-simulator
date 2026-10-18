@@ -1,3 +1,15 @@
+/**
+ * The launch dishes.
+ *
+ * Dishes are authored as compact inputs with their English copy inline. The inputs are
+ * expanded into full dish seeds (timings, star rating, unlock requirement and sprites),
+ * then the seed helpers derive the localization keys and collect the English copy.
+ */
+import {
+  build_english_entries,
+  build_localization_keys,
+  strip_localized_copy,
+} from "./seeds";
 import type {
   DietaryTag,
   DishCategory,
@@ -33,8 +45,20 @@ interface DishInput extends LocalizedSeed {
 type DishSeed = Omit<DishDefinition, "nameKey" | "descriptionKey"> &
   LocalizedSeed;
 
+/** Share of a dish's star rating driven by its quality. */
+const STAR_QUALITY_WEIGHT = 0.65;
+/** Share of a dish's star rating driven by its base demand. */
+const STAR_DEMAND_WEIGHT = 0.35;
+/** Serving time, in milliseconds, per second of preparation time. */
+const SERVING_MS_PER_PREP_SECOND = 70;
+/** Floor on a dish's serving time, so quick dishes still take a visible beat to hand over. */
+const MIN_SERVING_MS = 1_200;
+
 const deriveStarRating = (quality: number, demand: number): number =>
-  Math.round((1 + 4 * (quality * 0.65 + demand * 0.35)) * 10) / 10;
+  Math.round(
+    (1 + 4 * (quality * STAR_QUALITY_WEIGHT + demand * STAR_DEMAND_WEIGHT)) *
+      10,
+  ) / 10;
 
 const dishInputs = [
   {
@@ -1128,7 +1152,10 @@ const dishSeeds: readonly DishSeed[] = dishInputs.map((dish) => ({
   price: dish.price,
   baseDemand: dish.demand,
   preparationTimeMs: dish.preparationSeconds * 1_000,
-  servingTimeMs: Math.max(1_200, Math.round(dish.preparationSeconds * 70)),
+  servingTimeMs: Math.max(
+    MIN_SERVING_MS,
+    Math.round(dish.preparationSeconds * SERVING_MS_PER_PREP_SECOND),
+  ),
   eatingTimeMs: dish.eatingSeconds * 1_000,
   quality: dish.quality,
   starRating: deriveStarRating(dish.quality, dish.demand),
@@ -1145,21 +1172,12 @@ const dishSeeds: readonly DishSeed[] = dishInputs.map((dish) => ({
   steamEffect: dish.steam,
 }));
 
-export const DISHES: readonly DishDefinition[] = dishSeeds.map(
-  ({ name, description, ...dish }) => {
-    void name;
-    void description;
-    return {
-      ...dish,
-      nameKey: `dish.${dish.id.slice("dish.".length)}.name`,
-      descriptionKey: `dish.${dish.id.slice("dish.".length)}.description`,
-    };
-  },
-);
+/** The launch dishes, in authored order, with localization keys in place of copy. */
+export const DISHES: readonly DishDefinition[] = dishSeeds.map((seed) => ({
+  ...strip_localized_copy(seed),
+  ...build_localization_keys(seed.id),
+}));
 
-export const DISH_ENGLISH: Readonly<Record<string, string>> = Object.fromEntries(
-  dishSeeds.flatMap((dish) => [
-    [`dish.${dish.id.slice("dish.".length)}.name`, dish.name],
-    [`dish.${dish.id.slice("dish.".length)}.description`, dish.description],
-  ]),
-);
+/** The English names and descriptions of the dishes, keyed by localization key. */
+export const DISH_ENGLISH: Readonly<Record<string, string>> =
+  build_english_entries(dishSeeds);

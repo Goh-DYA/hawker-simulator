@@ -1,3 +1,12 @@
+/**
+ * The Zod schemas of the launch content.
+ *
+ * `validateContent` parses the content with `launchContentSchema` before it runs the
+ * semantic rules in `rules.ts`, and `nutrition.ts` parses the generated nutrition data
+ * with `nutritionContentSchema` at import. The content types in `types.ts` are derived
+ * from these schemas, so a field is described once, here. The enumerated values each
+ * have a named schema, so `types.ts` can name their union types.
+ */
 import { z } from "zod";
 
 export const contentIdSchema = z
@@ -59,6 +68,8 @@ const fivePointRatingSchema = z
     "Rating must use one decimal place.",
   );
 
+export const signShapeSchema = z.enum(["awning", "lightbox", "painted-board", "tile-panel"]);
+
 export const stallUpgradeSchema = z.object({
   level: z.union([z.literal(2), z.literal(3), z.literal(4)]),
   cost: z.number().int().positive(),
@@ -94,7 +105,7 @@ export const stallSchema = z.object({
       z.string().regex(/^#[0-9A-Fa-f]{6}$/),
       z.string().regex(/^#[0-9A-Fa-f]{6}$/),
     ]),
-    signShape: z.enum(["awning", "lightbox", "painted-board", "tile-panel"]),
+    signShape: signShapeSchema,
     counterFacing: cardinalDirectionSchema,
     depthSortAnchor: gridPointSchema,
   }),
@@ -103,45 +114,50 @@ export const stallSchema = z.object({
   tags: z.array(z.string().min(2)).min(2),
 });
 
+export const dishCategorySchema = z.enum([
+  "rice",
+  "noodles",
+  "bread",
+  "soup",
+  "small-plate",
+  "seafood",
+  "drink",
+  "dessert",
+]);
+
+export const dietaryTagSchema = z.enum([
+  "contains-egg",
+  "contains-pork",
+  "contains-seafood",
+  "contains-dairy",
+  "contains-peanuts",
+  "plant-based-recipe",
+  "spicy",
+]);
+
+export const steamEffectSchema = z.enum(["none", "light", "full"]);
+
 export const dishSchema = z.object({
   id: contentIdSchema.refine((id) => id.startsWith("dish.")),
   nameKey: localizationKeySchema,
   descriptionKey: localizationKeySchema,
   stallIds: z.array(contentIdSchema).length(1),
-  category: z.enum([
-    "rice",
-    "noodles",
-    "bread",
-    "soup",
-    "small-plate",
-    "seafood",
-    "drink",
-    "dessert",
-  ]),
+  category: dishCategorySchema,
   price: z.number().int().positive(),
   baseDemand: qualitySchema,
   preparationTimeMs: z.number().int().positive(),
   servingTimeMs: z.number().int().positive(),
   eatingTimeMs: z.number().int().positive(),
   quality: qualitySchema,
+  /** Taste and popularity rating, independent from nutritional suitability. */
   starRating: fivePointRatingSchema,
   preferenceTags: z.array(z.string().min(2)).min(2),
-  dietaryTags: z.array(
-    z.enum([
-      "contains-egg",
-      "contains-pork",
-      "contains-seafood",
-      "contains-dairy",
-      "contains-peanuts",
-      "plant-based-recipe",
-      "spicy",
-    ]),
-  ),
+  dietaryTags: z.array(dietaryTagSchema),
   unlockRequirement: unlockRequirementSchema,
   foodSprite: spriteReferenceSchema,
   containerSprite: spriteReferenceSchema,
   portionColour: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
-  steamEffect: z.enum(["none", "light", "full"]),
+  steamEffect: steamEffectSchema,
 });
 
 export const placeableCategorySchema = z.enum([
@@ -158,17 +174,19 @@ export const placeableCategorySchema = z.enum([
   "decor",
 ]);
 
+export const interactionRoleSchema = z.enum([
+  "use",
+  "sit",
+  "queue",
+  "return-tray",
+  "dispose-waste",
+  "wash-hands",
+  "collect-water",
+  "inspect-menu",
+]);
+
 export const interactionPointSchema = gridPointSchema.extend({
-  role: z.enum([
-    "use",
-    "sit",
-    "queue",
-    "return-tray",
-    "dispose-waste",
-    "wash-hands",
-    "collect-water",
-    "inspect-menu",
-  ]),
+  role: interactionRoleSchema,
   facing: cardinalDirectionSchema,
 });
 
@@ -177,6 +195,8 @@ export const seatPointSchema = gridPointSchema.extend({
   comfort: qualitySchema,
   accessible: z.boolean(),
 });
+
+export const walkabilitySchema = z.enum(["blocked", "pass-through", "underpass"]);
 
 export const placeableSchema = z.object({
   id: contentIdSchema.refine((id) => id.startsWith("item.")),
@@ -189,7 +209,7 @@ export const placeableSchema = z.object({
   resaleValue: z.number().int().nonnegative(),
   upkeepPerMinute: z.number().int().nonnegative(),
   unlockRequirement: unlockRequirementSchema,
-  walkability: z.enum(["blocked", "pass-through", "underpass"]),
+  walkability: walkabilitySchema,
   collision: z.array(gridPointSchema),
   interactionPoints: z.array(interactionPointSchema),
   seatPoints: z.array(seatPointSchema),
@@ -211,6 +231,36 @@ export const placeableSchema = z.object({
   tags: z.array(z.string().min(2)).min(2),
 });
 
+export const seatPreferenceSchema = z.enum([
+  "any",
+  "quiet",
+  "near-stall",
+  "group-table",
+  "accessible",
+  "breezy",
+  "bright",
+]);
+
+export const outfitSilhouetteSchema = z.enum([
+  "compact",
+  "relaxed",
+  "structured",
+  "layered",
+  "sporty",
+  "classic",
+]);
+
+export const garmentPatternSchema = z.enum([
+  "plain",
+  "banded",
+  "panelled",
+  "sashed",
+  "piped",
+  "pocketed",
+]);
+
+export const carryPropSchema = z.enum(["none", "tote", "briefcase", "backpack", "walking-aid"]);
+
 export const customerArchetypeSchema = z.object({
   id: contentIdSchema.refine((id) => id.startsWith("customer.")),
   nameKey: localizationKeySchema,
@@ -224,39 +274,17 @@ export const customerArchetypeSchema = z.object({
   queueSensitivity: qualitySchema,
   distanceSensitivity: qualitySchema,
   noveltyPreference: qualitySchema,
-  seatPreference: z.enum([
-    "any",
-    "quiet",
-    "near-stall",
-    "group-table",
-    "accessible",
-    "breezy",
-    "bright",
-  ]),
+  seatPreference: seatPreferenceSchema,
   dishPreferenceTags: z.array(z.string().min(2)).min(2),
   groupSizeRange: z.tuple([
     z.number().int().positive().max(8),
     z.number().int().positive().max(8),
   ]),
   visualRules: z.object({
-    outfitSilhouette: z.enum([
-      "compact",
-      "relaxed",
-      "structured",
-      "layered",
-      "sporty",
-      "classic",
-    ]),
-    garmentPattern: z.enum([
-      "plain",
-      "banded",
-      "panelled",
-      "sashed",
-      "piped",
-      "pocketed",
-    ]),
+    outfitSilhouette: outfitSilhouetteSchema,
+    garmentPattern: garmentPatternSchema,
     accessoryChance: qualitySchema,
-    carryProp: z.enum(["none", "tote", "briefcase", "backpack", "walking-aid"]),
+    carryProp: carryPropSchema,
   }),
   visitSchedule: z.object({
     startHour: z.number().int().min(0).max(23),
@@ -317,12 +345,30 @@ export const healthConditionSchema = z.enum([
   "hypertension",
 ]);
 
+export const nutritionUnavailableReasonSchema = z.enum([
+  "not-reported",
+  "invalid-source",
+  "unmapped",
+]);
+
+export const nutritionProfileStatusSchema = z.enum(["released", "unavailable", "quarantined"]);
+
+export const nutritionClassSchema = z.enum(["meal", "drink"]);
+
+export const nutritionServingUnitSchema = z.enum(["g", "ml"]);
+
+export const nutritionMappingKindSchema = z.enum(["exact", "curated-synonym", "scaled-exact"]);
+
+export const nutritionIntentDirectionSchema = z.enum(["lower", "higher"]);
+
+export const nutritionGuidelineComparisonSchema = z.enum(["context-only", "not-comparable"]);
+
 export const nutritionValueSchema = z.discriminatedUnion("status", [
   z.object({ status: z.literal("known"), value: z.number().finite().nonnegative() }),
   z.object({ status: z.literal("trace") }),
   z.object({
     status: z.literal("unavailable"),
-    reason: z.enum(["not-reported", "invalid-source", "unmapped"]),
+    reason: nutritionUnavailableReasonSchema,
   }),
 ]);
 
@@ -343,7 +389,7 @@ export const nutritionNutrientsSchema = z.object({
 
 export const nutritionServingSchema = z.object({
   amount: z.number().finite().positive(),
-  unit: z.enum(["g", "ml"]),
+  unit: nutritionServingUnitSchema,
   label: z.string().min(2),
 });
 
@@ -358,7 +404,7 @@ export const nutritionProvenanceSchema = z.object({
   sourceFoodName: z.string().min(2),
   sourceRowSha256: z.string().regex(/^[a-f0-9]{64}$/),
   sourceDataType: z.string().min(1),
-  mappingKind: z.enum(["exact", "curated-synonym", "scaled-exact"]),
+  mappingKind: nutritionMappingKindSchema,
   multiplier: z.number().positive(),
   reviewNote: z.string().min(8),
 });
@@ -367,20 +413,20 @@ export const nutritionProfileSchema = z.object({
   id: z.string().min(3),
   dishId: contentIdSchema.refine((id) => id.startsWith("dish.")),
   variantId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
-  status: z.enum(["released", "unavailable", "quarantined"]),
-  nutritionClass: z.enum(["meal", "drink"]),
+  status: nutritionProfileStatusSchema,
+  nutritionClass: nutritionClassSchema,
   serving: nutritionServingSchema.optional(),
   nutrients: nutritionNutrientsSchema,
+  /** Comparative, per-serving game rating within the same nutrition class. */
   healthRating: fivePointRatingSchema,
+  /** Comparative game ratings using condition-specific nutrient weightings. */
   conditionRatings: z.record(healthConditionSchema, fivePointRatingSchema),
   intentFits: z.partialRecord(
     nutritionIntentIdSchema,
     z.number().min(0).max(1),
   ),
   provenance: nutritionProvenanceSchema.optional(),
-  unavailableReason: z
-    .enum(["not-reported", "invalid-source", "unmapped"])
-    .optional(),
+  unavailableReason: nutritionUnavailableReasonSchema.optional(),
   reviewNote: z.string().min(8),
   quarantineReasons: z.array(z.string().min(8)).min(1).optional(),
 });
@@ -404,8 +450,8 @@ export const nutritionIntentSchema = z.object({
   name: z.string().min(3),
   description: z.string().min(16),
   metric: nutritionMetricSchema,
-  direction: z.enum(["lower", "higher"]),
-  nutritionClass: z.enum(["meal", "drink"]),
+  direction: nutritionIntentDirectionSchema,
+  nutritionClass: nutritionClassSchema,
 });
 
 export const nutritionSourceSnapshotSchema = z.object({
@@ -425,18 +471,18 @@ export const nutritionGuidelineSchema = z.object({
   upperLimit: z.string().min(1),
   remarks: z.string().min(8),
   source: z.string().min(2),
-  comparison: z.enum(["context-only", "not-comparable"]),
+  comparison: nutritionGuidelineComparisonSchema,
   notComparableReason: z.string().min(8).optional(),
 });
 
 export const nutritionContentSchema = z.object({
   schemaVersion: z.literal(2),
   dataVersion: z.string().regex(/^sg-[a-f0-9]{12}-[a-f0-9]{12}$/),
-  sourceSnapshots: z.array(nutritionSourceSnapshotSchema).length(2),
-  profiles: z.array(nutritionProfileSchema).length(104),
-  variantFamilies: z.array(nutritionVariantFamilySchema).length(14),
-  intents: z.array(nutritionIntentSchema).length(5),
-  guidelines: z.array(nutritionGuidelineSchema).length(11),
+  sourceSnapshots: z.array(nutritionSourceSnapshotSchema).min(1),
+  profiles: z.array(nutritionProfileSchema).min(1),
+  variantFamilies: z.array(nutritionVariantFamilySchema).min(1),
+  intents: z.array(nutritionIntentSchema).min(1),
+  guidelines: z.array(nutritionGuidelineSchema).min(1),
   disclosure: z.string().min(100),
 });
 

@@ -1,3 +1,14 @@
+/**
+ * The launch customer archetypes.
+ *
+ * Each archetype is authored as a seed with its English name and description inline;
+ * the seed helpers derive its localization keys and collect the English copy.
+ */
+import {
+  build_english_entries,
+  build_localization_keys,
+  strip_localized_copy,
+} from "./seeds";
 import type {
   CustomerArchetypeDefinition,
   LocalizedSeed,
@@ -450,26 +461,13 @@ const customerSeeds = [
   },
 ] as const satisfies readonly CustomerSeed[];
 
+/** The launch customer archetypes, in authored order, with localization keys in place of copy. */
 export const CUSTOMER_ARCHETYPES: readonly CustomerArchetypeDefinition[] =
-  customerSeeds.map(
-    ({ name, description, ...customer }) => {
-      void name;
-      void description;
-      return {
-        ...customer,
-        nameKey: `customer.${customer.id.slice("customer.".length)}.name`,
-        descriptionKey: `customer.${customer.id.slice("customer.".length)}.description`,
-      };
-    },
-  );
+  customerSeeds.map((seed) => ({
+    ...strip_localized_copy(seed),
+    ...build_localization_keys(seed.id),
+  }));
 
+/** The English names and descriptions of the customer archetypes, keyed by localization key. */
 export const CUSTOMER_ENGLISH: Readonly<Record<string, string>> =
-  Object.fromEntries(
-    customerSeeds.flatMap((customer) => [
-      [`customer.${customer.id.slice("customer.".length)}.name`, customer.name],
-      [
-        `customer.${customer.id.slice("customer.".length)}.description`,
-        customer.description,
-      ],
-    ]),
-  );
+  build_english_entries(customerSeeds);

@@ -1,14 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { NUTRITION_CONTENT, STALLS } from "@/src/content";
+import { customerAtRenderedGridPoint } from "@/src/game/runtime/createHawkerRuntime";
 import {
-  customerAtRenderedGridPoint,
+  coreNutritionProfile,
   customerDecisionReasons,
   customerHealthDecisionReasons,
-  decodeRuntimeSave,
   defaultDishVariants,
   resolveDishVariants,
+  runtimeNutritionProfile,
+} from "@/src/game/runtime/nutrition";
+import {
+  decodeRuntimeSave,
   resolvePersistedDishVariants,
-} from "@/src/game/runtime/createHawkerRuntime";
+} from "@/src/game/runtime/saves";
 import type { GameState, SimulationCatalog } from "@/src/game/core";
 
 function progressionWithRanks(
@@ -210,4 +214,23 @@ describe("runtime nutrition persistence", () => {
     expect(missingVersion.recovered).toBe(true);
     expect(missingVersion.selections[family!.dishId]).toBe(family!.defaultVariantId);
   });
+});
+
+describe("runtime nutrition profile summary", () => {
+  // The UI reads its nutrition panels from this summary, so a metric the content profile
+  // carries but the summary drops would vanish from every panel.
+  it.each(NUTRITION_CONTENT.profiles.map((profile) => [profile.id, profile] as const))(
+    "carries every metric of the content profile %s",
+    (_id, profile) => {
+      const summary = runtimeNutritionProfile(coreNutritionProfile(profile));
+      const summary_metrics = Object.fromEntries(
+        Object.keys(profile.nutrients).map((metric) => [
+          metric,
+          (summary as Readonly<Record<string, unknown>> | undefined)?.[metric],
+        ]),
+      );
+
+      expect(summary_metrics).toEqual(profile.nutrients);
+    },
+  );
 });

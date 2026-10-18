@@ -1,5 +1,10 @@
+/**
+ * The launch economy: starting balances, level and reputation caps, the recovery grant
+ * and the XP needed for each level.
+ */
 import type { EconomyDefinition } from "./types";
 
+/** The launch economy constants. `levelXpThresholds[i]` is the total XP that reaches level `i + 1`. */
 export const ECONOMY = {
   startingCash: 4_200,
   startingReputation: 8,

@@ -6,12 +6,15 @@ This runbook separates automated work from steps that require access to the Verc
 
 ## Architecture and environments
 
-The application has two supported production build targets:
+The application has two supported production build targets. Neither is designated the primary target. The matrix records each target as it exists today:
 
-| Target | Command | Output and purpose |
+| | Cloudflare Worker (Vinext) | Vercel (native Next.js) |
 | --- | --- | --- |
-| Cloudflare Worker | `npm run build` | Vinext/Vite output in `dist/` |
-| Vercel | `npm run build:vercel` | Native Next.js output in `.next/`; Vercel CLI packages it as `.vercel/output` |
+| Build command | `npm run build` (its `prebuild` script stamps the service worker) | `npm run build:vercel`, which `vercel.json` also sets as the Vercel build command |
+| Output | Vinext/Vite output in `dist/`, served by `worker/index.ts` | Native Next.js output in `.next/`; Vercel CLI packages it as `.vercel/output` |
+| Security headers | Applied to every response by `worker/index.ts` | Applied by the `headers()` function in `next.config.ts` |
+| Automated verification | `npm run test:ssr` renders the built worker and asserts the game shell, security headers, and offline-shell protocol; `npm run test:release` runs it after the build, locally and in the CI `verify` job | The CI `verify` job runs `npm run build:vercel`; Preview and staged Production deployments are checked with `npm run smoke:deployment` |
+| Deployment | No deployment automation, Wrangler configuration, or Cloudflare project exists in the repository; the build is verified locally and in CI only | `.github/workflows/vercel.yml`, described below |
 
 Both builds stamp `public/sw.js` with the same deterministic content hash and use the shared security policy in `src/config/securityHeaders.ts`. Gameplay remains local-first: there is no application database, account service, analytics service, or runtime secret.
 
@@ -67,14 +70,7 @@ Use `hawker-simulator-gohdya` in the two project commands if the preferred name 
 1. Open the account menu and select **Account Settings > Tokens**. For a team-owned project, choose the correct team scope when creating the token.
 2. Create a token named `github-actions-hawker-simulator`.
 3. Copy it once into a password manager. Do not put it in `.env`, documentation, chat, or the repository.
-4. Run the following commands
-    ```powershell
-    cd C:\Users\Adison\Documents\Github\hawker-simulator
-    npx.cmd --yes vercel@55.0.0 login
-
-    npx --yes vercel@55.0.0 link --yes --project hawker-simulator
-    Get-Content .vercel\project.json
-    ```
+4. If the project is not linked in your local checkout yet, run the `login` and `link` commands from the CLI alternative in step 1 from the repository root.
 5. Read `.vercel/project.json` after linking the project. Record `orgId` and `projectId`.
 
 Expected result: you have three values ready for GitHub: the token, Vercel organization ID, and Vercel project ID.

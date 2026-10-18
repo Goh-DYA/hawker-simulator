@@ -1,7 +1,15 @@
+/**
+ * The Next.js configuration.
+ *
+ * It only sets the response headers: the shared security headers from
+ * `src/config/securityHeaders.ts` on every path, with the Content-Security-Policy also
+ * allowing `'unsafe-eval'` in development builds.
+ */
 import type { NextConfig } from "next";
+import { IS_DEVELOPMENT_BUILD } from "./src/config/env";
 import { createNextSecurityHeaders } from "./src/config/securityHeaders";
 
-const isDevelopment = process.env.NODE_ENV === "development";
+const isDevelopment = IS_DEVELOPMENT_BUILD;
 
 const nextConfig: NextConfig = {
   async headers() {

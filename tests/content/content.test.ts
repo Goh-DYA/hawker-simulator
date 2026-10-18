@@ -6,6 +6,7 @@ import {
   DISHES,
   ENGLISH_LOCALIZATION,
   LAUNCH_CONTENT,
+  LAUNCH_ROSTER,
   PLACEABLES,
   PLACEABLE_CATEGORY_MINIMUMS,
   STALLS,
@@ -17,10 +18,10 @@ describe("launch content", () => {
   it("ships the exact required stall, dish, and customer counts", () => {
     const report = validateContent();
 
-    assert.equal(report.counts.stalls, 14);
-    assert.equal(report.counts.dishes, 54);
-    assert.equal(report.counts.placeables, 80);
-    assert.equal(report.counts.customerArchetypes, 12);
+    assert.equal(report.counts.stalls, LAUNCH_ROSTER.stalls);
+    assert.equal(report.counts.dishes, LAUNCH_ROSTER.dishes);
+    assert.equal(report.counts.placeables, LAUNCH_ROSTER.placeables);
+    assert.equal(report.counts.customerArchetypes, LAUNCH_ROSTER.customerArchetypes);
     assert.equal(report.counts.localizationKeys, 320);
   });
 

@@ -114,6 +114,19 @@ describe("validateContent rule groups", () => {
     expect(collect_issues(draft)).toEqual(["XP thresholds must increase strictly at level 3."]);
   });
 
+  it("economy: reports a starter stall with no dish available at the start", () => {
+    const draft = create_draft();
+    const starter_dish_ids = new Set(draft.stalls[0].dishIds);
+    for (const dish of draft.dishes) {
+      if (starter_dish_ids.has(dish.id)) dish.unlockRequirement.level = 2;
+    }
+
+    expect(collect_issues(draft)).toEqual([
+      "stall.sunrise-roost has no dish available when the stall unlocks.",
+      "stall.sunrise-roost is a starter stall with no dish available at level 1 and the starting reputation.",
+    ]);
+  });
+
   it("customer: reports an inverted budget range", () => {
     const draft = create_draft();
     const [low, high] = draft.customerArchetypes[0].budgetRange;

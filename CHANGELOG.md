@@ -12,7 +12,7 @@ All notable project changes are recorded here. The project is pre-release; seman
 - A 10× simulation option and an original state-aware procedural soundtrack with separate master mute, music, ambience, and effects controls.
 - Complete React/Phaser Hawker Simulator interface, top-down game world, onboarding, build catalogue, stall/dish menu management, objectives/insights, expansion, settings, accessibility controls, and local save tools.
 - Deterministic fixed-step customer lifecycle with queueing, ordering, collection, seat reservation, dining, tray return, exit, target recovery, economy, XP, reputation, levels, and unlock reconciliation.
-- Exact launch catalogue of 8 original stalls, 30 dishes, 80 meaningful placeables, 8 customer archetypes, and 252 English localization entries.
+- A validated launch catalogue of original stalls, dishes, meaningful placeables, customer archetypes, and English localization entries; the entries below record how it grew, and the current counts are in [docs/CONTENT_CATALOGUE.md](docs/CONTENT_CATALOGUE.md#roster-counts).
 - Code-native illustrated rendering and procedural WebAudio cues/ambience with original project identity.
 - IndexedDB current/backup envelopes, checksums, serialized writes, migrations, backup recovery, import/export, and confirmed reset flow.
 - PWA manifest, offline fallback, deterministic content-derived service-worker cache version, acknowledged runtime warming, and save-gated update activation.
@@ -22,7 +22,7 @@ All notable project changes are recorded here. The project is pre-release; seman
 
 ### Changed
 
-- Reorganised the test suite to mirror the source tree (`tests/game/core`, `tests/game/runtime`, `tests/app/game`, `tests/content`, `tests/tools`, and so on) and added the first phase of a structural refactor: behaviour-pinning goldens for the seeded simulation, saves, the runtime controller, draw calls, input, the save store, server-rendered markup, the jsdom UI, content and the nutrition importer. Unexpected console output and process warnings now fail tests. Player-visible behaviour is unchanged.
+- Restructured the codebase without changing player-visible behaviour. Behaviour-pinning goldens for the seeded simulation, saves, the runtime controller, draw calls, input, the save store, server-rendered markup, the jsdom UI, content and the nutrition importer landed first, and the test suite now mirrors the source tree (`tests/game/core`, `tests/game/runtime`, `tests/app/game`, `tests/content`, `tests/tools`, and so on). The simulation core, the runtime composition root, the visual recipes and renderer, and the simulator UI were then split into focused modules; duplicated balance rules, the launch roster and build-mode configuration each gained a single source; and a module-documentation check now covers the source tree. Unexpected console output and process warnings fail tests. Deferred engineering debt is listed in [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md#deferred-engineering-debt).
 - Expanded content `1.3.0` from 12 to 14 fictional stalls, from 46 to 54 dishes, and from 300 to 320 English localization entries, adding Pick & Mix and Herbal Cauldron with dataset-backed yong tau foo, ban mian, thunder tea rice, popiah, bak kut teh, duck rice, kway chap, and claypot chicken rice options.
 - Replaced partial nutrition coverage with 104 released source profiles: every base dish is profiled, 14 reviewed variant families expose 64 selectable preparations, and every profile carries an overall Health rating plus condition-specific ratings for high cholesterol, obesity, diabetes, and hypertension.
 - Added a distinct Star rating to every dish for taste and popularity, while customers with independently assigned health conditions use their relevant Health rating when choosing stalls and dishes and receive a small bounded satisfaction effect from the meal selected.
@@ -40,7 +40,7 @@ All notable project changes are recorded here. The project is pre-release; seman
 
 - The candidate excludes accounts, analytics, trackers, payments, advertising, chat, and cloud saves.
 - Imported content is bounded/validated, player data remains local, and the host worker applies CSP, permissions, referrer, content-type, and framing headers.
-- Final clean install and both all-dependencies and production-only audits reported 0 vulnerabilities after patched build-tool pins and narrow transitive overrides.
+- Applied patched build-tool pins and narrow transitive overrides; the current dated audit result is in [docs/TEST_REPORT.md](docs/TEST_REPORT.md#dependency-audit).
 
 ### Known limitations and release gates
 

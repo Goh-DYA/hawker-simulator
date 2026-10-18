@@ -1,3 +1,10 @@
+/**
+ * Spatial utility effects of placed signage and facilities: the diminishing influence at a
+ * tile, the centre-wide wayfinding bonus, the satisfaction bonus, and utility-adjusted
+ * eating time.
+ *
+ * Each effect total is clamped to a fixed range, so stacking many items has bounded impact.
+ */
 import { getObjectOccupiedTiles } from "./grid";
 import type {
   GridPoint,
@@ -7,12 +14,14 @@ import type {
   UtilityEffects,
 } from "./types";
 
+/** The combined utility effects at one tile, plus the number of items that contributed. */
 export interface UtilityInfluence extends Omit<UtilityEffects, "radius"> {
   readonly sources: number;
 }
 
 type UtilityDefinition = PlaceableDefinition & { readonly utility?: UtilityEffects };
 
+/** A zero influence with no sources; the starting totals for {@link getUtilityInfluence}. */
 export const EMPTY_UTILITY_INFLUENCE: UtilityInfluence = {
   ambience: 0,
   cleanliness: 0,
@@ -44,6 +53,12 @@ function clamp(value: number, minimum: number, maximum: number) {
  * Resolves spatial, diminishing utility effects at a tile. This makes signs,
  * fans, lights, cleaning equipment, sinks, greenery, and service fixtures real
  * layout decisions instead of catalogue-only flavour text.
+ *
+ * @param objects - The placed objects by ID.
+ * @param catalog - The catalogue holding their definitions and utility effects.
+ * @param point - The tile to evaluate.
+ * @returns Each effect summed with linear distance falloff within each item's radius, clamped to
+ *   its range.
  */
 export function getUtilityInfluence(
   objects: Readonly<Record<string, PlacedObject>>,
@@ -79,7 +94,13 @@ export function getUtilityInfluence(
   };
 }
 
-/** Route and menu signage has a centre-wide discovery effect once placed. */
+/**
+ * Route and menu signage has a centre-wide discovery effect once placed.
+ *
+ * @param objects - The placed objects by ID.
+ * @param catalog - The catalogue holding their definitions and utility effects.
+ * @returns The sum of every placed item's positive wayfinding, clamped to 0.75.
+ */
 export function getGlobalWayfinding(
   objects: Readonly<Record<string, PlacedObject>>,
   catalog: SimulationCatalog,
@@ -91,6 +112,12 @@ export function getGlobalWayfinding(
   return clamp(total, 0, 0.75);
 }
 
+/**
+ * Converts the ambience and cleanliness at a tile into a bounded satisfaction bonus.
+ *
+ * @param influence - The utility influence at the tile.
+ * @returns The bonus, clamped to the range -0.45 to 0.65.
+ */
 export function utilitySatisfactionBonus(influence: UtilityInfluence): number {
   return clamp(
     influence.ambience * 0.008 + influence.cleanliness * 0.012,
@@ -99,12 +126,26 @@ export function utilitySatisfactionBonus(influence: UtilityInfluence): number {
   );
 }
 
-/** Shared by simulation timing and meal rendering so the visible portion is
- * nearly finished at the exact utility-adjusted lifecycle transition. */
+/**
+ * Shared by simulation timing and meal rendering so the visible portion is
+ * nearly finished at the exact utility-adjusted lifecycle transition.
+ *
+ * @param baseEatingMs - The dish's authored eating time, floored at 1 ms.
+ * @param eatingSpeed - The utility eating-speed modifier; the divisor is floored at 0.1.
+ * @returns The eating time in milliseconds after the modifier.
+ */
 export function adjustedEatingDurationMs(baseEatingMs: number, eatingSpeed: number): number {
   return Math.max(1, baseEatingMs) / Math.max(0.1, 1 + eatingSpeed);
 }
 
+/**
+ * Reports how much of a meal has been eaten, for rendering the depleting portion.
+ *
+ * @param elapsedMs - The time spent eating so far.
+ * @param baseEatingMs - The dish's authored eating time.
+ * @param eatingSpeed - The utility eating-speed modifier at the seat.
+ * @returns The eaten fraction, capped at 0.94 so the portion never disappears before the meal ends.
+ */
 export function mealConsumptionFraction(
   elapsedMs: number,
   baseEatingMs: number,

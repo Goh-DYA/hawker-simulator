@@ -1,3 +1,12 @@
+/**
+ * The launch placeables other than stalls: tables, seats, lighting, decor and the other
+ * build categories.
+ *
+ * Placeables are authored as compact inputs with their English copy inline and expanded
+ * into full definitions with defaults for the optional fields; the seed helpers derive
+ * the localization keys and collect the English copy.
+ */
+import { build_english_entries, build_localization_keys } from "./seeds";
 import type {
   AudioReference,
   GridPoint,
@@ -1257,6 +1266,11 @@ const placeableInputs = [
   },
 ] as const satisfies readonly PlaceableInput[];
 
+/** Share of the purchase price recorded as a placeable's resale value. */
+const RESALE_RATIO = 0.6;
+/** Rotations offered when a placeable input does not restrict them. */
+const DEFAULT_ROTATIONS = [0, 90, 180, 270] as const;
+
 const occupiedTiles = (width: number, height: number): readonly GridPoint[] => {
   const points: GridPoint[] = [];
   for (let y = 0; y < height; y += 1) {
@@ -1266,20 +1280,19 @@ const occupiedTiles = (width: number, height: number): readonly GridPoint[] => {
 };
 
 const asPlaceable = (input: PlaceableInput): PlaceableDefinition => {
-  const rotations = input.rotations ?? ([0, 90, 180, 270] as const);
+  const rotations = input.rotations ?? DEFAULT_ROTATIONS;
   const walkability = input.walkability ?? "blocked";
   const interactionPoints = input.interactions ?? [];
   const seatPoints = input.seats ?? [];
 
   return {
     id: input.id,
-    nameKey: `item.${input.id.slice("item.".length)}.name`,
-    descriptionKey: `item.${input.id.slice("item.".length)}.description`,
+    ...build_localization_keys(input.id),
     category: input.category,
     footprint: input.footprint,
     rotations,
     price: input.price,
-    resaleValue: Math.max(1, Math.floor(input.price * 0.6)),
+    resaleValue: Math.max(1, Math.floor(input.price * RESALE_RATIO)),
     upkeepPerMinute: input.upkeep ?? 0,
     unlockRequirement: {
       level: input.level,
@@ -1323,27 +1336,10 @@ const asPlaceable = (input: PlaceableInput): PlaceableDefinition => {
   };
 };
 
+/** The launch non-stall placeables, in authored order, with localization keys in place of copy. */
 export const PLACEABLES: readonly PlaceableDefinition[] =
   placeableInputs.map(asPlaceable);
 
+/** The English names and descriptions of the placeables, keyed by localization key. */
 export const PLACEABLE_ENGLISH: Readonly<Record<string, string>> =
-  Object.fromEntries(
-    placeableInputs.flatMap((item) => [
-      [`item.${item.id.slice("item.".length)}.name`, item.name],
-      [`item.${item.id.slice("item.".length)}.description`, item.description],
-    ]),
-  );
-
-export const PLACEABLE_CATEGORY_MINIMUMS = {
-  table: 8,
-  seat: 10,
-  "stall-fixture": 8,
-  "tray-waste": 8,
-  lighting: 7,
-  fan: 6,
-  plant: 8,
-  signage: 7,
-  divider: 6,
-  facility: 7,
-  decor: 5,
-} as const satisfies Readonly<Record<PlaceableCategory, number>>;
+  build_english_entries(placeableInputs);

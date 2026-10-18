@@ -18,6 +18,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PLACEABLES, STALLS } from "@/src/content";
 import type { PersistentGameStateV4 } from "@/src/game/core";
 import type { RuntimePersistentState } from "@/src/game/runtime/createHawkerRuntime";
+import { expect_console_warning } from "@/tests/console";
 import {
   create_test_runtime,
   install_runtime_stubs,
@@ -105,6 +106,11 @@ const BACKUP_RESTORED_MESSAGE = "The newest save was damaged; the automatic back
 const NEW_CENTRE_MESSAGE =
   "The previous save was recovered as a new centre: Save data is not valid JSON";
 const RECIPE_RESET_MESSAGE = "One or more saved recipe choices were reset to reviewed defaults.";
+/** Console log of the discarded first save candidate, with the core error that rejected it. */
+const DISCARDED_CANDIDATE_LOG_FIRST =
+  /^\[runtime\] discarded save candidate 0 .*Save data is not valid JSON/;
+/** Console log of the final load error when no save candidate could be loaded. */
+const NEW_CENTRE_LOG = /^\[runtime\] save recovered as new centre .*Save data is not valid JSON/;
 
 /**
  * Definitions that only the runtime's unlock reconcile can unlock: the catalog gives them
@@ -306,6 +312,8 @@ describe("createHawkerRuntime", () => {
       core: JSON.stringify(valid_save.core).slice(0, DAMAGED_CORE_LENGTH),
     };
 
+    expect_console_warning(DISCARDED_CANDIDATE_LOG_FIRST);
+
     const runtime = await create_test_runtime([damaged_save, valid_save]);
 
     expect(collect_event_messages(runtime)).toEqual([BACKUP_RESTORED_MESSAGE]);
@@ -318,6 +326,9 @@ describe("createHawkerRuntime", () => {
       ...valid_save,
       core: JSON.stringify(valid_save.core).slice(0, DAMAGED_CORE_LENGTH),
     };
+
+    expect_console_warning(DISCARDED_CANDIDATE_LOG_FIRST);
+    expect_console_warning(NEW_CENTRE_LOG);
 
     const runtime = await create_test_runtime([damaged_save]);
 

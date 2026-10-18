@@ -1,7 +1,16 @@
-import type { GridPoint } from "@/src/game/core";
+/**
+ * Queue-flow insight for the HUD: turns live queue geometry and demand into a pressure
+ * percentage, a flow state and one actionable message.
+ */
+import { pointKey, type GridPoint } from "@/src/game/core";
 
+/** The HUD tone of the queue-flow insight. */
 export type QueueFlowState = "good" | "neutral" | "warning";
 
+/**
+ * The queue measurements of one placed stall: whether it is open, its queue length, its route and
+ * designed capacities, and the queue cells guests occupy.
+ */
 export interface QueueFlowStallDiagnostic {
   readonly open: boolean;
   readonly queueCount: number;
@@ -10,6 +19,7 @@ export interface QueueFlowStallDiagnostic {
   readonly occupiedCells: readonly GridPoint[];
 }
 
+/** The queue-flow pressure from 0 to 100, its state, and the message shown with it. */
 export interface QueueFlowInsight {
   readonly pressure: number;
   readonly state: QueueFlowState;
@@ -20,14 +30,15 @@ function clampPercentage(value: number): number {
   return Math.max(0, Math.min(100, value));
 }
 
-function pointKey(point: GridPoint): string {
-  return `${point.x}:${point.y}`;
-}
-
 /**
  * Turns live queue geometry into an actionable explanation. Demand pressure,
  * shortened routes, imbalance, and actual shared-aisle occupation are kept
  * separate so rearranging a healthy layout does not leave a stale warning.
+ *
+ * @param stalls - The diagnostics of every placed stall; closed stalls are ignored.
+ * @param mainGuestRoute - The tiles of the main entrance-to-exit guest route, checked for queue
+ *   occupation.
+ * @returns The pressure, state and message.
  */
 export function deriveQueueFlowInsight(
   stalls: readonly QueueFlowStallDiagnostic[],

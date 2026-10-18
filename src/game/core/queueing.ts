@@ -1,4 +1,12 @@
+/**
+ * Stall queue geometry: validation of player-authored queue routes, deterministic planning
+ * of every stall's queue cells as one global layout, and per-customer queue cell lookup.
+ *
+ * Planning allocates automatic queues in stable stall-ID order and never reuses a cell, so
+ * the layout is independent of object insertion order.
+ */
 import {
+  compute_manhattan_distance,
   getBlockedTileKeys,
   getObjectQueueAnchor,
   getObjectServicePoint,
@@ -8,11 +16,27 @@ import {
   samePoint,
 } from "./grid";
 import { compareIds } from "./ordering";
-import type { GridMap, GridPoint, PlacedObject, SimulationCatalog } from "./types";
+import type { GameState, GridMap, GridPoint, PlacedObject, SimulationCatalog } from "./types";
 
 /** A defensive ceiling for authored and automatically generated queue lines. */
 export const MAX_QUEUE_CELLS = 64;
 
+/**
+ * Lists the tiles that placement and queue planning must keep free for guest navigation.
+ *
+ * @param state - Any world view with access points and preferred route points (state, snapshot or save).
+ * @returns Every access point position, then every preferred route point, in their stored order.
+ */
+export function get_navigation_reserved_points(
+  state: Pick<GameState, "accessPoints" | "routeGuidePoints">,
+): GridPoint[] {
+  return [
+    ...state.accessPoints.map((point) => point.position),
+    ...state.routeGuidePoints,
+  ];
+}
+
+/** The outcome of validating a queue route: whether it is valid and every reason it is not. */
 export interface QueuePathValidationResult {
   readonly valid: boolean;
   readonly reasons: readonly string[];
@@ -20,17 +44,6 @@ export interface QueuePathValidationResult {
 
 /** Queue cells keyed by stall ID, with each path ordered from head to tail. */
 export type StallQueueLayouts = Readonly<Record<string, readonly GridPoint[]>>;
-
-const CARDINAL_DIRECTIONS: readonly GridPoint[] = [
-  { x: 0, y: -1 },
-  { x: -1, y: 0 },
-  { x: 1, y: 0 },
-  { x: 0, y: 1 },
-];
-
-function manhattanDistance(a: GridPoint, b: GridPoint): number {
-  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-}
 
 function copyPoints(points: readonly GridPoint[]): readonly GridPoint[] {
   return points.map((point) => ({ ...point }));
@@ -100,7 +113,7 @@ function validateQueuePathGeometry(
     if (visited.has(key)) reasons.push(`Queue cell ${key} is repeated`);
     visited.add(key);
     const previous = points[index - 1];
-    if (previous && manhattanDistance(previous, point) !== 1) {
+    if (previous && compute_manhattan_distance(previous, point) !== 1) {
       reasons.push(`Queue cells ${pointKey(previous)} and ${key} must be orthogonally adjacent`);
     }
   });
@@ -130,6 +143,14 @@ function foreignActiveAnchorConflicts(
  * Validates an authored queue route, including conflicts with every other
  * intrinsically valid authored route. A crossing therefore invalidates either
  * route regardless of which stall happens to be inspected first.
+ *
+ * @param map - The map the route runs on.
+ * @param objects - The placed objects by ID, including the other stalls with authored routes.
+ * @param catalog - The catalogue holding the object definitions.
+ * @param stall - The stall whose route is validated.
+ * @param points - The route cells from head to tail; defaults to the stall's saved route.
+ * @param reservedPoints - Tiles reserved for navigation, which the route may not use.
+ * @returns The validity and the reasons the route is rejected.
  */
 export function validateConfiguredQueuePath(
   map: GridMap,
@@ -226,6 +247,12 @@ function planAutomaticQueue(
  * reserved before automatic queues are allocated in stable stall-ID order.
  * Portals, authored cells, and earlier automatic cells can never be reused by
  * a later automatic queue.
+ *
+ * @param map - The map the queues run on.
+ * @param objects - The placed objects by ID.
+ * @param catalog - The catalogue holding the object definitions.
+ * @param reservedPoints - Tiles reserved for navigation, which no queue may use.
+ * @returns The queue cells of every open stall, keyed by stall ID.
  */
 export function planStallQueueLayouts(
   map: GridMap,
@@ -284,6 +311,13 @@ export function planStallQueueLayouts(
  * Returns one stall's queue cells from the globally planned layout. The stall
  * is merged into the supplied object set so callers that are previewing an
  * updated object retain the legacy getter behaviour.
+ *
+ * @param map - The map the queues run on.
+ * @param objects - The placed objects by ID.
+ * @param catalog - The catalogue holding the object definitions.
+ * @param stall - The stall to plan for; a closed stall is planned as if open.
+ * @param reservedPoints - Tiles reserved for navigation, which no queue may use.
+ * @returns Copies of the stall's queue cells from head to tail.
  */
 export function getStallQueueCells(
   map: GridMap,
@@ -300,7 +334,15 @@ export function getStallQueueCells(
   return copyPoints(planStallQueueLayouts(map, planningObjects, catalog, reservedPoints)[stall.id] ?? []);
 }
 
-/** Returns the assigned queue cell for an admitted customer. */
+/**
+ * Returns the assigned queue cell for an admitted customer.
+ *
+ * @param queue - The stall's queue of customer IDs, head first.
+ * @param customerId - The customer to look up.
+ * @param cells - The stall's queue cells from head to tail.
+ * @returns A copy of the customer's cell, or undefined when the customer is not queued or has no
+ *   cell.
+ */
 export function getCustomerQueueCell(
   queue: readonly string[],
   customerId: string,
@@ -310,6 +352,3 @@ export function getCustomerQueueCell(
   const point = index < 0 ? undefined : cells[index];
   return point ? { ...point } : undefined;
 }
-
-/** Exported for deterministic tests and editor affordances. */
-export const QUEUE_CARDINAL_DIRECTIONS = CARDINAL_DIRECTIONS;

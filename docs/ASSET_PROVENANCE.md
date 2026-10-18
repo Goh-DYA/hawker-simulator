@@ -9,7 +9,7 @@ All shipped art and audio must be original and reproducible from repository sour
 | Asset class | Intended source | Runtime form | License / rights | State |
 |---|---|---|---|---|
 | World and expansion boundaries | Original TypeScript/Phaser procedural geometry following ART_BIBLE.md | Canvas-generated floors, walls, entrance, and exit | Project-original | Implemented; repeated-expansion development-browser evidence captured; exact-production review pending |
-| Stalls and placeables | Original semantic recipes in `src/game/runtime/visualRecipes.ts` and procedural renderers | Canvas geometry plus CSS catalogue previews | Project-original | Content `1.3.0` defines and automatically validates 14 stall identities and 80 placeables; exhaustive browser and human visual/cultural review remains open |
+| Stalls and placeables | Original semantic recipes in `src/game/runtime/visuals/` (`placeable.ts` and `vendor.ts`) and procedural renderers in `src/game/runtime/render/` | Canvas geometry plus CSS catalogue previews | Project-original | Content `1.3.0` defines and automatically validates 14 stall identities and 80 placeables; exhaustive browser and human visual/cultural review remains open |
 | Characters and reactions | Original modular procedural recipes with archetype and lifecycle-state variants | Canvas geometry | Project-original | Exactly 12 archetype appearances and 11 state poses covered by automated tests; moving/reduced-motion signatures present; human visual review pending |
 | Food and vessels | Original dish recipes derived from authored food sprite, container, portion-colour, and steam metadata; factual reference only | Canvas geometry | Project-original | Content `1.3.0` defines and automatically validates 54 dishes with authored food/vessel metadata; the complete browser gallery and human visual/cultural review remain open |
 | Queue overlays and editor | Original runtime geometry and DOM controls | Canvas lines/cells/badges plus HTML controls | Project-original | Counts, automatic routes, cardinal directions, bends, and saved custom paths implemented; development-browser screenshots captured |
@@ -19,7 +19,7 @@ All shipped art and audio must be original and reproducible from repository sour
 | Environment/background | Original Community Courtyard kit | Canvas geometry | Project-original | Implemented; visual review pending |
 | Adaptive music, ambience, and audio cues | Repository-authored deterministic synthesis in `src/game/audio/AudioDirector.ts`; filtered oscillators, seeded phrase cycle, state-aware layers, and bounded gain buses | Web Audio nodes generated at runtime; no recorded or downloaded assets | Project-original | Implemented; automated lifecycle checks and human browser/peak-level review pending |
 | Fonts | System font stack | No bundled font | Platform-provided | Implemented |
-| Dependencies | npm lockfile packages | Bundled code | See THIRD_PARTY_NOTICES.md and package license files | Locked; final production-only and all-dependencies npm audits report 0 vulnerabilities; legal review pending |
+| Dependencies | npm lockfile packages | Bundled code | See THIRD_PARTY_NOTICES.md and package license files | Locked; npm audit results are recorded in [TEST_REPORT.md](TEST_REPORT.md#dependency-audit); legal review pending |
 
 Development-browser screenshots are verification artifacts rather than shipped art. They are retained in a local archive outside the repository and indexed in `GRAPHICS_VERIFICATION.md`.
 

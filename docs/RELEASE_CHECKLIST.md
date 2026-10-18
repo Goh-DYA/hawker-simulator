@@ -5,7 +5,7 @@ Rule: check an item only with evidence in `TEST_REPORT.md`, `PERFORMANCE_REPORT.
 
 ## Product and content
 
-- [x] Content `1.3.0` validation evidence records exactly 14 operational stalls, 54 assigned dishes, 80 meaningful placeables, 12 customer archetypes, and 320 English localization entries.
+- [x] Content `1.3.0` validation evidence records exactly 14 operational stalls, 54 assigned dishes, and 12 customer archetypes, at least 80 meaningful placeables, and 320 English localization entries ([roster counts](CONTENT_CATALOGUE.md#roster-counts)).
 - [x] The current catalogue categories, reciprocal references, unique IDs, localization, unlock bounds/prerequisites, and non-placeholder copy pass the full automated gate.
 - [x] One coherent Community Courtyard theme uses original code-native illustrated visuals and fictional stall identities.
 - [x] Content `1.3.0` automated visual-contract coverage accounts for 80 distinct placeables, unique primary references for 14 stall identities and 54 dishes, 54 dish/vessel recipes, 12 archetype appearances, and all 11 customer states, including reduced-motion signatures.
@@ -80,7 +80,7 @@ Rule: check an item only with evidence in `TEST_REPORT.md`, `PERFORMANCE_REPORT.
 - [x] Local-first design excludes accounts, analytics, trackers, payments, advertising, chat, and cloud saves.
 - [x] Save import/catalogue IDs are bounded/validated and player text is rendered without HTML evaluation.
 - [x] CSP, permissions, referrer, content-type, and framing headers are applied by the worker and asserted in rendered-output tests.
-- [x] Replacement candidate all-dependencies and production-only audits both report 0 vulnerabilities; lockfile, overrides, notices, and provenance files remain present.
+- [ ] All-dependencies and production-only audits pass at the high threshold; the current dated result is in [TEST_REPORT.md](TEST_REPORT.md#dependency-audit). Lockfile, overrides, notices, and provenance files remain present.
 - [x] Frozen-artifact scan found no key-like secrets, environment files, or source maps; source network APIs are limited to same-origin worker/asset requests.
 - [ ] CSP and hosting headers are verified on the final origin.
 - [ ] Privacy notice is compared against observed browser/network/storage behavior.
@@ -93,7 +93,7 @@ Rule: check an item only with evidence in `TEST_REPORT.md`, `PERFORMANCE_REPORT.
 
 - [x] The retained content `1.2.0` baseline release checks passed on bundled Node.js `v24.14.0`: typecheck, lint, 24 Vitest files / 131 tests, five-environment Vinext build, native Vercel build, and 2/2 rendered-output/offline-shell assertions.
 - [x] Content `1.3.0` passes and records the current typecheck, lint, complete test suite, Vinext build, native Vercel build, and rendered-output/offline-shell assertions.
-- [x] Previously recorded all-dependencies and production-only npm audits both report 0 vulnerabilities; they were not rerun in this validation update.
+- [ ] All-dependencies and production-only npm audits are rerun and pass for the release candidate; see [TEST_REPORT.md](TEST_REPORT.md#dependency-audit) for the current dated result.
 - [x] The earlier content `1.2.0` service-worker build ID `c5ed3679ba56` is recorded as historical evidence.
 - [ ] The content `1.3.0` service-worker build ID, source commit, artifact path/hash, and payload sizes are recorded.
 - [ ] Content `1.3.0` validated-source commit, artifact path/hash/payload sizes, and publication URL are recorded; the existing private preview record predates the expansion.

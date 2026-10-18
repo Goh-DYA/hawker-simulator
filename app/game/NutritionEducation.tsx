@@ -1,12 +1,27 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+/**
+ * The nutrition education components: dish ratings, nutrition profiles, the nutrition
+ * pulse, the Variant Lab dialog, the customer nutrition inspector and the disclosure note.
+ *
+ * The components render view models (the `*View` types here) that the runtime snapshot
+ * provides, so they hold no game logic. `dialogFocusAction` is re-exported from `focus.ts`
+ * for existing importers.
+ */
 
+import { useEffect, useRef } from "react";
+import { HEALTH_CONDITION_LABELS as RUNTIME_HEALTH_CONDITION_LABELS } from "@/src/game/runtime/nutrition";
+import { install_focus_trap, VARIANT_LAB_FOCUSABLE_SELECTOR } from "./focus";
+
+export { dialogFocusAction, type DialogFocusAction } from "./focus";
+
+/** One nutrient value of a profile: a known amount, a trace amount, or unavailable. */
 export type NutritionValueView =
   | { readonly status: "known"; readonly value: number }
   | { readonly status: "trace" }
   | { readonly status: "unavailable"; readonly reason?: string };
 
+/** The nutrition profile of one serving, with its health and per-condition ratings. */
 export interface NutritionProfileView {
   readonly status: "released" | "unavailable" | "quarantined";
   readonly servingLabel?: string;
@@ -27,6 +42,7 @@ export interface NutritionProfileView {
   readonly intentFits?: Readonly<Record<string, number | undefined>>;
 }
 
+/** One variant of a dish as the Variant Lab lists it. */
 export interface NutritionVariantView {
   readonly id: string;
   readonly label: string;
@@ -37,6 +53,7 @@ export interface NutritionVariantView {
   readonly profile?: NutritionProfileView;
 }
 
+/** A dish's variant family, with the default and the currently served variant. */
 export interface NutritionFamilyView {
   readonly dishId: string;
   readonly starRating?: number;
@@ -45,6 +62,7 @@ export interface NutritionFamilyView {
   readonly variants: readonly NutritionVariantView[];
 }
 
+/** The day's nutrition totals: meals served, intent outcomes and average nutrients. */
 export interface NutritionPulseView {
   readonly servedMeals: number;
   readonly profiledMeals: number;
@@ -68,6 +86,7 @@ export interface NutritionPulseView {
   readonly leadingUnmetIntent?: string;
 }
 
+/** The nutrition story of one customer: intent, order, result and health effects. */
 export interface CustomerNutritionView {
   readonly customerId: string;
   readonly archetypeId: string;
@@ -156,30 +175,18 @@ const PULSE_METRICS = [
   "sodiumMg",
 ] as const satisfies readonly ProfileMetric[];
 
-const HEALTH_CONDITION_LABELS: Readonly<Record<string, string>> = {
-  "high-cholesterol": "Managing high cholesterol",
-  obesity: "Managing obesity",
-  diabetes: "Managing diabetes",
-  hypertension: "Managing hypertension",
-};
+/** The runtime's condition labels, indexable by any condition ID a profile or guest holds. */
+const HEALTH_CONDITION_LABELS: Readonly<Record<string, string>> = RUNTIME_HEALTH_CONDITION_LABELS;
 
-export type DialogFocusAction = "close" | "container" | "first" | "last" | undefined;
-
-export function dialogFocusAction(
-  key: string,
-  shiftKey: boolean,
-  focusableCount: number,
-  activeAtFirst: boolean,
-  activeAtLast: boolean,
-): DialogFocusAction {
-  if (key === "Escape") return "close";
-  if (key !== "Tab") return undefined;
-  if (focusableCount === 0) return "container";
-  if (shiftKey && activeAtFirst) return "last";
-  if (!shiftKey && activeAtLast) return "first";
-  return undefined;
-}
-
+/**
+ * Names the variant a customer was served.
+ *
+ * @param families - The variant families from the snapshot.
+ * @param dishId - The dish served.
+ * @param variantId - The variant served.
+ * @returns The variant's label, "Listed serving" for a dish without a family served as
+ *   itself, or undefined when the variant is unknown.
+ */
 export function customerVariantLabel(
   families: readonly NutritionFamilyView[],
   dishId: string,
@@ -197,6 +204,13 @@ function formatNumber(value: number, digits: number) {
   });
 }
 
+/**
+ * Formats a nutrient value with its unit for display.
+ *
+ * @param value - The value to format.
+ * @param metric - The nutrient, which sets the unit and decimal places.
+ * @returns The formatted amount, "Trace amount", or "Not available".
+ */
 export function nutritionValueText(
   value: NutritionValueView | undefined,
   metric: ProfileMetric,
@@ -207,6 +221,13 @@ export function nutritionValueText(
   return `${formatNumber(value.value, copy.digits)} ${copy.unit}`;
 }
 
+/**
+ * Names a nutrition intent for display.
+ *
+ * @param intentId - The intent's ID.
+ * @returns The intent's label, the ID with dashes as spaces when it has none, or
+ *   undefined when no ID is given.
+ */
 export function intentLabel(intentId: string | undefined) {
   if (!intentId) return undefined;
   return INTENT_LABELS[intentId] ?? intentId.replaceAll("-", " ");
@@ -218,6 +239,12 @@ function ratingText(value: number | undefined) {
     : "Not rated";
 }
 
+/**
+ * Renders a dish's health and star rating badges.
+ *
+ * @param props - The ratings to show and the health badge's label.
+ * @returns The rating badges.
+ */
 export function DishRatingSummary({
   healthRating,
   starRating,
@@ -272,6 +299,13 @@ function ConditionRatingDetails({
   );
 }
 
+/**
+ * Renders a serving's ratings and nutrients, with the less common nutrients and the
+ * per-condition ratings behind disclosures.
+ *
+ * @param props - The profile, the ratings that override its own, and the labelling element.
+ * @returns The nutrition summary.
+ */
 export function NutritionProfileSummary({
   profile,
   starRating,
@@ -329,6 +363,12 @@ function averageText(value: number | undefined, metric: ProfileMetric) {
   return `${formatNumber(value, copy.digits)} ${copy.unit}`;
 }
 
+/**
+ * Renders the day's nutrition pulse card.
+ *
+ * @param props - The pulse, a dish labeller, an optional review action and the compact flag.
+ * @returns The pulse card.
+ */
 export function NutritionPulseCard({
   pulse,
   dishLabel,
@@ -424,6 +464,14 @@ function comparisonText(
   return candidate.value > current.value ? "Higher" : "Lower";
 }
 
+/**
+ * Renders the Variant Lab, the modal where the player picks which variant a dish serves.
+ *
+ * The dialog traps focus while open and closes on Escape.
+ *
+ * @param props - The dish name, its variant family and the choose and close callbacks.
+ * @returns The modal dialog.
+ */
 export function VariantLabDialog({
   dishName,
   family,
@@ -447,42 +495,13 @@ export function VariantLabDialog({
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const previousFocus = document.activeElement as HTMLElement | null;
-    const selector = "button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex='-1'])";
-    const focusables = () => Array.from(dialog.querySelectorAll<HTMLElement>(selector));
-    requestAnimationFrame(() => focusables()[0]?.focus());
-    const handleKey = (event: KeyboardEvent) => {
-      const available = focusables();
-      const first = available[0];
-      const last = available.at(-1);
-      const action = dialogFocusAction(
-        event.key,
-        event.shiftKey,
-        available.length,
-        document.activeElement === first,
-        document.activeElement === last,
-      );
-      if (action === "close") {
-        event.preventDefault();
-        onCloseRef.current();
-        return;
-      }
-      if (action === "container") {
-        event.preventDefault();
-        dialog.focus();
-      } else if (action === "last") {
-        event.preventDefault();
-        last?.focus();
-      } else if (action === "first") {
-        event.preventDefault();
-        first?.focus();
-      }
-    };
-    document.addEventListener("keydown", handleKey);
-    return () => {
-      document.removeEventListener("keydown", handleKey);
-      requestAnimationFrame(() => previousFocus?.focus());
-    };
+    return install_focus_trap(dialog, {
+      selector: VARIANT_LAB_FOCUSABLE_SELECTOR,
+      shouldSkipHidden: false,
+      initialFocus: (_container, focusables) => focusables()[0],
+      initialFocusTiming: "frame",
+      onEscape: () => onCloseRef.current(),
+    });
   }, []);
 
   return (
@@ -550,6 +569,14 @@ export function VariantLabDialog({
   );
 }
 
+/**
+ * Renders the inspector for the selected customer's nutrition intent, order and result.
+ *
+ * When the inspector held focus as it unmounts, it calls `onRestoreFocus` on the next frame.
+ *
+ * @param props - The customer view, the labelling callbacks and the close and focus callbacks.
+ * @returns The inspector panel.
+ */
 export function CustomerNutritionInspector({
   customer,
   dishLabel,
@@ -689,6 +716,11 @@ export function CustomerNutritionInspector({
   );
 }
 
+/**
+ * Renders the note that the nutrition data and ratings are educational, not advice.
+ *
+ * @returns The disclosure.
+ */
 export function NutritionDisclosure() {
   return (
     <details className="nutrition-disclosure">

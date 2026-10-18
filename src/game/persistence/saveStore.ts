@@ -1,4 +1,16 @@
+/**
+ * The IndexedDB save store: checksummed save envelopes in an `active` and a `backup` slot,
+ * player preferences, and the save-file export and import format.
+ *
+ * The database name (`hawker-simulator`), its version, the store names, the slot keys, the
+ * envelope fields and the checksum byte format are persisted contracts; changing any of them
+ * breaks existing saves (see `docs/SAVE_FORMAT.md`). The checksum covers `undefined`-valued
+ * keys that `JSON.stringify` drops, so exported saves fail re-import (TD-06 in
+ * `docs/KNOWN_ISSUES.md`).
+ */
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import { compute_fnv1a32 } from "@/src/game/core/rng";
+import type { PreferenceKey } from "@/src/game/persistence/preferences";
 
 const DATABASE_NAME = "hawker-simulator";
 const DATABASE_VERSION = 1;
@@ -49,13 +61,7 @@ function stableStringify(value: unknown): string {
 }
 
 function checksum(value: unknown): string {
-  const source = stableStringify(value);
-  let hash = 2166136261;
-  for (let index = 0; index < source.length; index += 1) {
-    hash ^= source.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  return (hash >>> 0).toString(16).padStart(8, "0");
+  return compute_fnv1a32(stableStringify(value)).toString(16).padStart(8, "0");
 }
 
 function envelope(payload: unknown): SaveEnvelope {
@@ -77,6 +83,13 @@ function isValidEnvelope(value: SaveEnvelope | undefined): value is SaveEnvelope
   );
 }
 
+/**
+ * Writes a save to the active slot, first moving a still-valid active save to the backup slot, in
+ * one transaction.
+ *
+ * @param payload - The runtime save payload.
+ * @returns A promise that settles when the transaction completes.
+ */
 export async function saveGame(payload: unknown): Promise<void> {
   const db = await database();
   const transaction = db.transaction("saves", "readwrite");
@@ -86,10 +99,21 @@ export async function saveGame(payload: unknown): Promise<void> {
   await transaction.done;
 }
 
+/**
+ * Loads the newest valid save.
+ *
+ * @returns The active payload, else the backup payload, else undefined.
+ */
 export async function loadGame(): Promise<unknown | undefined> {
   return (await loadGameCandidates())[0];
 }
 
+/**
+ * Loads every save whose envelope is valid, for the runtime to try in order.
+ *
+ * @returns The active and backup payloads that passed the envelope and checksum check, active
+ *   first.
+ */
 export async function loadGameCandidates(): Promise<readonly unknown[]> {
   const db = await database();
   const active = await db.get("saves", ACTIVE_SLOT);
@@ -99,6 +123,11 @@ export async function loadGameCandidates(): Promise<readonly unknown[]> {
     .map((candidate) => candidate.payload);
 }
 
+/**
+ * Deletes the active and backup saves in one transaction.
+ *
+ * @returns A promise that settles when the transaction completes.
+ */
 export async function clearGame(): Promise<void> {
   const db = await database();
   const transaction = db.transaction("saves", "readwrite");
@@ -109,13 +138,27 @@ export async function clearGame(): Promise<void> {
   await transaction.done;
 }
 
-export async function savePreference(key: string, value: unknown): Promise<void> {
+/**
+ * Stores one player preference.
+ *
+ * @param key - The preference key.
+ * @param value - The value to store.
+ * @returns A promise that settles when the write completes.
+ */
+export async function savePreference(key: PreferenceKey, value: unknown): Promise<void> {
   const db = await database();
   await db.put("preferences", value, key);
 }
 
+/**
+ * Reads one player preference.
+ *
+ * @param key - The preference key.
+ * @param fallback - The value returned when nothing, or a nullish value, is stored.
+ * @returns The stored value, unvalidated, or the fallback.
+ */
 export async function loadPreference<T>(
-  key: string,
+  key: PreferenceKey,
   fallback: T,
 ): Promise<T> {
   const db = await database();
@@ -123,10 +166,34 @@ export async function loadPreference<T>(
   return (value as T | undefined) ?? fallback;
 }
 
+/**
+ * Name the file an exported save is downloaded as.
+ *
+ * @param day - The centre's current day.
+ * @returns The file name, such as `hawker-balance-day-3.json`.
+ */
+export function build_save_file_name(day: number): string {
+  return `hawker-balance-day-${day}.json`;
+}
+
+/**
+ * Wraps a save payload in a fresh envelope and serialises it for download.
+ *
+ * @param payload - The runtime save payload.
+ * @returns The envelope as indented JSON.
+ */
 export function exportSave(payload: unknown): string {
   return JSON.stringify(envelope(payload), null, 2);
 }
 
+/**
+ * Parses an exported save file and checks its envelope.
+ *
+ * @param source - The file contents.
+ * @returns The payload inside the envelope.
+ * @throws SyntaxError When the contents are not JSON.
+ * @throws Error When the envelope is invalid or its checksum does not match.
+ */
 export function importSave(source: string): unknown {
   const value = JSON.parse(source) as SaveEnvelope;
   if (!isValidEnvelope(value)) throw new Error("The save file is damaged or unsupported.");

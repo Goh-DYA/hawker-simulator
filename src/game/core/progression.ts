@@ -1,36 +1,92 @@
-import { calculateLevel } from "./economy";
+/**
+ * Progression rules: the operating-day clock, stall mastery and upgrades, the effective
+ * (upgrade-adjusted) catalog, daily objectives, milestone tracks, and the per-step update
+ * that awards objective and milestone rewards.
+ *
+ * Objectives and milestones are evaluated in a fixed order and their events are appended in
+ * that order, so the rewards are deterministic.
+ */
+import { calculateLevel, MAX_QUALITY } from "./economy";
 import type {
   DailyObjective,
   GameState,
+  SimulationCatalog,
   SimulationEvent,
   StallDefinition,
   StallMasteryState,
   NutritionObjectiveCriterion,
 } from "./types";
 
+/** Length of one operating day in simulated milliseconds (eight minutes). */
 export const OPERATING_DAY_MS = 8 * 60 * 1_000;
 const OPERATING_START_MINUTE = 10 * 60 + 30;
 const MASTERY_RANK_DIVISOR = 100;
+/** Cash awarded per tier when a milestone is claimed. */
+const MILESTONE_CASH_PER_TIER = 250;
+/** XP awarded per tier when a milestone is claimed. */
+const MILESTONE_XP_PER_TIER = 100;
+/** New visit ratings needed before a happiness objective starts counting progress. */
+const HAPPINESS_MIN_NEW_RATINGS = 5;
+/** Number of daily objectives offered each operating day. */
+const DAILY_OBJECTIVE_COUNT = 3;
+/** Shortest order time a stall upgrade can reduce service to, in milliseconds. */
+const MIN_ORDER_MS = 100;
+/** Most recent visit ratings kept in `metrics.visitRatings`. */
+export const VISIT_HISTORY_LIMIT = 50;
 
+/**
+ * Returns the operating day an elapsed time falls in.
+ *
+ * @param elapsedMs - The simulated time since the game started; negative values count as zero.
+ * @returns The day number, starting at 1.
+ */
 export function operatingDay(elapsedMs: number): number {
   return 1 + Math.floor(Math.max(0, elapsedMs) / OPERATING_DAY_MS);
 }
 
+/**
+ * Returns the in-game clock minute for an elapsed time: each simulated second is one minute after
+ * the 10:30 opening.
+ *
+ * @param elapsedMs - The simulated time since the game started; negative values count as zero.
+ * @returns The minutes since midnight on the in-game clock.
+ */
 export function operatingMinuteOfDay(elapsedMs: number): number {
   const operatingElapsedMs = Math.max(0, elapsedMs) % OPERATING_DAY_MS;
   return OPERATING_START_MINUTE + Math.floor(operatingElapsedMs / 1_000);
 }
 
+/**
+ * Averages the retained visit ratings.
+ *
+ * @param state - Any view with the visit metrics.
+ * @returns The mean score, or undefined when no visit has been rated.
+ */
 export function averageVisitRating(state: Pick<GameState, "metrics">): number | undefined {
   const ratings = state.metrics.visitRatings;
   if (ratings.length === 0) return undefined;
   return ratings.reduce((sum, rating) => sum + rating.score, 0) / ratings.length;
 }
 
+/**
+ * Returns the mastery rank for a points total: 1 + ⌊√(points / 100)⌋.
+ *
+ * @param points - The stall's mastery points; negative values count as zero.
+ * @returns The rank, starting at 1.
+ */
 export function masteryRank(points: number): number {
   return 1 + Math.floor(Math.sqrt(Math.max(0, points) / MASTERY_RANK_DIVISOR));
 }
 
+/**
+ * Applies a stall's current upgrade level to its definition.
+ *
+ * @param state - Any view with the stall mastery progression.
+ * @param definitionId - The stall's placeable definition ID.
+ * @param stall - The stall's authored definition.
+ * @returns The definition with the upgrade's service time, capacity, quality and menu-slot changes,
+ *   or the authored definition when no upgrade matches.
+ */
 export function effectiveStallDefinition(
   state: Pick<GameState, "progression">,
   definitionId: string,
@@ -41,14 +97,43 @@ export function effectiveStallDefinition(
   if (!upgrade) return stall;
   return {
     ...stall,
-    orderMs: Math.max(100, Math.round(stall.orderMs * upgrade.serviceTimeMultiplier)),
+    orderMs: Math.max(MIN_ORDER_MS, Math.round(stall.orderMs * upgrade.serviceTimeMultiplier)),
     preparationCapacity: stall.preparationCapacity + upgrade.capacityBonus,
     queueCapacity: stall.queueCapacity + upgrade.capacityBonus,
-    quality: Math.min(5, stall.quality + upgrade.qualityBonus),
+    quality: Math.min(MAX_QUALITY, stall.quality + upgrade.qualityBonus),
     menuSlots: (stall.menuSlots ?? stall.dishIds.length) + upgrade.menuSlotsBonus,
   };
 }
 
+/**
+ * Builds the catalog the simulation runs on, with every stall's mastery upgrades applied.
+ *
+ * Non-stall definitions are kept by reference; stall definitions are copied with their effective stall stats.
+ *
+ * @param state - The state whose catalog and stall mastery are read.
+ * @returns A catalog whose placeables keep the source key order.
+ */
+export function get_effective_catalog(state: Pick<GameState, "catalog" | "progression">): SimulationCatalog {
+  return {
+    ...state.catalog,
+    placeables: Object.fromEntries(Object.entries(state.catalog.placeables).map(([id, definition]) => [
+      id,
+      definition.stall
+        ? { ...definition, stall: effectiveStallDefinition(state, id, definition.stall) }
+        : definition,
+    ])),
+  };
+}
+
+/**
+ * Awards mastery points for one served visit and recomputes the stall's rank.
+ *
+ * @param state - Any view with the progression.
+ * @param definitionId - The stall's placeable definition ID.
+ * @param happiness - The visit's happiness from 0 to 100; it adds up to 10 points on top of a base
+ *   of 10.
+ * @returns The updated progression.
+ */
 export function awardStallMastery(
   state: Pick<GameState, "progression">,
   definitionId: string,
@@ -69,7 +154,13 @@ export function awardStallMastery(
   };
 }
 
-function distinctOpenStallTypes(state: GameState): number {
+/**
+ * Counts the distinct stall definitions that currently have an open stall placed.
+ *
+ * @param state - The game state whose placed objects are counted.
+ * @returns The number of distinct open stall types.
+ */
+export function distinctOpenStallTypes(state: GameState): number {
   return new Set(
     Object.values(state.objects)
       .filter((object) => object.open && state.catalog.placeables[object.definitionId]?.kind === "stall")
@@ -171,6 +262,14 @@ function nutritionObjective(state: GameState, day: number, scale: number): Daily
   });
 }
 
+/**
+ * Creates the three objectives for an operating day: a service objective, a quality objective, and
+ * a nutrition objective, with targets and rewards scaled by level.
+ *
+ * @param state - The game state that supplies the level, the starting counters and the open stalls.
+ * @param day - The day to create objectives for; defaults to the current day.
+ * @returns The day's objectives.
+ */
 export function createDailyObjectives(state: GameState, day = operatingDay(state.elapsedMs)): readonly DailyObjective[] {
   const scale = Math.max(1, state.progression.level);
   const rewardCash = 80 + scale * 20;
@@ -222,8 +321,8 @@ function objectiveProgress(state: GameState, item: DailyObjective): number {
     case "revenue": return state.economy.lifetimeRevenue - item.startValue;
     case "happiness": {
       const newRatingCount = state.metrics.completedCustomers - item.startValue;
-      if (newRatingCount < 5) return 0;
-      const newRatings = state.metrics.visitRatings.slice(-Math.min(50, newRatingCount));
+      if (newRatingCount < HAPPINESS_MIN_NEW_RATINGS) return 0;
+      const newRatings = state.metrics.visitRatings.slice(-Math.min(VISIT_HISTORY_LIMIT, newRatingCount));
       return newRatings.reduce((sum, rating) => sum + rating.score, 0) / newRatings.length;
     }
     case "flow": return queueFlowScore(state);
@@ -241,17 +340,54 @@ function objectiveProgress(state: GameState, item: DailyObjective): number {
   }
 }
 
-const MILESTONES = [
-  ...[50, 250, 1_000, 5_000].map((target, index) => ({ id: `service-${index + 1}`, tier: index + 1, met: (state: GameState) => state.economy.completedVisits >= target })),
-  ...[75, 85, 90, 95].map((target, index) => ({ id: `hospitality-${index + 1}`, tier: index + 1, met: (state: GameState) => state.metrics.visitRatings.length >= 20 && (averageVisitRating(state) ?? 0) >= target })),
-  ...[2, 4, 6, 8].map((target, index) => ({ id: `variety-${index + 1}`, tier: index + 1, met: (state: GameState) => distinctOpenStallTypes(state) >= target })),
-  ...[3, 7, 12, 20].map((target, index) => ({ id: `growth-${index + 1}`, tier: index + 1, met: (state: GameState) => state.progression.level >= target })),
-] as const;
+/** One milestone track: its ID prefix and the ascending target of each tier. */
+export interface MilestoneTrack {
+  readonly id: "service" | "hospitality" | "variety" | "growth";
+  readonly targets: readonly number[];
+}
 
+/**
+ * Milestone tracks in claim order. Tier `n` of a track has ID `${id}-${n}` and is met once the
+ * track's measure reaches `targets[n - 1]`.
+ */
+export const MILESTONE_TRACKS: readonly MilestoneTrack[] = [
+  { id: "service", targets: [50, 250, 1_000, 5_000] },
+  { id: "hospitality", targets: [75, 85, 90, 95] },
+  { id: "variety", targets: [2, 4, 6, 8] },
+  { id: "growth", targets: [3, 7, 12, 20] },
+];
+
+/** Whether a track's measure has reached `target` in `state`. */
+const MILESTONE_TRACK_MET: Readonly<Record<MilestoneTrack["id"], (state: GameState, target: number) => boolean>> = {
+  service: (state, target) => state.economy.completedVisits >= target,
+  hospitality: (state, target) => state.metrics.visitRatings.length >= 20 && (averageVisitRating(state) ?? 0) >= target,
+  variety: (state, target) => distinctOpenStallTypes(state) >= target,
+  growth: (state, target) => state.progression.level >= target,
+};
+
+/** Every claimable milestone tier, flattened from `MILESTONE_TRACKS` in claim order. */
+export const MILESTONES = MILESTONE_TRACKS.flatMap((track) =>
+  track.targets.map((target, index) => ({
+    id: `${track.id}-${index + 1}`,
+    tier: index + 1,
+    met: (state: GameState) => MILESTONE_TRACK_MET[track.id](state, target),
+  })),
+);
+
+/** Mastery rank a stall needs before it can be upgraded to each level. */
+export const UPGRADE_RANK_REQUIREMENTS = { 2: 2, 3: 4, 4: 7 } as const;
+
+/**
+ * Refreshes the daily objectives on a new day, then completes any objective or milestone that has
+ * been met, adding their cash, XP and events.
+ *
+ * @param source - The game state after a simulation step.
+ * @returns The state with updated objectives, milestones, currency, XP, level and events.
+ */
 export function updateProgressionSystems(source: GameState): GameState {
   const day = operatingDay(source.elapsedMs);
   let state = source;
-  if (state.progression.focusDay !== day || state.progression.dailyObjectives.length !== 3) {
+  if (state.progression.focusDay !== day || state.progression.dailyObjectives.length !== DAILY_OBJECTIVE_COUNT) {
     state = {
       ...state,
       progression: { ...state.progression, focusDay: day, dailyObjectives: createDailyObjectives(state, day) },
@@ -273,8 +409,8 @@ export function updateProgressionSystems(source: GameState): GameState {
   for (const milestone of MILESTONES) {
     if (claimed.has(milestone.id) || !milestone.met(state)) continue;
     claimed.add(milestone.id);
-    const cashReward = 250 * milestone.tier;
-    const xpReward = 100 * milestone.tier;
+    const cashReward = MILESTONE_CASH_PER_TIER * milestone.tier;
+    const xpReward = MILESTONE_XP_PER_TIER * milestone.tier;
     currency += cashReward;
     xp += xpReward;
     events.push({ type: "milestone-completed", tick: state.tick, entityId: milestone.id, amount: cashReward });

@@ -1,19 +1,24 @@
+/**
+ * Deterministic grid A*: four-way movement over floor tiles with optional blocked and
+ * preferred (cheaper) cells, and a visited-node budget.
+ *
+ * Ties are broken by f, h, row, column and insertion order, and neighbours are expanded in
+ * `CARDINAL_OFFSETS` order, so the same inputs always produce the same path.
+ */
 import {
-  getBlockedTileKeys,
-  getObjectQueueAnchor,
-  getObjectOccupiedTiles,
-  getObjectServicePoint,
-  getObjectTrayReturnPoint,
-  getSeatLocations,
+  CARDINAL_OFFSETS,
+  compute_manhattan_distance,
   getTile,
   isInBounds,
   pointKey,
   samePoint,
 } from "./grid";
-import type { AccessPoint, GridMap, GridPoint, PlacedObject, SimulationCatalog } from "./types";
-import { compareIds } from "./ordering";
-import { validateConfiguredQueuePath } from "./queueing";
+import type { GridMap, GridPoint } from "./types";
 
+/**
+ * Options for {@link findPath}: blocked tile keys, preferred tile keys, whether the goal may be
+ * blocked, and the visited-node budget.
+ */
 export interface PathfindingOptions {
   readonly blocked?: ReadonlySet<string>;
   /** Floor cells that should be favoured without becoming mandatory waypoints. */
@@ -22,6 +27,10 @@ export interface PathfindingOptions {
   readonly maxVisited?: number;
 }
 
+/**
+ * The outcome of {@link findPath}: the path, or null when unreachable, and the number of nodes
+ * visited.
+ */
 export interface PathResult {
   /** Includes both the start and destination. Null means unreachable. */
   readonly path: readonly GridPoint[] | null;
@@ -82,19 +91,19 @@ function compareNodes(a: Node, b: Node): number {
   return a.f - b.f || a.h - b.h || a.point.y - b.point.y || a.point.x - b.point.x || a.order - b.order;
 }
 
-function distance(a: GridPoint, b: GridPoint): number {
-  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-}
-
-const NEIGHBOURS: readonly GridPoint[] = [
-  { x: 0, y: -1 },
-  { x: -1, y: 0 },
-  { x: 1, y: 0 },
-  { x: 0, y: 1 },
-];
-
 const PREFERRED_STEP_COST = 0.65;
 
+/**
+ * Finds a shortest path between two floor tiles. Preferred cells cost 0.65 per step instead of 1.
+ *
+ * @param map - The map to search.
+ * @param start - The starting tile.
+ * @param end - The goal tile.
+ * @param options - Blocked and preferred tile keys, whether the goal may be blocked, and the
+ *   visited-node budget (default: every tile).
+ * @returns The path from start to end inclusive, or null when either end is not floor, the goal is
+ *   blocked, or the budget runs out; and the nodes visited.
+ */
 export function findPath(
   map: GridMap,
   start: GridPoint,
@@ -118,7 +127,7 @@ export function findPath(
   const points = new Map<string, GridPoint>([[startKey, { ...start }]]);
   const closed = new Set<string>();
   let order = 0;
-  const startH = distance(start, end) * minimumStepCost;
+  const startH = compute_manhattan_distance(start, end) * minimumStepCost;
   open.push({ point: { ...start }, key: startKey, g: 0, h: startH, f: startH, order: order++ });
   let visited = 0;
 
@@ -141,7 +150,7 @@ export function findPath(
       return { path, visited };
     }
 
-    for (const offset of NEIGHBOURS) {
+    for (const offset of CARDINAL_OFFSETS) {
       const point = { x: current.point.x + offset.x, y: current.point.y + offset.y };
       const key = pointKey(point);
       if (!isInBounds(map, point) || getTile(map, point) !== "floor" || closed.has(key)) continue;
@@ -152,13 +161,22 @@ export function findPath(
       gScores.set(key, tentative);
       cameFrom.set(key, current.key);
       points.set(key, point);
-      const h = distance(point, end) * minimumStepCost;
+      const h = compute_manhattan_distance(point, end) * minimumStepCost;
       open.push({ point, key, g: tentative, h, f: tentative + h, order: order++ });
     }
   }
   return { path: null, visited };
 }
 
+/**
+ * Tests whether {@link findPath} finds a path between two tiles.
+ *
+ * @param map - The map to search.
+ * @param start - The starting tile.
+ * @param end - The goal tile.
+ * @param options - The same options as {@link findPath}.
+ * @returns True when a path exists within the budget.
+ */
 export function isReachable(
   map: GridMap,
   start: GridPoint,
@@ -166,97 +184,4 @@ export function isReachable(
   options: PathfindingOptions = {},
 ): boolean {
   return findPath(map, start, end, options).path !== null;
-}
-
-/** Validates every operational interaction point against the entrance. */
-export function validateWorldNavigation(
-  map: GridMap,
-  entrance: GridPoint,
-  exit: GridPoint,
-  objects: Readonly<Record<string, PlacedObject>>,
-  catalog: SimulationCatalog,
-): string | undefined {
-  return validateWorldNavigationAccess(
-    map,
-    [
-      { id: "entrance-1", kind: "entrance", position: entrance },
-      { id: "exit-1", kind: "exit", position: exit },
-    ],
-    objects,
-    catalog,
-  );
-}
-
-/** Validates all access points and every operational interaction against the shared walkable network. */
-export function validateWorldNavigationAccess(
-  map: GridMap,
-  accessPoints: readonly AccessPoint[],
-  objects: Readonly<Record<string, PlacedObject>>,
-  catalog: SimulationCatalog,
-): string | undefined {
-  const entrances = accessPoints.filter((point) => point.kind === "entrance");
-  const exits = accessPoints.filter((point) => point.kind === "exit");
-  if (entrances.length === 0 || exits.length === 0) return "At least one entrance and one exit are required";
-  const blocked = getBlockedTileKeys(objects, catalog);
-  for (const entrance of entrances) {
-    if (!exits.some((exit) => isReachable(map, entrance.position, exit.position, { blocked }))) {
-      return `Placement would block the entrance-to-exit route for ${entrance.id}`;
-    }
-  }
-  for (const exit of exits) {
-    if (!entrances.some((entrance) => isReachable(map, entrance.position, exit.position, { blocked }))) {
-      return `Exit ${exit.id} would not be reachable from an entrance`;
-    }
-  }
-  const reservedPoints = accessPoints.map((point) => point.position);
-
-  for (const object of Object.values(objects).sort((a, b) => compareIds(a.id, b.id))) {
-    const definition = catalog.placeables[object.definitionId];
-    if (!definition) continue;
-    if (definition.kind === "stall" && object.queuePath !== undefined) {
-      const queueValidation = validateConfiguredQueuePath(
-        map,
-        objects,
-        catalog,
-        object,
-        object.queuePath,
-        reservedPoints,
-      );
-      if (!queueValidation.valid) return `Queue path for ${object.id} is invalid: ${queueValidation.reasons.join("; ")}`;
-    }
-    const destinations: GridPoint[] = [];
-    const queueAnchor = getObjectQueueAnchor(object, catalog);
-    if (definition.kind === "stall" && queueAnchor) destinations.push(queueAnchor);
-    const servicePoint = getObjectServicePoint(object, catalog);
-    if (definition.kind === "stall" && servicePoint && (!queueAnchor || !samePoint(servicePoint, queueAnchor))) {
-      destinations.push(servicePoint);
-    }
-    const trayPoint = getObjectTrayReturnPoint(object, catalog);
-    if (trayPoint) destinations.push(trayPoint);
-    const ownOccupied = new Set(getObjectOccupiedTiles(object, catalog).map(pointKey));
-    for (const destination of destinations) {
-      if (!isInBounds(map, destination)) return `Interaction point for ${object.id} is outside the map`;
-      const blockedByOwnObject = ownOccupied.has(pointKey(destination));
-      if (blocked.has(pointKey(destination)) && !blockedByOwnObject) {
-        return `Interaction point for ${object.id} is blocked by another object`;
-      }
-      if (!entrances.some((entrance) => isReachable(map, entrance.position, destination, { blocked, allowEndBlocked: blockedByOwnObject }))) {
-        return `Interaction point for ${object.id} would be unreachable`;
-      }
-    }
-  }
-  for (const seat of getSeatLocations(objects, catalog)) {
-    if (!isInBounds(map, seat.point)) return `Seat point for ${seat.objectId} is outside the map`;
-    const owner = objects[seat.objectId];
-    const blockedByOwnObject = owner
-      ? new Set(getObjectOccupiedTiles(owner, catalog).map(pointKey)).has(pointKey(seat.point))
-      : false;
-    if (blocked.has(pointKey(seat.point)) && !blockedByOwnObject) {
-      return `Seat point for ${seat.objectId} is blocked by another object`;
-    }
-    if (!entrances.some((entrance) => isReachable(map, entrance.position, seat.point, { blocked, allowEndBlocked: blockedByOwnObject }))) {
-      return `Seat point for ${seat.objectId} would be unreachable`;
-    }
-  }
-  return undefined;
 }

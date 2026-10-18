@@ -1,7 +1,19 @@
+/**
+ * The root layout of the app: the document shell, global styles and page metadata.
+ */
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 
+/**
+ * Builds the page metadata for the request.
+ *
+ * The social image needs an absolute URL, so the metadata base is derived from the
+ * request's forwarded or direct host (default `localhost:3000`) and its forwarded
+ * protocol, falling back to http for localhost or 127.0.0.1 and https otherwise.
+ *
+ * @returns The page title, description, manifest, icons and social-card metadata.
+ */
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const host =
@@ -53,6 +65,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Renders the root HTML document around the page.
+ *
+ * @param props - The layout props.
+ * @param props.children - The page content.
+ * @returns The `<html>` and `<body>` shell.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

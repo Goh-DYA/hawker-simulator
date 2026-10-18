@@ -1,4 +1,10 @@
-/** Cloudflare Worker entry point for Hawker Simulator's Vinext build. */
+/**
+ * Cloudflare Worker entry point for Hawker Simulator's Vinext build.
+ *
+ * It serves image optimisation requests on `/_vinext/image` and hands every other request
+ * to the Vinext app router, adding the shared security headers from
+ * `src/config/securityHeaders.ts` to both.
+ */
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
 import { SECURITY_HEADERS } from "../src/config/securityHeaders";
@@ -21,6 +27,14 @@ interface ExecutionContext {
   passThroughOnException(): void;
 }
 
+/**
+ * Copies a response with the shared security headers set on it.
+ *
+ * A header the response already carries is overwritten, so the shared values always win.
+ *
+ * @param response - The response to wrap.
+ * @returns A new response with the same body and status and the security headers set.
+ */
 function withSecurityHeaders(response: Response): Response {
   const headers = new Headers(response.headers);
   for (const [name, value] of Object.entries(SECURITY_HEADERS)) {

@@ -8,9 +8,9 @@ Scope note: the current working-source evidence below is not an exact-production
 
 ## Automated simulation evidence
 
-The Vitest benchmark starts 80 active customers and advances 1,200 deterministic fixed steps with periodic invariant checks. The recorded baseline includes queue-reservation and obstacle-safe route behavior. It is useful for regression detection in the pure simulation core; it does not include Phaser rendering, browser scheduling, expanded stall/food drawing, audio, IndexedDB, service workers, or DOM work.
+The Vitest benchmark (`tests/game/core/performance.test.ts`) starts 80 active customers and advances 1,200 deterministic fixed steps with periodic invariant checks. The recorded baseline includes queue-reservation and obstacle-safe route behavior. It is useful for regression detection in the pure simulation core; it does not include Phaser rendering, browser scheduling, expanded stall/food drawing, audio, IndexedDB, service workers, or DOM work.
 
-Current content `1.3.0` result from the passing 29-file / 181-test run on bundled Node.js `v24.14.0`:
+Current content `1.3.0` result from the passing working-source Vitest run on bundled Node.js `v24.14.0` (the gate record is in [TEST_REPORT.md](TEST_REPORT.md#content-130-working-source-validation)):
 
 | Metric | Recorded value |
 |---|---:|
@@ -29,7 +29,7 @@ Sub-millisecond timing is noisy and machine-dependent; do not compare a single N
 
 ### Retained content `1.2.0` baseline
 
-Retained result from the passing 24-file / 131-test content `1.2.0` Vitest run on bundled Node.js `v24.14.0`:
+Retained result from the passing content `1.2.0` Vitest run on bundled Node.js `v24.14.0` (recorded in [TEST_REPORT.md](TEST_REPORT.md#evidence-status)):
 
 | Metric | Recorded value |
 |---|---:|
@@ -86,7 +86,7 @@ Use the frozen production artifact and record:
 - commit, service-worker build ID, artifact hash, raw/gzip payloads;
 - exact browser/OS version, CPU/RAM/GPU, power mode, viewport, DPR, and quality setting;
 - benchmark seed/snapshot, warm-up, sample length, and run count;
-- late-game unlocked layout with all 14 stalls plus representative placeable and complete 54-dish renderer coverage;
+- late-game unlocked layout with every stall plus representative placeable and complete dish renderer coverage (the current roster is in [CONTENT_CATALOGUE.md](CONTENT_CATALOGUE.md#roster-counts));
 - FPS distribution, simulation/render p95, path work, save duration, audio voices, and memory trend;
 - customer count sweep, completed visits, failures/throttling, and the final supported cap;
 - retained trace, JSON, and screenshot paths.

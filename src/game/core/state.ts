@@ -1,9 +1,19 @@
-import { getUnlockedDefinitionIds } from "./economy";
+/**
+ * Game state construction and copying: the default simulation config, `createNewGame`
+ * with its validation of the starting world, the deep-copy helpers, undo snapshots, and
+ * the read-only `GameSnapshot` projection.
+ *
+ * The copy helpers keep the key order of their sources, because the digests serialise
+ * state in key order.
+ */
+import { getUnlockedDefinitionIds, STARTING_REPUTATION } from "./economy";
 import { getBlockedTileKeys, getTile, pointKey, validatePlacement } from "./grid";
-import { isReachable, validateWorldNavigationAccess } from "./pathfinding";
+import { validateWorldNavigationAccess } from "./navigation";
+import { isReachable } from "./pathfinding";
 import { validateConfiguredQueuePath } from "./queueing";
 import { hashSeed } from "./rng";
 import { compareIds } from "./ordering";
+import { PERSISTENT_SCHEMA_VERSION } from "./enums";
 import { createDailyObjectives } from "./progression";
 import {
   cloneNutritionMetrics,
@@ -18,6 +28,7 @@ import type {
   GridPoint,
   NewGameOptions,
   PlacedObject,
+  QualitySettings,
   SimulationConfig,
   SimulationConfigOverrides,
   SimulationMetrics,
@@ -26,6 +37,10 @@ import type {
 } from "./types";
 import { assertValidCatalog, isValidSimulationId } from "./validation";
 
+/**
+ * The simulation config used when `NewGameOptions.config` overrides nothing: a 100 ms (10 Hz) fixed
+ * step and the standard and lower-end step caps.
+ */
 export const DEFAULT_SIMULATION_CONFIG: SimulationConfig = {
   fixedStepMs: 100,
   spawnIntervalMs: 2_500,
@@ -128,6 +143,17 @@ function initialRouteGuidePoints(options: NewGameOptions): readonly GridPoint[] 
   return normalized.sort((left, right) => left.y - right.y || left.x - right.x);
 }
 
+/**
+ * Creates a validated new game: a fresh economy and progression, empty queues for each stall, a
+ * seeded RNG, and the first day's objectives.
+ *
+ * @param options - The map, catalog, access points, starting objects, route guides, config
+ *   overrides, seed and starting currency.
+ * @returns The new game state.
+ * @throws CatalogValidationError When the catalog is invalid.
+ * @throws RangeError When the map, config, access points, route guides, starting objects, their
+ *   queues, the navigation between entrances and exits, or the starting currency is invalid.
+ */
 export function createNewGame(options: NewGameOptions): GameState {
   assertValidCatalog(options.catalog);
   assertValidMap(options.map);
@@ -193,7 +219,7 @@ export function createNewGame(options: NewGameOptions): GameState {
 
   const initialLevel = 1;
   const state: GameState = {
-    schemaVersion: 4,
+    schemaVersion: PERSISTENT_SCHEMA_VERSION,
     map: cloneMap(options.map),
     accessPoints,
     routeGuidePoints,
@@ -220,7 +246,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     progression: {
       xp: 0,
       level: initialLevel,
-      reputation: 2.5,
+      reputation: STARTING_REPUTATION,
       unlockedDefinitionIds: getUnlockedDefinitionIds(
         options.catalog,
         initialLevel,
@@ -253,10 +279,22 @@ export function createNewGame(options: NewGameOptions): GameState {
   };
 }
 
+/**
+ * Deep-copies a map, including its origin and tiles.
+ *
+ * @param map - The map to copy.
+ * @returns The copy.
+ */
 export function cloneMap(map: GridMap): GridMap {
   return { ...map, worldOrigin: { ...map.worldOrigin }, tiles: [...map.tiles] };
 }
 
+/**
+ * Deep-copies a placed object, including its origin and authored queue path.
+ *
+ * @param object - The object to copy.
+ * @returns The copy.
+ */
 export function clonePlacedObject(object: PlacedObject): PlacedObject {
   return {
     ...object,
@@ -265,6 +303,13 @@ export function clonePlacedObject(object: PlacedObject): PlacedObject {
   };
 }
 
+/**
+ * Deep-copies a customer, including its position, path, health conditions and ordered nutrition
+ * profile.
+ *
+ * @param customer - The customer to copy.
+ * @returns The copy.
+ */
 export function cloneCustomer(customer: Customer): Customer {
   return {
     ...customer,
@@ -275,10 +320,92 @@ export function cloneCustomer(customer: Customer): Customer {
   };
 }
 
+/**
+ * Deep-copies progression so a draft or snapshot can change it without aliasing `source`.
+ *
+ * @param progression - The progression state to copy.
+ * @returns A copy with fresh arrays, objectives and stall mastery entries, in the same key order.
+ */
+export function clone_progression(progression: GameState["progression"]): GameState["progression"] {
+  return {
+    ...progression,
+    unlockedDefinitionIds: [...progression.unlockedDefinitionIds],
+    dailyObjectives: progression.dailyObjectives.map((objective) => ({ ...objective })),
+    claimedMilestoneIds: [...progression.claimedMilestoneIds],
+    stallMastery: Object.fromEntries(Object.entries(progression.stallMastery).map(([id, mastery]) => [id, { ...mastery }])),
+  };
+}
+
+/**
+ * Deep-copies visit ratings, including each rating's component breakdown.
+ *
+ * @param visitRatings - The visit ratings to copy.
+ * @returns A new array of copied ratings in the same order.
+ */
+export function clone_visit_ratings(visitRatings: SimulationMetrics["visitRatings"]): SimulationMetrics["visitRatings"] {
+  return visitRatings.map((rating) => ({
+    ...rating,
+    components: { ...rating.components },
+  }));
+}
+
+/**
+ * Deep-copies every simulation metric, including runtime-only counters.
+ *
+ * Persistence must not use this: a save keeps only an explicit subset of the metrics.
+ *
+ * @param metrics - The metrics to copy.
+ * @returns A copy whose keys keep the order of `metrics`.
+ */
+export function clone_metrics(metrics: SimulationMetrics): SimulationMetrics {
+  return {
+    ...metrics,
+    visitRatings: clone_visit_ratings(metrics.visitRatings),
+    nutrition: cloneNutritionMetrics(metrics.nutrition),
+  };
+}
+
+/**
+ * Deep-copies access points, including each point's position.
+ *
+ * @param accessPoints - The access points to copy.
+ * @returns A new array of copied access points in the same order.
+ */
+export function clone_access_points(accessPoints: readonly AccessPoint[]): AccessPoint[] {
+  return accessPoints.map((point) => ({ ...point, position: { ...point.position } }));
+}
+
+/**
+ * Selects the quality settings for the state's current quality mode.
+ *
+ * @param state - The game state whose `qualityMode` and config are read.
+ * @returns `config.standard` in standard mode, otherwise `config.lowerEnd`.
+ */
+export function get_quality_settings(state: GameState): QualitySettings {
+  return state.qualityMode === "standard" ? state.config.standard : state.config.lowerEnd;
+}
+
+/**
+ * Converts the build-undo window from milliseconds to whole simulation ticks.
+ *
+ * @param config - The simulation config holding the undo window and fixed step.
+ * @returns The undo window in ticks, rounded up.
+ */
+export function compute_undo_window_ticks(config: SimulationConfig): number {
+  return Math.ceil(config.buildUndoWindowMs / config.fixedStepMs);
+}
+
+/**
+ * Captures the parts of the state that a build undo restores: the map, access points, route guides,
+ * objects, economy, expansion count and XP.
+ *
+ * @param state - The state before the build command.
+ * @returns A deep copy of those parts.
+ */
 export function captureUndoSnapshot(state: GameState): UndoSnapshot {
   return {
     map: cloneMap(state.map),
-    accessPoints: state.accessPoints.map((point) => ({ ...point, position: { ...point.position } })),
+    accessPoints: clone_access_points(state.accessPoints),
     routeGuidePoints: state.routeGuidePoints.map((point) => ({ ...point })),
     entrance: { ...state.entrance },
     exit: { ...state.exit },
@@ -289,15 +416,22 @@ export function captureUndoSnapshot(state: GameState): UndoSnapshot {
   };
 }
 
+/**
+ * Projects the state into a read-only snapshot for the UI and saves, with objects and customers
+ * sorted by ID.
+ *
+ * @param state - The state to project.
+ * @returns A deep-copied snapshot.
+ */
 export function createSnapshot(state: GameState): GameSnapshot {
   const objects = Object.values(state.objects).map(clonePlacedObject).sort((a, b) => compareIds(a.id, b.id));
   const customers = Object.values(state.customers).map(cloneCustomer).sort((a, b) => compareIds(a.id, b.id));
   return {
-    schemaVersion: 4,
+    schemaVersion: PERSISTENT_SCHEMA_VERSION,
     tick: state.tick,
     elapsedMs: state.elapsedMs,
     map: cloneMap(state.map),
-    accessPoints: state.accessPoints.map((point) => ({ ...point, position: { ...point.position } })),
+    accessPoints: clone_access_points(state.accessPoints),
     routeGuidePoints: state.routeGuidePoints.map((point) => ({ ...point })),
     qualityMode: state.qualityMode,
     entrance: { ...state.entrance },
@@ -307,31 +441,9 @@ export function createSnapshot(state: GameState): GameSnapshot {
     queues: Object.fromEntries(Object.entries(state.queues).map(([id, queue]) => [id, [...queue]])),
     seatReservations: { ...state.seatReservations },
     economy: { ...state.economy },
-    progression: {
-      ...state.progression,
-      unlockedDefinitionIds: [...state.progression.unlockedDefinitionIds],
-      dailyObjectives: state.progression.dailyObjectives.map((objective) => ({ ...objective })),
-      claimedMilestoneIds: [...state.progression.claimedMilestoneIds],
-      stallMastery: Object.fromEntries(Object.entries(state.progression.stallMastery).map(([id, mastery]) => [id, { ...mastery }])),
-    },
-    metrics: {
-      ...state.metrics,
-      visitRatings: state.metrics.visitRatings.map((rating) => ({
-        ...rating,
-        components: { ...rating.components },
-      })),
-      nutrition: cloneNutritionMetrics(state.metrics.nutrition),
-    },
+    progression: clone_progression(state.progression),
+    metrics: clone_metrics(state.metrics),
     canUndo: state.undoStack.length > 0,
     events: state.events.map((event) => ({ ...event })),
   };
-}
-
-export function stateDigest(state: GameState): string {
-  const snapshot = createSnapshot(state);
-  return JSON.stringify({
-    ...snapshot,
-    map: { ...snapshot.map, tiles: [...snapshot.map.tiles] },
-    objectKeys: snapshot.objects.map((object) => pointKey(object.origin)),
-  });
 }

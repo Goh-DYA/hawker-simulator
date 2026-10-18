@@ -1,9 +1,46 @@
+/**
+ * The reviewed nutrition import manifest: source file hashes, the dish and variant
+ * mappings to source food rows, the customer nutrition intents and the disclosure text.
+ *
+ * Changing a mapping or a hash here changes `src/content/nutrition.generated.json` the
+ * next time the importer runs, so every entry carries its review note.
+ */
+// @ts-check
+
+/**
+ * @import {
+ *   NutritionClass,
+ *   NutritionIntentDefinition,
+ *   NutritionProvenance,
+ *   NutritionVariant,
+ * } from "../../src/content/types"
+ */
+
+/** Reviewed SHA-256 of the Singapore food nutrition source CSV. */
 export const EXPECTED_FOOD_FILE_SHA256 =
   "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e";
 
+/** Reviewed SHA-256 of the adult daily nutrition guideline source CSV. */
 export const EXPECTED_GUIDELINE_FILE_SHA256 =
   "c87987b4281c8557f75b61fefa96d95d13e9ff60c2c41e38fe4a428219064ab4";
 
+/**
+ * The number of adult daily guideline rows the reviewed guideline file holds. It matches
+ * `LAUNCH_ROSTER.nutritionGuidelines` in `src/content/roster.ts`.
+ */
+export const NUTRITION_GUIDELINE_COUNT = 11;
+
+/**
+ * Maps a dish to its reviewed source food row.
+ *
+ * @param {string} dishId - The dish content id.
+ * @param {string} foodName - The exact, case-sensitive source `Food Name`.
+ * @param {NutritionClass} nutritionClass - Whether the dish is rated as a meal or a drink.
+ * @param {string} reviewNote - Why the source row represents the dish.
+ * @param {NutritionProvenance["mappingKind"]} [mappingKind] - How the name was matched.
+ * @param {number} [multiplier] - Scale from the source serving to the game serving.
+ * @param {string} [servingLabel] - Serving label to use instead of the source's.
+ */
 const released = (
   dishId,
   foodName,
@@ -22,6 +59,7 @@ const released = (
   ...(servingLabel === undefined ? {} : { servingLabel }),
 });
 
+/** The primary profile mapping of every dish, in generated profile order. */
 export const PRIMARY_PROFILE_MAPPINGS = [
   released(
     "dish.poached-chicken-rice",
@@ -337,6 +375,17 @@ export const PRIMARY_PROFILE_MAPPINGS = [
   ),
 ];
 
+/**
+ * Maps one recipe variant of a dish to its reviewed source food row.
+ *
+ * @param {string} id - The variant id.
+ * @param {string} name - The variant's display name.
+ * @param {string} foodName - The exact, case-sensitive source `Food Name`.
+ * @param {NutritionVariant["unlockRank"]} unlockRank - The stall rank that unlocks it.
+ * @param {string} visualKey - The variant's portion visual.
+ * @param {string} reviewNote - Why the source row represents the variant.
+ * @param {NutritionProvenance["mappingKind"]} [mappingKind] - How the name was matched.
+ */
 const variant = (
   id,
   name,
@@ -355,6 +404,7 @@ const variant = (
   mappingKind,
 });
 
+/** The recipe variant families, each listing its default variant first. */
 export const VARIANT_FAMILY_MAPPINGS = [
   {
     dishId: "dish.kopi",
@@ -506,6 +556,11 @@ export const VARIANT_FAMILY_MAPPINGS = [
   },
 ];
 
+/**
+ * Customer nutrition intents, each ranking one metric within one nutrition class.
+ *
+ * @type {readonly NutritionIntentDefinition[]}
+ */
 export const NUTRITION_INTENTS = [
   {
     id: "lighter-energy",
@@ -549,5 +604,6 @@ export const NUTRITION_INTENTS = [
   },
 ];
 
+/** The educational disclosure shown with nutrition information. */
 export const NUTRITION_DISCLOSURE =
   "Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed source serving; recipes and portions vary. Its 1-5 health and condition ratings compare servings only within this game's meal or drink catalogue: they are not diagnoses, treatment advice, Health Promotion Board certifications, or universal judgements. Daily reference ranges are general guidance for Singaporean adults and do not represent individual needs. Total sugar is not the same as added sugar.";

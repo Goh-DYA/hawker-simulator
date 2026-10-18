@@ -17,9 +17,11 @@ import {
   verifySourceHash,
 } from "@/tools/nutrition/importer.mjs";
 import {
+  NUTRITION_GUIDELINE_COUNT,
   PRIMARY_PROFILE_MAPPINGS,
   VARIANT_FAMILY_MAPPINGS,
 } from "@/tools/nutrition/manifest.mjs";
+import { LAUNCH_ROSTER } from "@/src/content";
 
 const unavailable = {
   status: "unavailable" as const,
@@ -275,10 +277,16 @@ describe("nutrition CSV importer", () => {
   it("ranks trace amounts as zero without changing their source state", () => {
     const trace = { status: "trace" as const };
     const known = { status: "known" as const, value: 1 };
-    const unavailableValue = { status: "unavailable" as const, reason: "not-reported" };
+    const unavailableValue = {
+      status: "unavailable" as const,
+      reason: "not-reported" as const,
+    };
+    const trace_value = nutritionValueForComparison(trace);
+    const known_value = nutritionValueForComparison(known);
+    assert.ok(trace_value !== undefined && known_value !== undefined);
     const comparisons = [
-      { id: "trace", value: nutritionValueForComparison(trace) },
-      { id: "known", value: nutritionValueForComparison(known) },
+      { id: "trace", value: trace_value },
+      { id: "known", value: known_value },
     ];
 
     assert.equal(nutritionValueForComparison(trace), 0);
@@ -298,8 +306,8 @@ describe("nutrition CSV importer", () => {
     const profiles = [
       {
         id: "lower-risk",
-        status: "released",
-        nutritionClass: "meal",
+        status: "released" as const,
+        nutritionClass: "meal" as const,
         nutrients: nutrientFixture({
           energyKcal: { status: "known", value: 200 },
           proteinG: { status: "known", value: 30 },
@@ -318,8 +326,8 @@ describe("nutrition CSV importer", () => {
       },
       {
         id: "higher-risk",
-        status: "released",
-        nutritionClass: "meal",
+        status: "released" as const,
+        nutritionClass: "meal" as const,
         nutrients: nutrientFixture({
           energyKcal: { status: "known", value: 900 },
           proteinG: { status: "known", value: 5 },
@@ -376,6 +384,10 @@ describe("nutrition CSV importer", () => {
       () => extractPreservedGuidelines(preserved),
       /snapshot metadata is invalid/,
     );
+  });
+
+  it("keeps the manifest guideline count in step with the launch roster", () => {
+    assert.equal(NUTRITION_GUIDELINE_COUNT, LAUNCH_ROSTER.nutritionGuidelines);
   });
 
   it("hashes canonical source rows deterministically and gates source drift", () => {

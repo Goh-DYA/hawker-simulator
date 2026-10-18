@@ -1,8 +1,10 @@
 # Test Report
 
-Report date: 2026-07-20
+Report date: 2026-10-17
 Build/commit: Content `1.3.0` working source validated with bundled Node.js `v24.14.0`; commit/publication record pending
 Release verdict: **NO-GO pending exact-production browser/offline QA and required human reviews**
+
+This document owns the dated test and gate evidence; other documents link here instead of restating results (see the [documentation index](README.md)). Release blockers are listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md), and content counts in [CONTENT_CATALOGUE.md](CONTENT_CATALOGUE.md#roster-counts).
 
 Scope note: this report records the content `1.3.0` working-source gate and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
 
@@ -11,6 +13,23 @@ Scope note: this report records the content `1.3.0` working-source gate and reta
 On 2026-07-20, the supported bundled Node.js `v24.14.0` runtime passed typecheck, lint, 29 Vitest files / 181 tests, the five-environment Vinext build, 2/2 rendered-output/offline-shell assertions, and the native Next.js Vercel build. The deterministic generated nutrition snapshot contains 104 released profiles across 14 variant families, and the generated service-worker build ID is `7d3da6d67b11`.
 
 A targeted 1280 x 720 development-browser pass inspected the Nutrition Lens, separate Health and Star badges, all 12 nutrient fields including `Trace`, four condition-specific ratings, six Nasi Lemak variants and their trade-off summaries, and a selected high-cholesterol guest with personalized fit and a `+0.06` satisfaction effect. The browser recorded no warning or error console messages. This pass did not cover every stall or dish presentation, 1024 x 640, secondary browsers, offline restart/update, storage faults, accessibility assistive technology, performance profiling, or human cultural review.
+
+## Structural refactor validation
+
+On 2026-10-17, the behaviour-preserving structural refactor (branch `refactor/structural-tech-debt`) passed on Node.js `v22.22.0` (Linux): typecheck, lint, 70 Vitest files / 764 tests including the seeded-simulation, save, runtime, draw-call, input, save-store, server-rendered markup, content and nutrition-importer goldens, the five-environment Vinext build, 2/2 rendered-output/offline-shell tests, and the native Next.js Vercel build. The goldens, which pin the pre-refactor behaviour, pass unchanged. The Linux build stamps a different service-worker build ID from a Windows build, because the stamp hash depends on the platform (see [KNOWN_ISSUES.md](KNOWN_ISSUES.md#deferred-engineering-debt)), so no build ID is recorded here. This is automated working-source evidence only; it is not exact-production, browser, offline or human-review evidence.
+
+## Dependency audit
+
+This section is the single record of dependency-audit results; other documents link here instead of restating them.
+
+On 2026-10-17, `npm audit` failed at the `--audit-level=high` threshold:
+
+| Audit | Command | Result on 2026-10-17 |
+|---|---|---|
+| All dependencies | `npm audit` | **Fail**: 30 vulnerabilities (1 critical, 23 high, 6 moderate) |
+| Production only | `npm audit --omit=dev` | **Fail**: 6 vulnerabilities (1 critical, 4 high, 1 moderate) |
+
+The critical finding is in `next` and is fixed in 16.4.2. Upgrading dependencies is outside the current structural refactor, so these findings remain open and the CI audit step on `main` is red. Earlier records of clean audits are superseded by this result.
 
 ## Evidence status
 
@@ -40,7 +59,7 @@ Recorded content `1.2.0` supported-runtime evidence: the complete release-equiva
 | Vercel build | **Pass** | `npm run build:vercel` completed the native Next.js 16 build |
 | Vercel Preview/stage/promotion | **Not run** | Requires the documented Vercel project, GitHub secrets, protected `production` Environment, and user approval |
 | Rendered production output/PWA | **Pass, automated scope** | 2/2 Node assertions passed; real-browser offline restart/update remains open |
-| Dependency audit | **Recorded pass; not rerun in this update** | The previously recorded production-only and all-dependencies audits both reported 0 vulnerabilities |
+| Dependency audit | **Fail (2026-10-17)** | Production-only and all-dependencies audits both report critical and high findings; see [Dependency audit](#dependency-audit) |
 | Active/backup IndexedDB and quota/private mode | Implementation present; browser not verified | Requires exact-production storage fault injection, reload, and recovery evidence |
 | Chrome exact-production critical path | **Not complete** | Exact stable browser/OS, viewport/zoom, console, network, save/reload, and responsive evidence required |
 | Offline first load/reload/restart/save/update | **Not run on replacement artifact** | Static worker assertions from the earlier build are not sufficient |
@@ -50,7 +69,7 @@ Recorded content `1.2.0` supported-runtime evidence: the complete release-equiva
 
 ## Automated suites in recorded source snapshot
 
-The content `1.2.0` source snapshot contained the suites below. Content, spawn weighting, and visual-recipe coverage included the complete 12-persona roster in the recorded full-gate execution.
+The content `1.2.0` source snapshot contained the suites below. Content, spawn weighting, and visual-recipe coverage included the complete 12-persona roster in the recorded full-gate execution. The paths are those of the current tree, which mirrors the source layout; the stall-visual suite now lives under `render/`, and the single visual-recipe suite is split by recipe domain under `visuals/`.
 
 - `tests/content/content.test.ts`: exact expanded launch counts, category minimums, reciprocal links, opening-dish availability, unique primary stall/food references, localization completeness, duplicate IDs, missing references, unreachable unlocks, and prerequisite cycles.
 - `tests/game/core/grid-pathfinding.test.ts`: grid conversion, rotations/footprints, invalid placement, deterministic A*, and unreachable routes.
@@ -63,8 +82,8 @@ The content `1.2.0` source snapshot contained the suites below. Content, spawn w
 - `tests/game/core/queue-selection-expansion.test.ts`: stall-choice balancing, queue-direction/custom-path behavior, obstacle avoidance, persistence, perimeter migration, and exit-path continuity.
 - `tests/game/core/queue-layout-overlap.test.ts`: insertion-order-independent global planning, unique cells, protected foreign anchors, crossing custom paths, closed stalls, and custom-first automatic rerouting.
 - `tests/game/runtime/utility-effects.test.ts`: meaningful signage/facility mappings and bounded spatial/global effects.
-- `tests/game/runtime/stall-visuals.test.ts`: active-menu food-prop reciprocity, order, deduplication, caps, tamper rejection, fallback, and deterministic menu-change behavior.
-- `tests/game/runtime/visual-recipes.test.ts`: exhaustive 80-placeable semantic contracts, 46 distinct dish profiles, 12 unique vendor recipes/actions, archetype, animation-state, tick, reduced-motion, and customer-status legend visual contracts.
+- `tests/game/runtime/render/stall.test.ts`: active-menu food-prop reciprocity, order, deduplication, caps, tamper rejection, fallback, and deterministic menu-change behavior.
+- `tests/game/runtime/visuals/placeable.test.ts`, `tests/game/runtime/visuals/dish.test.ts`, `tests/game/runtime/visuals/vendor.test.ts`, and `tests/game/runtime/visuals/customer.test.ts`: exhaustive 80-placeable semantic contracts, 46 distinct dish profiles, 12 unique vendor recipes/actions, archetype, animation-state, tick, reduced-motion, and customer-status legend visual contracts.
 - `tests/game/core/performance.test.ts`: repeatable 80-agent Node simulation budget with queue reservations active.
 - `tests/game/runtime/queue-insight.test.ts`: geometry-aware queue-flow messaging, route-capacity warnings, demand imbalance, and calm-state recovery.
 

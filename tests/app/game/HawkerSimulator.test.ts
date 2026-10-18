@@ -31,6 +31,7 @@ import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 
 import { HawkerSimulator } from "@/app/game/HawkerSimulator";
 import { exportSave } from "@/src/game/persistence/saveStore";
 import type * as SaveStoreModule from "@/src/game/persistence/saveStore";
+import { expect_console_warning } from "@/tests/console";
 import type {
   RuntimeController,
   RuntimeCustomerNutritionSummary,
@@ -717,6 +718,66 @@ describe("HawkerSimulator panel contents", () => {
   });
 });
 
+describe("HawkerSimulator catalogue choices", () => {
+  it("selects an unlocked build item for placement and shows its card", async () => {
+    const panel = open_dock_tab(await boot_running_centre(), "Build");
+    fakes.calls.length = 0;
+
+    fireEvent.click(within(panel).getByRole("button", { name: "Compact Square Table, $90" }));
+
+    expect({
+      calls: fakes.calls.filter(([method]) => method.startsWith("controller.")),
+      card: panel.querySelector(".selection-card strong")?.textContent,
+    }).toEqual({
+      calls: [
+        ["controller.selectBuildItem", "item.compact-square-table"],
+        ["controller.setBuildTool", "place"],
+      ],
+      card: "Compact Square Table",
+    });
+  });
+
+  it("clears the selected build item from its card", async () => {
+    const panel = open_dock_tab(await boot_running_centre(), "Build");
+    fireEvent.click(within(panel).getByRole("button", { name: "Compact Square Table, $90" }));
+    fakes.calls.length = 0;
+
+    fireEvent.click(within(panel).getByRole("button", { name: "Clear selection" }));
+
+    expect({
+      calls: fakes.calls.filter(([method]) => method.startsWith("controller.")),
+      has_card: panel.querySelector(".selection-card") !== null,
+    }).toEqual({ calls: [["controller.selectBuildItem", undefined]], has_card: false });
+  });
+
+  it("announces what unlocks a locked stall instead of selecting it", async () => {
+    const container = await boot_running_centre();
+    const panel = open_dock_tab(container, "Stalls");
+    const locked_card = Array.from(panel.querySelectorAll<HTMLElement>(".stall-card")).find(
+      (card) => card.querySelector("strong")?.textContent === "Kopi Canopy",
+    )!;
+    fakes.calls.length = 0;
+
+    fireEvent.click(locked_card);
+
+    expect({
+      calls: fakes.calls.filter(([method]) => method.startsWith("controller.")),
+      toast: container.querySelector(".toast.warning p")?.textContent,
+    }).toEqual({ calls: [], toast: "Kopi Canopy unlocks with rep 10." });
+  });
+
+  it("routes an operating stall's queue from its direction buttons", async () => {
+    const panel = open_dock_tab(await boot_running_centre(), "Stalls");
+    fakes.calls.length = 0;
+
+    fireEvent.click(within(panel).getByRole("button", { name: "Route Sunrise Roost queue east" }));
+
+    expect(fakes.calls.filter(([method]) => method.startsWith("controller."))).toEqual([
+      ["controller.setQueueDirection", "starter-1", "east"],
+    ]);
+  });
+});
+
 describe("HawkerSimulator autosave", () => {
   it("coalesces three persistent changes within the debounce into one save of the last", async () => {
     await boot_simulator({ preferences: ONBOARDED_PREFERENCES });
@@ -750,6 +811,7 @@ describe("HawkerSimulator autosave", () => {
   it("shows the error badge and copy when a save fails", async () => {
     const container = await boot_simulator({ preferences: ONBOARDED_PREFERENCES });
     fakes.store.failingMethods.add("saveGame");
+    expect_console_warning(/\[autosave\] write failed Error: Simulated saveGame failure/);
 
     act(() => {
       runtime_options().onPersistentChange({ marker: "change" });
@@ -933,6 +995,71 @@ describe("HawkerSimulator local data", () => {
   });
 });
 
+describe("HawkerSimulator storage failures", () => {
+  it("logs a failed preference read and announces that defaults are in use", async () => {
+    fakes.store.failingMethods.add("loadPreference");
+    expect_console_warning(
+      /\[ui\] preferences load failed Error: Simulated loadPreference failure/,
+    );
+
+    const container = await boot_simulator();
+
+    expect(require_element(container, ".toast.warning").textContent).toBe(
+      "iLocal preferences are unavailable. The game will continue with defaults.",
+    );
+  });
+
+  it("logs a failed save read and announces that progress may not persist", async () => {
+    fakes.store.failingMethods.add("loadGameCandidates");
+    expect_console_warning(/\[ui\] saves load failed Error: Simulated loadGameCandidates failure/);
+
+    const container = await boot_simulator({ preferences: ONBOARDED_PREFERENCES });
+
+    expect(require_element(container, ".toast.warning").textContent).toBe(
+      "iLocal saves are unavailable in this browser session. You can still play, but progress may not persist.",
+    );
+  });
+
+  it("logs every failed preference write and announces the first", async () => {
+    fakes.store.failingMethods.add("savePreference");
+    for (const key of ["settings", "settings", "nutrition-lens-enabled"]) {
+      expect_console_warning(
+        new RegExp(`\\[ui\\] preference "${key}" write failed Error: Simulated savePreference failure`),
+      );
+    }
+
+    const container = await boot_simulator({ preferences: ONBOARDED_PREFERENCES });
+
+    expect(require_element(container, ".toast.warning").textContent).toBe(
+      "iPreferences could not be saved on this device.",
+    );
+  });
+
+  it("logs a failed save removal on reset and still resets the centre", async () => {
+    const container = await boot_simulator({ preferences: ONBOARDED_PREFERENCES });
+    fakes.store.failingMethods.add("clearGame");
+    expect_console_warning(/\[ui\] save clear failed Error: Simulated clearGame failure/);
+    open_reset_dialog(container);
+    fakes.calls.length = 0;
+
+    confirm_reset(container);
+    await settle();
+
+    expect({
+      calls: fakes.calls,
+      toast: require_element(container, ".toast.warning").textContent,
+    }).toEqual({
+      calls: [
+        ["clearGame"],
+        ["controller.reset"],
+        ["savePreference", "tutorial-complete", false],
+        ["savePreference", "nutrition-tour-v1-complete", false],
+      ],
+      toast: "iThe stored save could not be removed.",
+    });
+  });
+});
+
 describe("HawkerSimulator settings", () => {
   it("hands out-of-range saved settings to the runtime clamped", async () => {
     await boot_simulator({
@@ -990,6 +1117,22 @@ describe("HawkerSimulator settings", () => {
       ["loadPreference", "settings"],
       ["savePreference", "settings", DEFAULT_SETTINGS],
       ["savePreference", "settings", saved_settings],
+    ]);
+  });
+
+  it("keeps saved settings across a remount", async () => {
+    const saved_settings = { ...DEFAULT_SETTINGS, textScale: 1.35, musicVolume: 0 };
+    await boot_simulator({
+      preferences: { ...ONBOARDED_PREFERENCES, settings: saved_settings },
+    });
+    cleanup();
+    fakes.pwa.registerPwa.mockClear();
+
+    await boot_simulator();
+
+    expect([runtime_options().settings, fakes.store.preferences.get("settings")]).toEqual([
+      saved_settings,
+      saved_settings,
     ]);
   });
 });
@@ -1123,6 +1266,35 @@ describe("HawkerSimulator focus", () => {
     }).toEqual({
       focused: ["body", "button: Got it →"],
       active: "button: Got it →",
+    });
+  });
+
+  // Replay closes Help and reopens the tutorial in one render. React's `autoFocus` focuses the
+  // primary button at commit; then the Help trap's cleanup frame returns focus to the Help
+  // opener, and the tutorial trap's frame focuses its first focusable element, because a
+  // client-rendered button carries no `autofocus` attribute. This pins today's order.
+  it("returns focus to the Help opener, then focuses the replayed tutorial, when replay starts from Help", async () => {
+    const container = await boot_simulator({ preferences: ONBOARDED_PREFERENCES });
+    const help_opener = within(container).getByRole("button", { name: "Open help" });
+    act(() => {
+      help_opener.focus();
+    });
+    fireEvent.click(help_opener);
+    flush_frames();
+    const focus_spy = vi.spyOn(HTMLElement.prototype, "focus");
+    onTestFinished(() => {
+      focus_spy.mockRestore();
+    });
+
+    fireEvent.click(within(container).getByRole("button", { name: "Replay tutorial" }));
+    flush_frames();
+
+    expect({
+      focused: focus_spy.mock.contexts.map(describe_focus_target),
+      active: describe_focus_target(document.activeElement),
+    }).toEqual({
+      focused: ["button: Show me around →", "button: ?", "button: Skip tutorial"],
+      active: "button: Skip tutorial",
     });
   });
 });

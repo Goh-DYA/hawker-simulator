@@ -1,0 +1,328 @@
+/**
+ * Code-native visual recipes for dishes and their reviewed nutrition variants.
+ *
+ * Each recipe names a dish's real-life serving presentation (vessel, portion shape, ingredient
+ * and detail cues) plus stable hash variants, so the renderer and the menu panels draw it the
+ * same way without image assets. The module is pure and free of Phaser.
+ */
+import type { DishDefinition } from "@/src/content";
+import { ACCENTS, colour, stableVisualHash } from "./palette";
+
+export type DishVesselProfile =
+  | "ceramic-plate"
+  | "deep-ceramic-bowl"
+  | "kopitiam-cup-and-saucer"
+  | "tall-drinking-glass"
+  | "banana-leaf-lined-plate"
+  | "shared-oval-platter"
+  | "bamboo-steamer";
+
+export type DishPortionShape =
+  | "rice-mound"
+  | "porridge"
+  | "noodle-tangle"
+  | "broth"
+  | "liquid"
+  | "shaved-ice"
+  | "flatbread"
+  | "cake-cubes"
+  | "omelette"
+  | "fritters"
+  | "dumplings"
+  | "skewers"
+  | "grilled-pieces"
+  | "pudding"
+  | "whole-seafood"
+  | "leaf-parcel"
+  | "buns"
+  | "braised-scoop"
+  | "vegetable-scoop";
+
+export interface DishPresentationProfile {
+  readonly source: "catalogue" | "inferred";
+  /** Recognisable plated composition rather than a palette-only variant. */
+  readonly motif: string;
+  readonly vessel: DishVesselProfile;
+  readonly portionShape: DishPortionShape;
+  /** Main real-world ingredients a renderer should depict. */
+  readonly ingredientCues: readonly string[];
+  /** Garnish, sauce, wrapping, or arrangement cues that distinguish similar dishes. */
+  readonly detailCues: readonly string[];
+  readonly semanticKey: string;
+}
+
+export interface DishVisualRecipe {
+  readonly id: string;
+  readonly vessel: "plate" | "bowl" | "cup" | "tray";
+  readonly foodForm: "rice" | "noodles" | "broth" | "bread" | "dessert" | "seafood" | "snack" | "drink";
+  readonly portionColour: number;
+  readonly garnishColour: number;
+  readonly garnishCount: number;
+  readonly steam: DishDefinition["steamEffect"];
+  readonly foodFrame: string;
+  readonly containerFrame: string;
+  readonly presentation: DishPresentationProfile;
+  /** Variant composition key used by renderers for geometry, arrangement, and garnish cues. */
+  readonly variantVisualKey?: string;
+  /** Non-colour cue that must remain legible in high-contrast rendering. */
+  readonly variantGeometryCue?: string;
+  readonly variantVisualFamily?: DishVariantVisualFamily;
+  readonly contractKey: string;
+}
+
+export type DishVariantVisualFamily =
+  | "drink"
+  | "nasi-lemak"
+  | "carrot-cake"
+  | "prata"
+  | "fish-soup"
+  | "bak-chor"
+  | "murtabak"
+  | "briyani"
+  | "thosai"
+  | "yong-tau-foo"
+  | "ban-mian"
+  | "bak-kut-teh"
+  | "duck-rice"
+  | "fallback";
+
+/**
+ * Maps a reviewed variant's visual key to the canvas family that draws its composition cue.
+ *
+ * @param visualKey - The variant's visual key from the nutrition content.
+ * @returns The variant family, or `fallback` for a key no family claims.
+ */
+export function variantVisualFamilyForKey(visualKey: string): DishVariantVisualFamily {
+  if (visualKey.startsWith("kopi-") || visualKey.startsWith("teh-")) return "drink";
+  if (visualKey.startsWith("nasi-")) return "nasi-lemak";
+  if (visualKey.startsWith("carrot-cake-")) return "carrot-cake";
+  if (visualKey.startsWith("prata-")) return "prata";
+  if (visualKey.startsWith("fish-")) return "fish-soup";
+  if (visualKey.startsWith("bak-chor-")) return "bak-chor";
+  if (visualKey.startsWith("murtabak-")) return "murtabak";
+  if (visualKey.startsWith("briyani-")) return "briyani";
+  if (visualKey.startsWith("thosai-")) return "thosai";
+  if (visualKey.startsWith("ytf-")) return "yong-tau-foo";
+  if (visualKey.startsWith("ban-mian-")) return "ban-mian";
+  if (visualKey.startsWith("bak-kut-teh-")) return "bak-kut-teh";
+  if (visualKey.startsWith("duck-rice-")) return "duck-rice";
+  return "fallback";
+}
+
+interface DishPresentationSeed {
+  readonly motif: string;
+  readonly portionShape: DishPortionShape;
+  readonly ingredients: readonly string[];
+  readonly details: readonly string[];
+}
+
+function dishProfile(
+  motif: string,
+  portionShape: DishPortionShape,
+  ingredients: readonly string[],
+  details: readonly string[],
+): DishPresentationSeed {
+  return { motif, portionShape, ingredients, details };
+}
+
+const DISH_PRESENTATIONS: Readonly<Record<string, DishPresentationSeed>> = {
+  "poached-chicken-rice": dishProfile("poached-chicken-slices-beside-rice", "rice-mound", ["fragrant-rice", "poached-chicken", "cucumber"], ["dark-soy", "chilli-cup"]),
+  "roast-chicken-rice": dishProfile("roast-chicken-slices-over-rice", "rice-mound", ["fragrant-rice", "roast-chicken", "cucumber"], ["crisp-skin", "dark-soy"]),
+  "soya-tofu-rice": dishProfile("vegetarian-chicken-and-greens-over-rice", "rice-mound", ["rice", "plant-based-chicken", "leafy-greens"], ["soy-glaze", "spring-onion"]),
+  "chicken-congee": dishProfile("silky-congee-with-chicken-shreds", "porridge", ["rice-porridge", "shredded-chicken", "ginger"], ["fried-shallot", "spring-onion"]),
+  "nasi-lemak": dishProfile("coconut-rice-with-clustered-sides", "rice-mound", ["coconut-rice", "egg", "anchovy", "peanut", "cucumber"], ["banana-leaf", "sambal"]),
+  "mee-rebus": dishProfile("yellow-noodles-in-thick-gravy", "noodle-tangle", ["yellow-noodles", "egg", "bean-sprout"], ["spiced-gravy", "lime"]),
+  "soto-ayam": dishProfile("chicken-and-rice-cake-in-clear-broth", "broth", ["chicken", "rice-cake", "clear-broth"], ["coriander", "fried-shallot"]),
+  "lontong-sayur": dishProfile("rice-cake-cubes-in-coconut-gravy", "broth", ["rice-cake", "cabbage", "tofu"], ["coconut-gravy", "sambal"]),
+  kopi: dishProfile("dark-kopi-with-creamy-surface", "liquid", ["coffee", "condensed-milk"], ["kopitiam-cup", "coffee-rim"]),
+  "sugarcane-juice": dishProfile("pale-sugarcane-juice-over-ice", "liquid", ["sugarcane-juice", "ice"], ["tall-glass", "citrus-wedge"]),
+  "ice-kacang": dishProfile("rainbow-syrup-over-shaved-ice", "shaved-ice", ["shaved-ice", "red-bean", "jelly"], ["rainbow-syrup", "condensed-milk"]),
+  "char-kway-teow": dishProfile("dark-flat-noodles-with-seafood", "noodle-tangle", ["flat-rice-noodles", "prawn", "cockle", "egg"], ["dark-soy", "garlic-chive"]),
+  "hokkien-prawn-mee": dishProfile("golden-noodles-with-prawn-and-squid", "noodle-tangle", ["yellow-noodles", "prawn", "squid", "egg"], ["prawn-stock", "lime"]),
+  "fried-carrot-cake": dishProfile("radish-cake-cubes-scrambled-with-egg", "cake-cubes", ["radish-cake", "egg", "preserved-radish"], ["white-style", "spring-onion"]),
+  "oyster-omelette": dishProfile("crisp-omelette-with-plump-oysters", "omelette", ["egg", "oyster", "starch-crisp"], ["coriander", "chilli-sauce"]),
+  "roti-prata": dishProfile("folded-prata-with-curry-side", "flatbread", ["layered-flatbread", "curry"], ["folded-quarters", "curry-cup"]),
+  "mee-goreng-mamak": dishProfile("red-wok-noodles-with-egg-and-tofu", "noodle-tangle", ["yellow-noodles", "egg", "tofu"], ["chilli-tomato-sauce", "lime"]),
+  "chicken-murtabak": dishProfile("stuffed-murtabak-cut-into-squares", "flatbread", ["stuffed-flatbread", "minced-chicken", "onion"], ["cut-squares", "curry-cup"]),
+  "nasi-briyani": dishProfile("spiced-rice-with-large-chicken-piece", "rice-mound", ["briyani-rice", "chicken", "cucumber"], ["fried-onion", "curry-gravy"]),
+  "masala-thosai": dishProfile("rolled-thosai-with-potato-filling", "flatbread", ["thosai", "masala-potato", "sambar"], ["rolled-crepe", "chutney-cups"]),
+  "idli-sambar": dishProfile("three-idli-cakes-in-sambar", "dumplings", ["idli", "sambar", "coconut-chutney"], ["three-white-cakes", "curry-leaf"]),
+  "vadai-set": dishProfile("two-crisp-vadai-rings-with-dips", "fritters", ["two-lentil-vadai", "sambar", "coconut-chutney"], ["ring-shape", "curry-leaf"]),
+  "lemon-rice": dishProfile("yellow-lemon-rice-with-peanuts", "rice-mound", ["lemon-rice", "peanut", "mustard-seed"], ["curry-leaf", "lemon-wedge"]),
+  "nyonya-laksa": dishProfile("noodles-in-orange-coconut-laksa", "broth", ["rice-noodles", "prawn", "fish-cake", "egg"], ["coconut-laksa", "laksa-leaf"]),
+  "ayam-buah-keluak": dishProfile("ayam-pongteh-plated-stew-scoop", "braised-scoop", ["braised-chicken", "potato"], ["fermented-soy-gravy", "coriander"]),
+  "chap-chye": dishProfile("nonya-vegetable-plated-scoop", "vegetable-scoop", ["cabbage", "carrot", "baby-corn", "black-fungus"], ["tender-stir-fry", "mixed-vegetable-colours"]),
+  "babi-pongteh": dishProfile("babi-pongteh-plated-braise-scoop", "braised-scoop", ["braised-pork", "potato", "mushroom"], ["fermented-soy-gravy", "coriander"]),
+  "sambal-stingray": dishProfile("stingray-fillet-on-banana-leaf", "whole-seafood", ["stingray", "sambal"], ["banana-leaf", "lime-wedge"]),
+  "sliced-fish-soup": dishProfile("fish-slices-and-greens-in-clear-soup", "broth", ["fish-slices", "leafy-greens", "clear-broth"], ["tomato", "spring-onion"]),
+  "black-pepper-crab": dishProfile("crab-pincers-in-black-pepper-sauce", "whole-seafood", ["crab-pincers", "black-pepper"], ["visible-claws", "pepper-sauce"]),
+  "bak-chor-mee": dishProfile("mee-pok-with-minced-pork-and-mushroom", "noodle-tangle", ["mee-pok", "minced-pork", "mushroom", "fishball"], ["chilli-vinegar", "spring-onion"]),
+  "fishball-mee-pok": dishProfile("flat-noodles-with-round-fishballs", "noodle-tangle", ["mee-pok", "fishball", "leafy-greens"], ["fishball-cluster", "light-soy"]),
+  "lor-mee": dishProfile("thick-noodles-in-dark-starchy-gravy", "noodle-tangle", ["thick-noodles", "braised-egg", "fish-cake"], ["dark-lor-gravy", "garlic-vinegar"]),
+  "teochew-fish-dumpling-soup": dishProfile("round-fishballs-in-clear-broth", "broth", ["fishball", "lettuce", "clear-broth"], ["fishball-cluster", "spring-onion"]),
+  "chicken-satay-set": dishProfile("ten-chicken-satay-skewers-with-peanut-sauce", "skewers", ["ten-chicken-satay", "cucumber", "rice-cake"], ["bamboo-skewers", "peanut-sauce"]),
+  "bbq-chicken-wings": dishProfile("three-charred-chicken-wings-in-a-row", "grilled-pieces", ["three-chicken-wings", "charred-glaze"], ["grill-marks", "lime-wedge"]),
+  "beef-satay-set": dishProfile("ten-beef-satay-skewers-with-peanut-sauce", "skewers", ["ten-beef-satay", "cucumber", "rice-cake"], ["bamboo-skewers", "peanut-sauce"]),
+  "sambal-grilled-squid": dishProfile("salted-egg-squid-pieces", "whole-seafood", ["squid", "salted-egg-sauce"], ["golden-crumb", "curry-leaf"]),
+  "har-gow": dishProfile("four-prawn-dumplings-with-vegetables-in-light-soup", "broth", ["four-prawn-dumplings", "bamboo-shoot", "vegetables"], ["light-soup", "pleated-wrapper", "ceramic-bowl"]),
+  "siew-mai": dishProfile("open-topped-siew-mai-in-bamboo-basket", "dumplings", ["pork-dumpling", "prawn"], ["open-wrapper", "diced-carrot", "bamboo-steamer"]),
+  "char-siew-bao": dishProfile("white-char-siew-buns-in-bamboo-basket", "buns", ["steamed-bun", "char-siew"], ["split-top", "bamboo-steamer"]),
+  "lotus-leaf-rice": dishProfile("opened-lotus-leaf-rice-parcel", "leaf-parcel", ["glutinous-rice", "lap-cheong", "char-siew", "mushroom"], ["lotus-leaf-wrap", "parcel-folds"]),
+  chendol: dishProfile("green-chendol-jelly-in-coconut-ice", "shaved-ice", ["chendol-jelly", "coconut-milk", "shaved-ice"], ["palm-sugar", "red-bean"]),
+  "tau-huay": dishProfile("silky-beancurd-with-toppings", "pudding", ["beancurd", "syrup", "toppings"], ["silky-surface", "ceramic-bowl"]),
+  "teh-tarik": dishProfile("frothy-pulled-tea-in-glass", "liquid", ["black-tea", "condensed-milk"], ["foam-cap", "pulled-tea-bubbles"]),
+  "pulut-hitam": dishProfile("black-glutinous-rice-with-coconut-swirl", "pudding", ["black-glutinous-rice", "coconut-milk"], ["white-coconut-swirl", "thick-pudding"]),
+  "yong-tau-foo": dishProfile("assorted-stuffed-tofu-and-vegetables-in-broth", "broth", ["stuffed-tofu", "fish-paste", "bitter-gourd", "leafy-greens"], ["pick-and-mix-pieces", "clear-broth"]),
+  "ban-mian": dishProfile("hand-torn-noodles-with-minced-pork-and-egg", "noodle-tangle", ["flat-noodles", "minced-pork", "egg", "leafy-greens"], ["anchovy", "spring-onion"]),
+  "thunder-tea-rice": dishProfile("herbed-rice-with-green-tea-soup", "rice-mound", ["brown-rice", "chopped-greens", "tofu", "peanut"], ["green-tea-broth", "separated-toppings"]),
+  popiah: dishProfile("fresh-popiah-roll-cut-in-two", "flatbread", ["thin-wrapper", "turnip", "carrot", "egg"], ["sweet-sauce", "cut-roll"]),
+  "bak-kut-teh": dishProfile("pork-ribs-in-peppery-herbal-broth", "broth", ["pork-ribs", "garlic", "herbal-broth"], ["claypot-bowl", "pepper-specks"]),
+  "duck-rice": dishProfile("braised-duck-slices-over-dark-rice", "rice-mound", ["braised-duck", "seasoned-rice", "cucumber"], ["dark-braising-sauce", "chilli-cup"]),
+  "kway-chap": dishProfile("broad-rice-sheets-in-dark-broth", "broth", ["broad-rice-sheets", "braised-pork", "tofu", "egg"], ["dark-herbal-broth", "fried-garlic"]),
+  "claypot-chicken-rice": dishProfile("chicken-rice-in-charred-claypot", "rice-mound", ["rice", "chicken", "chinese-sausage", "mushroom"], ["claypot-crust", "dark-soy"]),
+};
+
+function dishVesselProfile(frame: string): DishVesselProfile {
+  if (frame.includes("leaf")) return "banana-leaf-lined-plate";
+  if (frame.includes("platter")) return "shared-oval-platter";
+  if (frame.includes("glass")) return "tall-drinking-glass";
+  if (frame.includes("cup")) return "kopitiam-cup-and-saucer";
+  if (frame.includes("bowl")) return "deep-ceramic-bowl";
+  return "ceramic-plate";
+}
+
+function fallbackDishPresentation(dish: DishDefinition, identity: string): DishPresentationSeed {
+  const portionShape: DishPortionShape =
+    dish.category === "rice"
+      ? "rice-mound"
+      : dish.category === "noodles"
+        ? "noodle-tangle"
+        : dish.category === "soup"
+          ? "broth"
+          : dish.category === "bread"
+            ? "flatbread"
+            : dish.category === "drink"
+              ? "liquid"
+              : dish.category === "dessert"
+                ? dish.preferenceTags.includes("cold") ? "shaved-ice" : "pudding"
+                : dish.category === "seafood"
+                  ? "whole-seafood"
+                  : "grilled-pieces";
+  const ingredientCues = [...new Set([dish.category, ...dish.preferenceTags])]
+    .filter((cue) => !["comfort", "filling", "premium", "shareable"].includes(cue))
+    .slice(0, 4);
+  return dishProfile(
+    `${identity}-${portionShape}`,
+    portionShape,
+    ingredientCues.length > 0 ? ingredientCues : [dish.category],
+    dish.dietaryTags.includes("spicy") ? ["chilli-garnish"] : ["catalogue-garnish"],
+  );
+}
+
+/**
+ * Derives the deterministic visual recipe of a dish: vessel, food form, colours and presentation.
+ *
+ * Known dishes use their authored presentation; other dishes get a presentation inferred from
+ * their category, sprite frames and tags.
+ *
+ * @param dish - The dish content definition.
+ * @returns The recipe, with a contract key that is unique per launch dish.
+ */
+export function visualRecipeForDish(dish: DishDefinition): DishVisualRecipe {
+  const seed = stableVisualHash(dish.id);
+  const identity = dish.foodSprite.frame || dish.id.replace(/^dish\./, "");
+  const knownPresentation = DISH_PRESENTATIONS[identity]
+    ?? DISH_PRESENTATIONS[dish.id.replace(/^dish\./, "")];
+  const presentationSeed = knownPresentation ?? fallbackDishPresentation(dish, identity);
+  const vesselProfile = presentationSeed.details.includes("bamboo-steamer")
+    ? "bamboo-steamer"
+    : dishVesselProfile(dish.containerSprite.frame);
+  const semanticKey = [
+    presentationSeed.motif,
+    vesselProfile,
+    presentationSeed.portionShape,
+    presentationSeed.ingredients.join("+"),
+    presentationSeed.details.join("+"),
+  ].join(":");
+  const presentation: DishPresentationProfile = {
+    source: knownPresentation ? "catalogue" : "inferred",
+    motif: presentationSeed.motif,
+    vessel: vesselProfile,
+    portionShape: presentationSeed.portionShape,
+    ingredientCues: presentationSeed.ingredients,
+    detailCues: presentationSeed.details,
+    semanticKey,
+  };
+  const vessel: DishVisualRecipe["vessel"] =
+    vesselProfile === "kopitiam-cup-and-saucer" || vesselProfile === "tall-drinking-glass"
+      ? "cup"
+      : vesselProfile === "deep-ceramic-bowl"
+        ? "bowl"
+        : vesselProfile === "banana-leaf-lined-plate" ||
+            vesselProfile === "shared-oval-platter" ||
+            vesselProfile === "bamboo-steamer"
+          ? "tray"
+          : "plate";
+  const foodForm: DishVisualRecipe["foodForm"] =
+    dish.category === "rice"
+      ? "rice"
+      : dish.category === "noodles"
+        ? "noodles"
+        : dish.category === "soup"
+          ? "broth"
+          : dish.category === "bread"
+            ? "bread"
+            : dish.category === "dessert"
+              ? "dessert"
+              : dish.category === "seafood"
+                ? "seafood"
+                : dish.category === "drink"
+                  ? "drink"
+                  : "snack";
+  const garnishColour = ACCENTS[(seed >>> 8) % ACCENTS.length] as number;
+  return {
+    id: dish.id,
+    vessel,
+    foodForm,
+    portionColour: colour(dish.portionColour, 0xd69a35),
+    garnishColour,
+    garnishCount: 1 + ((seed >>> 13) % 4),
+    steam: dish.steamEffect,
+    foodFrame: `${dish.foodSprite.atlas}:${dish.foodSprite.frame}`,
+    containerFrame: `${dish.containerSprite.atlas}:${dish.containerSprite.frame}`,
+    presentation,
+    contractKey: `${dish.id}:${semanticKey}:${vessel}:${foodForm}:${dish.portionColour}:${garnishColour.toString(16)}:${dish.foodSprite.frame}:${dish.containerSprite.frame}`,
+  };
+}
+
+/**
+ * Resolves a reviewed nutrition variant into a visual recipe. The visual key is
+ * deliberately carried separately from colour so canvas, catalogue, and
+ * high-contrast renderers can all express a composition change.
+ */
+export function visualRecipeForDishVariant(
+  dish: DishDefinition,
+  visualKey?: string,
+): DishVisualRecipe {
+  const base = visualRecipeForDish(dish);
+  if (!visualKey) return base;
+  const variantSeed = stableVisualHash(`${dish.id}:${visualKey}`);
+  const garnishColour = ACCENTS[(variantSeed >>> 8) % ACCENTS.length] as number;
+  const geometryCue = visualKey;
+  const presentation: DishPresentationProfile = {
+    ...base.presentation,
+    motif: `${base.presentation.motif}-${geometryCue}`,
+    detailCues: [...base.presentation.detailCues, geometryCue],
+    semanticKey: `${base.presentation.semanticKey}:variant:${geometryCue}`,
+  };
+  return {
+    ...base,
+    garnishColour,
+    garnishCount: 1 + ((variantSeed >>> 13) % 4),
+    presentation,
+    variantVisualKey: visualKey,
+    variantGeometryCue: geometryCue,
+    variantVisualFamily: variantVisualFamilyForKey(visualKey),
+    contractKey: `${base.contractKey}:variant:${geometryCue}:${garnishColour.toString(16)}`,
+  };
+}
