@@ -43,8 +43,8 @@ jobs:
       - name: Build the native Next.js Vercel target
         run: npm run build:vercel
 
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
 
   preview:
     name: Deploy Vercel preview

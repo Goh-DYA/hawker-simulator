@@ -1,6 +1,6 @@
 # Test Report
 
-Report date: 2026-10-17
+Report date: 2026-10-18
 Build/commit: Content `1.3.0` working source validated with bundled Node.js `v24.14.0`; commit/publication record pending
 Release verdict: **NO-GO pending exact-production browser/offline QA and required human reviews**
 
@@ -22,14 +22,16 @@ On 2026-10-17, the behaviour-preserving structural refactor (branch `refactor/st
 
 This section is the single record of dependency-audit results; other documents link here instead of restating them.
 
-On 2026-10-17, `npm audit` failed at the `--audit-level=high` threshold:
+On 2026-10-18, after the security dependency updates recorded in [CHANGELOG.md](../CHANGELOG.md), the production-only audit passed and the all-dependencies audit still failed at the `--audit-level=high` threshold:
 
-| Audit | Command | Result on 2026-10-17 |
+| Audit | Command | Result on 2026-10-18 |
 |---|---|---|
-| All dependencies | `npm audit` | **Fail**: 30 vulnerabilities (1 critical, 23 high, 6 moderate) |
-| Production only | `npm audit --omit=dev` | **Fail**: 6 vulnerabilities (1 critical, 4 high, 1 moderate) |
+| All dependencies | `npm audit --audit-level=high` | **Fail** (exit 1): 10 vulnerabilities (8 high, 2 moderate, 0 critical) |
+| Production only | `npm audit --omit=dev --audit-level=high` | **Pass** (exit 0): 0 vulnerabilities |
 
-The critical finding is in `next` and is fixed in 16.4.2. Upgrading dependencies is outside the current structural refactor, so these findings remain open and the CI audit step on `main` is red. Earlier records of clean audits are superseded by this result.
+All eight high findings come from one advisory, [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) in `braces` (stack exhaustion on deeply nested brace patterns), which affects every published version up to the latest, 3.0.3, so no patched release exists. It reaches the tree only through development tooling: `eslint-config-next` → `@next/eslint-plugin-next` → `fast-glob` → `micromatch` → `braces`, and `vinext` → `vite-plugin-commonjs` → `vite-plugin-dynamic-import` → `fast-glob`. No released version of `eslint-config-next` 16.x or `vinext` drops `fast-glob`, and `npm audit fix --force` would downgrade `eslint-config-next` to 14.x, which does not support this setup. The two moderate findings are `vitest` and `@vitest/mocker` 4.1.10 (GHSA-82fw-gwwq-j7x9, fixed in 4.1.11), left open because npm 10.9 fails to resolve the 4.1.11 upgrade (an Arborist peer-set error). Because these findings reach only development tooling, CI gates on the production-only audit (`npm audit --omit=dev --audit-level=high` in `.github/workflows/vercel.yml`), which passes; the all-dependencies result is recorded here until `braces` publishes a fix or the two dependents stop using it.
+
+The refactor with the updated lockfile passed `CI=true npm run test:release` on Node.js `v22.22.0` (typecheck, lint with no warnings, 73 Vitest files / 771 tests with all goldens unchanged, the Vinext build, and 2/2 rendered-output/offline-shell tests), the native `npm run build:vercel` build, and the full Vitest suite (73 files / 771 tests) on Node.js `v22.15.0`. The built Vinext stylesheet keeps the same content-hash file name and size as before the updates (`index-DQ7IifU3.css`, 91,261 bytes). Earlier audit records, including the 2026-10-17 result of 30 vulnerabilities (1 critical, 23 high, 6 moderate) for all dependencies and 6 (1 critical, 4 high, 1 moderate) for production only, are superseded by this result.
 
 ## Evidence status
 
@@ -59,7 +61,7 @@ Recorded content `1.2.0` supported-runtime evidence: the complete release-equiva
 | Vercel build | **Pass** | `npm run build:vercel` completed the native Next.js 16 build |
 | Vercel Preview/stage/promotion | **Not run** | Requires the documented Vercel project, GitHub secrets, protected `production` Environment, and user approval |
 | Rendered production output/PWA | **Pass, automated scope** | 2/2 Node assertions passed; real-browser offline restart/update remains open |
-| Dependency audit | **Fail (2026-10-17)** | Production-only and all-dependencies audits both report critical and high findings; see [Dependency audit](#dependency-audit) |
+| Dependency audit | **Production pass (CI gate), all-dependencies fail (2026-10-18)** | The production-only audit, which CI gates on, reports no findings; the all-dependencies audit reports 8 high findings from one unpatched `braces` advisory reached only through development tooling, and 2 moderate; see [Dependency audit](#dependency-audit) |
 | Active/backup IndexedDB and quota/private mode | Implementation present; browser not verified | Requires exact-production storage fault injection, reload, and recovery evidence |
 | Chrome exact-production critical path | **Not complete** | Exact stable browser/OS, viewport/zoom, console, network, save/reload, and responsive evidence required |
 | Offline first load/reload/restart/save/update | **Not run on replacement artifact** | Static worker assertions from the earlier build are not sufficient |
