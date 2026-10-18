@@ -41,6 +41,8 @@ All notable project changes are recorded here. The project is pre-release; seman
 - The candidate excludes accounts, analytics, trackers, payments, advertising, chat, and cloud saves.
 - Imported content is bounded/validated, player data remains local, and the host worker applies CSP, permissions, referrer, content-type, and framing headers.
 - Applied patched build-tool pins and narrow transitive overrides; the current dated audit result is in [docs/TEST_REPORT.md](docs/TEST_REPORT.md#dependency-audit).
+- Updated dependencies for security advisories without changing player-visible behaviour: `next` and `eslint-config-next` 16.2.6 → 16.3.8 (clears the critical and high Next.js advisories), `react`, `react-dom` and `react-server-dom-webpack` 19.2.6 → 19.2.8, `@cloudflare/vite-plugin` 1.44.0 → 1.62.5 and `wrangler` 4.110.0 → 4.147.0 (patched `miniflare`, `undici` and `sharp`). The exact overrides now pin `image-size` 2.0.4, `js-yaml` 4.3.2, `postcss` 8.5.23 and `sharp` 0.35.5, and the lockfile picks up patched `brace-expansion`, `browserslist`, `fast-uri`, `source-map-js`, `baseline-browser-mapping` and `fflate`. The production-only audit now passes; the all-dependencies audit still reports a `braces` advisory with no patched release, reached only through development tooling.
+- CI now gates on the production-only dependency audit (`npm audit --omit=dev --audit-level=high`), because the remaining high advisory (`braces`, no patched release) reaches only development tooling; the all-dependencies result stays recorded in [docs/TEST_REPORT.md](docs/TEST_REPORT.md#dependency-audit).
 
 ### Known limitations and release gates
 

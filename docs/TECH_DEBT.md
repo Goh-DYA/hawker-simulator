@@ -20,7 +20,7 @@ This register came from a nine-area audit of 161 findings, which were deduplicat
 | TD-14 | 28 | 4 | 3 | 2 | code | Launch roster counts hard-coded in 6+ places; dead and duplicate validator checks | partially resolved | S20✓ S138✓ S139✓ ~~S140~~ S141◐ S142✓ S143✓ S144✓ |
 | TD-15 | 28 | 4 | 3 | 2 | infrastructure | Build rewrites tracked public/sw.js; OS-dependent hash; swallowed fs errors | descoped | ~~S64~~ ~~S65~~ ~~S66~~ ~~S67~~ ~~S68~~ |
 | TD-16 | 28 | 3 | 4 | 2 | test | Nutrition importer has no real golden; untyped 835-line tool with CLI bugs | partially resolved | S21✓ S150✓ ~~S151~~ |
-| TD-17 | 27 | 4 | 5 | 3 | dependency | npm audit gate fails (critical in next 16.2.6); overrides pin vulnerable versions | descoped | ~~S25~~ ~~S26~~ ~~S27~~ ~~S28~~ ~~S29~~ ~~S30~~ ~~S31~~ |
+| TD-17 | 27 | 4 | 5 | 3 | dependency | npm audit gate fails (critical in next 16.2.6); overrides pin vulnerable versions | partially resolved | ~~S25~~ S26✓ S27◐ S28◐ S29◐ S30✓ S31✓ |
 | TD-18 | 27 | 4 | 5 | 3 | test | About 3,500 lines of Phaser draw code have no executable check | done (Phase 1) | S15✓ |
 | TD-19 | 27 | 5 | 4 | 3 | architecture | HawkerSimulator.tsx is a 2,515-line single component | resolved | S22✓ S130✓ S131✓ S133✓ S134✓ S135✓ S136✓ S137✓ |
 | TD-20 | 25 | 2 | 3 | 1 | test | Test infra: no warnings-as-errors, orphan config, no coverage provider, key-sorting snapshots | done (Phase 1) | S03✓ S04✓ S05✓ ~~S06~~ |
@@ -35,7 +35,7 @@ This register came from a nine-area audit of 161 findings, which were deduplicat
 | TD-29 | 24 | 2 | 4 | 2 | code | Swallowed or over-broad catches discard error causes | partially resolved | ~~S65~~ ~~S67~~ ~~S69~~ S70✓ S96✓ S124✓ S128✓ |
 | TD-30 | 24 | 3 | 3 | 2 | infrastructure | Lint and type guardrail gaps | partially resolved | S33✓ S34✓ S35✓ S36✓ ~~S64~~ S150✓ |
 | TD-31 | 24 | 3 | 3 | 2 | documentation | Docs describe nonexistent modules and guarantees; conflicting agent guidance | partially resolved | ~~S01~~ S158✓ S159✓ S160✓ S161✓ S162✓ ~~S163~~ |
-| TD-32 | 24 | 3 | 3 | 2 | infrastructure | CI supply chain and gate parity | descoped | ~~S31~~ ~~S38~~ ~~S155~~ ~~S156~~ ~~S157~~ |
+| TD-32 | 24 | 3 | 3 | 2 | infrastructure | CI supply chain and gate parity | partially resolved | S31✓ ~~S38~~ ~~S155~~ ~~S156~~ ~~S157~~ |
 | TD-33 | 24 | 3 | 3 | 2 | test | Deployment tools run at import and are tested by grepping their source | descoped | ~~S152~~ ~~S153~~ |
 | TD-34 | 24 | 2 | 4 | 2 | architecture | Content-ID alias and refund recovery hook never wired | descoped | ~~S149~~ |
 | TD-35 | 24 | 3 | 3 | 2 | code | Nutrition flattener, condition labels and localize duplicated between UI and runtime | resolved | S129✓ S147✓ |
@@ -190,6 +190,7 @@ Key: ✓ means the step is done, ◐ means it is partial (see [Partial steps and
 - **Score:** impact 4, risk 5, effort 3, giving priority **27**. **Category:** dependency. **Status:** descoped.
 - **Justification:** npm audit reports 1 critical, 23 high and 6 moderate. vercel.yml:46-47 runs --audit-level=high on every PR, so the required check is red. Verified: the overrides pin postcss 8.5.14 (package.json:52).
 - **Disposition:** planned. Forced by the high and critical advisories. The upgrades run immediately after the Phase 1 goldens, and the audit-policy change (D4) lands right after them in S31, so CI is green for Phases 3-8. The vinext 1.x major is deferred.
+- **Outcome (2026-10-18):** done after the refactor as its own change. `next` and `eslint-config-next` went to 16.3.8 (not 16.4.2; 16.3.8 already clears every Next.js advisory), React and `react-server-dom-webpack` to 19.2.8 (not 19.3.1; 19.2.8 clears the advisory), `@cloudflare/vite-plugin` to 1.62.5 and `wrangler` to 4.147.0, and the overrides were raised (`postcss` 8.5.23, `js-yaml` 4.3.2) and extended (`image-size` 2.0.4, `sharp` 0.35.5). `vinext` stays at 0.0.50. `vitest` stays at 4.1.10 because npm 10.9 cannot resolve 4.1.11 (one moderate advisory remains). CI now gates on `npm audit --omit=dev --audit-level=high`, which passes; the all-dependencies audit still reports the unpatched `braces` advisory, reached only through development tooling (see [TEST_REPORT.md](TEST_REPORT.md#dependency-audit)). S25 (pin the Worker name and compatibility date) remains open.
 - **Sources:** build-deploy-deps-docs-01, build-deploy-deps-docs-03
 
 ### TD-18: About 3,500 lines of Phaser draw code have no executable check
@@ -521,12 +522,6 @@ On 2026-10-17 the user limited this effort to a structural refactor. The followi
 - **S06**: Add opt-in v8 coverage reporting (register: TD-20)
 - **S19**: Add normalised full-document and header goldens for both build outputs (register: TD-04, TD-42)
 - **S25**: Pin Worker name and compatibility date (register: TD-17, TD-42)
-- **S26**: Raise vulnerable postcss and js-yaml overrides to patched exact versions (register: TD-17)
-- **S27**: Upgrade next and eslint-config-next to 16.4.2 (register: TD-17)
-- **S28**: Upgrade React and react-server-dom-webpack to 19.3.1 (register: TD-17)
-- **S29**: Upgrade vitest to 4.1.12 (register: TD-17)
-- **S30**: Upgrade wrangler and @cloudflare/vite-plugin (register: TD-17)
-- **S31**: Gate CI on the production-dependency audit (register: TD-17, TD-32)
 - **S38**: Pin one Node version for CI and local work (register: TD-21, TD-32)
 - **S39**: Declare the npm version used to produce the lockfile (register: TD-21)
 - **S64**: Expose the stamp tool as type-checked functions behind a main guard (register: TD-15, TD-30)
@@ -546,4 +541,4 @@ On 2026-10-17 the user limited this effort to a structural refactor. The followi
 - **S157**: Scope deploy secrets to the steps that need them (register: TD-32)
 - **S163**: Add commands, golden workflow and feature checklists (register: TD-31)
 
-The largest of these is that CI on `main` is red at the `npm audit --audit-level=high` step: as of 2026-10-17 there is 1 critical advisory (next, fixed in 16.4.2) and 23 high ones. Some of them need major-version upgrades, such as vinext 1.x and eslint-config-next. Handle this as its own dependency change, separately from the refactor.
+The dependency upgrades and the CI audit policy (S26–S31) were later done as their own change; see the TD-17 outcome above.

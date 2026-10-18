@@ -23,14 +23,14 @@
   },
   "dependencies": {
     "idb": "8.0.3",
-    "next": "16.2.6",
+    "next": "16.3.8",
     "phaser": "4.2.1",
-    "react": "19.2.6",
-    "react-dom": "19.2.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "1.44.0",
+    "@cloudflare/vite-plugin": "1.62.5",
     "@tailwindcss/postcss": "4.2.1",
     "@testing-library/dom": "10.4.2",
     "@testing-library/react": "16.3.3",
@@ -40,22 +40,24 @@
     "@vitejs/plugin-react": "6.0.2",
     "@vitejs/plugin-rsc": "0.5.26",
     "eslint": "9.39.4",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "16.3.8",
     "fake-indexeddb": "6.2.5",
     "jsdom": "29.1.1",
     "prettier": "3.9.9",
-    "react-server-dom-webpack": "19.2.6",
+    "react-server-dom-webpack": "19.2.8",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
     "vinext": "0.0.50",
     "vite": "8.1.4",
     "vitest": "4.1.10",
-    "wrangler": "4.110.0"
+    "wrangler": "4.147.0"
   },
   "overrides": {
     "@babel/core": "7.29.7",
-    "js-yaml": "4.3.0",
-    "postcss": "8.5.14"
+    "image-size": "2.0.4",
+    "js-yaml": "4.3.2",
+    "postcss": "8.5.23",
+    "sharp": "0.35.5"
   },
   "type": "module"
 }

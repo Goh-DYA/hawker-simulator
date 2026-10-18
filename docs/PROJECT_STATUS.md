@@ -33,7 +33,7 @@ Package version `1.0.0` remains an internal artifact identifier until the exact-
 | Performance | Node budget passed; browser evidence open | `benchmark-80-agents` exercised 80 active agents for 1,200 fixed steps within its simulation budget; browser FPS/frame time, memory, TTI, and supported caps remain unclaimed, especially because the renderer still performs full-frame redraws and recreates text during frame rendering |
 | Accessibility | Engineering support implemented; human audit pending | Semantic DOM controls, keyboard actions, focus-managed dialogs, text scaling, high contrast, reduced motion, visual audio equivalents, a text-paired customer-status legend, and degradation messages are present; assistive-technology and human review remain open |
 | Cultural review | Research-informed internal review only | Fictional names/marks and original presentation are used; Singapore-informed human review remains a release blocker |
-| Security/privacy/legal | Engineering controls implemented; independent reviews pending | Local-only data posture, bounded save import, no analytics/accounts/payments, CSP/security headers, and notices are present; the npm dependency audits currently fail (see [TEST_REPORT.md](TEST_REPORT.md#dependency-audit)), and independent reviews remain open |
+| Security/privacy/legal | Engineering controls implemented; independent reviews pending | Local-only data posture, bounded save import, no analytics/accounts/payments, CSP/security headers, and notices are present; the production-only npm audit passes but the all-dependencies audit currently fails (see [TEST_REPORT.md](TEST_REPORT.md#dependency-audit)), and independent reviews remain open |
 | Deployment | Content `1.3.0` local builds pass; publication pending | Vinext and native Vercel builds pass locally (see [TEST_REPORT.md](TEST_REPORT.md)). The recorded private preview commit and URL predate the expansion; current commit/publication, Vercel project setup, protected environment, Preview, and staged deployment evidence remain open |
 
 ## Implemented launch scope
@@ -49,7 +49,7 @@ Package version `1.0.0` remains an internal artifact identifier until the exact-
 
 ## Remaining NO-GO gates
 
-The remaining release blockers are listed, with what closes each one, in [KNOWN_ISSUES.md](KNOWN_ISSUES.md#remaining-release-blockers). They cover exact-production browser and offline evidence (including profiling the full-frame redraw and text-recreation path), the failing dependency audit, deployment publication, and the human cultural, accessibility, security, and legal/privacy reviews.
+The remaining release blockers are listed, with what closes each one, in [KNOWN_ISSUES.md](KNOWN_ISSUES.md#remaining-release-blockers). They cover exact-production browser and offline evidence (including profiling the full-frame redraw and text-recreation path), the failing all-dependencies audit, deployment publication, and the human cultural, accessibility, security, and legal/privacy reviews.
 
 ## Evidence rule
 
