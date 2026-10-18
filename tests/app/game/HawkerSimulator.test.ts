@@ -153,6 +153,8 @@ const fakes = vi.hoisted(() => {
     removeSelectedAccessPoint: create_recorder("removeSelectedAccessPoint", true),
     clearGuestRoute: create_recorder("clearGuestRoute", true),
     upgradeStall: create_recorder("upgradeStall", true),
+    renderPreview: () => undefined,
+    renderDishPreview: () => undefined,
   };
 
   const runtime = {

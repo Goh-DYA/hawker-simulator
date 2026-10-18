@@ -67,12 +67,8 @@ describe("stall food prop selection", () => {
     if (!stall) return;
 
     expect(displayDishIdsForStall(stall, [])).toEqual([stall.dishIds[0]]);
-    expect(displayDishIdsForStall(stall, ["dish.not-real"])).toEqual([
-      stall.dishIds[0],
-    ]);
-    expect(displayDishIdsForStall(stall, [stall.dishIds[2] ?? ""])).toEqual([
-      stall.dishIds[2],
-    ]);
+    expect(displayDishIdsForStall(stall, ["dish.not-real"])).toEqual([stall.dishIds[0]]);
+    expect(displayDishIdsForStall(stall, [stall.dishIds[2] ?? ""])).toEqual([stall.dishIds[2]]);
   });
 
   it("requires a positive integer limit", () => {
@@ -81,9 +77,7 @@ describe("stall food prop selection", () => {
     if (!stall) return;
 
     for (const limit of [0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
-      expect(() => displayDishIdsForStall(stall, stall.dishIds, limit)).toThrow(
-        RangeError,
-      );
+      expect(() => displayDishIdsForStall(stall, stall.dishIds, limit)).toThrow(RangeError);
     }
   });
 
@@ -97,8 +91,6 @@ describe("stall food prop selection", () => {
     const firstResult = displayDishIdsForStall(stall, firstSelection);
 
     expect(displayDishIdsForStall(stall, firstSelection)).toEqual(firstResult);
-    expect(displayDishIdsForStall(stall, secondSelection)).not.toEqual(
-      firstResult,
-    );
+    expect(displayDishIdsForStall(stall, secondSelection)).not.toEqual(firstResult);
   });
 });

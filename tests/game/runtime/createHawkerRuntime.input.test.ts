@@ -52,7 +52,7 @@ const HOVER_OUTLINE_INSET_PX = 3;
 /** The overlay Graphics object, the second one the scene's `create()` adds. */
 const OVERLAY_GRAPHICS_TAG = "graphics#1";
 /** `lineStyle` arguments of the plain hover outline, drawn outside the place and route tools. */
-const HOVER_OUTLINE_STYLE: readonly unknown[] = [2, 0xffffff, 0.85];
+const HOVER_OUTLINE_STYLE: readonly unknown[] = [2, 0xffffff, 0.9];
 /** A pointer move further than the runtime's 6 px drag threshold. */
 const DRAG_DISTANCE_PX = 40;
 /** A pointer move within the runtime's 6 px drag threshold. */
@@ -304,7 +304,7 @@ function spin_wheel(scene: RuntimeScene, delta_y: number): void {
 
 /**
  * Reads the hover tile from the overlay draw calls. Outside the place and route tools,
- * `drawOverlay` outlines the hover tile with a white `strokeRect`, so the tile is the
+ * The overlay outlines the hover tile with a white `strokeRoundedRect`, so the tile is the
  * last such outline drawn. The probe replaces `render_log.record` while it is installed,
  * so nothing is hashed meanwhile; this suite records no render digests.
  */
@@ -350,7 +350,7 @@ class HoverProbe {
   private observe_call(target: string, method: string, args: readonly unknown[]): void {
     if (target !== OVERLAY_GRAPHICS_TAG) return;
     if (method === "clear") this.renderCount += 1;
-    if (method === "strokeRect" && this.isAfterHoverStyle) {
+    if (method === "strokeRoundedRect" && this.isAfterHoverStyle) {
       const [x, y] = args as readonly number[];
       this.hoverTile = {
         x: (x - HOVER_OUTLINE_INSET_PX) / TILE_SIZE_PX,

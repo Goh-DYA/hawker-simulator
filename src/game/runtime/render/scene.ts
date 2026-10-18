@@ -3,22 +3,23 @@
  *
  * Phaser is imported dynamically by the runtime root, so the scene class is built at run time
  * from the namespace it is handed (`create_scene_class`). The scene owns only presentation
- * state: its graphics and labels, the drag-to-pan gesture, the frame clock and the last tick it
- * drew. Everything about the game itself comes through {@link SceneBindings}: the root steps the
- * simulation, handles tiles and keys, and builds the render context. Phaser is imported as a type
- * only.
+ * state: the texture studio, the retained world and overlay views, the label pool, the
+ * drag-to-pan gesture, the frame clock and the last tick it drew. Everything about the game
+ * itself comes through {@link SceneBindings}: the root steps the simulation, handles tiles and
+ * keys, and builds the render context. Phaser is imported as a type only.
  */
 import type Phaser from "phaser";
 
+import { has_dev_query_flag, IS_PRODUCTION_BUILD } from "@/src/config/env";
 import { tileToWorld, worldToTile, type GridMap, type GridPoint } from "@/src/game/core";
 
 import type { RuntimeSettings } from "../types";
 import { TILE_SIZE } from "../world";
 import type { LabelSink, OverlayContext } from "./context";
-import { drawCustomers } from "./customers";
-import { drawMap } from "./map";
-import { drawObjects } from "./objects";
-import { drawOverlay } from "./overlay";
+import { LABEL_STYLE, LabelPool } from "./labels";
+import { OverlayView } from "./overlay";
+import { LOWER_END_PIXEL_RATIO, STANDARD_PIXEL_RATIO, TextureStudio } from "./textures";
+import { WorldView } from "./world";
 
 /** Longest frame delta fed to the simulation, so a stalled tab does not jump ahead. */
 const MAX_FRAME_DELTA_MS = 250;
@@ -36,6 +37,8 @@ const TARGET_FPS = 60;
 export const STANDARD_FPS_LIMIT = 60;
 /** The frame-rate cap on the lower-end quality mode. */
 export const LOWER_END_FPS_LIMIT = 30;
+/** The canvas colour behind the painted floor, the concrete apron tone. */
+const BACKDROP_COLOUR = "#b9b4a6";
 
 /** What the root exposes of the scene once it exists. */
 export interface HawkerSceneHandle extends Phaser.Scene {
@@ -51,6 +54,13 @@ export interface HawkerSceneHandle extends Phaser.Scene {
    * @param centre - Also centre the camera on the map.
    */
   syncWorldBounds(centre?: boolean): void;
+  /**
+   * Paints a texture and returns it as a PNG data URL, for interface thumbnails.
+   *
+   * @param spec - The paint spec.
+   * @returns The data URL, or undefined before the studio exists.
+   */
+  previewDataUrl(spec: Parameters<TextureStudio["data_url"]>[0]): string | undefined;
 }
 
 /** The root's side of the scene: the game state and actions the scene delegates to. */
@@ -115,16 +125,19 @@ export interface SceneBindings {
  *
  * @param phaser - The dynamically imported Phaser namespace.
  * @param bindings - The root's state and actions the scene delegates to.
+ * @param settings - The player's settings; the quality mode picks the initial texture scale.
  * @returns The scene class (scene key `hawker-centre`), for the game config.
  */
 export function create_scene_class(
   phaser: typeof Phaser,
   bindings: SceneBindings,
+  settings: Pick<RuntimeSettings, "quality">,
 ): new () => HawkerSceneHandle {
   return class HawkerScene extends phaser.Scene {
-    private worldGraphics?: Phaser.GameObjects.Graphics;
-    private overlayGraphics?: Phaser.GameObjects.Graphics;
-    private labels: Phaser.GameObjects.Text[] = [];
+    private studio?: TextureStudio;
+    private world?: WorldView;
+    private overlay?: OverlayView;
+    private labels?: LabelPool;
     private dragged = false;
     private dragOrigin = { x: 0, y: 0 };
     private cameraOrigin = { x: 0, y: 0 };
@@ -137,8 +150,25 @@ export function create_scene_class(
 
     create() {
       bindings.onCreated(this);
-      this.worldGraphics = this.add.graphics();
-      this.overlayGraphics = this.add.graphics();
+      this.studio = new TextureStudio(
+        this.textures,
+        settings.quality === "standard" ? STANDARD_PIXEL_RATIO : LOWER_END_PIXEL_RATIO,
+      );
+      this.labels = new LabelPool((x, y, text, colourValue) =>
+        this.add.text(x, y, text, { ...LABEL_STYLE, color: colourValue }),
+      );
+      const surface = {
+        add: {
+          image: (x: number, y: number, key: string, frame?: string) => this.add.image(x, y, key, frame),
+          graphics: () => this.add.graphics(),
+        },
+      };
+      this.world = new WorldView(surface, this.studio, this.labels);
+      this.overlay = new OverlayView(surface, this.studio);
+      // The leading constant lets Vite drop this developer-only hook from production builds.
+      if (!IS_PRODUCTION_BUILD && has_dev_query_flag("debug")) {
+        (globalThis as { __hawkerScene?: unknown }).__hawkerScene = this;
+      }
       this.syncWorldBounds(true);
       this.cameras.main.setZoom(CAMERA_INITIAL_ZOOM);
       this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
@@ -237,37 +267,23 @@ export function create_scene_class(
     }
 
     render(force = false) {
+      const labels = this.labels;
+      const world = this.world;
+      const overlay = this.overlay;
+      if (!labels || !world || !overlay) return;
       const context = bindings.getRenderContext((x, y, text, colourValue) =>
-        this.addLabel(x, y, text, colourValue),
+        labels.place(x, y, text, colourValue),
       );
-      const { snapshot } = context;
-      if (!force && snapshot.tick === this.lastRenderTick) return;
-      this.lastRenderTick = snapshot.tick;
-      this.labels.forEach((label) => label.destroy());
-      this.labels = [];
-      this.worldGraphics?.clear();
-      this.overlayGraphics?.clear();
-      if (!this.worldGraphics || !this.overlayGraphics) return;
-      drawMap(this.worldGraphics, context);
-      drawObjects(this.worldGraphics, context);
-      drawCustomers(this.worldGraphics, context);
-      drawOverlay(this.overlayGraphics, context);
+      if (!force && context.snapshot.tick === this.lastRenderTick) return;
+      this.lastRenderTick = context.snapshot.tick;
+      labels.begin();
+      world.sync(context);
+      overlay.draw(context);
+      labels.end();
     }
 
-    addLabel(x: number, y: number, text: string, colourValue = "#17352e") {
-      const label = this.add
-        .text(x, y, text, {
-          color: colourValue,
-          fontFamily: '"Trebuchet MS", system-ui, sans-serif',
-          fontSize: "11px",
-          fontStyle: "bold",
-          align: "center",
-          backgroundColor: "#fff7e5e8",
-          padding: { x: 4, y: 2 },
-        })
-        .setOrigin(0.5, 0.5)
-        .setDepth(20);
-      this.labels.push(label);
+    previewDataUrl(spec: Parameters<TextureStudio["data_url"]>[0]) {
+      return this.studio?.data_url(spec);
     }
   };
 }
@@ -291,10 +307,10 @@ export function create_game(
   return new phaser.Game({
     type: phaser.AUTO,
     parent,
-    backgroundColor: "#c7b08a",
+    backgroundColor: BACKDROP_COLOUR,
     transparent: false,
     render: {
-      antialias: settings.quality === "standard",
+      antialias: true,
       pixelArt: false,
       roundPixels: false,
       powerPreference: settings.quality === "standard" ? "high-performance" : "low-power",

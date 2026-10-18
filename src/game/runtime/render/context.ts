@@ -1,10 +1,9 @@
 /**
  * Shared types for the runtime's renderers.
  *
- * The leaf renderers draw into Phaser graphics handed to them and never reach into the scene,
- * so anything they need from the scene, such as placing a text label, is passed in through the
- * types defined here. The root builds one {@link RenderContext} per render from the same
- * sources its closures read, so renderers can take their inputs explicitly.
+ * The world and overlay views never reach into the runtime root; everything they read for one
+ * render arrives through the types defined here. The root builds one {@link RenderContext} per
+ * render from the same sources its closures read, so the views take their inputs explicitly.
  */
 import type {
   GameSnapshot,

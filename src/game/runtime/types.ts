@@ -341,6 +341,17 @@ export interface RuntimeController {
   clearGuestRoute(): boolean;
   /** Buys the next mastery upgrade for a stall definition; false when rejected. */
   upgradeStall(definitionId: string): boolean;
+  /**
+   * Paints the thumbnail of a buildable definition (a placeable or a stall) with the world's own
+   * painters and returns it as a PNG data URL; undefined before the scene exists or for an unknown
+   * definition.
+   */
+  renderPreview(definitionId: string): string | undefined;
+  /**
+   * Paints a dish serving, with the given variant or the dish's active variant, as a PNG data
+   * URL; undefined before the scene exists or for an unknown dish.
+   */
+  renderDishPreview(dishId: string, variantId?: string): string | undefined;
 }
 
 /**

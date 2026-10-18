@@ -6,7 +6,7 @@
  * Phaser is loaded with a dynamic `import()` when the runtime is created.
  */
 import type Phaser from "phaser";
-import { STALLS, getNutritionVariantFamily } from "@/src/content";
+import { DISH_BY_ID, STALLS, getNutritionVariantFamily } from "@/src/content";
 import { has_dev_query_flag, IS_PRODUCTION_BUILD } from "@/src/config/env";
 import {
   advanceSimulation,
@@ -24,7 +24,9 @@ import {
   isDishIdUnlockedForMenu,
   stallMenuProgression,
 } from "./stallMenus";
-import { compute_dish_mastery_rank } from "./nutrition";
+import { compute_dish_mastery_rank, nutritionVisualKeyForVariant } from "./nutrition";
+import { visualRecipeForDishVariant } from "./visuals/dish";
+import { placeable_spec, stall_spec } from "./render/world";
 import { load_runtime_save, type LoadedRuntimeSave } from "./saves";
 import type { LabelSink, OverlayContext } from "./render/context";
 import {
@@ -346,7 +348,7 @@ export async function createHawkerRuntime(
     onCreated: (scene) => {
       activeScene = scene;
     },
-  });
+  }, options.settings);
 
   function zoomBy(delta: number) {
     if (!activeScene) return;
@@ -658,6 +660,30 @@ export async function createHawkerRuntime(
       const accepted = runCommand({ type: "upgrade-stall", definitionId });
       if (accepted) options.onEvent({ kind: "success", message: "Stall mastery upgrade purchased.", importance: "important" });
       return accepted;
+    },
+    renderPreview(definitionId) {
+      const definition = session.catalog.placeables[definitionId];
+      const visual = session.visuals[definitionId];
+      if (!activeScene || !definition || !visual) return undefined;
+      const frame = { isHighContrast: highContrast, isLowDetail: false };
+      const { width, height } = definition.footprint;
+      return activeScene.previewDataUrl(
+        visual.category === "stall"
+          ? stall_spec(definitionId, visual.name, visual.palette, visual.signShape, width, height, 0, "full", frame)
+          : placeable_spec(definitionId, visual.category, width, height, 0, frame),
+      );
+    },
+    renderDishPreview(dishId, variantId) {
+      const dish = DISH_BY_ID.get(dishId);
+      if (!activeScene || !dish) return undefined;
+      const visualKey = nutritionVisualKeyForVariant(dishId, variantId ?? session.activeDishVariants[dishId]);
+      return activeScene.previewDataUrl({
+        kind: "dish",
+        dishId,
+        recipe: visualRecipeForDishVariant(dish, visualKey),
+        eaten: 0,
+        frame: { isHighContrast: highContrast, isLowDetail: false },
+      });
     },
   };
 
