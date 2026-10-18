@@ -23,6 +23,12 @@ import {
   SSR_GOLDEN_URL,
 } from "./fixtures";
 
+/** A painted thumbnail's data URL, as the runtime returns it. */
+const PAINTED_URL = "data:image/png;base64,UEFJTlRFRA==";
+
+/** The image a painted thumbnail renders as. */
+const PAINTED_IMAGE = `<img class="painted-preview" src="${PAINTED_URL}" alt="" draggable="false" decoding="async"/>`;
+
 /** A placeable the fixture has unlocked. */
 const UNLOCKED_PLACEABLE = PLACEABLES.find(
   (item) => item.id === SNAPSHOT_FIXTURE.unlockedContentIds[0],
@@ -100,6 +106,29 @@ describe("BuildPanel", () => {
   it("names a category chip with its first hyphen as a space", () => {
     expect(render_build_panel(NEW_CENTRE)).toContain(">stall fixture</button>");
   });
+
+  it("shows a painted thumbnail in place of its glyph once the runtime has painted it", () => {
+    const html = renderToStaticMarkup(
+      createElement(BuildPanel, {
+        query: "",
+        onQueryChange: () => undefined,
+        buildCategory: "all",
+        onBuildCategoryChange: () => undefined,
+        visiblePlaceables: PLACEABLES.slice(0, 2),
+        selectedId: undefined,
+        snapshot: NEW_CENTRE,
+        previewUrls: { [PLACEABLES[0]!.id]: PAINTED_URL },
+        onSelectBuildItem: () => undefined,
+      }),
+    );
+
+    // The painted card drops its glyph; the other card keeps it.
+    expect([
+      count_occurrences(html, PAINTED_IMAGE),
+      count_occurrences(html, `class="item-art item-${PLACEABLES[0]!.category} has-painting"`),
+      count_occurrences(html, 'aria-hidden="true"><span>'),
+    ]).toEqual([1, 1, 1]);
+  });
 });
 
 describe("StallsPanel", () => {
@@ -125,6 +154,24 @@ describe("StallsPanel", () => {
 
     expect(html).not.toContain("Operating queue plans");
   });
+
+  it("shows a stall's painted front in its card once the runtime has painted it", () => {
+    const html = renderToStaticMarkup(
+      createElement(StallsPanel, {
+        snapshot: { ...SNAPSHOT_FIXTURE, placedStalls: [] },
+        selectedId: undefined,
+        controllerRef: NO_CONTROLLER,
+        previewUrls: { [STALLS[0]!.id]: PAINTED_URL },
+        onSelectBuildItem: () => undefined,
+      }),
+    );
+
+    expect([
+      count_occurrences(html, PAINTED_IMAGE),
+      count_occurrences(html, 'class="stall-swatch has-painting"'),
+      count_occurrences(html, 'class="stall-swatch"'),
+    ]).toEqual([1, 1, STALLS.length - 1]);
+  });
 });
 
 describe("SelectionCard", () => {
@@ -140,6 +187,20 @@ describe("SelectionCard", () => {
       html.includes(`<span>${UNLOCKED_PLACEABLE.category}</span>`),
       html.includes("<strong>In-game utility</strong>"),
     ]).toEqual([true, true]);
+  });
+
+  it("shows the item's painted thumbnail once the runtime has painted it", () => {
+    const html = renderToStaticMarkup(
+      createElement(SelectionCard, {
+        selectedContent: UNLOCKED_PLACEABLE,
+        previewUrl: PAINTED_URL,
+        onClear: () => undefined,
+      }),
+    );
+
+    expect(html).toContain(
+      `<div class="selection-card has-painting"><button type="button" aria-label="Clear selection">×</button><span class="selection-art" aria-hidden="true">${PAINTED_IMAGE}</span>`,
+    );
   });
 
   it("describes a stall as a food stall without a utility list", () => {

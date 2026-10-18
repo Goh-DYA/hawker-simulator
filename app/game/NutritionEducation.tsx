@@ -12,6 +12,7 @@
 import { useEffect, useRef } from "react";
 import { HEALTH_CONDITION_LABELS as RUNTIME_HEALTH_CONDITION_LABELS } from "@/src/game/runtime/nutrition";
 import { install_focus_trap, VARIANT_LAB_FOCUSABLE_SELECTOR } from "./focus";
+import { PaintedPreview } from "./previews";
 
 export { dialogFocusAction, type DialogFocusAction } from "./focus";
 
@@ -467,19 +468,24 @@ function comparisonText(
 /**
  * Renders the Variant Lab, the modal where the player picks which variant a dish serves.
  *
- * The dialog traps focus while open and closes on Escape.
+ * The dialog traps focus while open and closes on Escape. Each variant shows its painted
+ * serving once `variantPreview` returns one.
  *
- * @param props - The dish name, its variant family and the choose and close callbacks.
+ * @param props - The dish name, its variant family, the painted servings and the choose and
+ *   close callbacks.
  * @returns The modal dialog.
  */
 export function VariantLabDialog({
   dishName,
   family,
+  variantPreview,
   onChoose,
   onClose,
 }: {
   readonly dishName: string;
   readonly family: NutritionFamilyView;
+  /** The painted serving of a variant as a data URL, while one is available. */
+  variantPreview?(variantId: string): string | undefined;
   onChoose(variantId: string): void;
   onClose(): void;
 }) {
@@ -529,8 +535,14 @@ export function VariantLabDialog({
           {family.variants.map((variant) => {
             const profile = variant.profile;
             const inputId = `nutrition-variant-${variant.id}`;
+            const paintedUrl = variantPreview?.(variant.id);
             return (
               <article key={variant.id} data-locked={!variant.unlocked} data-selected={variant.selected}>
+                {paintedUrl ? (
+                  <span className="variant-preview" aria-hidden="true">
+                    <PaintedPreview src={paintedUrl} />
+                  </span>
+                ) : null}
                 <label htmlFor={inputId}>
                   <input
                     id={inputId}

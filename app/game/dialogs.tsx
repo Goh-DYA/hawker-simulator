@@ -251,15 +251,25 @@ export function TutorialDialog({ ref, step, onFinish, onStepChange }: TutorialDi
         tabIndex={-1}
       >
         <div className="tutorial-art" aria-hidden="true">
-          <div className="awning"><i /><i /><i /><i /></div>
-          <div className="mini-floor">
-            <span className="mini-stall" />
-            <span className="mini-table one" />
-            <span className="mini-table two" />
-            <span className="mini-person a" />
-            <span className="mini-person b" />
-            <span className="mini-plant" />
+          <span className="art-fan" />
+          <div className="art-stall">
+            <span className="art-sign">Hawker Balance</span>
+            <span className="art-canopy" />
+            <span className="art-interior">
+              <i className="art-duck" />
+              <i className="art-duck" />
+              <i className="art-steam" />
+            </span>
+            <span className="art-counter" />
           </div>
+          <span className="art-drain" />
+          <span className="art-table">
+            <i className="art-plate" />
+          </span>
+          <span className="art-stool red" />
+          <span className="art-stool green" />
+          <span className="art-stool blue" />
+          <span className="art-planter" />
         </div>
         <div className="tutorial-copy">
           <span>{tutorialCopy.eyebrow}</span>

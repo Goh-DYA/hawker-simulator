@@ -85,8 +85,10 @@ import {
   useAnnouncer,
   useAutosave,
   useHawkerRuntime,
+  usePaintedPreviews,
   usePreferenceWriter,
 } from "./hooks";
+import { collect_preview_requests, preview_key } from "./previews";
 import { BuildPanel, SelectionCard, StallsPanel } from "./panels/catalogue";
 import { ActionStrip, BottomDock, DebugPanel, TopBar, ToastStack, WorldToolbar } from "./hud";
 import { MenuPanel } from "./panels/menu";
@@ -575,6 +577,24 @@ export function HawkerSimulator() {
     nutritionTourStep,
     isVariantLabOpen: Boolean(variantLabFamily),
   });
+  const previewRequests = useMemo(
+    () =>
+      collect_preview_requests({
+        panel,
+        visiblePlaceables,
+        menuStallId,
+        nutritionFamilies,
+        variantLabFamily,
+        selectedId,
+      }),
+    [menuStallId, nutritionFamilies, panel, selectedId, variantLabFamily, visiblePlaceables],
+  );
+  const previewUrls = usePaintedPreviews(
+    controllerRef,
+    !loading && loadingError === undefined,
+    previewRequests,
+    settings.highContrast ? "high-contrast" : "standard",
+  );
 
   useEffect(() => {
     if (!managementSheetOpen) return;
@@ -657,9 +677,16 @@ export function HawkerSimulator() {
             >
               {loading ? (
                 <div className="loading-centre" role="status">
-                  <span className="loading-bowl" aria-hidden="true" />
+                  <span className="loading-stall" aria-hidden="true">
+                    <i className="loading-canopy" />
+                    <i className="loading-counter" />
+                    <span className="loading-bowl" />
+                  </span>
                   <strong>Setting the tables…</strong>
                   <small>Preparing the local simulation</small>
+                  <span className="loading-bar" aria-hidden="true">
+                    <i />
+                  </span>
                 </div>
               ) : null}
               {loadingError ? (
@@ -762,6 +789,7 @@ export function HawkerSimulator() {
               visiblePlaceables={visiblePlaceables}
               selectedId={selectedId}
               snapshot={snapshot}
+              previewUrls={previewUrls}
               onSelectBuildItem={selectBuildItem}
             />
           ) : null}
@@ -771,6 +799,7 @@ export function HawkerSimulator() {
               snapshot={snapshot}
               selectedId={selectedId}
               controllerRef={controllerRef}
+              previewUrls={previewUrls}
               onSelectBuildItem={selectBuildItem}
             />
           ) : null}
@@ -783,6 +812,7 @@ export function HawkerSimulator() {
               onNutritionLensChange={setNutritionLens}
               snapshot={snapshot}
               controllerRef={controllerRef}
+              previewUrls={previewUrls}
               onTuneRecipe={setVariantLabDishId}
             />
           ) : null}
@@ -822,6 +852,7 @@ export function HawkerSimulator() {
           {selectedContent && panel !== "activity" ? (
             <SelectionCard
               selectedContent={selectedContent}
+              previewUrl={previewUrls[preview_key({ kind: "definition", id: selectedContent.id })]}
               onClear={() => {
                 setSelectedId(undefined);
                 controllerRef.current?.selectBuildItem(undefined);
@@ -873,6 +904,8 @@ export function HawkerSimulator() {
         <VariantLabDialog
           dishName={dishLabel(variantLabFamily.dishId)}
           family={variantLabFamily}
+          variantPreview={(variantId) =>
+            previewUrls[preview_key({ kind: "dish", id: variantLabFamily.dishId, variantId })]}
           onChoose={(variantId) => {
             controllerRef.current?.setDishVariant(variantLabFamily.dishId, variantId);
           }}

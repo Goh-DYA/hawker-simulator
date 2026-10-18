@@ -6,6 +6,8 @@
  * fields and UI state their markup needs and report choices through callbacks, while the
  * `HawkerSimulator` shell keeps the state, the audio and the runtime calls behind those
  * callbacks. Their classes, IDs, ARIA attributes and copy are the shell's former inline markup.
+ * Each card shows the thumbnail the runtime painted for it once one is in `previewUrls`, and
+ * keeps its former glyph until then, so the markup without thumbnails is unchanged.
  */
 import type { RefObject } from "react";
 import { STALLS, type PlaceableDefinition, type StallDefinition } from "@/src/content";
@@ -22,6 +24,7 @@ import {
   unlockLabel,
   utilityEffects,
 } from "../display";
+import { NO_PREVIEWS, PaintedPreview, preview_key, type PreviewUrls } from "../previews";
 
 /** The snapshot fields that decide whether a catalogue item is locked and what unlocks it. */
 type UnlockProgress = Pick<RuntimeSnapshot, "level" | "reputation" | "unlockedContentIds">;
@@ -42,6 +45,8 @@ export interface BuildPanelProps {
   readonly selectedId: string | undefined;
   /** The centre's unlock progress. */
   readonly snapshot: UnlockProgress;
+  /** The painted thumbnails, by preview key; a card keeps its glyph while its own is missing. */
+  readonly previewUrls?: PreviewUrls;
   /** Called when the player chooses a placeable, locked or not. */
   onSelectBuildItem(item: PlaceableDefinition): void;
 }
@@ -60,6 +65,7 @@ export function BuildPanel({
   visiblePlaceables,
   selectedId,
   snapshot,
+  previewUrls = NO_PREVIEWS,
   onSelectBuildItem,
 }: BuildPanelProps) {
   return (
@@ -91,6 +97,7 @@ export function BuildPanel({
           const locked = !snapshot.unlockedContentIds.includes(item.id);
           const selected = selectedId === item.id;
           const preview = placeablePreview(item);
+          const paintedUrl = previewUrls[preview_key({ kind: "definition", id: item.id })];
           return (
             <button
               type="button"
@@ -101,14 +108,18 @@ export function BuildPanel({
               onClick={() => onSelectBuildItem(item)}
             >
               <span
-                className={`item-art item-${item.category}`}
+                className={`item-art item-${item.category}${paintedUrl ? " has-painting" : ""}`}
                 data-motif={preview.recipe.motif}
                 data-form={preview.recipe.form}
                 data-material={preview.recipe.material}
                 style={preview.style}
                 aria-hidden="true"
               >
-                <span>{catalogueIcon(item.category)}</span>
+                {paintedUrl ? (
+                  <PaintedPreview src={paintedUrl} />
+                ) : (
+                  <span>{catalogueIcon(item.category)}</span>
+                )}
               </span>
               <strong>{localize(item.nameKey)}</strong>
               <small>
@@ -134,6 +145,8 @@ export interface StallsPanelProps {
   readonly selectedId: string | undefined;
   /** The runtime controller, for queue direction, queue edit and upgrade commands. */
   readonly controllerRef: RefObject<RuntimeController | undefined>;
+  /** The painted thumbnails, by preview key; a card keeps its glyph while its own is missing. */
+  readonly previewUrls?: PreviewUrls;
   /** Called when the player chooses a stall to build, locked or not. */
   onSelectBuildItem(item: StallDefinition): void;
 }
@@ -148,6 +161,7 @@ export function StallsPanel({
   snapshot,
   selectedId,
   controllerRef,
+  previewUrls = NO_PREVIEWS,
   onSelectBuildItem,
 }: StallsPanelProps) {
   return (
@@ -209,6 +223,7 @@ export function StallsPanel({
       <h3 className="catalogue-subheading">Add another stall</h3>
       {STALLS.map((stall) => {
         const locked = !snapshot.unlockedContentIds.includes(stall.id);
+        const paintedUrl = previewUrls[preview_key({ kind: "definition", id: stall.id })];
         return (
           <button
             type="button"
@@ -217,14 +232,14 @@ export function StallsPanel({
             onClick={() => onSelectBuildItem(stall)}
           >
             <span
-              className="stall-swatch"
+              className={paintedUrl ? "stall-swatch has-painting" : "stall-swatch"}
               data-stall={stall.id.slice("stall.".length)}
               style={{
                 background: `linear-gradient(145deg, ${stall.visual.palette[0]}, ${stall.visual.palette[1]})`,
               }}
               aria-hidden="true"
             >
-              {catalogueIcon("stall")}
+              {paintedUrl ? <PaintedPreview src={paintedUrl} /> : catalogueIcon("stall")}
             </span>
             <span>
               <strong>{localize(stall.nameKey)}</strong>
@@ -242,6 +257,8 @@ export function StallsPanel({
 export interface SelectionCardProps {
   /** The selected placeable or stall. */
   readonly selectedContent: PlaceableDefinition | StallDefinition;
+  /** The item's painted thumbnail, once the runtime has painted it. */
+  readonly previewUrl?: string;
   /** Called when the player clears the selection. */
   onClear(): void;
 }
@@ -253,9 +270,9 @@ export interface SelectionCardProps {
  * @returns The item's kind, name, description, footprint and price, plus a placeable's
  *   in-game utility.
  */
-export function SelectionCard({ selectedContent, onClear }: SelectionCardProps) {
+export function SelectionCard({ selectedContent, previewUrl, onClear }: SelectionCardProps) {
   return (
-    <div className="selection-card">
+    <div className={previewUrl ? "selection-card has-painting" : "selection-card"}>
       <button
         type="button"
         aria-label="Clear selection"
@@ -263,6 +280,11 @@ export function SelectionCard({ selectedContent, onClear }: SelectionCardProps) 
       >
         ×
       </button>
+      {previewUrl ? (
+        <span className="selection-art" aria-hidden="true">
+          <PaintedPreview src={previewUrl} />
+        </span>
+      ) : null}
       <span>{"category" in selectedContent ? selectedContent.category : "food stall"}</span>
       <strong>{localize(selectedContent.nameKey)}</strong>
       <p>{localize(selectedContent.descriptionKey)}</p>

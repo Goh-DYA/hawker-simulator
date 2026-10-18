@@ -276,6 +276,39 @@ describe("Hawker Balance nutrition education UI", () => {
     );
   });
 
+  it("shows each variant's painted serving once the runtime has painted it", () => {
+    const variant = {
+      label: "Kopi",
+      unlockRank: 1,
+      visualKey: "kopi",
+      unlocked: true,
+      selected: false,
+    };
+    const lab = renderToStaticMarkup(createElement(VariantLabDialog, {
+      dishName: "Kopi",
+      family: {
+        dishId: "dish.kopi",
+        defaultVariantId: "kopi-default",
+        activeVariantId: "kopi-default",
+        variants: [
+          { ...variant, id: "kopi-default", selected: true },
+          { ...variant, id: "kopi-c", label: "Kopi C" },
+        ],
+      },
+      variantPreview: (variantId: string) =>
+        variantId === "kopi-c" ? "data:image/png;base64,S09QSQ==" : undefined,
+      onChoose: () => undefined,
+      onClose: () => undefined,
+    }));
+
+    expect([
+      lab.split('<span class="variant-preview" aria-hidden="true">').length - 1,
+      lab.includes(
+        '<article data-locked="false" data-selected="false"><span class="variant-preview" aria-hidden="true"><img class="painted-preview" src="data:image/png;base64,S09QSQ=="',
+      ),
+    ]).toEqual([1, true]);
+  });
+
   it("shows a trace nutrient as a trace amount", () => {
     const profile = renderToStaticMarkup(createElement(NutritionProfileSummary, {
       profile: { status: "released", servingLabel: "1 cup", transFatG: { status: "trace" } },

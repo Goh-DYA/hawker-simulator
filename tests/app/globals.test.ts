@@ -64,6 +64,22 @@ describe("global stylesheet", () => {
     expect(styles).toContain(".sheet-close-button { display: grid; }");
   });
 
+  it("fits painted thumbnails to their tile and hides the CSS art behind them", async () => {
+    const styles = await read_styles();
+
+    expect([
+      /\.painted-preview\s*\{[^}]*object-fit:\s*contain/.test(styles),
+      /\.catalogue-item \.item-art\.has-painting::before,[\s\S]*?content:\s*none/.test(styles),
+      /\.dish-row \.dish-preview\.has-painting::after\s*\{[^}]*content:\s*none/.test(styles),
+    ]).toEqual([true, true, true]);
+  });
+
+  it("rests the loading bar instead of sweeping it when motion is reduced", async () => {
+    const styles = await read_styles();
+
+    expect(styles).toMatch(/\[data-motion="reduced"\] \.loading-bar i\s*\{[^}]*animation:\s*none/);
+  });
+
   it("contains the compact desktop Pulse within the left rail", async () => {
     const styles = await read_styles();
 

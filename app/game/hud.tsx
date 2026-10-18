@@ -117,7 +117,33 @@ export function TopBar({ snapshot, isInert, onSetSpeed, onOpenSettings, onOpenHe
     <header className="topbar" inert={isInert} aria-hidden={isInert}>
       <div className="brand-lockup" aria-label="Hawker Balance">
         <span className="brand-mark" aria-hidden="true">
-          <span />
+          <svg viewBox="0 0 48 48" focusable="false">
+            <rect x="6" y="6" width="36" height="3" rx="1.5" fill="#c9d3d0" />
+            {[0, 1, 2, 3, 4, 5].map((stripe) => (
+              <path
+                key={stripe}
+                d={`M${7 + stripe * (34 / 6)} 8.5h${34 / 6}v6a${17 / 6} ${17 / 6} 0 0 1 -${34 / 6} 0z`}
+                fill={stripe % 2 === 0 ? "#d95d39" : "#fff6dc"}
+              />
+            ))}
+            <rect x="8.5" y="16" width="2.4" height="17" rx="1" fill="#fff6dc" opacity="0.85" />
+            <rect x="37.1" y="16" width="2.4" height="17" rx="1" fill="#fff6dc" opacity="0.85" />
+            <path
+              d="M21 22.5c-1.4-1.3 1.4-2.4 0-3.8M27 22.5c-1.4-1.3 1.4-2.4 0-3.8"
+              fill="none"
+              stroke="#fffaf0"
+              strokeLinecap="round"
+              strokeWidth="1.3"
+              opacity="0.85"
+            />
+            <path d="M15 25H33A9 8 0 0 1 15 25Z" fill="#fffaf0" />
+            <path d="M16 28.6H32" stroke="#d95d39" strokeWidth="1.6" />
+            <ellipse cx="24" cy="25" rx="9" ry="1.6" fill="#f1e2c6" />
+            <ellipse cx="24" cy="24.7" rx="7.4" ry="1.2" fill="#e9b949" />
+            <rect x="6" y="33" width="36" height="3" rx="1" fill="#fff6dc" />
+            <rect x="7" y="36" width="34" height="5" fill="#e8d5b0" />
+            <rect x="7" y="38.4" width="34" height="1.2" fill="#d95d39" />
+          </svg>
         </span>
         <div>
           <p>Nutrition edition</p>

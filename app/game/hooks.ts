@@ -3,8 +3,9 @@
  *
  * They hold the screen's wiring to everything outside React: the announcer that feeds
  * the toasts and the activity feed, the lazily created autosave queue, the preference
- * writes, and the runtime lifecycle (preference and save loading, the lazy runtime
- * import, the audio director, PWA registration and teardown). Callbacks handed to
+ * writes, the runtime lifecycle (preference and save loading, the lazy runtime
+ * import, the audio director, PWA registration and teardown), and the painted HUD
+ * thumbnails the running controller returns. Callbacks handed to
  * {@link useAutosave} and {@link useHawkerRuntime} are read through refs at each use, so
  * the effects never restart when the component passes new closures.
  */
@@ -36,6 +37,16 @@ import {
   type ActivityEntry,
 } from "@/src/game/runtime/activityFeed";
 import type { RuntimeController, RuntimeEvent, RuntimeSnapshot } from "@/src/game/runtime/types";
+import { NO_PREVIEWS, preview_key, type PreviewRequest, type PreviewUrls } from "./previews";
+
+/** The most thumbnails one animation frame paints, so a long catalogue never stalls a frame. */
+const PREVIEWS_PER_FRAME = 6;
+
+/** How long to wait before asking again for thumbnails the runtime could not paint yet, in ms. */
+const PREVIEW_RETRY_MS = 500;
+
+/** How many times to ask again; the scene normally boots within the first few tries. */
+const MAX_PREVIEW_RETRIES = 40;
 
 /** How long an error toast stays up, in milliseconds. */
 const ERROR_TOAST_MS = 6_000;
@@ -348,4 +359,114 @@ export function useHawkerRuntime(options: HawkerRuntimeOptions): HawkerRuntime {
   }, []);
 
   return { controllerRef, audioRef, isLoading: loading, loadingError };
+}
+
+/** The painted thumbnails and the scope they were painted in. */
+interface PreviewCache {
+  /** The scope the thumbnails belong to; a new scope starts an empty cache. */
+  readonly scope: string;
+  /** The painted thumbnails. */
+  readonly urls: PreviewUrls;
+}
+
+/**
+ * Paint the next batch of thumbnails through the controller.
+ *
+ * A thumbnail the runtime cannot paint yet (`undefined`, before its scene exists) is skipped,
+ * so it is asked for again later. One whose painter throws is logged once and stored as an
+ * empty string, so the surface keeps its fallback for good.
+ *
+ * @param controller - The running controller.
+ * @param requests - The thumbnails not painted yet, in display order.
+ * @returns The thumbnails painted in this batch, by cache key; at most
+ *   {@link PREVIEWS_PER_FRAME}.
+ */
+function paint_preview_batch(
+  controller: RuntimeController,
+  requests: readonly PreviewRequest[],
+): Record<string, string> {
+  const painted: Record<string, string> = {};
+  let painted_count = 0;
+  for (const request of requests) {
+    if (painted_count >= PREVIEWS_PER_FRAME) break;
+    const key = preview_key(request);
+    try {
+      const url =
+        request.kind === "dish"
+          ? controller.renderDishPreview(request.id, request.variantId)
+          : controller.renderPreview(request.id);
+      if (url === undefined) continue;
+      painted[key] = url;
+    } catch (error) {
+      report_failure(`thumbnail "${key}" could not be painted`, error);
+      painted[key] = "";
+    }
+    painted_count += 1;
+  }
+  return painted;
+}
+
+/**
+ * Ask the running controller for painted thumbnails and cache them for the component's life.
+ *
+ * Once the runtime is ready, each animation frame paints up to {@link PREVIEWS_PER_FRAME} of the
+ * requested thumbnails that are not cached yet, until all are. While the controller returns
+ * nothing (its scene is still booting), the hook asks again every {@link PREVIEW_RETRY_MS}, up
+ * to {@link MAX_PREVIEW_RETRIES} times for the same requests. A thumbnail is requested once per
+ * scope; changing `scope` (for example on a high-contrast switch) repaints what is shown.
+ *
+ * @param controllerRef - The running controller, once the runtime has started.
+ * @param is_runtime_ready - Whether the runtime has started.
+ * @param requests - The thumbnails the screen shows now.
+ * @param scope - Names the look the thumbnails are painted in.
+ * @returns The painted thumbnails of the current scope, keyed by `preview_key`; a surface shows
+ *   its fallback while its key is missing or empty.
+ */
+export function usePaintedPreviews(
+  controllerRef: RefObject<RuntimeController | undefined>,
+  is_runtime_ready: boolean,
+  requests: readonly PreviewRequest[],
+  scope: string,
+): PreviewUrls {
+  const [cache, setCache] = useState<PreviewCache>({ scope, urls: NO_PREVIEWS });
+  const urls = cache.scope === scope ? cache.urls : NO_PREVIEWS;
+  const pending = requests.filter((request) => !Object.hasOwn(urls, preview_key(request)));
+  const pending_signature = pending.map(preview_key).join("\n");
+  const pendingRef = useRef(pending);
+  useEffect(() => {
+    pendingRef.current = pending;
+  });
+
+  useEffect(() => {
+    if (!is_runtime_ready || pending_signature === "") return;
+    let frame: number | undefined;
+    let timer: number | undefined;
+    let retries = 0;
+    const paint_next_batch = () => {
+      frame = undefined;
+      const controller = controllerRef.current;
+      const painted = controller ? paint_preview_batch(controller, pendingRef.current) : {};
+      if (Object.keys(painted).length > 0) {
+        // The new cache shrinks the pending list, which reruns this effect for the next batch.
+        setCache((previous) => ({
+          scope,
+          urls: { ...(previous.scope === scope ? previous.urls : NO_PREVIEWS), ...painted },
+        }));
+        return;
+      }
+      if (retries >= MAX_PREVIEW_RETRIES) return;
+      retries += 1;
+      timer = window.setTimeout(() => {
+        timer = undefined;
+        frame = window.requestAnimationFrame(paint_next_batch);
+      }, PREVIEW_RETRY_MS);
+    };
+    frame = window.requestAnimationFrame(paint_next_batch);
+    return () => {
+      if (frame !== undefined) window.cancelAnimationFrame(frame);
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, [controllerRef, is_runtime_ready, pending_signature, scope]);
+
+  return urls;
 }

@@ -153,6 +153,30 @@ describe("MenuPanel", () => {
     );
   });
 
+  it("shows a dish's painted serving in its active variant once the runtime has painted it", () => {
+    const { rows } = build_menu_rows(MENU_STALL, SNAPSHOT_FIXTURE, SNAPSHOT_FIXTURE.nutritionFamilies);
+    const row = rows[0]!;
+    const key = row.activeVariant ? `${row.dish.id}@${row.activeVariant.id}` : row.dish.id;
+    const html = renderToStaticMarkup(
+      createElement(MenuPanel, {
+        menuStallId: MENU_STALL.id,
+        onMenuStallChange: () => undefined,
+        nutritionLens: false,
+        onNutritionLensChange: () => undefined,
+        snapshot: SNAPSHOT_FIXTURE,
+        controllerRef: NO_CONTROLLER,
+        previewUrls: { [key]: "data:image/png;base64,UEFJTlRFRA==" },
+        onTuneRecipe: () => undefined,
+      }),
+    );
+
+    expect([
+      count_occurrences(html, 'class="dish-preview has-painting"'),
+      count_occurrences(html, '<img class="painted-preview" src="data:image/png;base64,UEFJTlRFRA=="'),
+      count_occurrences(html, '<i class="dish-preview-portion">'),
+    ]).toEqual([1, 1, rows.length - 1]);
+  });
+
   it("shows no menu when the chosen stall ID matches no stall", () => {
     const html = render_menu_panel(SNAPSHOT_FIXTURE, "stall.missing");
 
