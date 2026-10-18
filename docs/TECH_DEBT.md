@@ -410,7 +410,7 @@ Key: ✓ means the step is done, ◐ means it is partial (see [Partial steps and
 - **Score:** impact 3, risk 3, effort 3, giving priority **18**. **Category:** code. **Status:** resolved.
 - **Justification:** There are 264 includes/has checks, and the two newest stalls fall back to generic art. Adding content silently gets generic art.
 - **Disposition:** planned. Step 1 only (S121): ID-keyed tables that reproduce today's branch for every current ID, the substring fallback kept for unknown IDs, and a completeness test. New art for the generic stalls is deferred to an art-direction decision.
-- **Outcome:** S121 added the ID-keyed tables with a completeness test. New art for Pick & Mix and Herbal Cauldron remains an art-direction decision.
+- **Outcome:** S121 added the ID-keyed tables with a completeness test. The painted-sprite overhaul (ADR 0005) then gave Pick & Mix and Herbal Cauldron their own stall art.
 - **Sources:** runtime-root-b-10
 
 ### TD-48: visualRecipes.ts is a 1,171-line four-domain module; three hex parsers
@@ -431,7 +431,7 @@ Key: ✓ means the step is done, ◐ means it is partial (see [Partial steps and
 
 - **Score:** impact 2, risk 2, effort 2, giving priority **16**. **Category:** code. **Status:** deferred.
 - **Justification:** findPath runs for every entrance-exit pair per HUD frame, Text objects are recreated per render, and a new Intl formatter is built per call.
-- **Disposition:** deferred. Within budget today. Wrong cache keys risk visible regressions. Revisit with a benchmark (the SGD_FORMATTER hoist is kept in S130 because it is output-identical).
+- **Disposition:** deferred. Within budget today. Wrong cache keys risk visible regressions. Revisit with a benchmark (the SGD_FORMATTER hoist is kept in S130 because it is output-identical). The painted-sprite overhaul (ADR 0005) replaced the per-render Text objects with a label pool; the path search and the formatter remain.
 - **Sources:** runtime-root-a-19, runtime-root-b-08, runtime-root-b-09, core-sim-17, react-ui-13
 
 ### TD-51: Audit-only nutrition data ships in the client bundle

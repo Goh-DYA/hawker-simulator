@@ -46,7 +46,8 @@ Before the structural refactor, the following suites were written to pin the beh
 | `tests/game/core/persistence/index.test.ts`, `migrations.test.ts` | Frozen V1–V4 save fixtures, migration output and the serialisation contract. |
 | `tests/game/core/simulation.recovery.test.ts` | In-step customer recovery branches. |
 | `tests/game/runtime/createHawkerRuntime.test.ts` | The headless runtime controller, using a deferred Phaser boot and a test-owned clock: export, import and reset, save fallback, and progression across several days. |
-| `tests/game/runtime/createHawkerRuntime.render.test.ts` | Exact draw-call logs for each render scenario, including every placeable and every recipe variant. |
+| `tests/game/runtime/createHawkerRuntime.render.test.ts` | Exact canvas-paint and sprite-call logs for each render scenario, including every placeable and every recipe variant. |
+| `tests/game/runtime/art/*.test.ts` | Every launch stall, placeable, dish and archetype paints without error, deterministically, and differently from its neighbours; every reviewed nutrition variant paints a cue distinct from the fallback. |
 | `tests/game/runtime/createHawkerRuntime.input.test.ts` | Build-tool, keyboard, pointer and wheel input flows. |
 | `tests/game/persistence/saveStore.test.ts` | The save envelope format, the checksum, active/backup slot rotation and preference ordering, tested on `fake-indexeddb`. |
 | `tests/app/game/HawkerSimulator.ssr.test.ts` | Byte-exact server-rendered markup of the game component. |

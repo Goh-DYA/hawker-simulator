@@ -1,7 +1,7 @@
 # Art Bible
 
-Status: Release-candidate direction implemented; human visual and cultural review pending
-Selected direction: shape-led, vector-like illustrated 2D; orthographic top-down square grid
+Status: "Kopitiam Noon" painted-sprite direction implemented (October 2026, [ADR 0005](../decisions/0005-painted-sprite-rendering.md)); human visual and cultural review pending
+Selected direction: painted, illustrated 2D sprites generated from code-native recipes; a 3/4 oblique view over the square grid
 
 ## Decision comparison
 
@@ -29,6 +29,19 @@ The selected pairing gives unambiguous footprints and interaction cells, minimal
 - Avoid faux-Chinese type, generic “Asian” motifs, caricature, flags as cuisine shorthand, and borrowed brand trade dress.
 - Depict a contemporary, cared-for communal space with practical infrastructure.
 - Procedural/code-native graphics are an intentional final medium when they meet consistency and review gates; debug boxes and text labels are not final art.
+
+## Painted sprite medium
+
+The art is painted once per texture by pure Canvas 2D painters (`src/game/runtime/art/`) and drawn as retained Phaser sprites, instead of being redrawn from vector primitives every tick. The audit, direction, palette and work packages are in [VISUAL_OVERHAUL_PLAN.md](VISUAL_OVERHAUL_PLAN.md). The rules the painters follow:
+
+- One key light from the north-west: lit top-left edges, shaded bottom-right, a soft contact shadow offset to the south-east.
+- A 3/4 oblique view: horizontal surfaces are seen from above, the south faces of everything are visible below them, and height rises upwards from the footprint into up to 16 px of overhang above it. Footprints stay exact on the grid; nothing is painted outside a footprint's sides or bottom.
+- Real-world scale inside the footprint: a stool seat is about 18 px across, a chair about 24 px, a 1×1 table top about 40 px. Seats are centred `SEAT_HEIGHT` above their tile centre and table tops lifted by `TABLE_TOP_LIFT`, so a diner drawn at the seat sits on it with the plate on the table top.
+- Textures are painted per rotation; sprites are never rotated, so light and front faces stay consistent. Stalls are cutaway buildings in a back and a front layer around the vendor.
+- Materials over outlines: terrazzo, laminate with a chrome edge, brushed stainless steel, zinc roofing, timber grain, moulded plastic and foliage each have a recipe; outlines are thin and tinted, and become thick ink only in high contrast.
+- Sprite sheets carry the animation: customers have four facings by nine poses (stand, three walk frames, sit, carry and three carrying walk frames), vendors eight south-facing poses, fans six blade positions. The simulation tick selects the frame; reduced motion holds the still frame.
+- Atmosphere is additive presentation: a multiply tint follows the operating-day clock, lamp pools pulse over the floor, steam rises from preparing stalls and hot meals, and a sparkle marks each sale. None of it feeds the simulation.
+- Textures are painted at the device pixel ratio of the quality mode (2 on standard, 1 on lower-end) and reviewed with `tools/paint-gallery.ts`.
 
 ## Canvas and grid rules
 
