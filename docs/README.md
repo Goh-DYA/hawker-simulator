@@ -38,6 +38,7 @@ The launch content counts are the one exception. These requirement and evidence 
 - [design/CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md): the launch roster and its counts.
 - [design/NUTRITION_DATA.md](design/NUTRITION_DATA.md): nutrition sources, scoring and educational-use policy.
 - [design/ART_BIBLE.md](design/ART_BIBLE.md): visual direction.
+- [design/VISUAL_OVERHAUL_PLAN.md](design/VISUAL_OVERHAUL_PLAN.md): the graphical-overhaul audit, direction, rendering architecture and work packages.
 - [design/ROADMAP.md](design/ROADMAP.md): the long-term progression roadmap and the post-launch backlog.
 
 ## Decisions
@@ -47,6 +48,7 @@ The launch content counts are the one exception. These requirement and evidence 
 - [ADR 0002](decisions/0002-art-style-and-perspective.md): art style and perspective.
 - [ADR 0003](decisions/0003-local-first-persistence-and-offline.md): local-first persistence and offline operation.
 - [ADR 0004](decisions/0004-simulation-and-ui-boundaries.md): simulation and UI boundaries.
+- [ADR 0005](decisions/0005-painted-sprite-rendering.md): painted sprite rendering.
 
 ## Release
 

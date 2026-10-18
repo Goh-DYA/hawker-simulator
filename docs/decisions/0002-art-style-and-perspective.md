@@ -1,7 +1,7 @@
 # ADR 0002: Art Style and Perspective
 
 Date: 2026-07-12
-Status: Accepted
+Status: Accepted; its rendering perspective is superseded by [ADR 0005](0005-painted-sprite-rendering.md) (3/4 oblique view over the same grid)
 
 ## Context
 

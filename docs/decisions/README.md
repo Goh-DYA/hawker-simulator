@@ -1,12 +1,12 @@
 # Decision Log
 
-Status: Active; architecture decisions have detailed ADRs in this folder: [0001](0001-browser-game-stack.md), [0002](0002-art-style-and-perspective.md), [0003](0003-local-first-persistence-and-offline.md) and [0004](0004-simulation-and-ui-boundaries.md)
+Status: Active; architecture decisions have detailed ADRs in this folder: [0001](0001-browser-game-stack.md), [0002](0002-art-style-and-perspective.md), [0003](0003-local-first-persistence-and-offline.md), [0004](0004-simulation-and-ui-boundaries.md) and [0005](0005-painted-sprite-rendering.md)
 
 | ID | Decision | Rationale | Status |
 |---|---|---|---|
 | D-001 | TypeScript + Phaser 4.2.1 embedded in React/Vinext/Vite | Browser-native tooling, solo productivity, game rendering plus accessible DOM UI, existing host integration | Accepted |
-| D-002 | Orthographic top-down square grid | Highest build clarity, low occlusion/depth burden, four-direction animation, accessible overlays | Accepted |
-| D-003 | Shape-led vector-like illustrated 2D generated from code/procedural recipes | Reproducible, license-clean, performant, consistent across 80 items | Accepted |
+| D-002 | Orthographic top-down square grid | Highest build clarity, low occlusion/depth burden, four-direction animation, accessible overlays | Grid accepted; the flat top-down view is superseded by D-020's 3/4 oblique view |
+| D-003 | Shape-led vector-like illustrated 2D generated from code/procedural recipes | Reproducible, license-clean, performant, consistent across 80 items | Superseded in medium by D-020; the code-native, license-clean recipes stand |
 | D-004 | Local-first IndexedDB; no gameplay backend/accounts | Offline requirement, privacy minimization, static-host feasibility | Accepted |
 | D-005 | Versioned service worker with safe update prompt | Core offline play while protecting save/cache version compatibility | Accepted, verification pending |
 | D-006 | React owns semantic UI; Phaser owns the world canvas | Clear lifecycle/state boundary and keyboard/screen-reader support | Accepted |
@@ -23,6 +23,7 @@ Status: Active; architecture decisions have detailed ADRs in this folder: [0001]
 | D-017 | Expand the customer model to 12 behavior archetypes and 300 English localization entries, superseding the customer-roster portions of D-010 and D-016 | Add four distinct visit-goal personas while preserving the 12-stall / 46-dish / 80-placeable scope and keeping ethnicity, disability, and accessibility needs separate from consumer personality | Accepted |
 | D-018 | Rebrand as Hawker Balance and add nutrition as a parallel educational system | Teach serving-level trade-offs through reviewed data, variants, fictional visit intents, objectives, and analytics without altering the established economy or assigning health traits to personas | Accepted; source and human review pending |
 | D-019 | Expand content `1.3.0` to 14 stalls / 54 dishes / 104 released nutrition profiles / 14 variant families, with separate Health and Star ratings and condition-aware visits | Use the supplied Singapore food dataset for every dish, broaden dataset-backed hawker variety, and make health-related preferences visible while keeping conditions independent of persona/demographics and avoiding medical claims | Accepted; automated source review passed, human review pending |
+| D-020 | Paint the recipes once into textures with pure Canvas 2D painters and draw retained Phaser sprites, shown in a 3/4 oblique view over the same grid, with per-rotation textures, layered stalls and people with legs, faces and varied builds ([ADR 0005](0005-painted-sprite-rendering.md)) | Illustrated fidelity (materials, shading, legible food, baked signs) and a per-tick cost independent of the art, while keeping footprints, hit testing and saves unchanged | Accepted; human visual and cultural review pending |
 
 ## Decision changes
 

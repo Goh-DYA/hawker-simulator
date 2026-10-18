@@ -50,8 +50,8 @@ The validator counts catalogue entries by distinct gameplay definition, not by r
 - IndexedDB journal + backup saves through `idb`
 - Versioned service worker and install manifest
 - Vitest unit, integration, content, soak, and simulation-budget tests
-- Orthographic top-down square grid
-- Shape-led illustrated 2D rendered from code-native primitives
+- Square grid seen in a 3/4 oblique view at real-world scale
+- Painted, illustrated 2D sprites generated from code-native recipes (see [docs/design/VISUAL_OVERHAUL_PLAN.md](docs/design/VISUAL_OVERHAUL_PLAN.md))
 
 The UI remains semantic HTML around the game canvas so essential controls, settings, menus, status, focus, and text scaling remain accessible.
 
