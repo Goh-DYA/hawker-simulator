@@ -97,6 +97,7 @@ const eslintConfig = defineConfig([
   {
     files: [
       "src/game/runtime/render/**/*.ts",
+      "src/game/runtime/art/**/*.ts",
       "src/game/runtime/visuals/**/*.ts",
       "src/game/runtime/{catalog,world,saves,nutrition,snapshot}.ts",
     ],
@@ -137,7 +138,7 @@ const eslintConfig = defineConfig([
           ],
           patterns: [
             {
-              group: ["@/src/game/runtime/render/*"],
+              group: ["@/src/game/runtime/render/*", "@/src/game/runtime/art/*"],
               message: "Render code belongs to the lazily loaded runtime.",
             },
           ],
@@ -152,6 +153,11 @@ const eslintConfig = defineConfig([
               target: "./app",
               from: "./src/game/runtime/render",
               message: "Render code belongs to the lazily loaded runtime.",
+            },
+            {
+              target: "./app",
+              from: "./src/game/runtime/art",
+              message: "Painters belong to the lazily loaded runtime; the HUD gets thumbnails through the controller.",
             },
             {
               target: "./app",
@@ -176,6 +182,8 @@ const eslintConfig = defineConfig([
     ".vinext/**",
     ".vercel/**",
     "coverage/**",
+    // Local, git-ignored art previews:
+    "scratch/**",
   ]),
 ]);
 

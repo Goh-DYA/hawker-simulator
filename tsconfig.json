@@ -39,5 +39,5 @@
     "tools/nutrition/manifest.mjs",
     "tools/nutrition/ratings.mjs"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "scratch"]
 }
