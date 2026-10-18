@@ -38,7 +38,7 @@ Avoid invented translations. English is the launch language. Any Chinese, Malay,
 
 ## Dish review queue
 
-Every item in CONTENT_CATALOGUE.md needs a reviewer to check:
+Every item in [CONTENT_CATALOGUE.md](../design/CONTENT_CATALOGUE.md) needs a reviewer to check:
 
 - name/spelling and whether a local qualifier is appropriate;
 - cultural origin and cross-cultural influences without exclusive or false ownership;

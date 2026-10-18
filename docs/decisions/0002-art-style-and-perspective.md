@@ -20,6 +20,6 @@ Distinctiveness comes from silhouette families, original color and icon systems,
 ## Consequences
 
 - Top surfaces are restrained; objects cannot imply an isometric footprint.
-- Depth anchors and pivots follow ART_BIBLE.md.
+- Depth anchors and pivots follow [ART_BIBLE.md](../design/ART_BIBLE.md).
 - Procedural art may be final only after screenshot, consistency, accessibility, and human cultural/art review.
 - Debug shapes, text-only stalls, mixed perspectives, and palette-only catalogue duplicates are not final assets.

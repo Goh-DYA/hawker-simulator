@@ -1,7 +1,7 @@
 # Save Format
 
 Status: Reference for the current save format (core schema 4, runtime envelope 2, store envelope 2)
-Related: [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md#persistence), [adr/0003](adr/0003-local-first-persistence-and-offline.md)
+Related: [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md#persistence), [ADR 0003](decisions/0003-local-first-persistence-and-offline.md)
 
 A stored save is three versioned layers, one inside the other. Each layer has its own version number and changes independently of the others.
 
@@ -50,7 +50,7 @@ These are load-bearing. Changing any of them breaks existing saves or changes pl
 4. Update `persistentStateFromGame` and `deserializeGameStateWithReport` in `src/game/core/persistence/index.ts`.
 5. Freeze a new `save-v5.json` fixture next to the existing ones; never edit `save-v1.json` to `save-v4.json`.
 6. Add migration tests from every earlier fixture to V5 and a V5 round-trip test.
-7. Record the change in `CHANGELOG.md` and, if it affects compatibility or rollback, add an ADR as `DECISIONS.md` requires.
+7. Record the change in [CHANGELOG.md](CHANGELOG.md) and, if it affects compatibility or rollback, add an ADR as the [decision log](decisions/README.md#decision-changes) requires.
 
 ## Checklist: adding a persisted field
 

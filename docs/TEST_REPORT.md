@@ -4,7 +4,7 @@ Report date: 2026-10-18
 Build/commit: Content `1.3.0` working source validated with bundled Node.js `v24.14.0`; commit/publication record pending
 Release verdict: **NO-GO pending exact-production browser/offline QA and required human reviews**
 
-This document owns the dated test and gate evidence; other documents link here instead of restating results (see the [documentation index](README.md)). Release blockers are listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md), and content counts in [CONTENT_CATALOGUE.md](CONTENT_CATALOGUE.md#roster-counts).
+This document owns the dated test and gate evidence; other documents link here instead of restating results (see the [documentation index](README.md)). Release blockers are listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md), and content counts in [CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md#roster-counts).
 
 Scope note: this report records the content `1.3.0` working-source gate and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
 
@@ -22,7 +22,7 @@ On 2026-10-17, the behaviour-preserving structural refactor (branch `refactor/st
 
 This section is the single record of dependency-audit results; other documents link here instead of restating them.
 
-On 2026-10-18, after the security dependency updates recorded in [CHANGELOG.md](../CHANGELOG.md), the production-only audit passed and the all-dependencies audit still failed at the `--audit-level=high` threshold:
+On 2026-10-18, after the security dependency updates recorded in [CHANGELOG.md](CHANGELOG.md), the production-only audit passed and the all-dependencies audit still failed at the `--audit-level=high` threshold:
 
 | Audit | Command | Result on 2026-10-18 |
 |---|---|---|
@@ -55,7 +55,7 @@ Recorded content `1.2.0` supported-runtime evidence: the complete release-equiva
 | Deterministic lifecycle and target recovery | **Pass** | Full visit lifecycle, fixed-step chunking, low-end cap, stall/tray/seat target removal, route-efficiency scoring, and invariant checks are covered |
 | Build/economy/progression | **Pass** | Place/move/rotate/remove/refund/undo/expansion, operated-stall undo safety, path blocking, thresholds, sales, XP, and reputation are covered |
 | Seeded simulation benchmark | **Pass, automated scope** | `benchmark-80-agents` completed 1,200 fixed steps with a peak of 80 active agents within budget; this does not establish Phaser FPS or the required two-hour browser soak |
-| Development-browser visual pass | **Content `1.2.0` targeted pass** | The persona inspector, Settings guide, and route editor passed targeted checks; the stall upgrade was checked at 1280 × 720 with compact and large stalls, live menu changes, full/open and opaque-closed scenes, reduced motion, high contrast, and both quality modes. This evidence predates the 14-stall / 54-dish `1.3.0` gallery; see `GRAPHICS_VERIFICATION.md` |
+| Development-browser visual pass | **Content `1.2.0` targeted pass** | The persona inspector, Settings guide, and route editor passed targeted checks; the stall upgrade was checked at 1280 × 720 with compact and large stalls, live menu changes, full/open and opaque-closed scenes, reduced motion, high contrast, and both quality modes. This evidence predates the 14-stall / 54-dish `1.3.0` gallery; see [Graphics and gameplay verification](#graphics-and-gameplay-verification) |
 | Lint | **Pass** | `npm run test:release` on bundled Node.js `v24.14.0`, exit 0 |
 | Production build | **Pass** | Vinext completed all five environments; generated service-worker build ID `c5ed3679ba56` |
 | Vercel build | **Pass** | `npm run build:vercel` completed the native Next.js 16 build |
@@ -102,8 +102,171 @@ node --test tests/rendered-html.test.mjs
 node tools/stamp-service-worker.mjs; node node_modules/next/dist/bin/next build
 ```
 
-Both release targets exited 0. Typecheck and lint passed; Vitest reported 24 files / 131 tests; the five-environment Vinext build and native Vercel build completed; 2/2 rendered-output/offline-shell tests passed; and the service worker was stamped `c5ed3679ba56`. Dependency audits were not part of this validation update. The benchmark details are recorded in `PERFORMANCE_REPORT.md`.
+Both release targets exited 0. Typecheck and lint passed; Vitest reported 24 files / 131 tests; the five-environment Vinext build and native Vercel build completed; 2/2 rendered-output/offline-shell tests passed; and the service worker was stamped `c5ed3679ba56`. Dependency audits were not part of this validation update. The benchmark details are recorded under [Performance evidence](#performance-evidence).
 
 For the exact-production browser tests, record browser/OS version, viewport, DPR/zoom, production URL, scenario results, screenshots, console/network findings, save/reload, and offline/update steps.
 
-See `TEST_PLAN.md` for the current matrix, `GRAPHICS_VERIFICATION.md` for the retained visual evidence and current target, `PERFORMANCE_REPORT.md` for benchmark evidence, and `KNOWN_ISSUES.md` for the remaining gates.
+See [TEST_PLAN.md](TEST_PLAN.md) for the current matrix, [Graphics and gameplay verification](#graphics-and-gameplay-verification) for the retained visual evidence and current target, [Performance evidence](#performance-evidence) for benchmark evidence, and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for the remaining gates.
+
+## Performance evidence
+
+Section date: 2026-07-20
+Verdict: **The content `1.3.0` Node simulation budget and both local production builds pass; browser rendering performance remains unverified**
+
+The budgets these results are measured against are in the [performance budget](TEST_PLAN.md#performance-budget) of `TEST_PLAN.md`.
+
+Scope note: the current working-source evidence below is not an exact-production browser performance result. The retained content `1.2.0` measurements remain labelled as historical baselines.
+
+### Automated simulation evidence
+
+The Vitest benchmark (`tests/game/core/performance.test.ts`) starts 80 active customers and advances 1,200 deterministic fixed steps with periodic invariant checks. The recorded baseline includes queue-reservation and obstacle-safe route behavior. It is useful for regression detection in the pure simulation core; it does not include Phaser rendering, browser scheduling, expanded stall/food drawing, audio, IndexedDB, service workers, or DOM work.
+
+Current content `1.3.0` result from the passing working-source Vitest run on bundled Node.js `v24.14.0` (the gate record is under [Content `1.3.0` working-source validation](#content-130-working-source-validation)):
+
+| Metric | Recorded value |
+|---|---:|
+| Seed | `benchmark-80-agents` |
+| Fixed steps | 1,200 |
+| Peak active customers | 80 |
+| Mean simulation step | 0.12040941666666943 ms |
+| p95 simulation step | 0.18669999999974607 ms |
+| Maximum simulation step | 21.50839999999971 ms |
+| Total measured duration | 150.4032000000002 ms |
+| Heap delta during sample | 2,526,152 bytes |
+| Test budget | mean < 4 ms; p95 < 10 ms |
+| Result | Pass in content `1.3.0` supported-runtime run |
+
+Sub-millisecond timing is noisy and machine-dependent; do not compare a single Node run to a browser frame budget.
+
+#### Retained content `1.2.0` baseline
+
+Retained result from the passing content `1.2.0` Vitest run on bundled Node.js `v24.14.0` (recorded under [Evidence status](#evidence-status)):
+
+| Metric | Recorded value |
+|---|---:|
+| Seed | `benchmark-80-agents` |
+| Fixed steps | 1,200 |
+| Peak active customers | 80 |
+| Mean simulation step | 0.07882491666666842 ms |
+| p95 simulation step | 0.12440000000003693 ms |
+| Maximum simulation step | 10.32120000000009 ms |
+| Total measured duration | 98.13689999999997 ms |
+| Heap delta during sample | 6,044,872 bytes |
+| Test budget | mean < 4 ms; p95 < 10 ms |
+| Result | Pass in recorded content `1.2.0` supported-runtime run |
+
+### Production-build evidence
+
+The content `1.3.0` working-source gate completed the five-environment Vinext build and generated service-worker build ID `7d3da6d67b11`. The native Next.js Vercel build also passed. Raw/gzip payload totals, file count, and deterministic artifact-manifest hash were not retained in this validation output.
+
+The recorded content `1.2.0` release-equivalent gate also completed both builds and generated service-worker build ID `c5ed3679ba56`. That older result is retained only as a baseline.
+
+The following payload snapshot is retained only as a pre-expansion transport baseline. Gzip values are per-file gzip sums, not current payload or browser TTI evidence:
+
+| Payload group | Raw | Gzip |
+|---|---:|---:|
+| Initial client JS/CSS, excluding dynamically loaded Phaser/runtime/visual recipes | 358,302 B | 107,914 B |
+| Deferred Phaser/runtime/visual recipes | 1,627,126 B | 425,765 B |
+| Total client JS/CSS | 1,985,428 B | 533,679 B |
+
+Pre-expansion `dist/`: 13,772,093 bytes across 35 files, including the 2,897,161-byte social-share PNG. Historical service-worker build ID: `3e25823ed59c`. Historical deterministic SHA-256 of the sorted `relative-path<TAB>file-sha256` manifest: `3fbd941195ed69d51198940b64ce8007aa5d8133d8f9777fa4174c24d067d2db`. These are historical artifact/transport measurements only; time to interactive was not measured.
+
+### Browser metrics still required
+
+| Metric | Standard | Lower-end | Status |
+|---|---:|---:|---|
+| Time to interactive | Budget in [`TEST_PLAN.md`](TEST_PLAN.md#performance-budget) | Budget in [`TEST_PLAN.md`](TEST_PLAN.md#performance-budget) | Not measured |
+| FPS and frame-time distribution | 60 FPS target | 30 FPS target | Not measured |
+| Simulation/render p95 | Budgeted | Budgeted | Node simulation only; render unmeasured |
+| Draw calls / active sprites | Budgeted | Budgeted | Not measured |
+| Path requests | Budgeted | Budgeted | Not measured in browser |
+| Texture / total memory | Budgeted | Budgeted | Not measured |
+| Save duration | Budgeted | Budgeted | Not measured in browser |
+| Audio voices | Budgeted | Budgeted | Not measured |
+| Two-hour soak trend | Required | Required | Not run |
+| Supported active customers | Unknown | Unknown | Must not be claimed before browser sweep |
+
+The 120 standard / 60 lower-end figures in the [performance budget](TEST_PLAN.md#performance-budget) remain provisional sweep values, not support claims. The runtime currently applies separate quality/FPS limits, but that implementation fact is not proof of delivered frame rate.
+
+The current renderer still performs a full-frame redraw and recreates text objects during frame rendering. The Node benchmark does not exercise that path. Browser profiling must measure its CPU, allocation, frame-time, and memory impact before any supported FPS or customer-cap claim; optimization remains required if the documented budgets are missed.
+
+### Required production measurement
+
+Use the frozen production artifact and record:
+
+- commit, service-worker build ID, artifact hash, raw/gzip payloads;
+- exact browser/OS version, CPU/RAM/GPU, power mode, viewport, DPR, and quality setting;
+- benchmark seed/snapshot, warm-up, sample length, and run count;
+- late-game unlocked layout with every stall plus representative placeable and complete dish renderer coverage (the current roster is in [CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md#roster-counts));
+- FPS distribution, simulation/render p95, path work, save duration, audio voices, and memory trend;
+- customer count sweep, completed visits, failures/throttling, and the final supported cap;
+- retained trace, JSON, and screenshot paths.
+
+Development-server impressions and the Node benchmark are not substitutes for this browser evidence.
+
+## Graphics and gameplay verification
+
+Retained evidence date: 2026-07-16 (content `1.2.0`)
+Current scope aligned: 2026-07-20 (content `1.3.0`)
+
+Status: **The content `1.3.0` layered-stall and food contracts pass automated coverage, and its nutrition surfaces pass a targeted 1280 x 720 development-browser inspection. The exact-production all-stall/all-dish gallery and human review remain open.**
+
+### Evidence boundary
+
+- Content `1.3.0` defines a stall identity for every stall and a presentation for every dish, alongside a contract for every placeable and every customer archetype ([current counts](design/CONTENT_CATALOGUE.md#roster-counts)). Source contracts do not establish realism, cultural accuracy, successful rendering, or human approval.
+- The stall upgrade targets layered code-native roof, fascia, sign, wall, service-window, counter, equipment, and trim treatments; food and drink props must come from each placed stall's active menu rather than a generic cuisine-colour substitute.
+- Every open stall is intended to contain a code-native vendor whose deterministic idle and cuisine-appropriate preparation/serving actions remain behind the counter. Closing the centre must replace the service scene with an opaque shutter, and reduced motion must freeze the vendor in a readable static work pose without changing service timing.
+- Content `1.3.0` automated coverage verifies a vendor identity, tools and emblem for every stall, deterministic idle/order/preparation poses, reduced-motion invariants, active-menu prop selection, and a food/vessel recipe for every dish ([current counts](design/CONTENT_CATALOGUE.md#roster-counts)). Its retained `1.2.0` 1280 × 720 development-browser pass inspected Sunrise Roost, Coconut & Lime, compact Kopi Canopy, and 5 × 3 Harbour Ember together, including a one-to-three dish live menu change, open and opaque-closed states, standard/lower-end quality, normal/high contrast, and full/reduced motion.
+- The content `1.3.0` working source passes the automated gate (typecheck, lint, Vitest, both production builds, and the rendered-output/offline-shell tests); the dated results are under [Content `1.3.0` working-source validation](#content-130-working-source-validation).
+- The retained local-browser passes inspected the expanded persona roster, seven live mixed visitors, the Settings customer-status guide, and the preferred-route editor with no client-console errors. At 1024 × 640, the route editor exposed its legend and controls, paused and resumed correctly, accepted keyboard painting, cleared and undid the guide, and restored it after reload. Eight retained screenshots sample earlier queue and expansion behavior but do not cover every current stall or dish.
+- A content `1.3.0` 1280 x 720 development-browser pass inspected separate Health and Star badges, all 12 nutrient fields, condition-specific ratings, the six-option Nasi Lemak Variant Lab, and a high-cholesterol customer's personalized fit and satisfaction effect. No browser warning or error messages were recorded. This targeted pass is not the complete stall/dish gallery or an exact-production review.
+- The screenshots also predate the final audit fixes for globally unique queue anchors, live-order-preserving reroutes, utility-adjusted meal depletion, and the restored route overlay. They are targeted evidence, not performance, accessibility, cultural, or exhaustive graphics approval.
+- The content `1.3.0` local builds generated service-worker build ID `7d3da6d67b11`. Payload totals and a deterministic artifact-manifest hash still need to be recorded; older measurements remain explicitly historical under [Performance evidence](#performance-evidence).
+- The renderer still performs a full-frame redraw and recreates text during frame rendering. Automated recipe tests and the Node simulation benchmark do not measure that browser CPU/allocation path.
+
+### Verification matrix
+
+| Artifact or behavior | Implementation or target contract | Current evidence | Status / remaining visual gate |
+|---|---|---|---|
+| Every placeable and furniture variety | Per-ID semantic recipe, motif, form, real-world material, multiple detail cues, accent, maker mark, silhouette treatment, world renderer, and catalogue preview | `tests/game/runtime/visuals/placeable.test.ts` passes one unique deterministic contract/motif per placeable plus populated forms, materials, and at least two detail cues; the pre-expansion starter capture shows varied previews | **Pass automated contracts;** exhaustive human inspection of every placed item on the expanded artifact remains open |
+| Layered stall identities and active-menu displays | Each fictional stall uses a materially distinct layered facade and workstation. Its visible food/drink vessels and ingredients are selected from the current active menu, update after menu changes, stay inside compact and large footprints, and remain legible without relying on colour alone | Current automated tests cover every vendor/stall contract and reciprocal menu-prop selection; retained development-browser evidence samples four stalls | **Pass automated contracts;** exact-production all-stall gallery and human visual/cultural review remain open |
+| Animated stall vendors | Every open stall shows a deterministic vendor with cuisine-appropriate idle, preparation, utensil, and serving cues. The vendor stays behind the counter, the closed shutter fully hides the work scene, and reduced motion removes bob/arm/prop offsets while preserving a static pose | Current tests cover a unique profile for every stall and retained development-browser evidence covers four simultaneous vendors | **Pass automated contracts;** exact-production motion comparison and all-stall inspection remain open |
+| Dishes, vessels, and food while eating | Dish recipes consume unique authored food references plus container, portion colour, garnish/steam, carried tray, seated meal, tableware, and depletion states; renderer rules use dish-specific or closely related real-food forms with a semantic fallback | Current content and visual-recipe tests cover every dish, including the eight new recipes; the complete browser gallery remains open | **Pass automated contracts;** exhaustive human visual/cultural review of every rendered dish remains open |
+| Customer archetypes | Archetype visual rules vary outfit silhouette, garment pattern, and optional carry prop; skin and clothing colours vary independently per customer | Retained visual-recipe tests assert a unique ID-free render signature per archetype and independent appearance variation; the retained local-browser pass sampled seven live visitors and the roster inspector | **Pass in retained automated and sampled visual evidence** |
+| 11 lifecycle states and animation | `choosing-stall`, `walking-to-queue`, `queued`, `ordering`, `waiting-for-food`, `seeking-seat`, `walking-to-seat`, `eating`, `seeking-tray-return`, `walking-to-tray-return`, and `walking-to-exit` map to distinct poses/cues; tick changes motion and reduced-motion freezes it | Visual-recipe test asserts all 11 signatures, tick variation, and reduced-motion determinism; live captures sample movement, queueing, seating, and eating | **Pass automated and sampled visually;** recorded exact-production reduced-motion comparison remains open |
+| Balanced stall choice | Preference, quality, price, queue load/preparation, novelty, scaled distance, and wayfinding contribute to deterministic selection | Core regression balances comparable stalls and confirms preferences can beat modest distance | **Pass automated;** long crowd-distribution playtest remains open |
+| Queue overlay and count | Renderer uses the exact core queue cells and draws connected lines, reserved cells, direction, and per-stall count badges including zero | Queue-routing/live captures plus queue core tests | **Pass automated and visually sampled** |
+| Queue editor and bends | Stall panel exposes cardinal automatic directions and `Bend line`; world edit mode appends/trims adjacent custom cells and persists them | Custom-path acceptance/rejection/persistence tests; queue-editing and custom-queue captures | **Pass automated and visually sampled** |
+| Queue and customer obstacle avoidance | Automatic queue routes self-avoid around blocked/reserved tiles; customers reserve a queue position before walking and advance cell by cell | Core test places furniture in the nominal line and asserts the bend; every admitted customer's queue route is asserted walkable | **Pass automated;** extreme player-layout soak remains open |
+| Cross-stall queue ownership | Global planning protects every open stall anchor, validates custom paths first, allocates automatic tails by stable ID, ignores closed stalls, and reconciles all live queues after any geometry mutation | Reversed insertion, crossing custom routes, foreign-anchor claims, closed stalls, custom-first reroutes, live queue shortening, active orders, undo, and placement-driven reflow have regressions | **Pass automated** |
+| Expansion seams, walls, entry, and exit | Expansion removes the former right/bottom seam, moves the perimeter outward, projects entrance/exit to the live boundary, refreshes leaving routes, and restores endpoints on undo | Core tests cover perimeter/endpoint migration and old-exit non-despawn; first/wide/repeated expansion captures show the live enlarged hall | **Pass automated and visually sampled;** exact-production save/reload and repeated-expansion play remain open |
+| Signage/facility utility | Authored modifiers/roles/tags map to spatial/global wayfinding, patience, movement, turnover, cleanliness, ambience, satisfaction, tray-return, water/waste, first-aid, power, and cleaning effects; catalogue surfaces the primary effect | `tests/game/runtime/utility-effects.test.ts` asserts every signage/facility definition has nonzero utility, all signs provide wayfinding, spatial falloff works, and satisfaction remains bounded | **Pass automated;** full-progression balance tuning remains open |
+| Game-state UI and movement cues | Planning/open state, queue edit state, stall queue panel, expansion action, customer pose/status cues, carried food, table meals, and a Settings guide for all customer bubbles and the patience ring are connected to the simulation snapshot | Starter, live-service, custom-queue, queue-editing, and expansion captures; exact indicator-mapping regression; retained local-browser guide inspection; lifecycle/core invariant tests | **Pass retained targeted review;** exact-production responsive/accessibility review remains open |
+| Preferred guest routes and prediction | Route editor paints patterned teal, saved, undoable keep-clear tiles; weighted A* applies the same preference to actual guests, exit choice, queue insight, and the dashed predicted path while retaining obstacle-safe fallback | Seven focused core regressions plus the 1024 × 640 local-browser keyboard/clear/undo/reload pass | **Pass automated and targeted development-browser review;** fresh exact-production capture remains open |
+
+### Screenshot evidence
+
+All captures are stored outside the shipped repository in a local archive.
+
+| Capture | Evidence focus |
+|---|---|
+| `hawker-starter.png` | Planning state, starter hall, two distinct stall identities, varied furniture/catalogue previews, queue overlay legend |
+| `hawker-live-service.png` | Open-centre state, 24 active visitors, both stall queues, mixed customer poses, occupied seating, meal/service graphics |
+| `hawker-queue-routing.png` | Automatic queue-cell routing and live movement around the furnished hall |
+| `hawker-queue-editing.png` | In-world queue edit mode and connected editable cells |
+| `hawker-custom-queue.png` | Per-stall queue counts, cardinal controls, custom-path status, and bend controls |
+| `hawker-expanded.png` | First expansion with updated floor/perimeter composition |
+| `hawker-expanded-wide.png` | Enlarged hall framing and projected boundary after further expansion |
+| `hawker-expanded-twice.png` | Repeated expansion state, live customers, and expansion control/insight context |
+
+### Exact-production checks still required
+
+1. Record the validated source commit plus current payload/hash, then repeat the visual smoke on that artifact at 1280 x 720 and 1024 x 640, plus required zoom/text-scaling levels.
+2. Record browser/OS/GPU, DPR, console errors/warnings, unexpected network activity, resize/suspension/WebGL recovery, and save/reload results.
+3. Build an in-world gallery containing every stall ([current counts](design/CONTENT_CATALOGUE.md#roster-counts)). Capture every facade open and closed, with labels readable and shutters fully covering vendors, props, utensils, and service-window activity.
+4. For each stall, record the active menu, capture its food/drink display, change at least one enabled dish, and verify the display updates only to dishes that stall actually sells. Include the compact 3 x 2 Kopi Canopy and Sweet Monsoon footprints and the large 5 x 3 Satay Meridian, Straits Hearth, Herbal Cauldron, and Harbour Ember footprints, plus representative rotated placements.
+5. Observe vendor idle, preparation, and serving cycles at full motion, then enable reduced motion while the centre is open and while paused. Verify body, arm, utensil, prop, and steam offsets freeze immediately in a stable pose, no information depends on motion, and no flashing exceeds three changes per second.
+6. Repeat the stall gallery at standard and lower quality, normal and high contrast, 1280 x 720 and 1024 x 640, and the required zoom/text-scaling levels. Check silhouette separation, counter/vendor layering, menu-prop recognition, name readability, clipping, and non-colour differentiation.
+7. Run the all-stall gallery with a representative 80-guest crowd while profiling frame-time, allocation, and memory. The renderer's full-frame redraw and text recreation require browser evidence; visual completeness alone is not a performance pass.
+8. Run repeated expansion plus queue edits through save/reload and a long crowd soak; verify customers leave only at the live exit and never traverse furniture.
+9. Complete the human visual, accessibility, and Singapore cultural reviews before production approval.

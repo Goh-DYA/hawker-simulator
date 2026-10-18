@@ -1,10 +1,14 @@
-# Long-Term Progression Roadmap
+# Roadmap
 
-Status: Tracked future work. The daily focus, centre milestones, stall mastery, adaptive demand, and procedural soundtrack are the progression foundation.
+Status: The roadmap is tracked future work; the backlog holds deferred ideas only, none of which may delay or silently enter 1.0
+
+## Long-term progression roadmap
+
+The daily focus, centre milestones, stall mastery, adaptive demand, and procedural soundtrack are the progression foundation.
 
 This roadmap deliberately avoids premium currency, real-time waits, timed exclusivity, forced resets, accounts, analytics, and social pressure. Each phase should ship independently and preserve existing local saves.
 
-## Phase 1 — Neighbourhood demand events and peak periods
+### Phase 1 — Neighbourhood demand events and peak periods
 
 - [ ] Add seeded breakfast, lunch, tea, and evening demand profiles with readable advance notice.
 - [ ] Add local, fictional events such as community-club meetings and school activity days.
@@ -15,7 +19,7 @@ Dependencies: adaptive arrival model, objective eligibility, multi-entrance rout
 
 Acceptance: the same seed produces the same event sequence; every event has at least two viable responses; ignoring an event slows rewards but cannot create a hard fail state.
 
-## Phase 2 — Seeded scenarios and constrained layouts
+### Phase 2 — Seeded scenarios and constrained layouts
 
 - [ ] Author scenario definitions with map, starting inventory, operating constraints, and optional medals.
 - [ ] Add scenarios for narrow aisles, split halls, limited cash, menu variety, and peak throughput.
@@ -26,7 +30,7 @@ Dependencies: Phase 1 demand profiles, access-point validation, deterministic ob
 
 Acceptance: scenarios are reproducible, completable without one exact layout, and fully usable offline.
 
-## Phase 3 — Dish discovery, collections, and centre identity
+### Phase 3 — Dish discovery, collections, and centre identity
 
 - [ ] Add dish mastery based on service quality and customer preference matches.
 - [ ] Unlock recipe presentation variants and centre decorations through play, not random drops.
@@ -37,7 +41,7 @@ Dependencies: stall mastery, content validation, save-schema extension policy.
 
 Acceptance: collection completion has no missable entries or timed exclusivity; cosmetic choices never become dominant economic bonuses.
 
-## Phase 4 — Customer groups and community stories
+### Phase 4 — Customer groups and community stories
 
 - [ ] Add deterministic group arrivals, shared seating needs, and readable group satisfaction.
 - [ ] Add short fictional neighbourhood story arcs driven by centre milestones.
@@ -48,7 +52,7 @@ Dependencies: group reservation model, Phase 1 events, accessibility and cultura
 
 Acceptance: group routing cannot orphan reservations; stories remain optional and never block core progression.
 
-## Phase 5 — Endgame mastery contracts
+### Phase 5 — Endgame mastery contracts
 
 - [ ] Add rotating mastery contracts for high-level layout, service, menu, and hospitality play.
 - [ ] Scale targets from demonstrated throughput rather than fixed endgame crowd counts.
@@ -59,10 +63,53 @@ Dependencies: all earlier progression metrics and scenario validation.
 
 Acceptance: contracts remain achievable after arbitrary layout changes, rewards are granted once, and no reset or endless grind is required to retain earned content.
 
-## Implementation checklist for every phase
+### Implementation checklist for every phase
 
 - [ ] Add typed content/schema definitions and migration coverage.
 - [ ] Add deterministic unit fixtures and long-soak invariant tests.
 - [ ] Add accessible UI text and non-audio/non-colour feedback.
 - [ ] Update economy, design, provenance, risk, and release documentation.
 - [ ] Complete browser performance, cultural, accessibility, and save-compatibility review.
+
+## Post-launch backlog
+
+### Priority A — quality after release
+
+- More save export/import support for player-controlled backups.
+- Additional accessibility options based on human audit.
+- More diagnostic overlays and layout analytics computed locally.
+- Browser/GPU compatibility fixes discovered from support.
+- Additional English tutorial and objective variants.
+- Optional install/update UX improvements.
+
+### Priority B — sustainable content
+
+- Additional dishes within existing stalls after cultural and balance review.
+- Additional meaningful placeables that extend current visual families.
+- Seasonal-looking decorations without timed exclusivity or real-world holiday tokenism.
+- A second map theme only after the complete first theme remains maintainable.
+- More customer visual components; behavior remains independent of ethnicity.
+
+### Priority C — deeper simulation
+
+- Lightweight cleaner routing if measurement shows it adds readable decisions.
+- Reservations for larger groups and shared-table etiquette refinements.
+- Advanced stall specialization and menu synergy.
+- Optional scenario challenges with no punitive real-time timers.
+- More robust local replay/benchmark tooling.
+
+### Separate approval required
+
+The following require new product, privacy, legal, security, moderation, operations, and possibly financial review before any implementation:
+
+- analytics or telemetry;
+- accounts, cloud saves, cross-device sync;
+- payments, advertising, or any monetization;
+- social visits, leaderboards, sharing, chat, or user-generated content;
+- remote configuration or live events;
+- collection of support diagnostics;
+- mobile-first or app-store distribution.
+
+### Rejected for foreseeable scope
+
+Loot boxes, pay-to-win, energy systems, coercive timers, gambling-like mechanics, competitive economies, guilds, voice chat, detailed supply chains, staff morale/scheduling, franchise management, and always-online dependencies.
