@@ -77,6 +77,8 @@ const fakes = vi.hoisted(() => {
     removeSelectedAccessPoint: () => true,
     clearGuestRoute: () => true,
     upgradeStall: () => true,
+    renderPreview: () => undefined,
+    renderDishPreview: () => undefined,
   };
 
   const runtime = {

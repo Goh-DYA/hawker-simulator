@@ -1,8 +1,10 @@
 /**
  * Draw-call characterization of `createHawkerRuntime`, run headless.
  *
- * The stub scene of `fixtures.ts` records every Graphics and Text call in order, with each
- * number at 15 significant digits, into `render_log`. Each scenario records one stretch of
+ * The stub scene of `fixtures.ts` records every Graphics, Image, Text, texture and painter
+ * canvas-context call in order, with each number at 15 significant digits, into `render_log`.
+ * Retained sprites record only the setters that change, and a texture is painted once, so a
+ * scenario's count covers what it newly paints and moves. Each scenario records one stretch of
  * calls and pins it with a call count and a sha256 literal, and snapshots the labels left
  * on screen at the end (x, y, colour and text). Together they prove that moving draw code
  * out of the runtime closure keeps the drawn output identical: a swapped captured
@@ -65,60 +67,60 @@ const STARTER_TABLE_TILE: GridPoint = { x: 5, y: 8 };
 /** Call count and sha256 of each scenario's draw-call log. */
 const RENDER_DIGESTS = {
   fresh: {
-    calls: 2_486,
-    sha256: "f8473400d18c574f9bf75170f4e72c80c221eb1e1f1b05f77495442986e2766d",
+    calls: 115_947,
+    sha256: "9b2a105797d58093d626ae3c61ee4959cb8d6f21fd77c586c32770c9c4885c43",
   },
   busy: {
-    calls: 219_528,
-    sha256: "423831a84fd6d24a9737bc9ce4dad4e201e8ed5e8501217daf086ebb31dcbf92",
+    calls: 416_425,
+    sha256: "358e6228b1c5736ff61ded4f4e4ba3899ca0a96d4a25a7ef8ff88f2679badb6d",
   },
   highContrast: {
-    calls: 3_109,
-    sha256: "51d64dcd977c78af38b163fd5297c1756edc521f9ab1b70cb8b48af320406adf",
+    calls: 488_658,
+    sha256: "f3585c9bf14db7a40e70cb196f4d6c0efe8ae71f19eaeac60567debb1aa40e78",
   },
   reducedMotion: {
-    calls: 3_054,
-    sha256: "a01a03cf309256abd3d1496e07491347983d0b0bcf8d3ee05efc4396e35ad45c",
+    calls: 205,
+    sha256: "58c59e51ee2c29fb8462ef1b968f6baaea40fd13bda2b4cceef169c349401cba",
   },
   lowerEnd: {
-    calls: 6_172,
-    sha256: "3f23de39a01f4d605e60cc78419702f133b3174a2992342d9f75e8d56ebfefe4",
+    calls: 307_191,
+    sha256: "754fe4bb53b2b15163c22ccd388a02d03b059dbf67e32f6653967a1ae770baef",
   },
   debugOverlay: {
-    calls: 3_329,
-    sha256: "7cc129cbf2277175248259899ea28f166af9220a988caa1bdef7f16e8c1910ef",
+    calls: 372,
+    sha256: "bad4474ea5a7a292979b534749fb4cd37d123ef329ba982692206edf91302e5f",
   },
   placeValid: {
-    calls: 2_495,
-    sha256: "20e02aa9d6cf3610f27b7c67991cc71c0848b722502e64f186d4fb198b400a5d",
+    calls: 6,
+    sha256: "2a14f76dd6d5ed262bd7e8f8544bf3cafa43bac859bb64dfcaf384e30042a610",
   },
   placeInvalid: {
-    calls: 2_497,
-    sha256: "4410b10f1cd14f0ea9f9246c690322ca8ce07a6a2036ce311284bf4ab29b236f",
+    calls: 11,
+    sha256: "eafebe14c8bf03db2b609a54dd7aa02a75843b3a086377d7fc15307c2fbe5768",
   },
   routeValid: {
-    calls: 2_495,
-    sha256: "dabfbbc7c1c9ca85e48dc4ca7dd1535737ae5119887a35a770e353b1605c4d68",
+    calls: 5,
+    sha256: "19ea99a7b9dc148bc3ed1caab5e32b52e7f44651630a7743e50730f8881120e5",
   },
   routeInvalid: {
-    calls: 2_495,
-    sha256: "d062bb82f66159b87d89f615fbb2e32bbbac694aa73f0929ceb40858e54f92b2",
+    calls: 5,
+    sha256: "918f2bd8a8e7bdd0a3479fc441f66ef3c970dcffd1e8fa5570b9c50bbcba7806",
   },
   gallery: {
-    calls: 11_189,
-    sha256: "71156748cf69ec98549268fd5ae61a5603893cd1e9df204ca068b00866242006",
+    calls: 690_102,
+    sha256: "5089c89e4725f0d6031243309f5f76c564aa6b89af7a74c1ff1257309e3fd15d",
   },
   galleryVariants: {
-    calls: 561_206,
-    sha256: "af38d49841c54fd24612c71176abb1165843f480266f35ada184dfec0928a8e5",
+    calls: 62_486,
+    sha256: "5b9ad77518aa7b9daef6d9320c56ae373ffba2ec55d1734cc3fe5e1592f1f979",
   },
   multiDayFrame480: {
-    calls: 3_458,
-    sha256: "6c360356f90917406d2f01eded929d6b6440afe04770ef4fba8b469ecf44057d",
+    calls: 252,
+    sha256: "a4b20b91166161af6dc57373e7796166e9cf2d58dc431a2a6db06b0033156b0f",
   },
   multiDayFrame960: {
-    calls: 3_463,
-    sha256: "c18fb0d29556b5891d9a5e09b0722f155409b8ee461633a4ff645b195b3c912c",
+    calls: 225,
+    sha256: "6f724674d50260eae52ef6b9a66a05686d4ddefa2816a3627ae142d39f37a24f",
   },
 } satisfies Record<string, RenderLogDigest>;
 
@@ -147,7 +149,7 @@ function record_render(action: () => void): RenderLogDigest {
  */
 function list_live_labels(scene: RuntimeScene): readonly string[] {
   return scene.texts
-    .filter((label) => !label.isDestroyed)
+    .filter((label) => !label.isDestroyed && label.isVisible)
     .map((label) => {
       const fields = [format_render_value(label.x), format_render_value(label.y), label.colour];
       return `${fields.map(String).join(" ")} ${label.text}`;

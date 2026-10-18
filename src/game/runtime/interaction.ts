@@ -20,7 +20,7 @@ import {
   type Rotation,
   type SimulationCatalog,
 } from "@/src/game/core";
-import { renderedCustomerPosition, type CustomerMovementState } from "./render/customers";
+import { renderedCustomerPosition, type CustomerMovementState } from "./render/geometry";
 import type { BuildTool, GameSpeed, RuntimeEvent } from "./types";
 
 /** The counters behind generated access-point and placed-object IDs. */

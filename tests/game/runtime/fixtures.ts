@@ -14,9 +14,9 @@
  * - {@link install_runtime_stubs} and {@link restore_runtime_stubs} put the clock and the
  *   DOM stubs in place around each test.
  * - {@link create_test_runtime} builds a runtime and collects everything it reports.
- * - {@link render_log} records every Graphics and Text call of the stub scene, at full
- *   15-digit precision, between `start_recording()` and `stop_recording()`, so a suite can
- *   pin the exact draw output of a scenario.
+ * - {@link render_log} records every Graphics, Image, Text, texture and canvas-context call
+ *   of the stub scene, at full 15-digit precision, between `start_recording()` and
+ *   `stop_recording()`, so a suite can pin the exact draw output of a scenario.
  */
 import { createHash, type Hash } from "node:crypto";
 
@@ -366,6 +366,11 @@ function read_style_colour(style: unknown): unknown {
 export class StubText {
   readonly calls: StubCall[] = [];
   isDestroyed = false;
+  isVisible = true;
+  x: number;
+  y: number;
+  text: string;
+  private colourValue: unknown;
 
   /**
    * @param x - World x.
@@ -373,18 +378,59 @@ export class StubText {
    * @param text - The label text.
    * @param style - The Phaser text style.
    */
-  constructor(
-    readonly x: number,
-    readonly y: number,
-    readonly text: string,
-    readonly style: unknown,
-  ) {
-    render_log.record("text", "create", [x, y, text, read_style_colour(style)]);
+  constructor(x: number, y: number, text: string, readonly style: unknown) {
+    this.x = x;
+    this.y = y;
+    this.text = text;
+    this.colourValue = read_style_colour(style);
+    render_log.record("text", "create", [x, y, text, this.colourValue]);
   }
 
-  /** The text colour from the style, as the label shows it. */
+  /** The text colour, from the style or the latest `setColor`. */
   get colour(): unknown {
-    return read_style_colour(this.style);
+    return this.colourValue;
+  }
+
+  /**
+   * @param x - New world x.
+   * @param y - New world y.
+   * @returns This text.
+   */
+  setPosition(x: number, y: number): this {
+    this.x = x;
+    this.y = y;
+    render_log.record("text", "setPosition", [x, y]);
+    return this;
+  }
+
+  /**
+   * @param text - The new label text.
+   * @returns This text.
+   */
+  setText(text: string): this {
+    this.text = text;
+    render_log.record("text", "setText", [text]);
+    return this;
+  }
+
+  /**
+   * @param colour - The new CSS colour.
+   * @returns This text.
+   */
+  setColor(colour: string): this {
+    this.colourValue = colour;
+    render_log.record("text", "setColor", [colour]);
+    return this;
+  }
+
+  /**
+   * @param visible - Whether the label shows.
+   * @returns This text.
+   */
+  setVisible(visible: boolean): this {
+    this.isVisible = visible;
+    render_log.record("text", "setVisible", [visible]);
+    return this;
   }
 
   /**
@@ -425,25 +471,120 @@ export class StubText {
  */
 export function create_recording_graphics(tag: string): object {
   render_log.record(tag, "create", []);
-  const graphics: object = new Proxy(
+  return create_recording_object(tag);
+}
+
+/**
+ * Create a recording stand-in for any chainable game object or drawing surface: every method
+ * call is logged as `[tag, method, ...args]` and every property assignment as
+ * `[tag, "set", property, value]`, and calls return the stub itself.
+ *
+ * @param tag - The target name to log, such as `image#3` or `canvas:dish:...`.
+ * @returns The recording stub.
+ */
+export function create_recording_object(tag: string): object {
+  const stub: object = new Proxy(
     {},
     {
       get(_target, property) {
-        // Leave symbol lookups (inspection, iteration) unanswered so the stub prints plainly.
         if (typeof property === "symbol") return undefined;
         return (...args: unknown[]) => {
           render_log.record(tag, property, args);
-          return graphics;
+          return stub;
         };
+      },
+      set(_target, property, value) {
+        if (typeof property === "symbol") return true;
+        render_log.record(tag, "set", [property, value]);
+        return true;
       },
     },
   );
-  return graphics;
+  return stub;
+}
+
+/** Stand-in for a Phaser canvas texture: a recording 2D context plus the frame and refresh calls. */
+export class StubCanvasTexture {
+  readonly context: object;
+  readonly canvas = { toDataURL: () => `data:image/png;base64,${this.key}` };
+  readonly frames: string[] = [];
+
+  /**
+   * @param key - The texture key.
+   * @param width - Texture width in pixels.
+   * @param height - Texture height in pixels.
+   */
+  constructor(
+    readonly key: string,
+    readonly width: number,
+    readonly height: number,
+  ) {
+    this.context = create_recording_object(`canvas:${key}`);
+  }
+
+  /**
+   * Record a frame.
+   *
+   * @param name - Frame name.
+   * @param sourceIndex - Source index (always 0).
+   * @param x - Frame left.
+   * @param y - Frame top.
+   * @param width - Frame width.
+   * @param height - Frame height.
+   */
+  add(name: string, sourceIndex: number, x: number, y: number, width: number, height: number): void {
+    this.frames.push(name);
+    render_log.record(`texture:${this.key}`, "add", [name, sourceIndex, x, y, width, height]);
+  }
+
+  /** Record the refresh. */
+  refresh(): void {
+    render_log.record(`texture:${this.key}`, "refresh", []);
+  }
+}
+
+/** Stand-in for the scene's texture manager. */
+export class StubTextureManager {
+  readonly textures = new Map<string, StubCanvasTexture>();
+
+  /**
+   * @param key - The texture key.
+   * @returns Whether a texture with that key was created and not removed.
+   */
+  exists(key: string): boolean {
+    return this.textures.has(key);
+  }
+
+  /**
+   * Create a canvas texture.
+   *
+   * @param key - The texture key.
+   * @param width - Texture width in pixels.
+   * @param height - Texture height in pixels.
+   * @returns The texture.
+   */
+  createCanvas(key: string, width: number, height: number): StubCanvasTexture {
+    const texture = new StubCanvasTexture(key, width, height);
+    this.textures.set(key, texture);
+    render_log.record("textures", "createCanvas", [key, width, height]);
+    return texture;
+  }
+
+  /**
+   * Remove a texture.
+   *
+   * @param key - The texture key.
+   */
+  remove(key: string): void {
+    this.textures.delete(key);
+    render_log.record("textures", "remove", [key]);
+  }
 }
 
 /** The game-object factory of a scene. */
 export interface StubGameObjectFactory {
   graphics(): object;
+  image(x: number, y: number, key: string, frame?: string): object;
   text(x: number, y: number, text: string, style: unknown): StubText;
 }
 
@@ -451,14 +592,21 @@ export interface StubGameObjectFactory {
 export class StubScene {
   readonly texts: StubText[] = [];
   private graphicsCount = 0;
+  private imageCount = 0;
   readonly add: StubGameObjectFactory = {
     graphics: () => create_recording_graphics(`graphics#${this.graphicsCount++}`),
+    image: (x, y, key, frame) => {
+      const tag = `image#${this.imageCount++}`;
+      render_log.record(tag, "create", [x, y, key, frame]);
+      return create_recording_object(tag);
+    },
     text: (x, y, text, style) => {
       const label = new StubText(x, y, text, style);
       this.texts.push(label);
       return label;
     },
   };
+  readonly textures = new StubTextureManager();
   readonly cameras = { main: new StubCamera() };
   readonly input = new StubInput();
 
