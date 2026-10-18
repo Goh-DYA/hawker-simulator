@@ -62,6 +62,53 @@ export function customerAppearanceForId(customerId: string): CustomerAppearance 
   return { skin, clothing, accent };
 }
 
+/** Hair colours a guest's figure picks from, in a fixed order. */
+export const HAIR_COLOURS = [0x211915, 0x3a281f, 0x553927, 0x1c1b1f, 0x6b4a2b, 0x8a8f94] as const;
+/** Number of hair shapes a guest's figure picks from. */
+export const HAIR_STYLE_COUNT = 6;
+/** The lower garments a guest's figure picks from, in a fixed order. */
+export const LEGWEAR_KINDS = ["trousers", "shorts", "skirt", "long-skirt", "jeans"] as const;
+/** Colours of trousers, shorts and skirts, in a fixed order. */
+export const LEGWEAR_COLOURS = [
+  0x2f3a4a, 0x4a4f57, 0x6b5a45, 0x2f4a6b, 0x7a6a55, 0x3b5a4a, 0x1f2a36, 0x8a7560,
+] as const;
+/** Shoe colours, in a fixed order. */
+export const SHOE_COLOURS = [0x2b2b2b, 0xf1efe8, 0x6b4a2b, 0x3d4f6b, 0x8a3a2e] as const;
+
+/** A guest's body and the clothes below the waist, independent of persona and appearance. */
+export interface CustomerFigure {
+  readonly hair: number;
+  readonly hairStyle: number;
+  /** Height class: 0 short, 1 average, 2 tall. */
+  readonly stature: 0 | 1 | 2;
+  /** Build class: 0 slim, 1 average, 2 broad. */
+  readonly build: 0 | 1 | 2;
+  readonly legwear: (typeof LEGWEAR_KINDS)[number];
+  readonly legwearColour: number;
+  readonly shoeColour: number;
+}
+
+/**
+ * Derives a guest's figure (hair, height, build and lower garments) from their ID alone, so body
+ * variety never follows the guest's persona, spending or health condition, and stays stable
+ * across rerenders.
+ *
+ * @param customerId - The customer's ID.
+ * @returns The figure.
+ */
+export function customer_figure_for_id(customerId: string): CustomerFigure {
+  const seed = stableVisualHash(`figure:${customerId}`);
+  return {
+    hair: HAIR_COLOURS[seed % HAIR_COLOURS.length] as number,
+    hairStyle: (seed >>> 4) % HAIR_STYLE_COUNT,
+    stature: ((seed >>> 8) % 3) as 0 | 1 | 2,
+    build: ((seed >>> 11) % 3) as 0 | 1 | 2,
+    legwear: LEGWEAR_KINDS[(seed >>> 14) % LEGWEAR_KINDS.length] as (typeof LEGWEAR_KINDS)[number],
+    legwearColour: LEGWEAR_COLOURS[(seed >>> 18) % LEGWEAR_COLOURS.length] as number,
+    shoeColour: SHOE_COLOURS[(seed >>> 22) % SHOE_COLOURS.length] as number,
+  };
+}
+
 export interface CustomerAnimationPose {
   readonly state: CustomerStatus;
   readonly pose: "consider" | "walk" | "queue" | "order" | "wait" | "seek" | "sit" | "eat" | "return" | "leave";
