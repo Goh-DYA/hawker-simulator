@@ -49,25 +49,25 @@ const SAVE_FIXTURE_HASHES: readonly SaveFixtureHashes[] = [
   {
     fileName: "save-v1.json",
     migratedSaveSha256: "e3c5839b5ac3cc0be1856d62af68dc3102f6e4dff1be3c2642b4ac8011a8788c",
-    stateDigestSha256: "eed0a00eabc995e3b76df4fde5e185279c60c939577a16bddb903978028e4981",
+    stateDigestSha256: "4ef0c0679ff3e389e5b3350db97abc18b5325c18e74508d95c55206563f675a3",
     serializedSaveSha256: "04a8849712bbf8d385d24eec5d9ae3eb1cebd1f746df5580a3bbab58ec606a9c",
   },
   {
     fileName: "save-v2.json",
     migratedSaveSha256: "6b77e90978e70d34d5ea64bddb3f10d94a82042e7cc0b2d325d28b319cfc15ea",
-    stateDigestSha256: "e3d5f4852cad6bc1ae37827ce21be8054c689a06fde5e53fc62b1d6b1c6b2a74",
+    stateDigestSha256: "baad3ba36c3fe07b2cf4d79b49979f74311639f279c85ac902b5761a4b27b60e",
     serializedSaveSha256: "116f37fa577b17fd4f9bc14e7c61aaf33f76712fde8ef83cd836c336205c0d87",
   },
   {
     fileName: "save-v3.json",
     migratedSaveSha256: "9b5e02e400c6d1db8137b1b8f0c21060ff30c3c3957aee5926092039a62bff7c",
-    stateDigestSha256: "b125f7956f4d6fe5728423666269b12c856c4f755e77f8faf8b42e2fabd2a526",
+    stateDigestSha256: "0dda2fa829ff7005615ce36ee8e694800cb01786d66628b52673f5d0f5c82d7c",
     serializedSaveSha256: "301beac9702f9eb75602621236fe74bfb2d80954541b41ac387c2e6407fa1a01",
   },
   {
     fileName: "save-v4.json",
     migratedSaveSha256: "7aaefd580d140377cafe1952f58839c7773132847b3f28678b8a34d22d3c533e",
-    stateDigestSha256: "7fb033f92c289e956bf5ce5e6840daf30ea3a3c68e305cd36e300768720fd918",
+    stateDigestSha256: "02744ef63b8764bb0a47943b5791e798b7ef14d281a24ff2e887c7a8e4109239",
     serializedSaveSha256: "5a3fca1f0a003dadf8733198e93a552e10bc4f92fdc1d86c37baf12605fb2e53",
   },
 ];

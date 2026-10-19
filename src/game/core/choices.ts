@@ -153,7 +153,7 @@ export function chooseStall(draft: Draft, source: Customer): Customer {
       best = { stall, path, score };
     }
   }
-  if (!best) return beginExit(draft, source, true);
+  if (!best) return beginExit(draft, { ...source, departureReason: "no-stall" }, true);
   draft.queues[best.stall.object.id] = [...(draft.queues[best.stall.object.id] ?? []), source.id];
   const customer = preparePath(transition(draft, source, "walking-to-queue"), best.path);
   return { ...customer, targetStallId: best.stall.object.id };
@@ -216,7 +216,7 @@ export function chooseDish(draft: Draft, stall: StallRuntime, customer: Customer
 export function findSeat(draft: Draft, customer: Customer): { seat: SeatLocation; path: readonly GridPoint[] } | undefined {
   let best: { seat: SeatLocation; path: readonly GridPoint[] } | undefined;
   for (const seat of getSeatLocations(draft.objects, draft.source.catalog)) {
-    if (draft.seatReservations[seat.key]) continue;
+    if (draft.seatReservations[seat.key] || draft.unclearedTrays[seat.key]) continue;
     const path = requestPath(draft, customer.position, seat.point);
     if (!path) continue;
     if (!best || path.length < best.path.length || (path.length === best.path.length && seat.key < best.seat.key)) {

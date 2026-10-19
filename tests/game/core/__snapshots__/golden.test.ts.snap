@@ -87,7 +87,7 @@ exports[`core simulation golden master > (a) runs seed soak-2026 for 600 steps o
     "spawnedCustomers": 86,
     "despawnedCustomers": 86,
     "completedCustomers": 85,
-    "pathRequests": 347,
+    "pathRequests": 432,
     "pathFailures": 0,
     "recoveredTargets": 1,
     "trayReturns": 85,
@@ -991,7 +991,7 @@ exports[`core simulation golden master > (a) runs seed soak-2026 for 600 steps o
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1571,7 +1571,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
     "spawnedCustomers": 81,
     "despawnedCustomers": 81,
     "completedCustomers": 5,
-    "pathRequests": 106,
+    "pathRequests": 111,
     "pathFailures": 0,
     "recoveredTargets": 80,
     "trayReturns": 5,
@@ -1582,7 +1582,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1600,7 +1600,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1618,7 +1618,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1636,7 +1636,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1654,7 +1654,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1672,7 +1672,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1690,7 +1690,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1708,7 +1708,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1726,7 +1726,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1744,7 +1744,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1762,7 +1762,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1780,7 +1780,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1798,7 +1798,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1816,7 +1816,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1834,7 +1834,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1852,7 +1852,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1870,7 +1870,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1888,7 +1888,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1906,7 +1906,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1924,7 +1924,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1942,7 +1942,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1960,7 +1960,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1978,7 +1978,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -1996,7 +1996,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2014,7 +2014,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2032,7 +2032,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2050,7 +2050,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2068,7 +2068,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2086,7 +2086,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2104,7 +2104,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2122,7 +2122,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2140,7 +2140,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2158,7 +2158,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2176,7 +2176,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2194,7 +2194,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2212,7 +2212,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2230,7 +2230,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2248,7 +2248,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2266,7 +2266,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2284,7 +2284,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2302,7 +2302,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2320,7 +2320,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2338,7 +2338,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2356,7 +2356,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2374,7 +2374,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
         "score": 17,
         "served": false,
         "abandoned": true,
-        "reason": "abandoned",
+        "reason": "no-stall",
         "components": {
           "foodQuality": 0,
           "wait": 100,
@@ -2784,7 +2784,7 @@ exports[`core simulation golden master > (c) advances lower-end mode with frames
     "spawnedCustomers": 94,
     "despawnedCustomers": 89,
     "completedCustomers": 89,
-    "pathRequests": 368,
+    "pathRequests": 459,
     "pathFailures": 0,
     "recoveredTargets": 0,
     "trayReturns": 89,
@@ -4310,7 +4310,7 @@ exports[`core simulation golden master > (d) runs the nutrition catalog at level
     "spawnedCustomers": 129,
     "despawnedCustomers": 124,
     "completedCustomers": 124,
-    "pathRequests": 532,
+    "pathRequests": 659,
     "pathFailures": 0,
     "recoveredTargets": 0,
     "trayReturns": 126,
@@ -9470,7 +9470,7 @@ exports[`core simulation golden master > (e) applies a fixed build-command scrip
     "spawnedCustomers": 51,
     "despawnedCustomers": 45,
     "completedCustomers": 45,
-    "pathRequests": 245,
+    "pathRequests": 293,
     "pathFailures": 0,
     "recoveredTargets": 2,
     "trayReturns": 46,
@@ -10882,7 +10882,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
     "spawnedCustomers": 819,
     "despawnedCustomers": 816,
     "completedCustomers": 816,
-    "pathRequests": 3942,
+    "pathRequests": 4760,
     "pathFailures": 0,
     "recoveredTargets": 0,
     "trayReturns": 817,

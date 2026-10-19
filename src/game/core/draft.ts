@@ -22,6 +22,7 @@ import type {
   PlacedObject,
   SimulationEvent,
   SimulationMetrics,
+  UnclearedTray,
 } from "./types";
 
 /** The mutable working copy of a game state that one simulation step edits in place. */
@@ -33,6 +34,7 @@ export interface Draft {
   readonly queueCellsByStall: Readonly<Record<string, readonly GridPoint[]>>;
   readonly preferredRouteKeys: ReadonlySet<string>;
   seatReservations: Record<string, string>;
+  unclearedTrays: Record<string, UnclearedTray>;
   economy: GameState["economy"];
   progression: GameState["progression"];
   rngState: number;
@@ -82,6 +84,7 @@ export function createDraft(state: GameState, tick: number): Draft {
     ),
     preferredRouteKeys: new Set(state.routeGuidePoints.map(pointKey)),
     seatReservations: { ...state.seatReservations },
+    unclearedTrays: { ...state.unclearedTrays },
     economy: { ...state.economy },
     progression: clone_progression(state.progression),
     rngState: state.rngState,

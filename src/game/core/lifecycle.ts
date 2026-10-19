@@ -37,6 +37,12 @@ import {
   utilitySatisfactionBonus,
 } from "./utility";
 import { completeSale, settleVisitRating } from "./visits";
+import {
+  compute_uncleared_neighbour_penalty,
+  is_tray_returner,
+  leave_tray,
+  TRAY_RETURN_MAX_PATH_TILES,
+} from "./clearing";
 import type { Customer, CustomerStatus } from "./types";
 
 // Eating and tray-return factors (processCustomer).
@@ -51,6 +57,8 @@ const BASE_MEAL_COMFORT = 76;
 const MEAL_COMFORT_AMBIENCE_WEIGHT = 6;
 /** Lowest cleanliness rating after a meal. */
 const MIN_MEAL_CLEANLINESS = 35;
+/** Comfort component of a served guest who gave up looking for a free seat. */
+const NO_SEAT_COMFORT = 30;
 /** Cleanliness rating before nearby cleanliness utilities. */
 const BASE_MEAL_CLEANLINESS = 82;
 /** Cleanliness rating per unit of nearby cleanliness. */
@@ -184,7 +192,9 @@ function handle_queued(draft: Draft, customer: Customer, delta_ms: number): Cust
     patienceRemainingMs:
       customer.patienceRemainingMs - delta_ms * (1 - queueUtility.queuePatience),
   };
-  if (customer.patienceRemainingMs <= 0) return beginExit(draft, customer, true);
+  if (customer.patienceRemainingMs <= 0) {
+    return beginExit(draft, { ...customer, departureReason: "long-queue" }, true);
+  }
   if (
     queue[0] === customer.id &&
     activePreparationCount(draft, stall.object.id) < (stall.definition.stall?.preparationCapacity ?? 1)
@@ -208,7 +218,7 @@ function handle_ordering(draft: Draft, customer: Customer): Customer {
   }
   if (customer.stateElapsedMs < (stall.definition.stall?.orderMs ?? 0)) return customer;
   const choice = chooseDish(draft, stall, customer);
-  if (!choice) return beginExit(draft, customer, true);
+  if (!choice) return beginExit(draft, { ...customer, departureReason: "no-dish" }, true);
   const healthRating = personalizedHealthRating(
     choice.variant?.profile,
     customer.healthConditions,
@@ -259,7 +269,17 @@ function handle_seeking_seat(draft: Draft, customer: Customer, delta_ms: number)
   const selected = findSeat(draft, customer);
   if (!selected) {
     customer = { ...customer, patienceRemainingMs: customer.patienceRemainingMs - delta_ms };
-    if (customer.patienceRemainingMs <= 0) return beginExit(draft, customer, false);
+    if (customer.patienceRemainingMs <= 0) {
+      return beginExit(
+        draft,
+        {
+          ...customer,
+          departureReason: "no-seat",
+          ratingFactors: { ...customer.ratingFactors, comfort: NO_SEAT_COMFORT },
+        },
+        false,
+      );
+    }
     return customer;
   }
   draft.seatReservations[selected.seat.key] = customer.id;
@@ -311,9 +331,12 @@ function handle_eating(draft: Draft, customer: Customer): Customer {
     ? adjustedEatingDurationMs(dish.eatingMs, diningUtility.eatingSpeed)
     : Number.POSITIVE_INFINITY;
   if (!dish || customer.stateElapsedMs < adjustedEatingMs) return customer;
+  const uncleared_penalty = compute_uncleared_neighbour_penalty(draft, seat.point);
+  const returns_tray = will_return_tray(draft, customer);
   customer = releaseSeat(draft, customer);
-  return {
-    ...transition(draft, customer, "seeking-tray-return"),
+  if (!returns_tray) leave_tray(draft, seat.key, seat.point);
+  const finished: Customer = {
+    ...(returns_tray ? transition(draft, customer, "seeking-tray-return") : customer),
     satisfaction: Math.max(
       0,
       Math.min(
@@ -330,12 +353,31 @@ function handle_eating(draft: Draft, customer: Customer): Customer {
           100,
           BASE_MEAL_CLEANLINESS +
             diningUtility.cleanliness * MEAL_CLEANLINESS_WEIGHT +
-            diningUtility.cleaningEfficiency * MEAL_CLEANING_EFFICIENCY_WEIGHT,
+            diningUtility.cleaningEfficiency * MEAL_CLEANING_EFFICIENCY_WEIGHT -
+            uncleared_penalty,
         ),
       ),
       ambience: Math.max(MIN_MEAL_AMBIENCE, Math.min(100, BASE_MEAL_AMBIENCE + diningUtility.ambience * MEAL_AMBIENCE_WEIGHT)),
     },
   };
+  return returns_tray ? finished : beginExit(draft, { ...finished, hasTray: false }, false);
+}
+
+/**
+ * Decides, at the end of a meal, whether a guest takes their tray to a tray return.
+ *
+ * The guest must be a tray returner by habit, and a reachable tray return must be within
+ * `TRAY_RETURN_MAX_PATH_TILES` of their seat.
+ *
+ * @param draft - The draft whose objects and archetypes are read.
+ * @param customer - The guest finishing their meal, still at their seat.
+ * @returns True when the guest returns their tray; otherwise they leave it on the seat.
+ */
+function will_return_tray(draft: Draft, customer: Customer): boolean {
+  const archetype = draft.source.catalog.archetypes[customer.archetypeId];
+  if (!is_tray_returner(customer, archetype?.trayReturnChance)) return false;
+  const tray_return = findTrayReturn(draft, customer);
+  return tray_return !== undefined && tray_return.path.length - 1 <= TRAY_RETURN_MAX_PATH_TILES;
 }
 
 /**
@@ -414,7 +456,7 @@ function handle_walking_to_exit(draft: Draft, customer: Customer, delta_ms: numb
     draft,
     movement.customer,
     !movement.customer.served,
-    movement.customer.served ? "served" : "abandoned",
+    movement.customer.departureReason ?? (movement.customer.served ? "served" : "abandoned"),
   );
   removeFromAllQueues(draft, customer.id);
   releaseSeat(draft, customer);
@@ -430,6 +472,17 @@ function handle_walking_to_exit(draft: Draft, customer: Customer, delta_ms: numb
   });
   return undefined;
 }
+
+/**
+ * Statuses the visit cap never interrupts: leaving, and a seated guest finishing their meal and
+ * clearing their tray. Movement failures still end those visits through stuck recovery.
+ */
+const VISIT_CAP_EXEMPT_STATUSES: ReadonlySet<CustomerStatus> = new Set([
+  "eating",
+  "seeking-tray-return",
+  "walking-to-tray-return",
+  "walking-to-exit",
+]);
 
 /** The handler for every customer status; a status without one fails to compile. */
 const CUSTOMER_STATUS_HANDLERS = {
@@ -464,8 +517,8 @@ export function processCustomer(draft: Draft, source: Customer, deltaMs: number)
     stateElapsedMs: source.stateElapsedMs + deltaMs,
   };
 
-  if (customer.visitElapsedMs >= draft.source.config.maxVisitMs && customer.status !== "walking-to-exit") {
-    return beginExit(draft, customer, !customer.served);
+  if (customer.visitElapsedMs >= draft.source.config.maxVisitMs && !VISIT_CAP_EXEMPT_STATUSES.has(customer.status)) {
+    return beginExit(draft, { ...customer, departureReason: "visit-cap" }, !customer.served);
   }
 
   return CUSTOMER_STATUS_HANDLERS[customer.status](draft, customer, deltaMs);

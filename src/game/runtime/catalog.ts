@@ -219,6 +219,7 @@ export function buildCatalog(): {
         queueSensitivity: archetype.queueSensitivity,
         distanceSensitivity: archetype.distanceSensitivity,
         noveltyPreference: archetype.noveltyPreference,
+        trayReturnChance: archetype.trayReturnChance,
         preferenceTags: archetype.dishPreferenceTags,
         unlockLevel: archetype.unlockRequirement.level,
         unlockReputation: archetype.unlockRequirement.reputation / REPUTATION_SCALE,

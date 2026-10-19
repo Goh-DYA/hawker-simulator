@@ -1,6 +1,7 @@
 /** Pure simulation-domain types. Rendering and UI state intentionally live elsewhere. */
 
 import type {
+  DEPARTURE_REASONS,
   HEALTH_CONDITIONS,
   NUTRITION_INTENTS,
   NUTRITION_METRICS,
@@ -175,6 +176,11 @@ export interface CustomerArchetype {
   readonly distanceSensitivity: number;
   /** How willing this archetype is to explore a less-obvious stall. Zero disables exploration. */
   readonly noveltyPreference?: number;
+  /**
+   * Share of guests of this archetype who return their tray when a tray return is close enough.
+   * Defaults to every guest.
+   */
+  readonly trayReturnChance?: number;
   readonly preferenceTags?: readonly string[];
   /** Optional progression gates. Reputation uses the core zero-to-five scale. */
   readonly unlockLevel?: number;
@@ -266,6 +272,8 @@ export interface Customer {
   readonly reservedSeatKey?: string;
   readonly targetTrayReturnId?: string;
   readonly hasTray: boolean;
+  /** Why the guest is leaving, once a specific reason is known; settles the visit rating. */
+  readonly departureReason?: DepartureReason;
   /** True once the order has been handed over, including a zero-price dish. */
   readonly served: boolean;
   readonly spent: number;
@@ -298,6 +306,20 @@ export interface VisitRating {
 
 /** The kind of a daily objective, which selects how its progress is measured. */
 export type ObjectiveKind = (typeof OBJECTIVE_KINDS)[number];
+
+/** Why a guest left, recorded on the visit rating. */
+export type DepartureReason = (typeof DEPARTURE_REASONS)[number];
+
+/**
+ * A tray a guest left on their seat. The seat cannot be used until the table-cleaning crew has
+ * cleared it. Uncleared trays exist only at runtime and are not saved.
+ */
+export interface UnclearedTray {
+  /** Tick on which the tray was left, which orders the crew's work. */
+  readonly leftAtTick: number;
+  /** Crew time still needed to clear the tray, in simulated milliseconds. */
+  readonly workRemainingMs: number;
+}
 
 /** What a nutrition objective counts. */
 export type NutritionObjectiveCriterion = (typeof NUTRITION_OBJECTIVE_CRITERIA)[number];
@@ -573,6 +595,8 @@ export interface GameState {
   readonly customers: Readonly<Record<string, Customer>>;
   readonly queues: Readonly<Record<string, readonly string[]>>;
   readonly seatReservations: Readonly<Record<string, string>>;
+  /** Trays left on seats, keyed by seat key; runtime-only like the reservations. */
+  readonly unclearedTrays: Readonly<Record<string, UnclearedTray>>;
   readonly economy: EconomyState;
   readonly progression: ProgressionState;
   readonly rngState: number;
@@ -745,6 +769,7 @@ export interface GameSnapshot {
   readonly customers: readonly Customer[];
   readonly queues: Readonly<Record<string, readonly string[]>>;
   readonly seatReservations: Readonly<Record<string, string>>;
+  readonly unclearedTrays: Readonly<Record<string, UnclearedTray>>;
   readonly economy: EconomyState;
   readonly progression: ProgressionState;
   readonly metrics: SimulationMetrics;
