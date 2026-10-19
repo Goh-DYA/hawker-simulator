@@ -7,9 +7,9 @@
  * It owns the UI state (open panel, dialogs, tutorial and tour steps, settings and
  * toasts), mirrors the runtime's snapshot, and composes the hooks, panels, HUD and
  * dialog modules that render it. It also decides when the end-of-day Service Review
- * opens: for a report day that appears during play, below 4× speed and with no other
- * dialog open, pausing the simulation until the review closes; otherwise the review
- * waits, marked unread, in the Focus panel. Until the runtime publishes its first snapshot, the UI
+ * opens: for every report day that appears during play, at any speed, pausing the simulation
+ * until the review closes. Behind another dialog or the Variant Lab the review waits, marked
+ * unread in the Focus panel, and opens as soon as that closes. Until the runtime publishes its first snapshot, the UI
  * renders from `INITIAL_SNAPSHOT`, which is also what server rendering shows.
  */
 
@@ -346,13 +346,33 @@ export function HawkerSimulator() {
 
   const close_service_review = useCallback(() => {
     set_is_review_open(false);
+    set_is_review_unread(false);
     const resume_speed = review_resume_speed_ref.current;
     review_resume_speed_ref.current = undefined;
     if (resume_speed !== undefined) controllerRef.current?.setSpeed(resume_speed);
   }, [controllerRef]);
 
   const review_report = snapshot.neighbourhood?.lastReport;
-  const is_review_showing = is_review_open && review_report !== undefined;
+  // A review that arrived behind another dialog or the Variant Lab waits, unread, and shows as
+  // soon as nothing else is open.
+  const is_review_blocked = is_interface_inert({
+    resetOpen,
+    settingsOpen,
+    helpOpen,
+    tutorialStep,
+    nutritionTourStep,
+    isVariantLabOpen: variantLabDishId !== undefined,
+    isServiceReviewOpen: false,
+  });
+  const is_review_showing =
+    review_report !== undefined && (is_review_open || (is_review_unread && !is_review_blocked));
+
+  // Pause the simulation when a waiting review shows; one opened directly has already paused it.
+  useEffect(() => {
+    if (!is_review_showing || review_resume_speed_ref.current !== undefined) return;
+    review_resume_speed_ref.current = snapshot.speed;
+    controllerRef.current?.setSpeed(0);
+  }, [controllerRef, is_review_showing, snapshot.speed]);
 
   useEffect(() => {
     const active_modal = resolve_active_modal({
@@ -436,7 +456,7 @@ export function HawkerSimulator() {
    * @param current_speed - The speed to restore when the review closes.
    */
   function open_service_review(current_speed: GameSpeed) {
-    if (is_review_open) return;
+    if (is_review_showing) return;
     review_resume_speed_ref.current = current_speed;
     controllerRef.current?.setSpeed(0);
     set_is_review_open(true);
@@ -444,9 +464,9 @@ export function HawkerSimulator() {
   }
 
   /**
-   * Open the Service Review when a runtime snapshot brings a new report day. At 4× speed and
-   * above, or while another dialog or the Variant Lab is open, the review is only marked unread
-   * and waits in the Focus panel.
+   * Open the Service Review when a runtime snapshot brings a new report day, at any speed, so
+   * every day that closes gets its review. While another dialog or the Variant Lab is open, the
+   * review is marked unread in the Focus panel and opens as soon as that closes.
    *
    * @param next_snapshot - The snapshot the runtime just pushed.
    */
@@ -462,16 +482,14 @@ export function HawkerSimulator() {
     }
     if (report_day === undefined || report_day === previous_day) return;
     if (previous_day !== undefined && report_day < previous_day) return;
-    const is_blocked =
-      next_snapshot.speed >= 4 ||
-      is_interface_inert({
+    const is_blocked = is_interface_inert({
         resetOpen,
         settingsOpen,
         helpOpen,
         tutorialStep,
         nutritionTourStep,
         isVariantLabOpen: variantLabDishId !== undefined,
-        isServiceReviewOpen: is_review_open,
+        isServiceReviewOpen: is_review_showing,
       });
     if (is_blocked) set_is_review_unread(true);
     else open_service_review(next_snapshot.speed);
@@ -677,6 +695,7 @@ export function HawkerSimulator() {
     isVariantLabOpen: Boolean(variantLabFamily),
     isServiceReviewOpen: is_review_showing,
   });
+
   const previewRequests = useMemo(
     () =>
       collect_preview_requests({
