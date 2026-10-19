@@ -76,7 +76,7 @@ describe("TodayStrip", () => {
     ]).toEqual(["Late-morning kopi crowd", "P"]);
   });
 
-  it("draws a labelled band for each rush window, placed along opening hours", () => {
+  it("draws a band for each rush window along opening hours and names their times below", () => {
     const container = render_strip(NEIGHBOURHOOD);
 
     expect(
@@ -86,9 +86,12 @@ describe("TodayStrip", () => {
         band.style.left,
       ]),
     ).toEqual([
-      ["lunch", "Lunch", `${get_timeline_share(714, 630, 1110) * 100}%`],
-      ["dinner", "Dinner", `${get_timeline_share(1011, 630, 1110) * 100}%`],
+      ["lunch", "", `${get_timeline_share(714, 630, 1110) * 100}%`],
+      ["dinner", "", `${get_timeline_share(1011, 630, 1110) * 100}%`],
     ]);
+    expect(container.querySelector(".today-rush-times")?.textContent).toBe(
+      "Lunch 11:54 AM–1:06 PM · Dinner 4:51–5:39 PM",
+    );
   });
 
   it("describes the whole timeline in its image label", () => {

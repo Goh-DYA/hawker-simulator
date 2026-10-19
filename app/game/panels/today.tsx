@@ -144,9 +144,7 @@ export function TodayStrip({ neighbourhood }: TodayStripProps) {
                 left: offset(window.startMinute),
                 width: format_share(share(window.endMinute) - share(window.startMinute)),
               }}
-            >
-              {window.label}
-            </span>
+            />
           ))}
           <span
             className="today-last-orders"
@@ -163,6 +161,14 @@ export function TodayStrip({ neighbourhood }: TodayStripProps) {
           <span>{format_minute_of_day(openingMinute)}</span>
           <span>Last orders {format_minute_of_day(neighbourhood.lastOrdersMinute)}</span>
         </div>
+        <p className="today-rush-times" aria-hidden="true">
+          {neighbourhood.rushWindows.map((window, index) => (
+            <span key={window.kind} data-kind={window.kind}>
+              {index > 0 ? " · " : ""}
+              {window.label} {format_minute_range(window.startMinute, window.endMinute)}
+            </span>
+          ))}
+        </p>
       </div>
       <p className="today-notice" aria-live="polite">
         {neighbourhood.rushNotice ?? ""}

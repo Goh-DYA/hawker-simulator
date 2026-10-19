@@ -25,7 +25,7 @@ import {
 } from "@/src/game/core";
 import { BUILDABLE_CONTENT, type VisualDefinition } from "./catalog";
 import { REPUTATION_SCALE } from "./rules";
-import { deriveSatisfactionTips } from "./satisfactionInsight";
+import { deriveSatisfactionTips, type SatisfactionTip } from "./satisfactionInsight";
 import type {
   RuntimeDayCard,
   RuntimeDayReport,
@@ -95,6 +95,49 @@ const DEPARTURE_LABELS: Readonly<Record<DepartureReason, string>> = {
   "no-seat": "Had food but found no free seat",
   "visit-cap": "Ran out of time before sitting down",
 };
+
+/**
+ * What to try first when one reason dominates why guests left early, tied to the rating factor
+ * it hurts most. A departure problem outranks a weak factor, because it costs whole visits.
+ */
+const DEPARTURE_TIPS: Readonly<Partial<Record<DepartureReason, SatisfactionTip>>> = {
+  "no-stall": {
+    factor: "wait",
+    label: "Queues",
+    score: 0,
+    action:
+      "Every queue was full at the rush. Add another stall or give the busiest stall a longer queue lane.",
+  },
+  "long-queue": {
+    factor: "wait",
+    label: "Queues",
+    score: 0,
+    action:
+      "Guests gave up waiting. Upgrade the busiest stall or open a second stall nearby to share the crowd.",
+  },
+  "no-seat": {
+    factor: "comfort",
+    label: "Seating",
+    score: 0,
+    action:
+      "Guests with food found no free seat. Add tables and seats near the stalls, and a tray return so tables clear faster.",
+  },
+  "no-dish": {
+    factor: "value",
+    label: "Prices",
+    score: 0,
+    action: "Some guests found nothing within budget. Put a lower-priced dish on a stall's menu.",
+  },
+  "visit-cap": {
+    factor: "walking",
+    label: "Walking",
+    score: 0,
+    action:
+      "Guests ran out of time before sitting down. Bring seats closer to the stalls and clear the main path.",
+  },
+};
+/** Share of rated visits a departure reason must reach before its tip replaces the factor tip. */
+const DEPARTURE_TIP_SHARE = 0.1;
 
 /** How the food writer describes each rating factor at its best and at its weakest. */
 const WRITER_PHRASES: Readonly<
@@ -167,8 +210,16 @@ export function build_day_review(
       count: report.departureCounts[reason],
     }))
     .sort((a, b) => b.count - a.count);
-  const [focusTip] =
+  const top_reason = leftEarlyReasons[0];
+  const departure_tip =
+    report.ratedVisits > 0 &&
+    top_reason &&
+    top_reason.count >= report.ratedVisits * DEPARTURE_TIP_SHARE
+      ? DEPARTURE_TIPS[top_reason.reason as DepartureReason]
+      : undefined;
+  const [factor_tip] =
     report.ratedVisits > 0 ? deriveSatisfactionTips(report.componentAverages, 1) : [];
+  const focusTip = departure_tip ?? factor_tip;
   const writer = report.writer;
   return {
     day: report.day,

@@ -690,6 +690,13 @@ kbd {
   color: #24505f;
 }
 
+.today-rush-times {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
 .today-band[data-active="true"] {
   box-shadow: 0 0 0 2px rgb(23 70 58 / 35%);
 }

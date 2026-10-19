@@ -23,6 +23,16 @@ Every operating stall displays its queue count. Players can select a cardinal au
 
 ![The stall management panel and an L-shaped custom queue route in the game world](docs/images/hawker-custom-queue.png)
 
+### Plan for a different day every day
+
+Each day after the opening day brings a fictional neighbourhood happening, such as an office move-in week, a school sports day, a community football final or a monsoon shower, drawn from a seeded shuffle bag so no day repeats the one before. The Today strip shows the card, the day's lunch and dinner rushes, last orders and tomorrow's forecast. At rush hour, seats and tray returns matter: guests leave trays behind when no return is close, and a table-cleaning crew clears them. From day 3 a food writer may visit to review one stall and award a Writer's Pick plaque.
+
+![The Today strip with the lunch rush under way, queues forming at both stalls, and tomorrow's community football final forecast](docs/images/hawker-lunch-rush.png)
+
+At the end of each day, the Service Review names why guests left early and one thing to try tomorrow.
+
+![The Service Review after the opening day, with guests served, guests who left early and why, and the tip to add queue capacity](docs/images/hawker-service-review.png)
+
 ### Guide guest movement
 
 The Route editor lets players paint preferred walking lanes across clear floor tiles. Guests use the guides for every leg of a visit when practical, while obstacle-safe fallback routing keeps incomplete lanes from trapping them. Route guides are saved, undoable, and reserved from blocking furniture and stall queues.
