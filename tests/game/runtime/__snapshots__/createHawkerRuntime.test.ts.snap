@@ -824,7 +824,7 @@ exports[`createHawkerRuntime > (1) exports a fresh centre built from the real co
 exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open run 1`] = `
 {
   "cash": 4478,
-  "reputation": 5.880000000000001,
+  "reputation": 7.84,
   "level": 2,
   "experience": 132,
   "nextLevelExperience": 400,

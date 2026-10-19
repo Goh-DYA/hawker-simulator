@@ -35,7 +35,7 @@ Upkeep is charged in visible, capped operating intervals only while open. Cash n
 
 Satisfaction is 0–100 and combines food quality 30%, wait 20%, value 15%, route efficiency 10%, seating comfort 10%, cleanliness 10%, and ambience 5%. Route efficiency uses the full distance walked from entrance to exit: the first 20 tiles carry no penalty, an 80-tile journey scores 50, and journeys of 116 tiles or more floor at 20. Missing-seat or unserved departures use dedicated penalties rather than fabricated food scores.
 
-Experience per completed visit is a small base plus satisfaction and novelty bonuses. Reputation uses a rolling sample so one bad visit is informative but not catastrophic. Exact rounding is centralized and covered by unit tests.
+Experience per completed visit is a small base plus satisfaction and novelty bonuses. Reputation is an exponentially weighted average of recent visit ratings: each rating maps to a target (0 at a score of 55, the full scale at 95) and closes 2% of the gap, so roughly the last fifty visits dominate and one bad visit is informative but not catastrophic. The wait component treats the first 40% of a guest's patience as free and then falls linearly to zero. Exact rounding is centralized and covered by unit tests.
 
 ## Unlock curve
 

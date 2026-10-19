@@ -111,12 +111,12 @@ exports[`createHawkerRuntime rendering > (9b) draws every reviewed variant on th
 exports[`createHawkerRuntime rendering > (10) draws frames 480 and 960 of the two-day run at speed 10 1`] = `
 {
   "480": [
-    "262 190 #17352e 0 guests",
+    "262 190 #17352e 2 guests",
     "646 190 #17352e 1 guest",
   ],
   "960": [
     "262 190 #17352e 1 guest",
-    "646 190 #17352e 1 guest",
+    "646 190 #17352e 0 guests",
   ],
 }
 `;
