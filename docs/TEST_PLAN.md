@@ -118,13 +118,13 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 
 - Zod parse and safe error for malformed definitions.
 - Unique IDs/keys and valid cross-references.
-- The [roster counts](design/CONTENT_CATALOGUE.md#roster-counts): exactly 14 stalls, 54 dishes, and 12 archetypes, at least 80 placeables, and 320 English localization entries.
+- The [roster counts](design/CONTENT_CATALOGUE.md#roster-counts): exactly 14 stalls, 67 dishes, and 12 archetypes, at least 80 placeables, and 346 English localization entries.
 - Every dish assigned, every stall has a menu item available at its unlock, every required English key present, no unlock cycles.
 - Footprint/interaction/depth anchors valid, every referenced visual/audio/animation known, and every stall/dish primary visual reference unique.
 - Catalogue duplicate policy check.
-- Exact 104 released nutrition profiles, 14 reviewed variant families with 64 selectable variants, and one released base profile plus Star rating for all 54 dishes.
+- Exact 116 released nutrition profiles, 14 reviewed variant families with 63 selectable variants, and one released base profile plus Star rating for all 67 dishes.
 - Overall Health and all four condition ratings are finite and bounded from 1 to 5; high-cholesterol, obesity, diabetes, and hypertension schemes use their documented nutrient families and remain distinct from Star ratings.
-- Deterministic CSV generation, source and row hash drift, serving scaling, malformed booleans, `Trace`, unavailable values, quarantine rules, percentile ties, and incompatible daily-guideline comparisons.
+- Deterministic CSV generation, source and row hash drift, serving scaling, malformed booleans, `Trace`, unavailable values, quarantine rules, intent-fit percentile ties, the guideline-anchored rating curves and missing-value rules, and incompatible daily-guideline comparisons.
 
 ### Stall graphics and animation
 

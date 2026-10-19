@@ -1,12 +1,18 @@
 # Test Report
 
-Report date: 2026-10-18
-Build/commit: Content `1.3.0` working source validated with bundled Node.js `v24.14.0`; commit/publication record pending
+Report date: 2026-10-19
+Build/commit: Content `1.4.0` working source validated with Node.js `v22.22.0`; commit/publication record pending
 Release verdict: **NO-GO pending exact-production browser/offline QA and required human reviews**
 
 This document owns the dated test and gate evidence; other documents link here instead of restating results (see the [documentation index](README.md)). Release blockers are listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md), and content counts in [CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md#roster-counts).
 
-Scope note: this report records the content `1.3.0` working-source gate and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
+Scope note: this report records the content `1.4.0` working-source gate, retains the content `1.3.0` gate as the previous record, and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
+
+## Content `1.4.0` working-source validation
+
+On 2026-10-19, Node.js `v22.22.0` passed `npm run test:release` (typecheck, lint, 105 Vitest files / 1,183 tests with `CI=true`, the Vinext build, and 2/2 rendered-output/offline-shell assertions) and the native Next.js Vercel build. The deterministic generated nutrition snapshot (review revision 2, `dataVersion` `sg-1bc212db6eda-c87987b4281c-r2`) contains 116 released profiles across 14 variant families for 67 dishes, rated by the guideline-anchored model ([ADR 0007](decisions/0007-guideline-anchored-nutrition-ratings.md)); the generated service-worker build ID is `878719bdd051`. The `benchmark-80-agents` Node run reported a mean of 0.069 ms and a p95 of 0.076 ms per fixed step.
+
+Seeded runtime runs at speed 10 compared the content with the base commit: five operating days earned 2,786 revenue (2,764 before) and reached level 7 in both, so the content change leaves the economy's pace in place. Two independent internal reviews (clinical-style and Singapore cultural) checked the final ratings and roster; their remaining findings are in [KNOWN_ISSUES.md](KNOWN_ISSUES.md#open-nutrition-data-and-rating-issues). No browser pass was run for this change.
 
 ## Content `1.3.0` working-source validation
 

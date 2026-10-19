@@ -111,7 +111,7 @@ The import rules do not change: `art/` and `render/` import Phaser as a type onl
 | C | Stalls | Fourteen distinct fronts with baked signboards, roofs, counters, props, vendors, steam, shutters and an open/closed state | Every stall is identifiable at the default zoom without its label |
 | D | Furniture | Eleven category painters covering all 80 placeables with their style-table branches | Each ID paints a distinct texture; tables, seats and bins are unmistakable |
 | E | People | Customer sheets (6 silhouettes × 5 patterns × appearance × 4 facings × frames), vendor sheets, trays, indicators, patience arc | Guests have facing, gait and carried food; selection ring and indicators survive |
-| F | Food | 54 dishes at counter and table scale, eaten-fraction frames, 14 variant-family cues | Dishes are readable on a tray at play zoom |
+| F | Food | 67 dishes at counter and table scale, eaten-fraction frames, 14 variant-family cues | Dishes are readable on a tray at play zoom |
 | G | Overlay and feedback | Placement ghost sprite, queue path, reserved seat, hover, route guides, selection glow, sale sparkle | Placement shows the item in place, tinted valid or invalid |
 | H | HUD | Catalogue and dish thumbnails from the runtime; refreshed CSS tokens, cards, buttons, tutorial art and loading state | The shell shares the world's materials; thumbnails match placed objects |
 | I | Tests and docs | Extended Phaser stub, regenerated render digests, painter suites, ADR 0005, Art Bible, Technical Design, Changelog, Tech Debt, screenshots | `npm run test:release` passes; the docs name only paths that exist |
