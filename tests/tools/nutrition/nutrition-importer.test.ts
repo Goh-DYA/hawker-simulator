@@ -296,7 +296,7 @@ describe("nutrition CSV importer", () => {
     assert.deepEqual(trace, { status: "trace" });
   });
 
-  it("computes bounded ratings in the authored beneficial and moderation directions", () => {
+  it("rates a serving from five stars down to one against guideline amounts", () => {
     const conditionRatings = {
       "high-cholesterol": 3,
       obesity: 3,
@@ -308,6 +308,7 @@ describe("nutrition CSV importer", () => {
         id: "lower-risk",
         status: "released" as const,
         nutritionClass: "meal" as const,
+        serving: { amount: 300 },
         nutrients: nutrientFixture({
           energyKcal: { status: "known", value: 200 },
           proteinG: { status: "known", value: 30 },
@@ -328,16 +329,17 @@ describe("nutrition CSV importer", () => {
         id: "higher-risk",
         status: "released" as const,
         nutritionClass: "meal" as const,
+        serving: { amount: 450 },
         nutrients: nutrientFixture({
-          energyKcal: { status: "known", value: 900 },
+          energyKcal: { status: "known", value: 1_100 },
           proteinG: { status: "known", value: 5 },
-          totalFatG: { status: "known", value: 50 },
+          totalFatG: { status: "known", value: 70 },
           saturatedFatG: { status: "known", value: 20 },
           transFatG: { status: "known", value: 5 },
           carbohydrateG: { status: "known", value: 100 },
-          totalSugarG: { status: "known", value: 40 },
+          totalSugarG: { status: "known", value: 50 },
           dietaryFibreG: { status: "known", value: 1 },
-          sodiumMg: { status: "known", value: 2_000 },
+          sodiumMg: { status: "known", value: 3_000 },
           calciumMg: { status: "known", value: 20 },
           ironMg: { status: "known", value: 1 },
         }),

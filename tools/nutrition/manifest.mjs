@@ -25,6 +25,14 @@ export const EXPECTED_GUIDELINE_FILE_SHA256 =
   "c87987b4281c8557f75b61fefa96d95d13e9ff60c2c41e38fe4a428219064ab4";
 
 /**
+ * The review revision of the mappings and the rating model. It is part of the generated
+ * `dataVersion`, so raising it when either changes resets saved dish-variant choices to
+ * the reviewed defaults, even though the source files are unchanged. Revision 2 adopted
+ * the guideline-anchored ratings and realistic hawker servings.
+ */
+export const NUTRITION_REVIEW_REVISION = 2;
+
+/**
  * The number of adult daily guideline rows the reviewed guideline file holds. It matches
  * `LAUNCH_ROSTER.nutritionGuidelines` in `src/content/roster.ts`.
  */
@@ -606,4 +614,4 @@ export const NUTRITION_INTENTS = [
 
 /** The educational disclosure shown with nutrition information. */
 export const NUTRITION_DISCLOSURE =
-  "Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed source serving; recipes and portions vary. Its 1-5 health and condition ratings compare servings only within this game's meal or drink catalogue: they are not diagnoses, treatment advice, Health Promotion Board certifications, or universal judgements. Daily reference ranges are general guidance for Singaporean adults and do not represent individual needs. Total sugar is not the same as added sugar.";
+  "Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed source serving; recipes and portions vary. Its 1-5 health and condition ratings compare each serving with a meal's share of general daily guidance from Singapore's Health Promotion Board and the World Health Organization, and with stricter guidance for each condition: they are not diagnoses, treatment advice, Health Promotion Board certifications, or universal judgements. Daily reference ranges are general guidance for Singaporean adults and do not represent individual needs. Total sugar is not the same as added sugar.";

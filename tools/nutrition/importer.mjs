@@ -18,6 +18,7 @@ import {
   NUTRITION_DISCLOSURE,
   NUTRITION_GUIDELINE_COUNT,
   NUTRITION_INTENTS,
+  NUTRITION_REVIEW_REVISION,
   PRIMARY_PROFILE_MAPPINGS,
   VARIANT_FAMILY_MAPPINGS,
 } from "./manifest.mjs";
@@ -34,7 +35,7 @@ export {
   addHealthRatings,
   addIntentFits,
   computeRelativeFits,
-  HEALTH_RATING_SCHEMES,
+  MEAL_RATING_WEIGHTS,
   nutritionValueForComparison,
 } from "./ratings.mjs";
 
@@ -720,7 +721,7 @@ export const buildNutritionContent = ({
 
   return {
     schemaVersion: 2,
-    dataVersion: `sg-${foodSha256.slice(0, 12)}-${guidelineSha256.slice(0, 12)}`,
+    dataVersion: `sg-${foodSha256.slice(0, 12)}-${guidelineSha256.slice(0, 12)}-r${NUTRITION_REVIEW_REVISION}`,
     sourceSnapshots: [foodSnapshot, guidelineSnapshot],
     profiles,
     variantFamilies,

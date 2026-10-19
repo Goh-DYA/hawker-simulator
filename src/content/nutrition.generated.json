@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "dataVersion": "sg-1bc212db6eda-c87987b4281c",
+  "dataVersion": "sg-1bc212db6eda-c87987b4281c-r2",
   "sourceSnapshots": [
     {
       "id": "food-1bc212db6eda",
@@ -74,12 +74,12 @@
           "value": 209.94
         }
       },
-      "healthRating": 3.2,
+      "healthRating": 3.4,
       "conditionRatings": {
-        "high-cholesterol": 3.6,
-        "obesity": 3.4,
-        "diabetes": 3.3,
-        "hypertension": 3.3
+        "high-cholesterol": 4.1,
+        "obesity": 5,
+        "diabetes": 3.5,
+        "hypertension": 3.4
       },
       "intentFits": {
         "lighter-energy": 0.5281,
@@ -159,12 +159,12 @@
           "value": 222.56
         }
       },
-      "healthRating": 2.9,
+      "healthRating": 2.8,
       "conditionRatings": {
-        "high-cholesterol": 2.7,
-        "obesity": 2.8,
+        "high-cholesterol": 2.9,
+        "obesity": 3.8,
         "diabetes": 2.7,
-        "hypertension": 3.2
+        "hypertension": 3.5
       },
       "intentFits": {
         "lighter-energy": 0.3708,
@@ -246,12 +246,12 @@
           "value": 11.09
         }
       },
-      "healthRating": 3.4,
+      "healthRating": 5,
       "conditionRatings": {
-        "high-cholesterol": 4,
-        "obesity": 3.4,
-        "diabetes": 3.1,
-        "hypertension": 4.2
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 4.4,
+        "hypertension": 5
       },
       "intentFits": {
         "lighter-energy": 0.6517,
@@ -329,12 +329,12 @@
           "value": 486.22
         }
       },
-      "healthRating": 3.2,
+      "healthRating": 3.3,
       "conditionRatings": {
-        "high-cholesterol": 3.7,
-        "obesity": 3.6,
-        "diabetes": 3.5,
-        "hypertension": 3.1
+        "high-cholesterol": 4.5,
+        "obesity": 5,
+        "diabetes": 5,
+        "hypertension": 2.9
       },
       "intentFits": {
         "lighter-energy": 0.7753,
@@ -416,12 +416,12 @@
           "value": 213.94
         }
       },
-      "healthRating": 2.8,
+      "healthRating": 1.7,
       "conditionRatings": {
-        "high-cholesterol": 2.2,
-        "obesity": 2.4,
-        "diabetes": 2.6,
-        "hypertension": 2.8
+        "high-cholesterol": 1.8,
+        "obesity": 2.7,
+        "diabetes": 1.4,
+        "hypertension": 2.2
       },
       "intentFits": {
         "lighter-energy": 0.191,
@@ -504,12 +504,12 @@
           "value": 460.73
         }
       },
-      "healthRating": 3,
+      "healthRating": 1.8,
       "conditionRatings": {
-        "high-cholesterol": 2.7,
-        "obesity": 3,
-        "diabetes": 3.1,
-        "hypertension": 2.3
+        "high-cholesterol": 2.9,
+        "obesity": 3.3,
+        "diabetes": 2.3,
+        "hypertension": 1.1
       },
       "intentFits": {
         "lighter-energy": 0.2472,
@@ -591,12 +591,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.5,
+      "healthRating": 3.2,
       "conditionRatings": {
-        "high-cholesterol": 4.3,
-        "obesity": 3.9,
-        "diabetes": 3.7,
-        "hypertension": 2.6
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 5,
+        "hypertension": 1.4
       },
       "intentFits": {
         "lighter-energy": 0.8876,
@@ -677,12 +677,12 @@
           "value": 460.32
         }
       },
-      "healthRating": 3,
+      "healthRating": 2.6,
       "conditionRatings": {
-        "high-cholesterol": 3.1,
-        "obesity": 2.9,
-        "diabetes": 3.1,
-        "hypertension": 3
+        "high-cholesterol": 2.3,
+        "obesity": 5,
+        "diabetes": 3.8,
+        "hypertension": 2.6
       },
       "intentFits": {
         "lighter-energy": 0.5562,
@@ -764,12 +764,12 @@
           "value": 220.17
         }
       },
-      "healthRating": 2.1,
+      "healthRating": 2.9,
       "conditionRatings": {
-        "high-cholesterol": 1.2,
-        "obesity": 1.6,
-        "diabetes": 1.8,
-        "hypertension": 1.7
+        "high-cholesterol": 3.6,
+        "obesity": 2.1,
+        "diabetes": 2.7,
+        "hypertension": 4.5
       },
       "intentFits": {
         "lower-total-sugar-drink": 0.2308
@@ -849,12 +849,12 @@
           "value": 491.59
         }
       },
-      "healthRating": 2.8,
+      "healthRating": 1.4,
       "conditionRatings": {
         "high-cholesterol": 3.9,
-        "obesity": 2.2,
-        "diabetes": 1.2,
-        "hypertension": 2.8
+        "obesity": 1.2,
+        "diabetes": 1.3,
+        "hypertension": 4.1
       },
       "intentFits": {
         "lower-total-sugar-drink": 0
@@ -933,12 +933,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.6,
+      "healthRating": 3.4,
       "conditionRatings": {
-        "high-cholesterol": 4.8,
-        "obesity": 3.7,
-        "diabetes": 2.8,
-        "hypertension": 4.6
+        "high-cholesterol": 5,
+        "obesity": 4.8,
+        "diabetes": 2.4,
+        "hypertension": 5
       },
       "intentFits": {
         "lighter-energy": 0.8315,
@@ -1020,12 +1020,12 @@
           "value": 280.08
         }
       },
-      "healthRating": 2.4,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 2.1,
-        "obesity": 1.9,
-        "diabetes": 1.8,
-        "hypertension": 2.3
+        "high-cholesterol": 1.5,
+        "obesity": 1.8,
+        "diabetes": 1,
+        "hypertension": 1.1
       },
       "intentFits": {
         "lighter-energy": 0.0899,
@@ -1106,12 +1106,12 @@
           "value": 387.1
         }
       },
-      "healthRating": 2.8,
+      "healthRating": 1.4,
       "conditionRatings": {
-        "high-cholesterol": 1.9,
+        "high-cholesterol": 1.7,
         "obesity": 2.6,
-        "diabetes": 3.2,
-        "hypertension": 2.4
+        "diabetes": 2.6,
+        "hypertension": 1.3
       },
       "intentFits": {
         "lighter-energy": 0.2079,
@@ -1193,12 +1193,12 @@
           "value": 222.93
         }
       },
-      "healthRating": 3,
+      "healthRating": 2.6,
       "conditionRatings": {
-        "high-cholesterol": 2.9,
-        "obesity": 3.1,
-        "diabetes": 3.5,
-        "hypertension": 2.9
+        "high-cholesterol": 3.1,
+        "obesity": 4.7,
+        "diabetes": 4.5,
+        "hypertension": 2.4
       },
       "intentFits": {
         "lighter-energy": 0.5393,
@@ -1280,12 +1280,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3,
+      "healthRating": 2.6,
       "conditionRatings": {
-        "high-cholesterol": 3,
-        "obesity": 3,
-        "diabetes": 3.2,
-        "hypertension": 3.9
+        "high-cholesterol": 2.4,
+        "obesity": 2.8,
+        "diabetes": 4.3,
+        "hypertension": 3.8
       },
       "intentFits": {
         "lighter-energy": 0.8427,
@@ -1367,12 +1367,12 @@
           "value": 275.79
         }
       },
-      "healthRating": 2.3,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 1.8,
-        "obesity": 2.1,
-        "diabetes": 2.2,
-        "hypertension": 1.8
+        "high-cholesterol": 1.4,
+        "obesity": 1.7,
+        "diabetes": 1,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.0112,
@@ -1455,12 +1455,12 @@
           "value": 284.35
         }
       },
-      "healthRating": 2.7,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 2.3,
-        "obesity": 2.5,
-        "diabetes": 2.6,
-        "hypertension": 2
+        "high-cholesterol": 1.8,
+        "obesity": 2.6,
+        "diabetes": 1.2,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.1461,
@@ -1542,12 +1542,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.6,
+      "healthRating": 1.4,
       "conditionRatings": {
-        "high-cholesterol": 1.7,
-        "obesity": 2.2,
-        "diabetes": 2.8,
-        "hypertension": 2.9
+        "high-cholesterol": 1.6,
+        "obesity": 2.5,
+        "diabetes": 3,
+        "hypertension": 2.6
       },
       "intentFits": {
         "lighter-energy": 0.1573,
@@ -1630,12 +1630,12 @@
           "value": 487.04
         }
       },
-      "healthRating": 2.8,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 1.9,
-        "obesity": 2.5,
-        "diabetes": 2.9,
-        "hypertension": 2
+        "high-cholesterol": 1.5,
+        "obesity": 1.8,
+        "diabetes": 1.6,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.0562,
@@ -1720,10 +1720,10 @@
       },
       "healthRating": 3.2,
       "conditionRatings": {
-        "high-cholesterol": 3.1,
-        "obesity": 3.4,
-        "diabetes": 3.4,
-        "hypertension": 3.5
+        "high-cholesterol": 3.4,
+        "obesity": 4.7,
+        "diabetes": 4.3,
+        "hypertension": 3.7
       },
       "intentFits": {
         "lighter-energy": 0.5955,
@@ -1804,12 +1804,12 @@
           "value": 180.77
         }
       },
-      "healthRating": 4,
+      "healthRating": 4.3,
       "conditionRatings": {
-        "high-cholesterol": 4.6,
-        "obesity": 4.2,
-        "diabetes": 3.8,
-        "hypertension": 4
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 4.4,
+        "hypertension": 4.4
       },
       "intentFits": {
         "lighter-energy": 0.7303,
@@ -1891,12 +1891,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.1,
+      "healthRating": 2.2,
       "conditionRatings": {
-        "high-cholesterol": 2.7,
-        "obesity": 3.2,
-        "diabetes": 3.5,
-        "hypertension": 3.7
+        "high-cholesterol": 2,
+        "obesity": 2.7,
+        "diabetes": 4.8,
+        "hypertension": 2.4
       },
       "intentFits": {
         "lighter-energy": 0.7528,
@@ -1978,12 +1978,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.5,
+      "healthRating": 3.7,
       "conditionRatings": {
-        "high-cholesterol": 3.9,
-        "obesity": 3.7,
-        "diabetes": 3.6,
-        "hypertension": 3.6
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 5,
+        "hypertension": 3.3
       },
       "intentFits": {
         "lighter-energy": 0.8202,
@@ -2065,12 +2065,12 @@
           "value": 511.89
         }
       },
-      "healthRating": 2.9,
+      "healthRating": 2.1,
       "conditionRatings": {
-        "high-cholesterol": 2.6,
-        "obesity": 3.3,
-        "diabetes": 3.5,
-        "hypertension": 1.9
+        "high-cholesterol": 2.8,
+        "obesity": 5,
+        "diabetes": 4.9,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.6067,
@@ -2152,12 +2152,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.5,
+      "healthRating": 5,
       "conditionRatings": {
-        "high-cholesterol": 4,
-        "obesity": 3.8,
-        "diabetes": 3.8,
-        "hypertension": 4.3
+        "high-cholesterol": 4.9,
+        "obesity": 5,
+        "diabetes": 5,
+        "hypertension": 4.9
       },
       "intentFits": {
         "lighter-energy": 0.9438,
@@ -2239,12 +2239,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 4.2,
       "conditionRatings": {
-        "high-cholesterol": 3.9,
-        "obesity": 3.7,
-        "diabetes": 3.5,
-        "hypertension": 4.1
+        "high-cholesterol": 4.4,
+        "obesity": 5,
+        "diabetes": 5,
+        "hypertension": 3.9
       },
       "intentFits": {
         "lighter-energy": 0.9551,
@@ -2326,12 +2326,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 3.2,
       "conditionRatings": {
-        "high-cholesterol": 3,
-        "obesity": 3.5,
-        "diabetes": 3.6,
-        "hypertension": 4.1
+        "high-cholesterol": 2.6,
+        "obesity": 3.9,
+        "diabetes": 4.7,
+        "hypertension": 4.2
       },
       "intentFits": {
         "lighter-energy": 0.8989,
@@ -2413,12 +2413,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.4,
+      "healthRating": 2.9,
       "conditionRatings": {
-        "high-cholesterol": 3.4,
-        "obesity": 3.1,
-        "diabetes": 3.3,
-        "hypertension": 3.5
+        "high-cholesterol": 3.1,
+        "obesity": 4.6,
+        "diabetes": 3.6,
+        "hypertension": 3.2
       },
       "intentFits": {
         "lighter-energy": 0.618,
@@ -2500,12 +2500,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 3.1,
       "conditionRatings": {
-        "high-cholesterol": 4.2,
-        "obesity": 3.6,
-        "diabetes": 2.9,
-        "hypertension": 2.5
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 3.3,
+        "hypertension": 1.4
       },
       "intentFits": {
         "lighter-energy": 0.6685,
@@ -2588,12 +2588,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.7,
+      "healthRating": 4.1,
       "conditionRatings": {
-        "high-cholesterol": 4,
-        "obesity": 3.9,
-        "diabetes": 3.9,
-        "hypertension": 3.8
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 5,
+        "hypertension": 3.4
       },
       "intentFits": {
         "lighter-energy": 0.9326,
@@ -2674,12 +2674,12 @@
           "value": 303.8
         }
       },
-      "healthRating": 3.4,
+      "healthRating": 3,
       "conditionRatings": {
-        "high-cholesterol": 3.8,
-        "obesity": 3.3,
+        "high-cholesterol": 3.6,
+        "obesity": 4.8,
         "diabetes": 3,
-        "hypertension": 3.1
+        "hypertension": 2.5
       },
       "intentFits": {
         "lighter-energy": 0.4719,
@@ -2762,12 +2762,12 @@
           "value": 259
         }
       },
-      "healthRating": 3.1,
+      "healthRating": 3,
       "conditionRatings": {
-        "high-cholesterol": 3.3,
-        "obesity": 3.2,
+        "high-cholesterol": 3.6,
+        "obesity": 5,
         "diabetes": 3,
-        "hypertension": 3
+        "hypertension": 2.2
       },
       "intentFits": {
         "lighter-energy": 0.5056,
@@ -2848,12 +2848,12 @@
           "value": 555.62
         }
       },
-      "healthRating": 3.2,
+      "healthRating": 1.7,
       "conditionRatings": {
-        "high-cholesterol": 3.5,
-        "obesity": 3.1,
-        "diabetes": 3,
-        "hypertension": 2
+        "high-cholesterol": 3,
+        "obesity": 3.6,
+        "diabetes": 2.2,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.2809,
@@ -2930,12 +2930,12 @@
           "value": 614.53
         }
       },
-      "healthRating": 3.4,
+      "healthRating": 3.1,
       "conditionRatings": {
-        "high-cholesterol": 4.3,
-        "obesity": 4,
-        "diabetes": 3.9,
-        "hypertension": 2.6
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 5,
+        "hypertension": 1.5
       },
       "intentFits": {
         "lighter-energy": 1,
@@ -3016,12 +3016,12 @@
           "value": 344.96
         }
       },
-      "healthRating": 3.2,
+      "healthRating": 3.4,
       "conditionRatings": {
-        "high-cholesterol": 3.5,
-        "obesity": 3.2,
-        "diabetes": 2.9,
-        "hypertension": 4.3
+        "high-cholesterol": 2.1,
+        "obesity": 5,
+        "diabetes": 2.3,
+        "hypertension": 5
       },
       "intentFits": {
         "lighter-energy": 0.7079,
@@ -3103,12 +3103,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.6,
+      "healthRating": 5,
       "conditionRatings": {
-        "high-cholesterol": 4.1,
-        "obesity": 3.8,
-        "diabetes": 3.2,
-        "hypertension": 4.6
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 4.1,
+        "hypertension": 5
       },
       "intentFits": {
         "lighter-energy": 0.9213,
@@ -3190,11 +3190,11 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.9,
+      "healthRating": 3.4,
       "conditionRatings": {
-        "high-cholesterol": 3.8,
-        "obesity": 3.8,
-        "diabetes": 4,
+        "high-cholesterol": 4.5,
+        "obesity": 3.5,
+        "diabetes": 3.5,
         "hypertension": 4.6
       },
       "intentFits": {
@@ -3275,12 +3275,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.9,
+      "healthRating": 3.2,
       "conditionRatings": {
-        "high-cholesterol": 3.6,
-        "obesity": 3.1,
-        "diabetes": 2.1,
-        "hypertension": 4.2
+        "high-cholesterol": 3.7,
+        "obesity": 4.4,
+        "diabetes": 2.4,
+        "hypertension": 5
       },
       "intentFits": {
         "lighter-energy": 0.7865,
@@ -3362,12 +3362,12 @@
           "value": 152.4
         }
       },
-      "healthRating": 3.1,
+      "healthRating": 2.1,
       "conditionRatings": {
-        "high-cholesterol": 3,
-        "obesity": 2.9,
-        "diabetes": 2.9,
-        "hypertension": 3.6
+        "high-cholesterol": 2.9,
+        "obesity": 3.4,
+        "diabetes": 2.1,
+        "hypertension": 3.5
       },
       "intentFits": {
         "lighter-energy": 0.4607,
@@ -3448,12 +3448,12 @@
           "value": 57.9
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 3,
       "conditionRatings": {
-        "high-cholesterol": 3.4,
-        "obesity": 3.6,
-        "diabetes": 3.7,
-        "hypertension": 3.9
+        "high-cholesterol": 3.8,
+        "obesity": 3.7,
+        "diabetes": 4.6,
+        "hypertension": 2.6
       },
       "intentFits": {
         "lighter-energy": 0.8539,
@@ -3535,12 +3535,12 @@
           "value": 108.6
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 2.4,
       "conditionRatings": {
         "high-cholesterol": 3.4,
-        "obesity": 3.3,
-        "diabetes": 3,
-        "hypertension": 3.8
+        "obesity": 3.4,
+        "diabetes": 2.7,
+        "hypertension": 3.5
       },
       "intentFits": {
         "lighter-energy": 0.573,
@@ -3622,12 +3622,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.7,
+      "healthRating": 1.9,
       "conditionRatings": {
-        "high-cholesterol": 2.2,
-        "obesity": 2.7,
-        "diabetes": 3.2,
-        "hypertension": 3.6
+        "high-cholesterol": 1.7,
+        "obesity": 2.6,
+        "diabetes": 4.3,
+        "hypertension": 2.7
       },
       "intentFits": {
         "lighter-energy": 0.6854,
@@ -3708,12 +3708,12 @@
           "value": 138.88
         }
       },
-      "healthRating": 3.1,
+      "healthRating": 3.6,
       "conditionRatings": {
-        "high-cholesterol": 3.2,
-        "obesity": 3.3,
-        "diabetes": 3.4,
-        "hypertension": 3.5
+        "high-cholesterol": 3.6,
+        "obesity": 4.7,
+        "diabetes": 4.8,
+        "hypertension": 3.3
       },
       "intentFits": {
         "lighter-energy": 0.7978,
@@ -3795,12 +3795,12 @@
           "value": 17.85
         }
       },
-      "healthRating": 3.4,
+      "healthRating": 2.8,
       "conditionRatings": {
-        "high-cholesterol": 4.1,
-        "obesity": 3.9,
-        "diabetes": 3.6,
-        "hypertension": 4.3
+        "high-cholesterol": 2.9,
+        "obesity": 3.5,
+        "diabetes": 4.6,
+        "hypertension": 2.9
       },
       "intentFits": {
         "lighter-energy": 0.9888,
@@ -3882,12 +3882,12 @@
           "value": 72.66
         }
       },
-      "healthRating": 3,
+      "healthRating": 2.7,
       "conditionRatings": {
         "high-cholesterol": 3.5,
-        "obesity": 2.9,
-        "diabetes": 2.4,
-        "hypertension": 4
+        "obesity": 2.7,
+        "diabetes": 1.9,
+        "hypertension": 4.1
       },
       "intentFits": {
         "lighter-energy": 0.5843,
@@ -3969,12 +3969,12 @@
           "value": 183.06
         }
       },
-      "healthRating": 2.7,
+      "healthRating": 2.5,
       "conditionRatings": {
-        "high-cholesterol": 2.9,
-        "obesity": 2.7,
-        "diabetes": 2.3,
-        "hypertension": 3
+        "high-cholesterol": 3.1,
+        "obesity": 4.2,
+        "diabetes": 1.9,
+        "hypertension": 2.7
       },
       "intentFits": {
         "lighter-energy": 0.4494,
@@ -4057,10 +4057,10 @@
       },
       "healthRating": 3.3,
       "conditionRatings": {
-        "high-cholesterol": 4.5,
-        "obesity": 3.9,
-        "diabetes": 3.4,
-        "hypertension": 2.7
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 4.7,
+        "hypertension": 1.5
       },
       "intentFits": {
         "lighter-energy": 0.9775,
@@ -4140,12 +4140,12 @@
           "value": 653
         }
       },
-      "healthRating": 3.2,
+      "healthRating": 2.4,
       "conditionRatings": {
-        "high-cholesterol": 3.5,
-        "obesity": 3.3,
-        "diabetes": 3.2,
-        "hypertension": 2.4
+        "high-cholesterol": 3.4,
+        "obesity": 4.2,
+        "diabetes": 2.7,
+        "hypertension": 1.3
       },
       "intentFits": {
         "lighter-energy": 0.4157,
@@ -4228,12 +4228,12 @@
           "value": 297.39
         }
       },
-      "healthRating": 3.4,
+      "healthRating": 2.5,
       "conditionRatings": {
-        "high-cholesterol": 3,
-        "obesity": 3,
-        "diabetes": 3.3,
-        "hypertension": 3.2
+        "high-cholesterol": 2.5,
+        "obesity": 4.1,
+        "diabetes": 3.6,
+        "hypertension": 3
       },
       "intentFits": {
         "lighter-energy": 0.4045,
@@ -4314,12 +4314,12 @@
           "value": 140.96
         }
       },
-      "healthRating": 3.5,
+      "healthRating": 4.5,
       "conditionRatings": {
-        "high-cholesterol": 4.4,
-        "obesity": 3.7,
-        "diabetes": 3.3,
-        "hypertension": 4.1
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 4.3,
+        "hypertension": 4.3
       },
       "intentFits": {
         "lighter-energy": 0.8652,
@@ -4396,12 +4396,12 @@
           "value": 442.28
         }
       },
-      "healthRating": 3.2,
+      "healthRating": 2.9,
       "conditionRatings": {
         "high-cholesterol": 3.4,
-        "obesity": 3.6,
-        "diabetes": 3.9,
-        "hypertension": 2.7
+        "obesity": 5,
+        "diabetes": 4.9,
+        "hypertension": 1.9
       },
       "intentFits": {
         "lighter-energy": 0.8764,
@@ -4482,12 +4482,12 @@
           "value": 259.5
         }
       },
-      "healthRating": 3.5,
+      "healthRating": 2.4,
       "conditionRatings": {
-        "high-cholesterol": 3.3,
-        "obesity": 3.2,
-        "diabetes": 3.6,
-        "hypertension": 3.1
+        "high-cholesterol": 3,
+        "obesity": 3.6,
+        "diabetes": 3.1,
+        "hypertension": 2.7
       },
       "intentFits": {
         "lighter-energy": 0.3483,
@@ -4570,12 +4570,12 @@
           "value": 711.87
         }
       },
-      "healthRating": 2.2,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 1.8,
-        "obesity": 1.9,
-        "diabetes": 1.7,
-        "hypertension": 1.5
+        "high-cholesterol": 1.5,
+        "obesity": 1.7,
+        "diabetes": 1,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.0787,
@@ -4657,12 +4657,12 @@
           "value": 317.06
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 1.4,
       "conditionRatings": {
-        "high-cholesterol": 2.9,
-        "obesity": 2.9,
-        "diabetes": 3.2,
-        "hypertension": 2.3
+        "high-cholesterol": 2.4,
+        "obesity": 2.1,
+        "diabetes": 1.8,
+        "hypertension": 1.1
       },
       "intentFits": {
         "lighter-energy": 0.1011,
@@ -4745,12 +4745,12 @@
           "value": 225.95
         }
       },
-      "healthRating": 2.5,
+      "healthRating": 2.8,
       "conditionRatings": {
-        "high-cholesterol": 2.6,
-        "obesity": 2,
-        "diabetes": 1.8,
-        "hypertension": 2.3
+        "high-cholesterol": 4.3,
+        "obesity": 2.5,
+        "diabetes": 2.5,
+        "hypertension": 4.5
       },
       "intentFits": {
         "lower-total-sugar-drink": 0.1538
@@ -4829,12 +4829,12 @@
           "value": 229.2
         }
       },
-      "healthRating": 2.8,
+      "healthRating": 3.4,
       "conditionRatings": {
-        "high-cholesterol": 2.2,
-        "obesity": 2.7,
-        "diabetes": 2.7,
-        "hypertension": 2.7
+        "high-cholesterol": 4.4,
+        "obesity": 3,
+        "diabetes": 3.2,
+        "hypertension": 4.6
       },
       "intentFits": {
         "lower-total-sugar-drink": 0.4615
@@ -4914,12 +4914,12 @@
           "value": 234.83
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 4.7,
       "conditionRatings": {
-        "high-cholesterol": 1.8,
-        "obesity": 3.1,
-        "diabetes": 3.9,
-        "hypertension": 2.9
+        "high-cholesterol": 4.6,
+        "obesity": 4,
+        "diabetes": 4.9,
+        "hypertension": 5
       },
       "intentFits": {
         "lower-total-sugar-drink": 0.7692
@@ -4999,12 +4999,12 @@
           "value": 235.93
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 3.8,
       "conditionRatings": {
-        "high-cholesterol": 4.2,
-        "obesity": 3.5,
-        "diabetes": 2.9,
-        "hypertension": 3.5
+        "high-cholesterol": 4.6,
+        "obesity": 3.7,
+        "diabetes": 3.7,
+        "hypertension": 4.7
       },
       "intentFits": {
         "lower-total-sugar-drink": 0.5385
@@ -5083,12 +5083,12 @@
           "value": 243.1
         }
       },
-      "healthRating": 3.8,
+      "healthRating": 5,
       "conditionRatings": {
-        "high-cholesterol": 4.3,
-        "obesity": 4.3,
-        "diabetes": 4.4,
-        "hypertension": 4
+        "high-cholesterol": 5,
+        "obesity": 4.9,
+        "diabetes": 5,
+        "hypertension": 5
       },
       "intentFits": {
         "lower-total-sugar-drink": 1
@@ -5168,12 +5168,12 @@
           "value": 226.45
         }
       },
-      "healthRating": 2,
+      "healthRating": 2.5,
       "conditionRatings": {
-        "high-cholesterol": 1.5,
-        "obesity": 1.8,
-        "diabetes": 1.8,
-        "hypertension": 1.9
+        "high-cholesterol": 3.7,
+        "obesity": 2.3,
+        "diabetes": 2.1,
+        "hypertension": 4.4
       },
       "intentFits": {
         "lower-total-sugar-drink": 0.0769
@@ -5253,12 +5253,12 @@
           "value": 234.95
         }
       },
-      "healthRating": 2.8,
+      "healthRating": 3.2,
       "conditionRatings": {
-        "high-cholesterol": 3.2,
-        "obesity": 2.7,
-        "diabetes": 2.8,
-        "hypertension": 2.8
+        "high-cholesterol": 4.5,
+        "obesity": 3.3,
+        "diabetes": 3.1,
+        "hypertension": 4.6
       },
       "intentFits": {
         "lower-total-sugar-drink": 0.3846
@@ -5337,12 +5337,12 @@
           "value": 230.17
         }
       },
-      "healthRating": 2.7,
+      "healthRating": 3,
       "conditionRatings": {
-        "high-cholesterol": 2,
-        "obesity": 2.6,
-        "diabetes": 2.6,
-        "hypertension": 2.7
+        "high-cholesterol": 4.3,
+        "obesity": 2.9,
+        "diabetes": 2.8,
+        "hypertension": 4.5
       },
       "intentFits": {
         "lower-total-sugar-drink": 0.3077
@@ -5421,12 +5421,12 @@
           "value": 241.4
         }
       },
-      "healthRating": 3.5,
+      "healthRating": 4.9,
       "conditionRatings": {
-        "high-cholesterol": 2.8,
-        "obesity": 3.8,
-        "diabetes": 4.4,
-        "hypertension": 3.6
+        "high-cholesterol": 4.9,
+        "obesity": 4.6,
+        "diabetes": 4.9,
+        "hypertension": 5
       },
       "intentFits": {
         "lower-total-sugar-drink": 0.8462
@@ -5506,12 +5506,12 @@
           "value": 240.58
         }
       },
-      "healthRating": 3.4,
+      "healthRating": 4.1,
       "conditionRatings": {
-        "high-cholesterol": 4.3,
-        "obesity": 3.8,
-        "diabetes": 3.4,
-        "hypertension": 3.7
+        "high-cholesterol": 4.7,
+        "obesity": 4.2,
+        "diabetes": 4,
+        "hypertension": 4.8
       },
       "intentFits": {
         "lower-total-sugar-drink": 0.6154
@@ -5591,12 +5591,12 @@
           "value": 249.2
         }
       },
-      "healthRating": 3.8,
+      "healthRating": 5,
       "conditionRatings": {
-        "high-cholesterol": 4.4,
-        "obesity": 4.3,
-        "diabetes": 4.5,
-        "hypertension": 4
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 5,
+        "hypertension": 5
       },
       "intentFits": {
         "lower-total-sugar-drink": 0.9231
@@ -5676,12 +5676,12 @@
           "value": 218.01
         }
       },
-      "healthRating": 2.6,
+      "healthRating": 1.4,
       "conditionRatings": {
-        "high-cholesterol": 2,
-        "obesity": 2.3,
-        "diabetes": 2.5,
-        "hypertension": 2.6
+        "high-cholesterol": 1.6,
+        "obesity": 2.2,
+        "diabetes": 1.1,
+        "hypertension": 1.7
       },
       "intentFits": {
         "lighter-energy": 0.1124,
@@ -5764,12 +5764,12 @@
           "value": 253.43
         }
       },
-      "healthRating": 2.6,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 1.8,
-        "obesity": 2.2,
-        "diabetes": 2.5,
-        "hypertension": 2.4
+        "high-cholesterol": 1.5,
+        "obesity": 1.8,
+        "diabetes": 1,
+        "hypertension": 1.2
       },
       "intentFits": {
         "lighter-energy": 0.0449,
@@ -5852,12 +5852,12 @@
           "value": 178.47
         }
       },
-      "healthRating": 2.8,
+      "healthRating": 2.2,
       "conditionRatings": {
-        "high-cholesterol": 2.8,
-        "obesity": 2.6,
-        "diabetes": 2.5,
-        "hypertension": 3.1
+        "high-cholesterol": 2.3,
+        "obesity": 3.7,
+        "diabetes": 1.9,
+        "hypertension": 2.8
       },
       "intentFits": {
         "lighter-energy": 0.3596,
@@ -5940,12 +5940,12 @@
           "value": 189.11
         }
       },
-      "healthRating": 2.8,
+      "healthRating": 2,
       "conditionRatings": {
-        "high-cholesterol": 2.4,
-        "obesity": 2.5,
-        "diabetes": 2.6,
-        "hypertension": 2.8
+        "high-cholesterol": 2,
+        "obesity": 3.3,
+        "diabetes": 1.8,
+        "hypertension": 2.4
       },
       "intentFits": {
         "lighter-energy": 0.2697,
@@ -6025,12 +6025,12 @@
           "value": 128.83
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 3.6,
       "conditionRatings": {
-        "high-cholesterol": 3.8,
-        "obesity": 3.6,
-        "diabetes": 3.3,
-        "hypertension": 3.7
+        "high-cholesterol": 4.1,
+        "obesity": 4.5,
+        "diabetes": 3.8,
+        "hypertension": 3.8
       },
       "intentFits": {
         "lighter-energy": 0.7191,
@@ -6113,12 +6113,12 @@
           "value": 207.21
         }
       },
-      "healthRating": 2.7,
+      "healthRating": 1.7,
       "conditionRatings": {
-        "high-cholesterol": 2.7,
-        "obesity": 2.6,
-        "diabetes": 2.5,
-        "hypertension": 2.7
+        "high-cholesterol": 2.3,
+        "obesity": 3.7,
+        "diabetes": 1.1,
+        "hypertension": 1.8
       },
       "intentFits": {
         "lighter-energy": 0.427,
@@ -6201,12 +6201,12 @@
           "value": 35.81
         }
       },
-      "healthRating": 2.8,
+      "healthRating": 2.1,
       "conditionRatings": {
-        "high-cholesterol": 2.9,
-        "obesity": 2.8,
+        "high-cholesterol": 2.4,
+        "obesity": 2.7,
         "diabetes": 2.6,
-        "hypertension": 3.5
+        "hypertension": 2.4
       },
       "intentFits": {
         "lighter-energy": 0.5169,
@@ -6289,12 +6289,12 @@
           "value": 51.05
         }
       },
-      "healthRating": 3.4,
+      "healthRating": 2.8,
       "conditionRatings": {
-        "high-cholesterol": 3.7,
-        "obesity": 3.5,
-        "diabetes": 3.4,
-        "hypertension": 4.1
+        "high-cholesterol": 3.4,
+        "obesity": 2.9,
+        "diabetes": 4.5,
+        "hypertension": 3.5
       },
       "intentFits": {
         "lighter-energy": 0.764,
@@ -6379,9 +6379,9 @@
       },
       "healthRating": 3,
       "conditionRatings": {
-        "high-cholesterol": 2.7,
-        "obesity": 3,
-        "diabetes": 3.1,
+        "high-cholesterol": 2.5,
+        "obesity": 3.6,
+        "diabetes": 4.5,
         "hypertension": 3.9
       },
       "intentFits": {
@@ -6465,12 +6465,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.8,
+      "healthRating": 2.1,
       "conditionRatings": {
-        "high-cholesterol": 2.1,
-        "obesity": 2.8,
-        "diabetes": 3.3,
-        "hypertension": 3.3
+        "high-cholesterol": 1.8,
+        "obesity": 3.1,
+        "diabetes": 4.4,
+        "hypertension": 3
       },
       "intentFits": {
         "lighter-energy": 0.5562,
@@ -6553,12 +6553,12 @@
           "value": 458.52
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 3.4,
       "conditionRatings": {
-        "high-cholesterol": 3.6,
-        "obesity": 3.7,
-        "diabetes": 3.3,
-        "hypertension": 3.2
+        "high-cholesterol": 4.8,
+        "obesity": 5,
+        "diabetes": 5,
+        "hypertension": 3
       },
       "intentFits": {
         "lighter-energy": 0.809,
@@ -6641,12 +6641,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.4,
+      "healthRating": 3.2,
       "conditionRatings": {
-        "high-cholesterol": 4.3,
-        "obesity": 3.9,
-        "diabetes": 3.5,
-        "hypertension": 2.6
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 5,
+        "hypertension": 1.4
       },
       "intentFits": {
         "lighter-energy": 0.9663,
@@ -6729,12 +6729,12 @@
           "value": 458.5
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 3.4,
       "conditionRatings": {
-        "high-cholesterol": 3.7,
-        "obesity": 3.7,
-        "diabetes": 3.4,
-        "hypertension": 3.3
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 5,
+        "hypertension": 3
       },
       "intentFits": {
         "lighter-energy": 0.9101,
@@ -6815,12 +6815,12 @@
           "value": 553.1
         }
       },
-      "healthRating": 3.9,
+      "healthRating": 3.1,
       "conditionRatings": {
-        "high-cholesterol": 4.2,
-        "obesity": 3.9,
-        "diabetes": 3.8,
-        "hypertension": 2.9
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 3.7,
+        "hypertension": 1.6
       },
       "intentFits": {
         "lighter-energy": 0.4831,
@@ -6903,12 +6903,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.4,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 1.6,
-        "obesity": 2,
-        "diabetes": 3,
-        "hypertension": 2.3
+        "high-cholesterol": 1.5,
+        "obesity": 1.7,
+        "diabetes": 2.6,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0,
@@ -6991,12 +6991,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.6,
+      "healthRating": 1.5,
       "conditionRatings": {
-        "high-cholesterol": 1.7,
-        "obesity": 2.2,
-        "diabetes": 2.9,
-        "hypertension": 3
+        "high-cholesterol": 1.6,
+        "obesity": 2.5,
+        "diabetes": 3.2,
+        "hypertension": 2.8
       },
       "intentFits": {
         "lighter-energy": 0.1685,
@@ -7079,12 +7079,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.5,
+      "healthRating": 1.4,
       "conditionRatings": {
-        "high-cholesterol": 2,
-        "obesity": 2.3,
-        "diabetes": 2.6,
-        "hypertension": 2.7
+        "high-cholesterol": 1.6,
+        "obesity": 2.6,
+        "diabetes": 1.5,
+        "hypertension": 2
       },
       "intentFits": {
         "lighter-energy": 0.2079,
@@ -7167,12 +7167,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.6,
+      "healthRating": 1.1,
       "conditionRatings": {
-        "high-cholesterol": 2.1,
-        "obesity": 2.5,
-        "diabetes": 2.6,
-        "hypertension": 2
+        "high-cholesterol": 1.6,
+        "obesity": 2.6,
+        "diabetes": 1.9,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.1348,
@@ -7255,12 +7255,12 @@
           "value": 424.13
         }
       },
-      "healthRating": 2.6,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 1.8,
-        "obesity": 2.4,
-        "diabetes": 2.7,
-        "hypertension": 1.9
+        "high-cholesterol": 1.5,
+        "obesity": 1.8,
+        "diabetes": 1.5,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.0225,
@@ -7343,12 +7343,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.8,
+      "healthRating": 2,
       "conditionRatings": {
-        "high-cholesterol": 2.7,
-        "obesity": 2.8,
-        "diabetes": 2.7,
-        "hypertension": 2.7
+        "high-cholesterol": 2.1,
+        "obesity": 3.6,
+        "diabetes": 2.2,
+        "hypertension": 1.9
       },
       "intentFits": {
         "lighter-energy": 0.3371,
@@ -7433,10 +7433,10 @@
       },
       "healthRating": 3.3,
       "conditionRatings": {
-        "high-cholesterol": 3.6,
-        "obesity": 3.4,
-        "diabetes": 3.2,
-        "hypertension": 4
+        "high-cholesterol": 3.9,
+        "obesity": 3.2,
+        "diabetes": 3.9,
+        "hypertension": 4.1
       },
       "intentFits": {
         "lighter-energy": 0.6404,
@@ -7519,12 +7519,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.1,
+      "healthRating": 2.9,
       "conditionRatings": {
-        "high-cholesterol": 3.6,
-        "obesity": 3.3,
-        "diabetes": 3,
-        "hypertension": 3.7
+        "high-cholesterol": 3.3,
+        "obesity": 3.5,
+        "diabetes": 4.1,
+        "hypertension": 2.9
       },
       "intentFits": {
         "lighter-energy": 0.7416,
@@ -7607,12 +7607,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.9,
+      "healthRating": 2.1,
       "conditionRatings": {
-        "high-cholesterol": 2.5,
-        "obesity": 2.9,
-        "diabetes": 3.1,
-        "hypertension": 3.6
+        "high-cholesterol": 1.9,
+        "obesity": 2.6,
+        "diabetes": 3.6,
+        "hypertension": 2.3
       },
       "intentFits": {
         "lighter-energy": 0.6966,
@@ -7695,12 +7695,12 @@
           "value": 717.72
         }
       },
-      "healthRating": 2.4,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 1.7,
-        "obesity": 2.1,
-        "diabetes": 2.7,
-        "hypertension": 1.7
+        "high-cholesterol": 1.4,
+        "obesity": 1.6,
+        "diabetes": 1.3,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.0337,
@@ -7783,12 +7783,12 @@
           "value": 660.59
         }
       },
-      "healthRating": 2.5,
+      "healthRating": 1.7,
       "conditionRatings": {
-        "high-cholesterol": 2.2,
-        "obesity": 2.6,
-        "diabetes": 3.1,
-        "hypertension": 2.1
+        "high-cholesterol": 2.1,
+        "obesity": 4.1,
+        "diabetes": 3.7,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.4382,
@@ -7871,12 +7871,12 @@
           "value": 660.57
         }
       },
-      "healthRating": 2.5,
+      "healthRating": 1.1,
       "conditionRatings": {
-        "high-cholesterol": 2.2,
-        "obesity": 2.4,
-        "diabetes": 2.4,
-        "hypertension": 2
+        "high-cholesterol": 1.8,
+        "obesity": 2.6,
+        "diabetes": 1,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.1798,
@@ -7959,12 +7959,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 1.5,
-        "obesity": 2,
-        "diabetes": 2.7,
-        "hypertension": 1.5
+        "high-cholesterol": 1.4,
+        "obesity": 2.6,
+        "diabetes": 2.4,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.236,
@@ -8047,12 +8047,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.1,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 1.6,
-        "obesity": 2,
-        "diabetes": 2.7,
-        "hypertension": 1.5
+        "high-cholesterol": 1.3,
+        "obesity": 1.8,
+        "diabetes": 2,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.1236,
@@ -8135,12 +8135,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 1.6,
-        "obesity": 2,
-        "diabetes": 2.7,
-        "hypertension": 1.5
+        "high-cholesterol": 1.4,
+        "obesity": 2.2,
+        "diabetes": 2.3,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.2247,
@@ -8223,12 +8223,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 1.6,
-        "obesity": 1.9,
-        "diabetes": 2,
-        "hypertension": 1.5
+        "high-cholesterol": 1.2,
+        "obesity": 1.4,
+        "diabetes": 1,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.0674,
@@ -8311,12 +8311,12 @@
           "value": 258.45
         }
       },
-      "healthRating": 3.1,
+      "healthRating": 2.2,
       "conditionRatings": {
-        "high-cholesterol": 3,
-        "obesity": 2.9,
-        "diabetes": 2.8,
-        "hypertension": 2.7
+        "high-cholesterol": 2.8,
+        "obesity": 3.6,
+        "diabetes": 2.5,
+        "hypertension": 1.8
       },
       "intentFits": {
         "lighter-energy": 0.3258,
@@ -8399,12 +8399,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3,
+      "healthRating": 2.1,
       "conditionRatings": {
-        "high-cholesterol": 2.7,
-        "obesity": 2.8,
-        "diabetes": 2.8,
-        "hypertension": 2.8
+        "high-cholesterol": 2.2,
+        "obesity": 3.6,
+        "diabetes": 2.1,
+        "hypertension": 1.9
       },
       "intentFits": {
         "lighter-energy": 0.3034,
@@ -8487,12 +8487,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.5,
+      "healthRating": 1.7,
       "conditionRatings": {
-        "high-cholesterol": 2.5,
-        "obesity": 2.7,
-        "diabetes": 2.2,
-        "hypertension": 1.9
+        "high-cholesterol": 2.7,
+        "obesity": 4,
+        "diabetes": 1.5,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.382,
@@ -8575,12 +8575,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 3.1,
+      "healthRating": 2,
       "conditionRatings": {
-        "high-cholesterol": 3.8,
-        "obesity": 3,
-        "diabetes": 2.3,
-        "hypertension": 1.9
+        "high-cholesterol": 4.2,
+        "obesity": 4.1,
+        "diabetes": 1.2,
+        "hypertension": 1
       },
       "intentFits": {
         "lighter-energy": 0.3933,
@@ -8663,12 +8663,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.9,
+      "healthRating": 2.7,
       "conditionRatings": {
-        "high-cholesterol": 3.1,
-        "obesity": 3.1,
-        "diabetes": 2.5,
-        "hypertension": 2.4
+        "high-cholesterol": 3.5,
+        "obesity": 5,
+        "diabetes": 2.4,
+        "hypertension": 1.2
       },
       "intentFits": {
         "lighter-energy": 0.4944,
@@ -8751,12 +8751,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.4,
+      "healthRating": 1,
       "conditionRatings": {
-        "high-cholesterol": 2,
-        "obesity": 2.3,
-        "diabetes": 2.8,
-        "hypertension": 2.3
+        "high-cholesterol": 1.4,
+        "obesity": 2.8,
+        "diabetes": 2.3,
+        "hypertension": 1.1
       },
       "intentFits": {
         "lighter-energy": 0.3146,
@@ -8839,12 +8839,12 @@
           "reason": "not-reported"
         }
       },
-      "healthRating": 2.3,
+      "healthRating": 1.5,
       "conditionRatings": {
-        "high-cholesterol": 1.4,
-        "obesity": 2,
-        "diabetes": 2.7,
-        "hypertension": 2.9
+        "high-cholesterol": 1.6,
+        "obesity": 3,
+        "diabetes": 3,
+        "hypertension": 2.8
       },
       "intentFits": {
         "lighter-energy": 0.2584,
@@ -8926,12 +8926,12 @@
           "value": 253.48
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 3.4,
       "conditionRatings": {
-        "high-cholesterol": 2.7,
-        "obesity": 2.9,
-        "diabetes": 2.9,
-        "hypertension": 3.8
+        "high-cholesterol": 3.1,
+        "obesity": 3.5,
+        "diabetes": 2.4,
+        "hypertension": 4.6
       },
       "intentFits": {
         "lighter-energy": 0.2921,
@@ -9012,12 +9012,12 @@
           "value": 160.64
         }
       },
-      "healthRating": 3.3,
+      "healthRating": 3.6,
       "conditionRatings": {
-        "high-cholesterol": 3.9,
-        "obesity": 3.5,
-        "diabetes": 3.1,
-        "hypertension": 3.5
+        "high-cholesterol": 4.8,
+        "obesity": 4.7,
+        "diabetes": 3.5,
+        "hypertension": 3.9
       },
       "intentFits": {
         "lighter-energy": 0.6292,
@@ -9720,5 +9720,5 @@
       "notComparableReason": "Food water in grams is not comparable with drinking-water guidance in millilitres."
     }
   ],
-  "disclosure": "Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed source serving; recipes and portions vary. Its 1-5 health and condition ratings compare servings only within this game's meal or drink catalogue: they are not diagnoses, treatment advice, Health Promotion Board certifications, or universal judgements. Daily reference ranges are general guidance for Singaporean adults and do not represent individual needs. Total sugar is not the same as added sugar."
+  "disclosure": "Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed source serving; recipes and portions vary. Its 1-5 health and condition ratings compare each serving with a meal's share of general daily guidance from Singapore's Health Promotion Board and the World Health Organization, and with stricter guidance for each condition: they are not diagnoses, treatment advice, Health Promotion Board certifications, or universal judgements. Daily reference ranges are general guidance for Singaporean adults and do not represent individual needs. Total sugar is not the same as added sugar."
 }

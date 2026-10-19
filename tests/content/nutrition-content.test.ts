@@ -56,7 +56,7 @@ describe("nutrition content", () => {
     );
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
-      "f733b693e44a7767074bd84d263e357fcfd2ac7212e30ad388afc4cc7c5e580c",
+      "df7a62eaf2ef0abe4f118cbbffe51e1ccc718691c078ccc2b305293b911bacc9",
     );
   });
 
@@ -71,7 +71,7 @@ describe("nutrition content", () => {
       report.counts.nutritionVariantFamilies,
       LAUNCH_ROSTER.nutritionVariantFamilies,
     );
-    assert.equal(NUTRITION_CONTENT.dataVersion, "sg-1bc212db6eda-c87987b4281c");
+    assert.equal(NUTRITION_CONTENT.dataVersion, "sg-1bc212db6eda-c87987b4281c-r2");
     assert.deepEqual(
       NUTRITION_CONTENT.sourceSnapshots.map((snapshot) => snapshot.rowCount),
       [2_689, 11],
@@ -167,6 +167,54 @@ describe("nutrition content", () => {
       (kopiKosong?.conditionRatings.diabetes ?? 0) >
         (kopi?.conditionRatings.diabetes ?? 5),
     );
+  });
+
+  it("rates each serving against guideline amounts rather than the rest of the menu", () => {
+    const rating = (dishId: string, variantId?: string) => {
+      const profile = getNutritionProfile(dishId, variantId);
+      assert.ok(profile, `${dishId} ${variantId ?? ""} must have a profile`);
+      return profile;
+    };
+    const chapChye = rating("dish.chap-chye");
+    const babiPongteh = rating("dish.babi-pongteh");
+    assert.ok(chapChye.healthRating > babiPongteh.healthRating);
+    assert.ok(
+      chapChye.conditionRatings["high-cholesterol"] >
+        babiPongteh.conditionRatings["high-cholesterol"],
+    );
+    assert.ok(chapChye.conditionRatings.obesity > babiPongteh.conditionRatings.obesity);
+
+    for (const [dishId, sugared, kosong] of [
+      ["dish.kopi", "kopi-c", "kopi-c-kosong"],
+      ["dish.kopi", "kopi-o", "kopi-o-kosong"],
+      ["dish.teh-tarik", "teh-c", "teh-c-kosong"],
+      ["dish.teh-tarik", "teh-o", "teh-o-kosong"],
+    ] as const) {
+      assert.ok(rating(dishId, kosong).healthRating > rating(dishId, sugared).healthRating);
+      assert.ok(
+        rating(dishId, kosong).conditionRatings.diabetes >
+          rating(dishId, sugared).conditionRatings.diabetes,
+      );
+    }
+
+    assert.ok(rating("dish.sugarcane-juice").conditionRatings.diabetes <= 1.5);
+    for (const variantId of ["ytf-clear-fried", "ytf-laksa-fried"]) {
+      assert.ok(
+        rating("dish.yong-tau-foo", variantId).healthRating <
+          rating("dish.yong-tau-foo").healthRating,
+      );
+    }
+    for (const profile of NUTRITION_CONTENT.profiles) {
+      const sodium = profile.nutrients.sodiumMg;
+      if (sodium.status === "known" && sodium.value >= 2_000) {
+        assert.ok(profile.conditionRatings.hypertension <= 2, profile.id);
+      }
+    }
+    const meals = NUTRITION_CONTENT.profiles
+      .filter((profile) => profile.nutritionClass === "meal")
+      .map((profile) => profile.healthRating);
+    assert.equal(Math.min(...meals), 1);
+    assert.equal(Math.max(...meals), 5);
   });
 
   it("preserves trace, unavailable, scaled, and provenance semantics", () => {

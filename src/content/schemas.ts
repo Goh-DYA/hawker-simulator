@@ -417,9 +417,9 @@ export const nutritionProfileSchema = z.object({
   nutritionClass: nutritionClassSchema,
   serving: nutritionServingSchema.optional(),
   nutrients: nutritionNutrientsSchema,
-  /** Comparative, per-serving game rating within the same nutrition class. */
+  /** Per-serving game rating against a meal's share of daily guidance, or Nutri-Grade bands for a drink. */
   healthRating: fivePointRatingSchema,
-  /** Comparative game ratings using condition-specific nutrient weightings. */
+  /** Per-serving game ratings against the stricter guidance for each condition. */
   conditionRatings: z.record(healthConditionSchema, fivePointRatingSchema),
   intentFits: z.partialRecord(
     nutritionIntentIdSchema,
@@ -477,7 +477,7 @@ export const nutritionGuidelineSchema = z.object({
 
 export const nutritionContentSchema = z.object({
   schemaVersion: z.literal(2),
-  dataVersion: z.string().regex(/^sg-[a-f0-9]{12}-[a-f0-9]{12}$/),
+  dataVersion: z.string().regex(/^sg-[a-f0-9]{12}-[a-f0-9]{12}(?:-r[1-9][0-9]*)?$/),
   sourceSnapshots: z.array(nutritionSourceSnapshotSchema).min(1),
   profiles: z.array(nutritionProfileSchema).min(1),
   variantFamilies: z.array(nutritionVariantFamilySchema).min(1),

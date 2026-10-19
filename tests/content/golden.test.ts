@@ -36,7 +36,7 @@ const CONTENT_PART_SHA256 = {
 } as const;
 
 /** sha256 of `JSON.stringify(LAUNCH_CONTENT)`, which adds the economy and nutrition data. */
-const LAUNCH_CONTENT_SHA256 = "5516bea48556aac8b3f08199c2d2192613442d489c203f9be8b67954bc024881";
+const LAUNCH_CONTENT_SHA256 = "9a9ebfb10f493c53fd54811d7d18379556cdab6aa796a74e98e6866a780f1d57";
 
 /** sha256 of `JSON.stringify(validateContent())`. */
 const VALIDATION_REPORT_SHA256 = "ab8f128fb1c5f248a43db33bf6393d02e69684090eed4785b0fc15f3ffc93165";
