@@ -9,7 +9,7 @@
 import { applySale, getUnlockedDefinitionIds, MAX_REPUTATION } from "./economy";
 import { event, getArchetype, removeFromAllQueues, transition, type Draft } from "./draft";
 import { recordIntentRequest } from "./arrivals";
-import { VISIT_RATING_WEIGHTS, walkingSatisfactionScore } from "./satisfaction";
+import { VISIT_RATING_WEIGHTS, wait_satisfaction_score, walkingSatisfactionScore } from "./satisfaction";
 import {
   cloneNutritionProfile,
   dishStarRating,
@@ -48,12 +48,35 @@ const ABANDONED_UNSERVED_SCORE_CAP = 45;
 const ABANDONED_SERVED_PENALTY = 12;
 /** Rating penalty for abandoning a visit without being served. */
 const ABANDONED_UNSERVED_PENALTY = 28;
-/** Visit rating that leaves reputation unchanged. */
-const REPUTATION_NEUTRAL_SCORE = 70;
-/** Rating points per whole point of reputation change. */
-const REPUTATION_SCORE_DIVISOR = 500;
+/** Share of the gap to a visit's reputation target that one rating closes (an EWMA weight). */
+export const REPUTATION_SMOOTHING = 0.02;
+/** Visit rating whose reputation target is zero. */
+const REPUTATION_FLOOR_SCORE = 55;
+/** Rating points above the floor that map to the full reputation scale. */
+const REPUTATION_SCORE_SPAN = 40;
 /** Visit rating points per point on the zero-to-five satisfaction scale. */
 const RATING_POINTS_PER_SATISFACTION = 20;
+
+/**
+ * Moves reputation one rating towards the level that rating reflects.
+ *
+ * Reputation is an exponentially weighted moving average of recent visits: each rating maps to
+ * a target on the zero-to-five scale and closes `REPUTATION_SMOOTHING` of the gap, so roughly the
+ * last fifty visits dominate. A running sum would keep falling for any centre rated below a fixed
+ * neutral score, however much it improved; the average instead settles at the quality the centre
+ * delivers and recovers when service does.
+ *
+ * @param reputation - The reputation before the visit.
+ * @param score - The visit rating, from 0 to 100.
+ * @returns The reputation after the visit, within zero and `MAX_REPUTATION`.
+ */
+export function next_reputation(reputation: number, score: number): number {
+  const target = Math.max(
+    0,
+    Math.min(MAX_REPUTATION, ((score - REPUTATION_FLOOR_SCORE) / REPUTATION_SCORE_SPAN) * MAX_REPUTATION),
+  );
+  return Math.max(0, Math.min(MAX_REPUTATION, reputation + REPUTATION_SMOOTHING * (target - reputation)));
+}
 
 function normalizeQuality(value: number): number {
   return Math.max(0, Math.min(100, value <= 1 ? value * 100 : value * 20));
@@ -78,7 +101,7 @@ export function settleVisitRating(draft: Draft, source: Customer, abandoned: boo
   const supplied = source.ratingFactors ?? {};
   const components = {
     foodQuality: supplied.foodQuality ?? (source.served ? SERVED_FOOD_QUALITY_DEFAULT : UNSERVED_FOOD_QUALITY_DEFAULT),
-    wait: supplied.wait ?? Math.max(0, Math.min(100, (source.patienceRemainingMs / Math.max(1, archetype.patienceMs)) * 100)),
+    wait: supplied.wait ?? wait_satisfaction_score(source.patienceRemainingMs, archetype.patienceMs),
     value: supplied.value ?? (source.served ? SERVED_VALUE_DEFAULT : UNSERVED_VALUE_DEFAULT),
     walking: supplied.walking ?? walkingSatisfactionScore(source.walkingDistanceTiles),
     comfort: supplied.comfort ?? (source.served ? SERVED_COMFORT_DEFAULT : UNSERVED_COMFORT_DEFAULT),
@@ -113,10 +136,7 @@ export function settleVisitRating(draft: Draft, source: Customer, abandoned: boo
   };
   draft.metrics = { ...draft.metrics, visitRatings: [...draft.metrics.visitRatings, rating].slice(-VISIT_HISTORY_LIMIT) };
   if (abandoned) draft.economy = { ...draft.economy, abandonedVisits: draft.economy.abandonedVisits + 1 };
-  const reputation = Math.max(
-    0,
-    Math.min(MAX_REPUTATION, draft.progression.reputation + (score - REPUTATION_NEUTRAL_SCORE) / REPUTATION_SCORE_DIVISOR),
-  );
+  const reputation = next_reputation(draft.progression.reputation, score);
   draft.progression = { ...draft.progression, reputation };
   if (source.served && source.servedStallDefinitionId) {
     draft.progression = awardStallMastery(

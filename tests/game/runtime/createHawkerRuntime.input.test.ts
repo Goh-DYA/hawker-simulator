@@ -104,14 +104,14 @@ const QUEUE_NON_ADJACENT_TILE: GridPoint = { x: 4, y: 7 };
 const FIRST_GUEST_ID = "customer-1";
 /** Guests spawned for the departure-order flow, and the guest that is selected. */
 const DEPARTURE_SPAWN_COUNT = 8;
-const DEPARTURE_GUEST_ID = "customer-7";
+const DEPARTURE_GUEST_ID = "customer-3";
 /** The frame in which the selected guest leaves, and a ceiling for the search. */
-const DEPARTURE_FRAME = 1_179;
+const DEPARTURE_FRAME = 1_020;
 const DEPARTURE_FRAME_LIMIT = 1_500;
 /** Every event of the departure run, from opening to the departure frame. */
-const DEPARTURE_RUN_EVENT_COUNT = 23;
+const DEPARTURE_RUN_EVENT_COUNT = 20;
 const DEPARTURE_RUN_EVENTS_SHA256 =
-  "79d104a411058f557516704e3c91692ca436c9d0e764f7adab288dc535b00195";
+  "81ae051bd89c524ba6a14d086d0150d8df18e9c384023cd264a709fb497fd475";
 /** The departure run steps about 1,200 frames, so it gets the multi-day run's allowance. */
 const DEPARTURE_TIMEOUT_MS = 60_000;
 const DEPARTURE_MESSAGE = "The selected guest finished their visit.";
@@ -157,7 +157,7 @@ const FLOW_CORE_SHA256 = {
   queue: "f9692502aca1e3b63a3033657662c58cf7ab389863e2b3cf48032d3d352ccbe3",
   access: "ee6ea40e1ad467f302f22ae99dca59fd4d3c47695c2cea269b0943593e9ee8f9",
   accessCollision: "75f4e52be08db52637bff54681b1c153737c91c525239eedcfc0947eab78eaba",
-  departure: "6dab9feecfc5faf2e5ee5403f64ab3de8899b32e4e8e823afe0e5fa5141f4a05",
+  departure: "aa0b72ccbd7deb27af4b3eaf231069562af02456c48419f27af721e010c36892",
   keyboard: "f5eb1edc9563a606e64f334a8542d483febf0dd1819777ea6c877162ca10d890",
   keyboardPlace: "30de23f2943cb40c5e9a7003ee7b2e6fdd72198075185aba6a5ea26543dc1237",
 } as const;
@@ -745,7 +745,7 @@ describe("createHawkerRuntime pointer input", () => {
           { kind: "info", message: DEPARTURE_MESSAGE },
           {
             kind: "success",
-            message: "Happy tables complete · +$100",
+            message: "New catalogue choices are now available.",
             importance: "important",
           },
         ],
