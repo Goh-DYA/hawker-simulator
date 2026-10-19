@@ -72,8 +72,9 @@ Do not translate "implemented," "compiled," or "unit-tested" into an exact-produ
 
 ## Open gameplay balance issues
 
-- **The 120-second visit cap can interrupt already-served guests.** In a deterministic 360-second starter-layout run, 33 served guests reached the cap while eating or walking to a tray return. Their route-efficiency ratings now remain valid because only walked distance contributes, but meal completion and tray-return timing need a separate balance pass against the authored preparation and eating durations.
-- **Some authored persona fields remain future hooks.** Budgets, patience, walking speed, stall-choice sensitivities, novelty, dish preferences, progression gates, and visit schedules are active. Seat preference, group range, satisfaction modifiers, spend multiplier, and tray-return chance are validated content metadata but do not yet alter the simulation.
+- **The 120-second visit cap can still end a visit before the meal.** Seated guests now finish their meal and clear their tray past the cap, but a served guest still walking to a seat or searching for one leaves when the cap is reached. Preparation and eating durations still need a balance pass against the cap.
+- **Some authored persona fields remain future hooks.** Budgets, patience, walking speed, stall-choice sensitivities, novelty, dish preferences, progression gates, visit schedules, and tray-return chance are active. Seat preference, group range, satisfaction modifiers, and spend multiplier are validated content metadata but do not yet alter the simulation.
+- **Reloading mid-day empties the hall.** Customers, queues, seat reservations and uncleared trays are runtime-only, so a reload during a rush removes the waiting guests (they count as neither served nor left early) and clears every tray.
 
 ## Implemented but awaiting exact-production evidence
 

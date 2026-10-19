@@ -106,7 +106,7 @@ const FIRST_GUEST_ID = "customer-1";
 const DEPARTURE_SPAWN_COUNT = 8;
 const DEPARTURE_GUEST_ID = "customer-3";
 /** The frame in which the selected guest leaves, and a ceiling for the search. */
-const DEPARTURE_FRAME = 1_020;
+const DEPARTURE_FRAME = 1_019;
 const DEPARTURE_FRAME_LIMIT = 1_500;
 /** Every event of the departure run, from opening to the departure frame. */
 const DEPARTURE_RUN_EVENT_COUNT = 20;
@@ -157,7 +157,7 @@ const FLOW_CORE_SHA256 = {
   queue: "f9692502aca1e3b63a3033657662c58cf7ab389863e2b3cf48032d3d352ccbe3",
   access: "ee6ea40e1ad467f302f22ae99dca59fd4d3c47695c2cea269b0943593e9ee8f9",
   accessCollision: "75f4e52be08db52637bff54681b1c153737c91c525239eedcfc0947eab78eaba",
-  departure: "e098c789f843fb68d79448e40aaab27fc36f1ea02d22e79bfc52c4e89cac42b9",
+  departure: "40ea4a905671238f2581257235dbe3e99f6b5a5450cc1d3f3e80d3879844abf0",
   keyboard: "f5eb1edc9563a606e64f334a8542d483febf0dd1819777ea6c877162ca10d890",
   keyboardPlace: "30de23f2943cb40c5e9a7003ee7b2e6fdd72198075185aba6a5ea26543dc1237",
 } as const;

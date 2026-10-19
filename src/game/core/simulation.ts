@@ -4,8 +4,9 @@
  *
  * Each step runs in a fixed order, which is part of the determinism contract. It first counts
  * down the spawn timer and, when it expires, spawns a customer (unless the adaptive model is at
- * last orders) and then computes the next adaptive spawn interval, which uses no randomness. It then processes every customer once, in
- * `compare_customer_ids` order, and finally runs `updateProgressionSystems`. Random numbers are
+ * last orders) and then computes the next adaptive spawn interval, which uses no randomness. It
+ * then processes every customer once, in `compare_customer_ids` order, lets the table-cleaning
+ * crew clear trays, and finally runs `updateProgressionSystems`. Random numbers are
  * drawn from the draft's `rngState` only by `spawnCustomer` (the arrival, health and nutrition
  * rolls) and then by each processed customer's choices (stall and dish), in
  * `compare_customer_ids` order; `updateProgressionSystems` draws none. `processCustomer` returns
@@ -14,6 +15,7 @@
  */
 import { createDraft } from "./draft";
 import { compute_next_spawn_interval_ms, is_arrival_window_closed, spawnCustomer } from "./arrivals";
+import { advance_table_clearing } from "./clearing";
 import { processCustomer } from "./lifecycle";
 import { compare_customer_ids } from "./ordering";
 import { compute_undo_window_ticks, get_quality_settings } from "./state";
@@ -45,12 +47,14 @@ export function stepSimulation(state: GameState): GameState {
     if (processed) draft.customers[id] = processed;
     else delete draft.customers[id];
   }
+  advance_table_clearing(draft, deltaMs);
 
   const next = {
     ...state,
     customers: draft.customers,
     queues: draft.queues,
     seatReservations: draft.seatReservations,
+    unclearedTrays: draft.unclearedTrays,
     economy: draft.economy,
     progression: draft.progression,
     rngState: draft.rngState,

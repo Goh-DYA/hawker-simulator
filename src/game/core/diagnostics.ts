@@ -72,6 +72,9 @@ export function assertSimulationInvariants(state: GameState): void {
     if (!customer) throw new Error(`Seat ${seatKey} is reserved by missing customer ${customerId}`);
     if (customer.reservedSeatKey !== seatKey) throw new Error(`Seat reservation ${seatKey} is not mirrored by its customer`);
   }
+  for (const seatKey of Object.keys(state.unclearedTrays)) {
+    if (state.seatReservations[seatKey]) throw new Error(`Seat ${seatKey} is reserved while a tray is left on it`);
+  }
   for (const customer of Object.values(state.customers)) {
     if (customer.reservedSeatKey && state.seatReservations[customer.reservedSeatKey] !== customer.id) {
       throw new Error(`Customer ${customer.id} has an orphaned seat reservation`);

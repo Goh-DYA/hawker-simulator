@@ -30,6 +30,20 @@ export const OBJECTIVE_KINDS = [
   "nutrition",
 ] as const;
 
+/**
+ * Why a guest left, recorded on the visit rating. `served` is a completed visit; `abandoned` is
+ * the legacy reason of ratings saved before the specific reasons existed.
+ */
+export const DEPARTURE_REASONS = [
+  "served",
+  "abandoned",
+  "no-stall",
+  "long-queue",
+  "no-dish",
+  "no-seat",
+  "visit-cap",
+] as const;
+
 /** What a nutrition daily objective counts. */
 export const NUTRITION_OBJECTIVE_CRITERIA = [
   "profiled-servings",

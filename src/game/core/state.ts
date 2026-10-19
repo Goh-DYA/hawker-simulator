@@ -236,6 +236,7 @@ export function createNewGame(options: NewGameOptions): GameState {
         .map((object) => [object.id, []]),
     ),
     seatReservations: {},
+    unclearedTrays: {},
     economy: {
       currency: options.startingCurrency ?? 1_000,
       lifetimeRevenue: 0,
@@ -440,6 +441,9 @@ export function createSnapshot(state: GameState): GameSnapshot {
     customers,
     queues: Object.fromEntries(Object.entries(state.queues).map(([id, queue]) => [id, [...queue]])),
     seatReservations: { ...state.seatReservations },
+    unclearedTrays: Object.fromEntries(
+      Object.entries(state.unclearedTrays).map(([key, tray]) => [key, { ...tray }]),
+    ),
     economy: { ...state.economy },
     progression: clone_progression(state.progression),
     metrics: clone_metrics(state.metrics),
