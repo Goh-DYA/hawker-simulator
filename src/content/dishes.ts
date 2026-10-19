@@ -68,7 +68,7 @@ const dishInputs = [
     description:
       "Tender poached chicken with fragrant rice, cucumber, clear broth, and separate chilli and dark soy condiments.",
     category: "rice",
-    price: 7,
+    price: 4,
     demand: 0.96,
     preparationSeconds: 24,
     eatingSeconds: 44,
@@ -88,7 +88,7 @@ const dishInputs = [
     description:
       "Roast chicken with crisp-edged skin, aromatic rice, cucumber, broth, and condiments served separately.",
     category: "rice",
-    price: 8,
+    price: 4,
     demand: 0.85,
     preparationSeconds: 28,
     eatingSeconds: 46,
@@ -108,7 +108,7 @@ const dishInputs = [
     description:
       "A meat-free plate of mock chicken served with flavoured rice, in the style of Singapore vegetarian chicken rice stalls.",
     category: "rice",
-    price: 6,
+    price: 4,
     demand: 0.4,
     preparationSeconds: 22,
     eatingSeconds: 42,
@@ -128,7 +128,7 @@ const dishInputs = [
     description:
       "Silky rice porridge topped with sliced chicken, spring onion, ginger, and a dash of sesame oil.",
     category: "rice",
-    price: 6,
+    price: 4,
     demand: 0.55,
     preparationSeconds: 20,
     eatingSeconds: 50,
@@ -148,7 +148,7 @@ const dishInputs = [
     description:
       "Coconut rice with sambal, cucumber, peanuts, fried anchovies, egg, and a crisp chicken wing in this house set.",
     category: "rice",
-    price: 8,
+    price: 5,
     demand: 0.92,
     preparationSeconds: 30,
     eatingSeconds: 48,
@@ -168,7 +168,7 @@ const dishInputs = [
     description:
       "Yellow noodles in a thick, gently spiced sweet-potato gravy with tofu, beansprouts, egg, lime, and fried shallots.",
     category: "noodles",
-    price: 7,
+    price: 4,
     demand: 0.62,
     preparationSeconds: 32,
     eatingSeconds: 54,
@@ -188,7 +188,7 @@ const dishInputs = [
     description:
       "Aromatic turmeric chicken soup with rice cakes, shredded chicken, beansprouts, herbs, and fried shallots.",
     category: "soup",
-    price: 7,
+    price: 5,
     demand: 0.5,
     preparationSeconds: 29,
     eatingSeconds: 55,
@@ -208,7 +208,7 @@ const dishInputs = [
     description:
       "Vegetables and dried beancurd in a spiced coconut gravy, served with compressed rice cake and a hard-boiled egg.",
     category: "soup",
-    price: 7,
+    price: 4,
     demand: 0.52,
     preparationSeconds: 31,
     eatingSeconds: 52,
@@ -228,7 +228,7 @@ const dishInputs = [
     description:
       "Local-style coffee brewed through a cloth sock and finished with condensed and evaporated milk.",
     category: "drink",
-    price: 3,
+    price: 2,
     demand: 0.95,
     preparationSeconds: 15,
     eatingSeconds: 34,
@@ -248,7 +248,7 @@ const dishInputs = [
     description:
       "Chilled sugarcane juice pressed to order and served over ice with an optional squeeze of calamansi.",
     category: "drink",
-    price: 4,
+    price: 3,
     demand: 0.55,
     preparationSeconds: 18,
     eatingSeconds: 31,
@@ -268,7 +268,7 @@ const dishInputs = [
     description:
       "A mound of shaved ice with colourful syrups, sweet corn, red beans, grass jelly, and evaporated milk.",
     category: "dessert",
-    price: 6,
+    price: 3,
     demand: 0.55,
     preparationSeconds: 25,
     eatingSeconds: 46,
@@ -288,7 +288,7 @@ const dishInputs = [
     description:
       "Flat rice noodles and yellow noodles wok-fried in sweet dark soy with cockles, Chinese sausage, fish cake, bean sprouts, and egg.",
     category: "noodles",
-    price: 9,
+    price: 5,
     demand: 0.92,
     preparationSeconds: 42,
     eatingSeconds: 52,
@@ -308,7 +308,7 @@ const dishInputs = [
     description:
       "Yellow noodles and thick rice vermicelli fried with prawns, squid, pork, and egg, then served with lime.",
     category: "noodles",
-    price: 10,
+    price: 6,
     demand: 0.88,
     preparationSeconds: 45,
     eatingSeconds: 55,
@@ -328,7 +328,7 @@ const dishInputs = [
     description:
       "Steamed radish cake cubes fried with egg, preserved radish, garlic, and spring onion in the savoury white style.",
     category: "small-plate",
-    price: 7,
+    price: 4,
     demand: 0.8,
     preparationSeconds: 38,
     eatingSeconds: 43,
@@ -348,7 +348,7 @@ const dishInputs = [
     description:
       "Beaten egg and starch batter fried until crisp at the edges, folded with fresh oysters, and served with a chilli dip.",
     category: "small-plate",
-    price: 11,
+    price: 6,
     demand: 0.68,
     preparationSeconds: 46,
     eatingSeconds: 49,
@@ -368,7 +368,7 @@ const dishInputs = [
     description:
       "Two flaky griddled flatbreads served with a bowl of curry for dipping.",
     category: "bread",
-    price: 6,
+    price: 3,
     demand: 0.92,
     preparationSeconds: 36,
     eatingSeconds: 45,
@@ -388,7 +388,7 @@ const dishInputs = [
     description:
       "Yellow noodles fried with egg and a tomato-based chilli sauce, served with cucumber and lime.",
     category: "noodles",
-    price: 8,
+    price: 5,
     demand: 0.75,
     preparationSeconds: 41,
     eatingSeconds: 50,
@@ -408,7 +408,7 @@ const dishInputs = [
     description:
       "A substantial griddled parcel filled with spiced minced chicken, onion, and egg, served with curry.",
     category: "bread",
-    price: 11,
+    price: 7,
     demand: 0.62,
     preparationSeconds: 48,
     eatingSeconds: 57,
@@ -428,7 +428,7 @@ const dishInputs = [
     description:
       "Long-grain spiced rice with tender chicken, achar, and a small bowl of curry gravy served alongside.",
     category: "rice",
-    price: 12,
+    price: 7,
     demand: 0.78,
     preparationSeconds: 43,
     eatingSeconds: 59,
@@ -448,7 +448,7 @@ const dishInputs = [
     description:
       "A crisp fermented rice-and-lentil crepe wrapped around spiced potato and served with sambar and chutneys.",
     category: "bread",
-    price: 8,
+    price: 4,
     demand: 0.62,
     preparationSeconds: 39,
     eatingSeconds: 50,
@@ -468,7 +468,7 @@ const dishInputs = [
     description:
       "Steamed rice-and-lentil cakes served as a set with lentil-vegetable sambar and coconut chutney.",
     category: "small-plate",
-    price: 6,
+    price: 3,
     demand: 0.42,
     preparationSeconds: 26,
     eatingSeconds: 44,
@@ -488,7 +488,7 @@ const dishInputs = [
     description:
       "Two crisp Indian-style savoury doughnut rings fried with spring onion, green chilli, and onion.",
     category: "small-plate",
-    price: 6,
+    price: 2,
     demand: 0.45,
     preparationSeconds: 31,
     eatingSeconds: 38,
@@ -508,7 +508,7 @@ const dishInputs = [
     description:
       "South Indian rice brightened with lemon juice, peanuts, mustard seed, curry leaves, and aromatic spices.",
     category: "rice",
-    price: 7,
+    price: 3,
     demand: 0.3,
     preparationSeconds: 28,
     eatingSeconds: 45,
@@ -528,7 +528,7 @@ const dishInputs = [
     description:
       "Thick rice vermicelli in a rich coconut-milk soup with beancurd, cockles, and fish cake.",
     category: "noodles",
-    price: 11,
+    price: 6,
     demand: 0.86,
     preparationSeconds: 43,
     eatingSeconds: 57,
@@ -548,7 +548,7 @@ const dishInputs = [
     description:
       "Nonya chicken and potato braised in a fermented soybean gravy, served as a side plate.",
     category: "small-plate",
-    price: 10,
+    price: 4,
     demand: 0.35,
     preparationSeconds: 52,
     eatingSeconds: 62,
@@ -568,7 +568,7 @@ const dishInputs = [
     description:
       "A Nonya braise of cabbage, carrot, baby corn, and black fungus, served as a side plate.",
     category: "small-plate",
-    price: 7,
+    price: 3,
     demand: 0.45,
     preparationSeconds: 38,
     eatingSeconds: 51,
@@ -588,7 +588,7 @@ const dishInputs = [
     description:
       "Nonya pork braised in a fermented soybean gravy, served as a side plate.",
     category: "small-plate",
-    price: 11,
+    price: 5,
     demand: 0.4,
     preparationSeconds: 48,
     eatingSeconds: 60,
@@ -608,7 +608,7 @@ const dishInputs = [
     description:
       "Stingray grilled on a leaf lining with a robust sambal, served with onion, cucumber, and calamansi.",
     category: "seafood",
-    price: 16,
+    price: 12,
     demand: 0.75,
     preparationSeconds: 55,
     eatingSeconds: 64,
@@ -628,7 +628,7 @@ const dishInputs = [
     description:
       "Fresh fish slices, leafy greens, tofu, tomato, and rice vermicelli in a clear, gently savoury broth.",
     category: "soup",
-    price: 10,
+    price: 6,
     demand: 0.72,
     preparationSeconds: 40,
     eatingSeconds: 58,
@@ -648,7 +648,7 @@ const dishInputs = [
     description:
       "A quarter crab stir-fried in a glossy, peppery black-pepper sauce.",
     category: "seafood",
-    price: 24,
+    price: 20,
     demand: 0.5,
     preparationSeconds: 65,
     eatingSeconds: 72,
@@ -668,7 +668,7 @@ const dishInputs = [
     description:
       "Springy egg noodles tossed in a vinegar-chilli sauce with minced pork, sliced liver, meatballs, and greens, with a side of soup.",
     category: "noodles",
-    price: 8,
+    price: 5,
     demand: 0.88,
     preparationSeconds: 34,
     eatingSeconds: 51,
@@ -688,7 +688,7 @@ const dishInputs = [
     description:
       "Flat mee pok with springy fishballs, fish cake, beansprouts, and spring onion, dressed lightly and paired with clear soup.",
     category: "noodles",
-    price: 7,
+    price: 4,
     demand: 0.82,
     preparationSeconds: 31,
     eatingSeconds: 48,
@@ -708,7 +708,7 @@ const dishInputs = [
     description:
       "Thick yellow noodles under a glossy dark gravy with braised pork, egg, fish cake, beansprouts, garlic, and black vinegar.",
     category: "noodles",
-    price: 8,
+    price: 5,
     demand: 0.6,
     preparationSeconds: 38,
     eatingSeconds: 54,
@@ -728,7 +728,7 @@ const dishInputs = [
     description:
       "Glass noodles in clear soup with fishballs, thinly sliced fish cake, and bean sprouts.",
     category: "soup",
-    price: 7,
+    price: 4,
     demand: 0.4,
     preparationSeconds: 34,
     eatingSeconds: 55,
@@ -748,7 +748,7 @@ const dishInputs = [
     description:
       "Shaved ice layered with pandan jelly, red beans, coconut milk, and a dark gula melaka syrup that pools through the bowl.",
     category: "dessert",
-    price: 6,
+    price: 3,
     demand: 0.7,
     preparationSeconds: 23,
     eatingSeconds: 44,
@@ -768,7 +768,7 @@ const dishInputs = [
     description:
       "Silken soybean pudding served with assorted toppings such as grass jelly, pearls, fresh fruit, or flavoured syrup.",
     category: "dessert",
-    price: 4,
+    price: 3,
     demand: 0.62,
     preparationSeconds: 17,
     eatingSeconds: 36,
@@ -788,7 +788,7 @@ const dishInputs = [
     description:
       "Strong black tea with condensed and evaporated milk, pulled between metal mugs until smooth and crowned with a fine foam.",
     category: "drink",
-    price: 3,
+    price: 2,
     demand: 0.78,
     preparationSeconds: 20,
     eatingSeconds: 32,
@@ -808,7 +808,7 @@ const dishInputs = [
     description:
       "Black glutinous rice simmered into a nutty purple porridge and finished with a bright ribbon of coconut cream.",
     category: "dessert",
-    price: 6,
+    price: 3,
     demand: 0.42,
     preparationSeconds: 26,
     eatingSeconds: 45,
@@ -828,7 +828,7 @@ const dishInputs = [
     description:
       "Ten marinated skinless chicken skewers barbecued over charcoal and served with peanut satay sauce.",
     category: "small-plate",
-    price: 10,
+    price: 7,
     demand: 0.85,
     preparationSeconds: 42,
     eatingSeconds: 48,
@@ -848,7 +848,7 @@ const dishInputs = [
     description:
       "Three chicken wing pieces grilled over charcoal until bronze, smoky, and lightly crisp at the edges.",
     category: "small-plate",
-    price: 9,
+    price: 5,
     demand: 0.78,
     preparationSeconds: 45,
     eatingSeconds: 50,
@@ -868,7 +868,7 @@ const dishInputs = [
     description:
       "Ten marinated beef skewers grilled over charcoal and served with a rich peanut satay sauce.",
     category: "small-plate",
-    price: 12,
+    price: 8,
     demand: 0.62,
     preparationSeconds: 47,
     eatingSeconds: 52,
@@ -888,7 +888,7 @@ const dishInputs = [
     description:
       "Squid marinated in spices and grilled over charcoal, served as a smoky seafood plate.",
     category: "seafood",
-    price: 15,
+    price: 10,
     demand: 0.6,
     preparationSeconds: 50,
     eatingSeconds: 57,
@@ -908,7 +908,7 @@ const dishInputs = [
     description:
       "Four steamed dumplings filled with minced prawns and bamboo shoots, served with vegetables in light soup.",
     category: "small-plate",
-    price: 8,
+    price: 4,
     demand: 0.78,
     preparationSeconds: 29,
     eatingSeconds: 38,
@@ -928,7 +928,7 @@ const dishInputs = [
     description:
       "Four steamed open-topped dumplings of seasoned minced pork in wanton skin, each topped with crab roe.",
     category: "small-plate",
-    price: 8,
+    price: 4,
     demand: 0.8,
     preparationSeconds: 30,
     eatingSeconds: 39,
@@ -948,7 +948,7 @@ const dishInputs = [
     description:
       "Fluffy white steamed buns split to reveal a glossy sweet-savoury char siew pork filling, served three to a basket.",
     category: "bread",
-    price: 7,
+    price: 3,
     demand: 0.72,
     preparationSeconds: 31,
     eatingSeconds: 40,
@@ -968,7 +968,7 @@ const dishInputs = [
     description:
       "Glutinous rice with lap cheong and diced char siew, wrapped in lotus leaf and steamed until deeply aromatic.",
     category: "rice",
-    price: 10,
+    price: 4,
     demand: 0.62,
     preparationSeconds: 40,
     eatingSeconds: 52,
@@ -988,7 +988,7 @@ const dishInputs = [
     description:
       "Seven assorted stuffed tofu, fish-paste, and vegetable pieces served in clear soup, with fried, noodle, and laksa variants available.",
     category: "soup",
-    price: 8,
+    price: 6,
     demand: 0.8,
     preparationSeconds: 34,
     eatingSeconds: 52,
@@ -1008,7 +1008,7 @@ const dishInputs = [
     description:
       "Flat handmade wheat noodles in an ikan bilis soup with minced pork, mushrooms, leafy greens, and egg, with dry, chilli, dumpling, seafood, and vegetable preparations available.",
     category: "noodles",
-    price: 8,
+    price: 5,
     demand: 0.72,
     preparationSeconds: 37,
     eatingSeconds: 54,
@@ -1028,7 +1028,7 @@ const dishInputs = [
     description:
       "Rice topped with chopped vegetables, tofu, preserved radish, and peanuts, served with a fragrant green herb-and-tea broth.",
     category: "rice",
-    price: 9,
+    price: 6,
     demand: 0.42,
     preparationSeconds: 32,
     eatingSeconds: 49,
@@ -1048,7 +1048,7 @@ const dishInputs = [
     description:
       "A soft wheat wrapper rolled around cooked turnip, vegetables, egg, peanuts, and savoury condiments for a fresh local snack.",
     category: "small-plate",
-    price: 5,
+    price: 3,
     demand: 0.65,
     preparationSeconds: 24,
     eatingSeconds: 34,
@@ -1068,7 +1068,7 @@ const dishInputs = [
     description:
       "Pork ribs cooked in a peppery clear broth, with dry and herbal Malaysian-style preparations available as later variants.",
     category: "soup",
-    price: 12,
+    price: 8,
     demand: 0.82,
     preparationSeconds: 46,
     eatingSeconds: 58,
@@ -1088,7 +1088,7 @@ const dishInputs = [
     description:
       "Sliced braised duck served with rice, a braised egg, braised firm tofu, and cucumber.",
     category: "rice",
-    price: 10,
+    price: 6,
     demand: 0.7,
     preparationSeconds: 39,
     eatingSeconds: 52,
@@ -1108,7 +1108,7 @@ const dishInputs = [
     description:
       "Broad rice-noodle sheets in a dark aromatic broth with braised pork cuts, tofu, and egg in a traditional serving.",
     category: "soup",
-    price: 10,
+    price: 6,
     demand: 0.55,
     preparationSeconds: 42,
     eatingSeconds: 56,
@@ -1128,7 +1128,7 @@ const dishInputs = [
     description:
       "Rice cooked in a claypot with chicken, Chinese sausage, mushrooms, and dark soy until a crisp bottom crust forms.",
     category: "rice",
-    price: 12,
+    price: 8,
     demand: 0.72,
     preparationSeconds: 50,
     eatingSeconds: 60,
@@ -1148,7 +1148,7 @@ const dishInputs = [
     description:
       "Honey-glazed barbecued pork slices fanned over steamed rice with cucumber and a drizzle of sweet sauce.",
     category: "rice",
-    price: 8,
+    price: 4,
     demand: 0.85,
     preparationSeconds: 24,
     eatingSeconds: 44,
@@ -1168,7 +1168,7 @@ const dishInputs = [
     description:
       "Steamed rice served with Malay-style spiced beef in a rich gravy, picked from the nasi padang counter.",
     category: "rice",
-    price: 10,
+    price: 6,
     demand: 0.75,
     preparationSeconds: 26,
     eatingSeconds: 48,
@@ -1188,7 +1188,7 @@ const dishInputs = [
     description:
       "Crisp toasted bread spread with coconut-egg kaya jam and layered with slices of cold butter.",
     category: "bread",
-    price: 4,
+    price: 2,
     demand: 0.8,
     preparationSeconds: 12,
     eatingSeconds: 26,
@@ -1208,7 +1208,7 @@ const dishInputs = [
     description:
       "Pearl barley simmered with water and sugar, served cold as a refreshing, cloudy thirst-quencher.",
     category: "drink",
-    price: 3,
+    price: 2,
     demand: 0.6,
     preparationSeconds: 8,
     eatingSeconds: 30,
@@ -1228,7 +1228,7 @@ const dishInputs = [
     description:
       "Wok-charred flat rice noodles and tender sliced beef in a silky egg gravy with leafy greens.",
     category: "noodles",
-    price: 10,
+    price: 6,
     demand: 0.72,
     preparationSeconds: 30,
     eatingSeconds: 48,
@@ -1248,7 +1248,7 @@ const dishInputs = [
     description:
       "Five soft steamed rice cakes topped with savoury fried preserved radish and a dab of chilli.",
     category: "small-plate",
-    price: 4,
+    price: 3,
     demand: 0.65,
     preparationSeconds: 10,
     eatingSeconds: 26,
@@ -1268,7 +1268,7 @@ const dishInputs = [
     description:
       "A long bread roll pan-fried in ghee with minced meat, beaten egg, and onion, then cut into strips.",
     category: "bread",
-    price: 8,
+    price: 6,
     demand: 0.6,
     preparationSeconds: 22,
     eatingSeconds: 40,
@@ -1288,7 +1288,7 @@ const dishInputs = [
     description:
       "Freshly made soybean milk, sweetened and served chilled alongside the stall's beancurd.",
     category: "drink",
-    price: 3,
+    price: 2,
     demand: 0.62,
     preparationSeconds: 8,
     eatingSeconds: 30,
@@ -1308,7 +1308,7 @@ const dishInputs = [
     description:
       "Steamed rice with one vegetable dish and one meat dish picked from the stall's long row of trays.",
     category: "rice",
-    price: 7,
+    price: 3,
     demand: 0.9,
     preparationSeconds: 16,
     eatingSeconds: 44,
@@ -1328,7 +1328,7 @@ const dishInputs = [
     description:
       "Springy egg noodles tossed in a savoury sauce with boiled pork wantons, sliced char siew, and leafy greens.",
     category: "noodles",
-    price: 8,
+    price: 4,
     demand: 0.85,
     preparationSeconds: 24,
     eatingSeconds: 44,
@@ -1348,7 +1348,7 @@ const dishInputs = [
     description:
       "Thin rice vermicelli in a spicy, tangy tamarind gravy with hard-boiled egg, fried tofu, and a squeeze of lime.",
     category: "noodles",
-    price: 7,
+    price: 4,
     demand: 0.65,
     preparationSeconds: 22,
     eatingSeconds: 46,
@@ -1368,7 +1368,7 @@ const dishInputs = [
     description:
       "Five crisp fried pastry cups filled with braised shredded turnip and dried shrimp.",
     category: "small-plate",
-    price: 8,
+    price: 5,
     demand: 0.45,
     preparationSeconds: 18,
     eatingSeconds: 30,
@@ -1388,7 +1388,7 @@ const dishInputs = [
     description:
       "Yellow noodles with whole prawns, lean pork slices, and fish cake in a deep prawn-shell broth.",
     category: "noodles",
-    price: 10,
+    price: 6,
     demand: 0.72,
     preparationSeconds: 30,
     eatingSeconds: 50,

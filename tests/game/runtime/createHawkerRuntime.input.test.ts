@@ -109,9 +109,9 @@ const DEPARTURE_GUEST_ID = "customer-3";
 const DEPARTURE_FRAME = 1_019;
 const DEPARTURE_FRAME_LIMIT = 1_500;
 /** Every event of the departure run, from opening to the departure frame. */
-const DEPARTURE_RUN_EVENT_COUNT = 19;
+const DEPARTURE_RUN_EVENT_COUNT = 22;
 const DEPARTURE_RUN_EVENTS_SHA256 =
-  "420a58b01ea48f7181cb8bd6633a153a69adb3703bd4d7144daa050bffa860c9";
+  "71b4c1b1e60b422710db627c0f0e2c317497580f91b2a2fe8393bf9b786ed59f";
 /** The departure run steps about 1,200 frames, so it gets the multi-day run's allowance. */
 const DEPARTURE_TIMEOUT_MS = 60_000;
 const DEPARTURE_MESSAGE = "The selected guest finished their visit.";
@@ -157,8 +157,8 @@ const FLOW_CORE_SHA256 = {
   queue: "56f37d706525542fd8bd654970681386e13891030d3708cd6c0f647c9f181a5f",
   access: "6acc77b5ad2a7692200833d74ecfc09dbe0eef39ba498f530a9b82689df92982",
   accessCollision: "cb571e923465162c07febcdc1696a5492eb47b6e8fe50795823d4d3663202245",
-  departure: "e1b5eabc194c74106e4c98b57871fa7d35eb7a7ce0c5cd9a2880e254c32856ac",
-  keyboard: "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+  departure: "ecfe0c6f18c7faeb7ccea551ad63903304a035cd750d1107b079175df1e30715",
+  keyboard: "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
   keyboardPlace: "5a8c157d11664b13ad7951ca5377fab21e6e51ee7d9b1f8b163c852d3b7f4fbd",
 } as const;
 
@@ -745,7 +745,7 @@ describe("createHawkerRuntime pointer input", () => {
           { kind: "info", message: DEPARTURE_MESSAGE },
           {
             kind: "success",
-            message: "New catalogue choices are now available.",
+            message: "Happy tables complete · +$100",
             importance: "important",
           },
         ],
