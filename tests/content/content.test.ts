@@ -87,8 +87,8 @@ describe("launch content", () => {
       "stall.sweet-monsoon": [
         "dish.chendol",
         "dish.tau-huay",
-        "dish.teh-tarik",
         "dish.pulut-hitam",
+        "dish.ice-kacang",
       ],
       "stall.satay-meridian": [
         "dish.chicken-satay-set",

@@ -107,20 +107,20 @@ const RENDER_DIGESTS = {
     sha256: "918f2bd8a8e7bdd0a3479fc441f66ef3c970dcffd1e8fa5570b9c50bbcba7806",
   },
   gallery: {
-    calls: 768_187,
-    sha256: "87fc3194196f73c9bd7ca6c0533616ca89da28e37627c51619defef5dc656c59",
+    calls: 768_282,
+    sha256: "1c1932364828831e33a422e8d8ce763efa5bc2053e9d2f6add7681b8e4e6665e",
   },
   galleryVariants: {
-    calls: 61_330,
-    sha256: "3124d909ea22cb92bb74e9cef4e719ec9648226a543a9d49a8a98d4c778affc0",
+    calls: 60_314,
+    sha256: "260ec5214d29b54e2cee3f407aa8c9539a9e5d09a1c3e9e04f2181405aa1a045",
   },
   multiDayFrame480: {
-    calls: 188,
-    sha256: "4ef28c2ef0f937513ae19cfe901bbdc8b99fd7bcf1c7c3cc13cacccf152dba5d",
+    calls: 180,
+    sha256: "043300a98244e605bacaf74f303be35e2aa21bcdac20c72c6b44cbccd11004a6",
   },
   multiDayFrame960: {
-    calls: 199,
-    sha256: "bb8fd16474c13dce1f1f30bdafb7dda98a6c218919bd162bb55d3d63267d5f57",
+    calls: 197,
+    sha256: "26f809e78318135182c250f80c5fd758507bdfa3f68ffe33ea5ca70fa8720b46",
   },
 } satisfies Record<string, RenderLogDigest>;
 
