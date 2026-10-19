@@ -143,7 +143,10 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "dish.oyster-omelette",
     "Oyster omelette",
     "meal",
-    "Exact named dish match.",
+    "The source reports a 100 g serving-spoon scoop; values are scaled to the game's hawker plate.",
+    "scaled-exact",
+    2,
+    "1 plate (200 g)",
   ),
   released(
     "dish.roti-prata",
@@ -183,8 +186,10 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "dish.idli-sambar",
     "Idli",
     "meal",
-    "The reviewed source serving description includes the accompaniments represented by the game.",
+    "The reviewed source serving description includes the accompaniments represented by the game; the source labels the whole set as one piece.",
     "curated-synonym",
+    1,
+    "1 set with sambar and chutney (269 g)",
   ),
   released(
     "dish.vadai-set",
@@ -211,19 +216,28 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "dish.ayam-buah-keluak",
     "Ayam pongteh",
     "meal",
-    "The unsupported recipe was replaced by the source-backed Nonya ayam pongteh serving while retaining the stable dish ID.",
+    "The source has no buah keluak row, so the stable dish ID serves the source-backed Nonya ayam pongteh; the 100 g scoop is scaled to a side plate.",
+    "scaled-exact",
+    2,
+    "1 plate (200 g)",
   ),
   released(
     "dish.chap-chye",
     "Nonya chap chye",
     "meal",
-    "The game recipe was refined to the source's 100 g Nonya chap chye serving without unreported rice.",
+    "The source reports a 100 g scoop; values are scaled to the game's side plate without unreported rice.",
+    "scaled-exact",
+    2,
+    "1 plate (200 g)",
   ),
   released(
     "dish.babi-pongteh",
     "Babi pongteh",
     "meal",
-    "The game recipe now matches the source's 100 g babi pongteh serving without unreported rice.",
+    "The source reports a 100 g scoop; values are scaled to the game's side plate without unreported rice.",
+    "scaled-exact",
+    2,
+    "1 plate (200 g)",
   ),
   released(
     "dish.sambal-stingray",
@@ -242,7 +256,10 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "dish.black-pepper-crab",
     "Black pepper crab",
     "meal",
-    "The game serving was refined to the source's listed black-pepper crab pincer portion.",
+    "The source reports one pincer; values are scaled to the source's alternative quarter-crab serving.",
+    "scaled-exact",
+    384 / 177,
+    "1 quarter crab (384 g)",
   ),
   released(
     "dish.bak-chor-mee",
@@ -261,9 +278,10 @@ export const PRIMARY_PROFILE_MAPPINGS = [
   released("dish.lor-mee", "Lor mee", "meal", "Exact named dish match."),
   released(
     "dish.teochew-fish-dumpling-soup",
-    "Fishball soup (no noodles)",
+    "Fish ball tunghoon (soup)",
     "meal",
-    "The unsupported dumpling recipe was replaced by the source-backed complete fishball soup bowl while retaining the stable dish ID.",
+    "The fishball soup row without noodles reports 44 kcal and trace carbohydrate for seven fishballs, so the stable dish ID serves the source's complete fishball tang hoon bowl.",
+    "curated-synonym",
   ),
   released("dish.chendol", "Chendol", "meal", "Exact named dessert match."),
   released(
@@ -276,7 +294,10 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "dish.teh-tarik",
     "Teh Tarik",
     "drink",
-    "Exact named drink match with source capitalization retained in provenance.",
+    "Exact named drink match with source capitalization retained in provenance; the 150 ml small cup is scaled to the 250 ml cup of the other teh and kopi servings.",
+    "scaled-exact",
+    250 / 150,
+    "1 regular cup (250 ml)",
   ),
   released(
     "dish.pulut-hitam",
@@ -313,9 +334,12 @@ export const PRIMARY_PROFILE_MAPPINGS = [
   ),
   released(
     "dish.sambal-grilled-squid",
-    "Salted egg squid",
+    "Sotong panggang",
     "meal",
-    "The unsupported sambal recipe was replaced by the source-backed salted egg squid serving while retaining the stable dish ID.",
+    "Sotong panggang is the source's grilled squid with spices; the 100 g scoop is scaled to the game's grill plate.",
+    "scaled-exact",
+    2,
+    "1 plate (200 g)",
   ),
   released(
     "dish.har-gow",
@@ -326,7 +350,15 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     4,
     "4 pieces (196 g)",
   ),
-  released("dish.siew-mai", "Siew mai", "meal", "Exact named dim sum match."),
+  released(
+    "dish.siew-mai",
+    "Siew mai",
+    "meal",
+    "The source reports one piece; values are scaled to the game's four-piece basket.",
+    "scaled-exact",
+    4,
+    "4 pieces (120 g)",
+  ),
   released(
     "dish.char-siew-bao",
     "Char siew pau",
@@ -340,14 +372,16 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "dish.lotus-leaf-rice",
     "Glutinous rice in lotus leaf",
     "meal",
-    "The source uses a descriptive food name for the game's complete lotus-leaf rice parcel.",
+    "The source uses a descriptive food name for the game's complete lotus-leaf rice parcel and labels the whole parcel as one scoop.",
     "curated-synonym",
+    1,
+    "1 parcel (317 g)",
   ),
   released(
     "dish.yong-tau-foo",
-    "Yong tau foo (clear soup, 7 pieces, boiled)",
+    "Yong tau foo (clear soup, 7 pieces, mixed)",
     "meal",
-    "The clear-soup bowl with seven boiled pieces is the game's default yong tau foo serving.",
+    "The clear-soup bowl with seven mixed pieces is the game's default yong tau foo serving; the boiled row reports 82 kcal and 5.7 g protein for seven stuffed pieces and is not used.",
   ),
   released(
     "dish.ban-mian",
@@ -393,6 +427,8 @@ export const PRIMARY_PROFILE_MAPPINGS = [
  * @param {string} visualKey - The variant's portion visual.
  * @param {string} reviewNote - Why the source row represents the variant.
  * @param {NutritionProvenance["mappingKind"]} [mappingKind] - How the name was matched.
+ * @param {number} [multiplier] - Scale from the source serving to the game serving.
+ * @param {string} [servingLabel] - Serving label to use instead of the source's.
  */
 const variant = (
   id,
@@ -402,6 +438,8 @@ const variant = (
   visualKey,
   reviewNote,
   mappingKind = "exact",
+  multiplier = 1,
+  servingLabel = undefined,
 ) => ({
   id,
   name,
@@ -410,6 +448,8 @@ const variant = (
   visualKey,
   reviewNote,
   mappingKind,
+  multiplier,
+  ...(servingLabel === undefined ? {} : { servingLabel }),
 });
 
 /** The recipe variant families, each listing its default variant first. */
@@ -476,7 +516,7 @@ export const VARIANT_FAMILY_MAPPINGS = [
     variants: [
       variant("fish-soup-beehoon-no-milk", "Fish beehoon, no milk", "Sliced fish beehoon soup (no milk)", 1, "fish-beehoon-clear", "Default clear soup with beehoon."),
       variant("fish-soup-beehoon-milk", "Fish beehoon with milk", "Sliced fish beehoon soup (with milk)", 2, "fish-beehoon-milky", "Milky soup with beehoon."),
-      variant("fish-soup-sliced-no-milk", "Sliced fish soup, no milk", "Sliced fish soup (no milk)", 4, "fish-slices-clear", "Clear sliced-fish soup without noodles."),
+      variant("fish-soup-sliced-no-milk", "Fried fish soup, no milk", "Fried fish soup (no milk)", 4, "fish-slices-clear", "Clear fried-fish soup without noodles; the sliced-fish row states 84 kcal against about 154 kcal from its own macronutrients, so the reviewed fried-fish bowl stands in.", "curated-synonym"),
       variant("fish-soup-sliced-milk", "Sliced fish soup with milk", "Sliced fish soup (with milk)", 7, "fish-slices-milky", "Milky sliced-fish soup without noodles."),
     ],
   },
@@ -493,7 +533,7 @@ export const VARIANT_FAMILY_MAPPINGS = [
     defaultVariantId: "murtabak-chicken",
     variants: [
       variant("murtabak-chicken", "Chicken murtabak", "Murtabak (chicken)", 1, "murtabak-chicken", "Default chicken filling."),
-      variant("murtabak-chicken-mushroom-cheese", "Chicken, mushroom and cheese murtabak", "Murtabak (chicken, mushroom, cheese)", 2, "murtabak-chicken-mushroom-cheese", "Larger chicken, mushroom and cheese serving."),
+      variant("murtabak-chicken-mushroom-cheese", "Chicken, mushroom and cheese murtabak", "Murtabak (chicken, mushroom, cheese)", 2, "murtabak-chicken-mushroom-cheese", "The source's 611 g murtabak is a sharing size; values are halved to one diner's portion.", "scaled-exact", 0.5, "1/2 murtabak (306 g)"),
       variant("murtabak-mutton", "Mutton murtabak", "Murtabak (mutton)", 4, "murtabak-mutton", "Mutton filling."),
       variant("murtabak-vegetable", "Vegetable murtabak", "Murtabak (vegetable)", 7, "murtabak-vegetable", "Vegetable filling; the label does not imply dietary certification."),
     ],
@@ -520,13 +560,12 @@ export const VARIANT_FAMILY_MAPPINGS = [
   },
   {
     dishId: "dish.yong-tau-foo",
-    defaultVariantId: "ytf-clear-boiled",
+    defaultVariantId: "ytf-clear-mixed",
     variants: [
-      variant("ytf-clear-boiled", "Clear soup, boiled pieces", "Yong tau foo (clear soup, 7 pieces, boiled)", 1, "ytf-clear-boiled", "Default clear-soup bowl with seven boiled pieces."),
+      variant("ytf-clear-mixed", "Clear soup, mixed pieces", "Yong tau foo (clear soup, 7 pieces, mixed)", 1, "ytf-clear-mixed", "Default clear-soup bowl with a mixture of boiled and fried pieces; the boiled clear-soup row is implausible and not used."),
       variant("ytf-clear-fried", "Clear soup, fried pieces", "Yong tau foo (clear soup, 7 pieces, fried)", 2, "ytf-clear-fried", "Clear-soup bowl with seven fried pieces."),
-      variant("ytf-clear-mixed", "Clear soup, mixed pieces", "Yong tau foo (clear soup, 7 pieces, mixed)", 4, "ytf-clear-mixed", "Clear-soup bowl with a mixture of boiled and fried pieces."),
+      variant("ytf-laksa-boiled", "Laksa, boiled pieces", "Yong tau foo (laksa, 7 pieces, boiled)", 4, "ytf-laksa-boiled", "Laksa bowl with seven boiled pieces."),
       variant("ytf-clear-noodles", "Clear soup with rice or noodles", "Yong tau foo (clear soup, with rice/noodles)", 7, "ytf-clear-noodles", "Clear-soup serving with the source's grouped rice-or-noodle accompaniment."),
-      variant("ytf-laksa-boiled", "Laksa, boiled pieces", "Yong tau foo (laksa, 7 pieces, boiled)", 7, "ytf-laksa-boiled", "Laksa bowl with seven boiled pieces."),
       variant("ytf-laksa-fried", "Laksa, fried pieces", "Yong tau foo (laksa, 7 pieces, fried)", 7, "ytf-laksa-fried", "Laksa bowl with seven fried pieces."),
       variant("ytf-laksa-mixed", "Laksa, mixed pieces", "Yong tau foo (laksa, 7 pieces, mixed)", 7, "ytf-laksa-mixed", "Laksa bowl with a mixture of boiled and fried pieces."),
       variant("ytf-laksa-noodles", "Laksa with rice or noodles", "Yong tau foo (laksa, with rice/noodles)", 7, "ytf-laksa-noodles", "Laksa serving with the source's grouped rice-or-noodle accompaniment."),

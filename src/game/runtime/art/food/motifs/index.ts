@@ -55,7 +55,7 @@ export const DEFAULT_LAYER_KEYS: Readonly<Record<string, string>> = {
   "chicken-murtabak": "murtabak-chicken",
   "nasi-briyani": "briyani-chicken",
   "masala-thosai": "thosai-masala-fold",
-  "yong-tau-foo": "ytf-clear-boiled",
+  "yong-tau-foo": "ytf-clear-mixed",
   "ban-mian": "ban-mian-soup-bowl",
   "bak-kut-teh": "bak-kut-teh-pepper-soup",
   "duck-rice": "duck-rice-braised-egg-tofu",
