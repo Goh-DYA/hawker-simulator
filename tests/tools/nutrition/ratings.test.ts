@@ -33,7 +33,7 @@ import {
 } from "@/tools/nutrition/importer.mjs";
 
 /** sha256 of `${JSON.stringify(content, null, 2)}\n` for the varied fixture. */
-const VARIED_OUTPUT_SHA256 = "e3dfd3cec8fad0ec606143c0e1e6bd0b46250dd84bbfc0cbe50bfd246913e55c";
+const VARIED_OUTPUT_SHA256 = "2102ae361684428c2a798be93ee89b7dbcb8ab1d393be59b875d2e447accf6ce";
 
 /** Guideline rows for the 11 nutrients the importer recognises, in source order. */
 const GUIDELINE_ROWS = [

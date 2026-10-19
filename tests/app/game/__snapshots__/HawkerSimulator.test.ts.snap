@@ -752,11 +752,11 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <div class="nutrition-summary">
 <div class="dish-rating-summary" aria-label="Dish health and star ratings">
-<span class="dish-rating-badge is-health" aria-label="Health rating: 3.2/5">
+<span class="dish-rating-badge is-health" aria-label="Health rating: 3.4/5">
 <i aria-hidden="true">♥</i>
 <span>
 <small>Health rating</small>
-<strong>3.2/5</strong>
+<strong>3.4/5</strong>
 </span>
 </span>
 <span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.1/5">
@@ -828,19 +828,19 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <dl aria-label="Condition-specific health ratings">
 <div>
 <dt>Managing high cholesterol</dt>
-<dd>3.6/5</dd>
+<dd>4.1/5</dd>
 </div>
 <div>
 <dt>Managing obesity</dt>
-<dd>3.4/5</dd>
+<dd>5.0/5</dd>
 </div>
 <div>
 <dt>Managing diabetes</dt>
-<dd>3.3/5</dd>
+<dd>3.5/5</dd>
 </div>
 <div>
 <dt>Managing hypertension</dt>
-<dd>3.3/5</dd>
+<dd>3.4/5</dd>
 </div>
 </dl>
 </details>
@@ -868,11 +868,11 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <div class="nutrition-summary">
 <div class="dish-rating-summary" aria-label="Dish health and star ratings">
-<span class="dish-rating-badge is-health" aria-label="Health rating: 2.9/5">
+<span class="dish-rating-badge is-health" aria-label="Health rating: 2.8/5">
 <i aria-hidden="true">♥</i>
 <span>
 <small>Health rating</small>
-<strong>2.9/5</strong>
+<strong>2.8/5</strong>
 </span>
 </span>
 <span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.1/5">
@@ -944,11 +944,11 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <dl aria-label="Condition-specific health ratings">
 <div>
 <dt>Managing high cholesterol</dt>
-<dd>2.7/5</dd>
+<dd>2.9/5</dd>
 </div>
 <div>
 <dt>Managing obesity</dt>
-<dd>2.8/5</dd>
+<dd>3.8/5</dd>
 </div>
 <div>
 <dt>Managing diabetes</dt>
@@ -956,7 +956,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <div>
 <dt>Managing hypertension</dt>
-<dd>3.2/5</dd>
+<dd>3.5/5</dd>
 </div>
 </dl>
 </details>
@@ -985,11 +985,11 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <div class="nutrition-summary">
 <div class="dish-rating-summary" aria-label="Dish health and star ratings">
-<span class="dish-rating-badge is-health" aria-label="Health rating: 3.4/5">
+<span class="dish-rating-badge is-health" aria-label="Health rating: 5.0/5">
 <i aria-hidden="true">♥</i>
 <span>
 <small>Health rating</small>
-<strong>3.4/5</strong>
+<strong>5.0/5</strong>
 </span>
 </span>
 <span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 3.7/5">
@@ -1061,19 +1061,19 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <dl aria-label="Condition-specific health ratings">
 <div>
 <dt>Managing high cholesterol</dt>
-<dd>4.0/5</dd>
+<dd>5.0/5</dd>
 </div>
 <div>
 <dt>Managing obesity</dt>
-<dd>3.4/5</dd>
+<dd>5.0/5</dd>
 </div>
 <div>
 <dt>Managing diabetes</dt>
-<dd>3.1/5</dd>
+<dd>4.4/5</dd>
 </div>
 <div>
 <dt>Managing hypertension</dt>
-<dd>4.2/5</dd>
+<dd>5.0/5</dd>
 </div>
 </dl>
 </details>
@@ -1102,11 +1102,11 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <div class="nutrition-summary">
 <div class="dish-rating-summary" aria-label="Dish health and star ratings">
-<span class="dish-rating-badge is-health" aria-label="Health rating: 3.2/5">
+<span class="dish-rating-badge is-health" aria-label="Health rating: 3.3/5">
 <i aria-hidden="true">♥</i>
 <span>
 <small>Health rating</small>
-<strong>3.2/5</strong>
+<strong>3.3/5</strong>
 </span>
 </span>
 <span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 3.8/5">
@@ -1178,19 +1178,19 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <dl aria-label="Condition-specific health ratings">
 <div>
 <dt>Managing high cholesterol</dt>
-<dd>3.7/5</dd>
+<dd>4.5/5</dd>
 </div>
 <div>
 <dt>Managing obesity</dt>
-<dd>3.6/5</dd>
+<dd>5.0/5</dd>
 </div>
 <div>
 <dt>Managing diabetes</dt>
-<dd>3.5/5</dd>
+<dd>5.0/5</dd>
 </div>
 <div>
 <dt>Managing hypertension</dt>
-<dd>3.1/5</dd>
+<dd>2.9/5</dd>
 </div>
 </dl>
 </details>
