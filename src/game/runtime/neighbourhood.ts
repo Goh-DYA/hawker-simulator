@@ -6,12 +6,13 @@
  * Pure and Phaser-free. The copy is warm and descriptive: grades are never a fail, departure
  * reasons name what happened rather than who, and food is never labelled good or bad.
  */
-import { CALENDAR_CARD_BY_ID, DISHES, localize_key } from "@/src/content";
+import { CALENDAR_CARD_BY_ID, DISHES, localize_key, STALL_BY_ID } from "@/src/content";
 import {
   active_rush_window,
   compute_rush_windows,
   count_cleaning_crew,
   LAST_ORDERS_MINUTE,
+  operatingDay,
   operatingMinuteOfDay,
   RUSH_CORE_SHARE,
   score_for_reputation,
@@ -26,6 +27,7 @@ import {
 import { BUILDABLE_CONTENT, type VisualDefinition } from "./catalog";
 import { REPUTATION_SCALE } from "./rules";
 import { deriveSatisfactionTips, type SatisfactionTip } from "./satisfactionInsight";
+import { plan_stall_tenders } from "./world";
 import type {
   RuntimeDayCard,
   RuntimeDayReport,
@@ -346,11 +348,41 @@ function unlock_hint(
 }
 
 /**
+ * Names the stall the next stall tender will offer, while the centre waits for that day.
+ *
+ * @param state - The game state.
+ * @returns The first waiting stall from `plan_stall_tenders` as a next unlock, or `undefined`
+ *   when no stall waits for a tender.
+ */
+function find_tender_waiting_stall(state: GameState): RuntimeNextUnlock | undefined {
+  const [first] = plan_stall_tenders(state);
+  if (!first) return undefined;
+  const [stall_id, tender_day] = first;
+  const stall = STALL_BY_ID.get(stall_id);
+  const day = operatingDay(state.elapsedMs);
+  if (!stall || day >= tender_day) return undefined;
+  const days_left = tender_day - day;
+  return {
+    id: stall.id,
+    name: localize_key(stall.nameKey),
+    kind: "stall",
+    requiredLevel: stall.unlockRequirement.level,
+    requiredReputation: stall.unlockRequirement.reputation,
+    isLevelMet: true,
+    isReputationMet: true,
+    progress: Math.min(1, day / tender_day),
+    hint: `Its stall tender opens on day ${tender_day}, ${days_left === 1 ? "tomorrow" : `in ${days_left} days`}. Save up to open it.`,
+  };
+}
+
+/**
  * Finds the locked stall, placeable or dish closest to unlocking.
  *
  * Distance is the larger of the level gap over twelve levels and the reputation gap over sixty
  * points, so the signpost points at whichever unlock is genuinely next. Items whose prerequisite
- * stall is still locked are skipped.
+ * stall is still locked are skipped. A stall that meets its level, reputation and prerequisite
+ * rules but waits for the next stall tender comes first, because it is certain to arrive and the
+ * player can save up for it.
  *
  * @param state - The game state.
  * @returns The next unlock, or `undefined` once everything is unlocked.
@@ -359,6 +391,8 @@ export function find_next_unlock(state: GameState): RuntimeNextUnlock | undefine
   const level = state.progression.level;
   const peak = state.progression.peakReputation * REPUTATION_SCALE;
   const unlocked = new Set(state.progression.unlockedDefinitionIds);
+  const tender = find_tender_waiting_stall(state);
+  if (tender) return tender;
   type Candidate = {
     id: string;
     name: string;

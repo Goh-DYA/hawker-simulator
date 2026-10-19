@@ -163,7 +163,7 @@ Day 1 uses fixed objectives. From day 2, the day's stream picks one service obje
 
 ### Progression and failure policy
 
-Cash buys placeables, stalls, upgrades, and expansions. Experience unlocks levels through ordinary play. Live reputation is a smoothed average of recent visit ratings and drives arrival demand, so it rises and falls with service. Every reputation unlock gate reads peak reputation, the highest live reputation the centre has reached, so a poor day never relocks content. There is no premium currency and no real-time waiting.
+Cash buys placeables, stalls, upgrades, and expansions. Experience unlocks levels through ordinary play. Live reputation is a smoothed average of recent visit ratings and drives arrival demand, so it rises and falls with service. Every reputation unlock gate reads peak reputation, the highest live reputation the centre has reached, so a poor day never relocks content. New stalls beyond the starter stalls are also offered by stall tender, one every few operating days (see [ECONOMY_AND_PROGRESSION.md](ECONOMY_AND_PROGRESSION.md#unlock-curve)), so the hall grows at a pace its takings can fund. There is no premium currency and no real-time waiting.
 
 The player cannot enter a hard fail state: starter essentials are protected from accidental sale or can be reclaimed; a recovery grant is available after an affordability check; operating costs cannot silently drive cash below zero; and objectives never require a single irreversible layout.
 

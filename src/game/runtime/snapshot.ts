@@ -39,6 +39,7 @@ import {
 } from "./nutrition";
 import { deriveQueueFlowInsight } from "./queueInsight";
 import { MAP_EXPANSION, REPUTATION_SCALE } from "./rules";
+import { plan_stall_tenders } from "./world";
 import { deriveSatisfactionTips } from "./satisfactionInsight";
 import { build_neighbourhood_view, count_hall_cleaning_crew, find_next_unlock } from "./neighbourhood";
 import type { BuildTool, GameSpeed, RuntimeMilestoneTrack, RuntimeSnapshot } from "./types";
@@ -413,6 +414,7 @@ export function build_runtime_snapshot(input: SnapshotInput): RuntimeSnapshot {
     unclearedTrays: Object.keys(snapshot.unclearedTrays).length,
     cleaningCrew: count_hall_cleaning_crew(state),
     peakReputation: snapshot.progression.peakReputation * REPUTATION_SCALE,
+    stallTenderDays: Object.fromEntries(plan_stall_tenders(state)),
     neighbourhood: build_neighbourhood_view(state, visuals),
     nextUnlock: find_next_unlock(state),
     buildTool,

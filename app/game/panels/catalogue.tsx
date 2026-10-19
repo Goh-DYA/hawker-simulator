@@ -155,10 +155,10 @@ export function WriterPickBadge() {
 
 /** The props of {@link StallsPanel}. */
 export interface StallsPanelProps {
-  /** The centre's placed stalls, stall mastery, cash and unlock progress. */
+  /** The centre's placed stalls, stall mastery, cash, unlock progress and stall tender days. */
   readonly snapshot: UnlockProgress &
     Pick<RuntimeSnapshot, "placedStalls" | "stallMastery" | "cash"> &
-    Partial<Pick<RuntimeSnapshot, "neighbourhood">>;
+    Partial<Pick<RuntimeSnapshot, "neighbourhood" | "stallTenderDays">>;
   /** The selected build item's ID, if any. */
   readonly selectedId: string | undefined;
   /** The runtime controller, for queue direction, queue edit and upgrade commands. */
@@ -266,7 +266,7 @@ export function StallsPanel({
               {writer_pick_ids.has(stall.id) ? <WriterPickBadge /> : null}
               <small>{stall.dishIds.length} dishes · {Math.round(stall.quality * 100)} quality</small>
             </span>
-            <em>{locked ? unlockLabel(stall, snapshot.level, get_unlock_reputation(snapshot), snapshot.unlockedContentIds) : money(stall.purchaseCost)}</em>
+            <em>{locked ? unlockLabel(stall, snapshot.level, get_unlock_reputation(snapshot), snapshot.unlockedContentIds, snapshot.stallTenderDays?.[stall.id]) : money(stall.purchaseCost)}</em>
           </button>
         );
       })}

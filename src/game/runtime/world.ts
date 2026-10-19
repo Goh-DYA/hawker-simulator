@@ -10,6 +10,7 @@ import {
   create_neighbourhood,
   createGridMap,
   createNewGame,
+  operatingDay,
   validatePlacement,
   type GameState,
   type PlacedObject,
@@ -17,7 +18,7 @@ import {
 } from "@/src/game/core";
 import { BUILDABLE_CONTENT, layer_catalog } from "./catalog";
 import { defaultDishVariants } from "./nutrition";
-import { REPUTATION_SCALE } from "./rules";
+import { get_stall_tender_day, REPUTATION_SCALE } from "./rules";
 import { defaultStallMenusForProgression } from "./stallMenus";
 
 /** Edge length of one map tile in world pixels. */
@@ -51,6 +52,8 @@ export const LAUNCH_WORLD_SEED = compute_fnv1a32(`${LAUNCH_SEED}:world`);
  */
 export function reconcileRuntimeUnlocks(source: GameState): GameState {
   const unlocked = new Set(source.progression.unlockedDefinitionIds);
+  const day = operatingDay(source.elapsedMs);
+  let tendered_count = count_tendered_stalls(unlocked);
   let changed = true;
   while (changed) {
     changed = false;
@@ -64,7 +67,10 @@ export function reconcileRuntimeUnlocks(source: GameState): GameState {
       ) {
         continue;
       }
+      const is_tendered = TENDERED_STALL_IDS.has(definition.id);
+      if (is_tendered && day < get_stall_tender_day(tendered_count)) continue;
       unlocked.add(definition.id);
+      if (is_tendered) tendered_count += 1;
       changed = true;
     }
   }
@@ -76,6 +82,63 @@ export function reconcileRuntimeUnlocks(source: GameState): GameState {
       unlockedDefinitionIds: [...unlocked].sort(),
     },
   };
+}
+
+/**
+ * Stalls offered by tender: every stall except the starter stalls, which are open to a level-1
+ * centre from the start.
+ */
+export const TENDERED_STALL_IDS: ReadonlySet<string> = new Set(
+  STALLS.filter(
+    (stall) =>
+      stall.unlockRequirement.level > 1 ||
+      stall.unlockRequirement.reputation > 0 ||
+      stall.unlockRequirement.prerequisiteIds.length > 0,
+  ).map((stall) => stall.id),
+);
+
+/**
+ * Counts the tendered stalls a centre has already unlocked.
+ *
+ * @param unlocked - The unlocked definition IDs.
+ * @returns How many stall tenders have been taken up.
+ */
+export function count_tendered_stalls(unlocked: ReadonlySet<string> | readonly string[]): number {
+  let count = 0;
+  for (const id of unlocked) if (TENDERED_STALL_IDS.has(id)) count += 1;
+  return count;
+}
+
+/**
+ * Plans the stall tenders still to come for the stalls that wait only for one.
+ *
+ * A stall waits when it is tendered, still locked and meets its level, reputation and
+ * prerequisite rules. Waiting stalls take the coming tenders in the order
+ * `reconcileRuntimeUnlocks` checks them, so the first is offered on the next tender day and each
+ * later one on the tender after.
+ *
+ * @param state - The game state.
+ * @returns The tender day of each waiting stall, keyed by stall ID, in tender order.
+ */
+export function plan_stall_tenders(state: GameState): ReadonlyMap<string, number> {
+  const unlocked = new Set(state.progression.unlockedDefinitionIds);
+  const peak = state.progression.peakReputation * REPUTATION_SCALE;
+  const tendered_count = count_tendered_stalls(unlocked);
+  const plan = new Map<string, number>();
+  for (const definition of BUILDABLE_CONTENT) {
+    const requirement = definition.unlockRequirement;
+    if (
+      !TENDERED_STALL_IDS.has(definition.id) ||
+      unlocked.has(definition.id) ||
+      state.progression.level < requirement.level ||
+      peak < requirement.reputation ||
+      !requirement.prerequisiteIds.every((id) => unlocked.has(id))
+    ) {
+      continue;
+    }
+    plan.set(definition.id, get_stall_tender_day(tendered_count + plan.size));
+  }
+  return plan;
 }
 
 /** Authored table IDs in content order; the starter layout places the first two. */

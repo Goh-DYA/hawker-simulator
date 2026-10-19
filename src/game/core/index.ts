@@ -76,6 +76,7 @@ export {
   createDailyObjectives,
   distinctOpenStallTypes,
   effectiveStallDefinition,
+  operatingDay,
   operatingMinuteOfDay,
 } from "./progression";
 

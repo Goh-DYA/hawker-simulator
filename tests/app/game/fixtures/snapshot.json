@@ -46,6 +46,7 @@
   "unclearedTrays": 1,
   "cleaningCrew": 1,
   "peakReputation": 8,
+  "stallTenderDays": {},
   "neighbourhood": {
     "today": {
       "id": "calendar.late-morning-kopi-crowd",

@@ -471,13 +471,17 @@ export const CUSTOMER_PERSONAS_BY_UNLOCK = [...CUSTOMER_ARCHETYPES].sort(
  * @param level - The centre's level.
  * @param reputation - The centre's reputation.
  * @param unlockedContentIds - The content already unlocked.
- * @returns The first unmet requirement, such as `Level 3`, `Rep 20` or `After Fan`, else `Locked`.
+ * @param tender_day - For a stall that meets its other requirements, the day its stall tender is
+ *   offered.
+ * @returns The first unmet requirement, such as `Level 3`, `Rep 20`, `After Fan` or
+ *   `Tender on day 4`, else `Locked`.
  */
 export function unlockLabel(
   item: Pick<PlaceableDefinition | StallDefinition | DishDefinition, "nameKey" | "unlockRequirement">,
   level: number,
   reputation: number,
   unlockedContentIds: readonly string[],
+  tender_day?: number,
 ) {
   if (item.unlockRequirement.level > level) {
     return `Level ${item.unlockRequirement.level}`;
@@ -489,7 +493,8 @@ export function unlockLabel(
     (id) => !unlockedContentIds.includes(id),
   );
   const prerequisite = prerequisiteId ? UNLOCKABLE_BY_ID.get(prerequisiteId) : undefined;
-  return prerequisite ? `After ${localize(prerequisite.nameKey)}` : "Locked";
+  if (prerequisite) return `After ${localize(prerequisite.nameKey)}`;
+  return tender_day === undefined ? "Locked" : `Tender on day ${tender_day}`;
 }
 
 /** The Build catalogue's category filters: `all`, then each placeable category in catalogue order. */

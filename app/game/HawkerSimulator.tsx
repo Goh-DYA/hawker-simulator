@@ -130,6 +130,7 @@ const INITIAL_SNAPSHOT: RuntimeSnapshot = {
   unclearedTrays: 0,
   cleaningCrew: 1,
   peakReputation: INITIAL_REPUTATION,
+  stallTenderDays: {},
   neighbourhood: undefined,
   nextUnlock: undefined,
   buildTool: "select",
