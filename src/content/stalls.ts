@@ -80,7 +80,6 @@ const stallSeeds = [
     quality: 0.68,
     popularity: 0.76,
     purchaseCost: 1_200,
-    operatingCostPerMinute: 3,
     upgradeLevels: upgrades(720),
     unlockRequirement: { level: 1, reputation: 0, prerequisiteIds: [] },
     visual: {
@@ -120,7 +119,6 @@ const stallSeeds = [
     quality: 0.7,
     popularity: 0.72,
     purchaseCost: 1_350,
-    operatingCostPerMinute: 3,
     upgradeLevels: upgrades(780),
     unlockRequirement: { level: 1, reputation: 0, prerequisiteIds: [] },
     visual: {
@@ -160,7 +158,6 @@ const stallSeeds = [
     quality: 0.64,
     popularity: 0.69,
     purchaseCost: 1_800,
-    operatingCostPerMinute: 2,
     upgradeLevels: upgrades(900),
     unlockRequirement: {
       level: 2,
@@ -204,7 +201,6 @@ const stallSeeds = [
     quality: 0.75,
     popularity: 0.82,
     purchaseCost: 2_200,
-    operatingCostPerMinute: 5,
     upgradeLevels: upgrades(1_050),
     unlockRequirement: {
       level: 3,
@@ -248,7 +244,6 @@ const stallSeeds = [
     quality: 0.76,
     popularity: 0.81,
     purchaseCost: 2_350,
-    operatingCostPerMinute: 4,
     upgradeLevels: upgrades(1_100),
     unlockRequirement: {
       level: 4,
@@ -296,7 +291,6 @@ const stallSeeds = [
     quality: 0.76,
     popularity: 0.78,
     purchaseCost: 2_600,
-    operatingCostPerMinute: 5,
     upgradeLevels: upgrades(1_200),
     unlockRequirement: {
       level: 5,
@@ -340,7 +334,6 @@ const stallSeeds = [
     quality: 0.72,
     popularity: 0.77,
     purchaseCost: 2_300,
-    operatingCostPerMinute: 3,
     upgradeLevels: upgrades(1_080),
     unlockRequirement: {
       level: 5,
@@ -387,7 +380,6 @@ const stallSeeds = [
     quality: 0.78,
     popularity: 0.83,
     purchaseCost: 2_850,
-    operatingCostPerMinute: 5,
     upgradeLevels: upgrades(1_270),
     unlockRequirement: {
       level: 6,
@@ -435,7 +427,6 @@ const stallSeeds = [
     quality: 0.77,
     popularity: 0.8,
     purchaseCost: 2_900,
-    operatingCostPerMinute: 4,
     upgradeLevels: upgrades(1_300),
     unlockRequirement: {
       level: 6,
@@ -477,7 +468,6 @@ const stallSeeds = [
     quality: 0.78,
     popularity: 0.71,
     purchaseCost: 3_100,
-    operatingCostPerMinute: 4,
     upgradeLevels: upgrades(1_350),
     unlockRequirement: {
       level: 7,
@@ -521,7 +511,6 @@ const stallSeeds = [
     quality: 0.82,
     popularity: 0.77,
     purchaseCost: 3_350,
-    operatingCostPerMinute: 5,
     upgradeLevels: upgrades(1_450),
     unlockRequirement: {
       level: 8,
@@ -570,7 +559,6 @@ const stallSeeds = [
     quality: 0.86,
     popularity: 0.74,
     purchaseCost: 3_800,
-    operatingCostPerMinute: 6,
     upgradeLevels: upgrades(1_600),
     unlockRequirement: {
       level: 9,
@@ -613,7 +601,6 @@ const stallSeeds = [
     quality: 0.85,
     popularity: 0.82,
     purchaseCost: 4_200,
-    operatingCostPerMinute: 6,
     upgradeLevels: upgrades(1_720),
     unlockRequirement: {
       level: 11,
@@ -660,7 +647,6 @@ const stallSeeds = [
     quality: 0.9,
     popularity: 0.83,
     purchaseCost: 4_700,
-    operatingCostPerMinute: 8,
     upgradeLevels: upgrades(1_900),
     unlockRequirement: {
       level: 12,

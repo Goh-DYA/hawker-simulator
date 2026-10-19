@@ -606,22 +606,6 @@ export const check_economy = (
   check: ContentCheck,
 ): number => {
   const dishById = new Map(content.dishes.map((dish) => [dish.id, dish]));
-  check(
-    content.economy.levelXpThresholds.length === content.economy.maxLevel,
-    "Economy must provide one XP threshold for every level.",
-  );
-  check(
-    content.economy.levelXpThresholds[0] === 0,
-    "Level 1 XP threshold must be zero.",
-  );
-  for (let index = 1; index < content.economy.levelXpThresholds.length; index += 1) {
-    check(
-      content.economy.levelXpThresholds[index] >
-        content.economy.levelXpThresholds[index - 1],
-      `XP thresholds must increase strictly at level ${index + 1}.`,
-    );
-  }
-
   const starterStalls = content.stalls.filter(
     (stall) =>
       stall.unlockRequirement.level === 1 &&

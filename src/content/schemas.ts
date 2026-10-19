@@ -95,7 +95,6 @@ export const stallSchema = z.object({
   quality: qualitySchema,
   popularity: qualitySchema,
   purchaseCost: z.number().int().positive(),
-  operatingCostPerMinute: z.number().int().nonnegative(),
   upgradeLevels: z.array(stallUpgradeSchema).length(3),
   unlockRequirement: unlockRequirementSchema,
   visual: z.object({
@@ -298,7 +297,6 @@ export const customerArchetypeSchema = z.object({
     variety: z.number().min(-1).max(1),
     cleanliness: z.number().min(-1).max(1),
   }),
-  spendMultiplier: z.number().positive().max(4),
   trayReturnChance: qualitySchema,
   unlockRequirement: unlockRequirementSchema,
   tags: z.array(z.string().min(2)).min(2),
@@ -312,7 +310,6 @@ export const economySchema = z.object({
   minimumVisitEarnings: z.number().int().positive(),
   starterRequiredSeats: z.number().int().positive(),
   recoveryGrant: z.number().int().positive(),
-  levelXpThresholds: z.array(z.number().int().nonnegative()).min(2),
 });
 
 export const nutritionMetricSchema = z.enum([

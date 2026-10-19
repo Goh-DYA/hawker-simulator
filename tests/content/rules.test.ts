@@ -16,7 +16,7 @@ describe("content rule groups", () => {
       draft.customerArchetypes[0].budgetRange[1],
       draft.customerArchetypes[0].budgetRange[0],
     ];
-    draft.economy.levelXpThresholds[2] = draft.economy.levelXpThresholds[1];
+    draft.economy.recoveryGrant = 1;
     draft.stalls[0].unlockRequirement.prerequisiteIds = [draft.stalls[0].id];
     draft.placeables[0].resaleValue = draft.placeables[0].price + 1;
     const [first_family, second_family] = draft.nutrition.variantFamilies;
@@ -32,7 +32,7 @@ describe("content rule groups", () => {
       "item.compact-square-table resale value exceeds purchase price.",
       "stall.sunrise-roost cannot require itself to unlock.",
       "Unlock prerequisite cycle includes stall.sunrise-roost.",
-      "XP thresholds must increase strictly at level 3.",
+      "Recovery grant cannot restore a minimum table, seats, and waste facility.",
       "customer.early-shift-regular has an inverted budget range.",
     ]);
   });

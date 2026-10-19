@@ -107,13 +107,6 @@ describe("validateContent rule groups", () => {
     ]);
   });
 
-  it("economy: reports an XP threshold that does not increase", () => {
-    const draft = create_draft();
-    draft.economy.levelXpThresholds[2] = draft.economy.levelXpThresholds[1];
-
-    expect(collect_issues(draft)).toEqual(["XP thresholds must increase strictly at level 3."]);
-  });
-
   it("economy: reports a starter stall with no dish available at the start", () => {
     const draft = create_draft();
     const starter_dish_ids = new Set(draft.stalls[0].dishIds);
