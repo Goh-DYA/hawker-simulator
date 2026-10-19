@@ -305,6 +305,11 @@ export interface RuntimeSnapshot {
   cleaningCrew: number;
   /** Peak reputation on the 0-100 display scale, which unlocks read. */
   peakReputation: number;
+  /**
+   * The operating day each locked stall that meets its other unlock rules is offered by tender,
+   * keyed by stall ID; the first waiting stall takes the next tender, the second the one after.
+   */
+  stallTenderDays: Readonly<Record<string, number>>;
   neighbourhood?: RuntimeNeighbourhood;
   nextUnlock?: RuntimeNextUnlock;
   buildTool: BuildTool;

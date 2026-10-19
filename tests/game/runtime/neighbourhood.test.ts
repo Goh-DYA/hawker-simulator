@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   advanceSimulation,
   dispatchCommand,
+  OPERATING_DAY_MS,
   type DayReport,
   type GameState,
 } from "@/src/game/core";
@@ -14,7 +15,12 @@ import {
   find_next_unlock,
   RUSH_NOTICE_LEAD_MINUTES,
 } from "@/src/game/runtime/neighbourhood";
-import { create_fresh_session, ensure_neighbourhood } from "@/src/game/runtime/world";
+import {
+  create_fresh_session,
+  ensure_neighbourhood,
+  reconcileRuntimeUnlocks,
+  TENDERED_STALL_IDS,
+} from "@/src/game/runtime/world";
 
 const { catalog: AUTHORED_CATALOG, visuals: VISUALS } = buildCatalog();
 
@@ -203,5 +209,20 @@ describe("next unlock", () => {
     const after = find_next_unlock(grown);
     expect(after?.id).not.toBe(before.id);
     expect(advanceSimulation(state, 100).state.tick).toBe(state.tick + 1);
+  });
+
+  it("names the stall waiting for its tender and the day it opens", () => {
+    const state = fresh_state();
+    const grown: GameState = {
+      ...state,
+      progression: { ...state.progression, level: 3, reputation: 1, peakReputation: 1 },
+    };
+    const next = find_next_unlock(reconcileRuntimeUnlocks(grown))!;
+    expect(next.kind).toBe("stall");
+    expect(TENDERED_STALL_IDS.has(next.id)).toBe(true);
+    expect(next.hint).toBe("Its stall tender opens on day 2, tomorrow. Save up to open it.");
+    const tender_day = reconcileRuntimeUnlocks({ ...grown, elapsedMs: OPERATING_DAY_MS });
+    expect(tender_day.progression.unlockedDefinitionIds).toContain(next.id);
+    expect(find_next_unlock(tender_day)?.id).not.toBe(next.id);
   });
 });

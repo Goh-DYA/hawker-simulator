@@ -193,6 +193,13 @@ describe("unlockLabel", () => {
       ),
     ]).toEqual(["Locked", "Locked"]);
   });
+
+  it("names the stall tender day once every other requirement is met", () => {
+    expect([
+      unlockLabel(item, 3, 20, [prerequisite.id], 6),
+      unlockLabel(item, 2, 20, [prerequisite.id], 6),
+    ]).toEqual(["Tender on day 6", "Level 3"]);
+  });
 });
 
 describe("utility effects", () => {

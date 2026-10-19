@@ -924,6 +924,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
   "unclearedTrays": 0,
   "cleaningCrew": 2,
   "peakReputation": 8,
+  "stallTenderDays": {},
   "neighbourhood": {
     "today": {
       "id": "calendar.opening-day",
