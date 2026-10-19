@@ -10,32 +10,45 @@ Status: Provisional balance specification; not playtest-validated
 - Experimentation is cheap: full refund during placement preview, predictable resale, undo, and no hidden upkeep.
 - A weak economy slows expansion but cannot end the game.
 
-Amounts use fictional centre credits (C), not Singapore dollars.
+Amounts are Singapore dollars (SGD); dish prices follow 2025-26 heartland street prices (see [DISH_PRICE_SOURCES.csv](DISH_PRICE_SOURCES.csv)).
 
 ## Starting state and bands
 
-- Starting cash: C4,200.
+- Starting cash: $4,200.
 - Starting reputation: 8 / 100.
 - Starter setup must include or make immediately affordable at least one level-1 stall, four seats, necessary tables/facilities, and an earning menu; granted items are not double-charged.
-- Dish prices: C3–C24.
-- Placeables: C20–C650.
-- Stall purchases: C1,200–C4,700.
+- Dish prices: $2–$20.
+- Placeables: $35–$880.
+- Stall purchases: $1,200–$4,700.
 - Stall upgrades use authored level costs and service/capacity/quality/menu effects.
-- Expansion bays: C1,000, C2,500, C5,000, then C9,000, each also reputation-gated.
+- Expansion bays: $1,000, $2,500, $5,000, then $9,000, each also reputation-gated.
 
 These are tuning bands. Runtime data is authoritative after validation.
 
+## Dish prices
+
+Every dish costs its 2025-26 heartland street price for the served portion, in whole dollars: `max(2, round_half_up(street typical))`. The typical comes, in order of preference, from the Department of Statistics' 2025 annual average price for the item (tier `SS25`), then a dated stall menu or food guide (`DATED`), then an estimate derived from those, for example by portion or by parity with a priced sibling (`EST`). The $2 floor is the only exception to the rule, and it binds only where the street price rounds below it (kopi). [DISH_PRICE_SOURCES.csv](DISH_PRICE_SOURCES.csv) records each dish's typical, tier, source and any exception, and `tests/content/prices.test.ts` checks every price against it.
+
+The review also fixed these parity rules, which the test asserts:
+
+- Roast chicken rice and char siew rice cost the same as poached chicken rice.
+- Kopi and teh tarik cost the same, and sugarcane juice costs more.
+- Bak chor mee costs a dollar more than fishball mee pok.
+- Babi pongteh costs more than ayam buah keluak, which costs more than chap chye, and nyonya laksa costs at least as much as each of those sides.
+- Every dessert costs less than the cheapest noodle dish, and black pepper crab is the dearest dish.
+
+Two price-health acceptance checks guard against charging for health. Re-check them whenever prices or the rating model change:
+
+1. Across all dishes, the Spearman correlation between price and Health rating is at most zero. It is −0.33 today.
+2. At least half of the dishes rated 3.5 or above cost no more than a Student Saver's mid budget ($6.50). Today 10 of 11 do.
+
 ## Visit settlement
 
-Gross sale equals the menu price. Abstracted food cost is a data-defined percentage, initially 28–42% by dish. Contribution is:
-
-gross sale − food cost − any explicit refund + objective bonus
-
-Upkeep is charged in visible, capped operating intervals only while open. Cash never becomes negative from upkeep; an unpaid interval pauses the affected optional bonus and creates a readable warning.
+Gross sale equals the menu price and is the whole contribution; there is no food cost or upkeep.
 
 Satisfaction is 0–100 and combines food quality 30%, wait 20%, value 15%, route efficiency 10%, seating comfort 10%, cleanliness 10%, and ambience 5%. Route efficiency uses the full distance walked from entrance to exit: the first 20 tiles carry no penalty, an 80-tile journey scores 50, and journeys of 116 tiles or more floor at 20. Missing-seat or unserved departures use dedicated penalties rather than fabricated food scores.
 
-Experience per completed visit is a small base plus satisfaction and novelty bonuses. Reputation is an exponentially weighted average of recent visit ratings: each rating maps to a target (0 at a score of 55, the full scale at 95) and closes 2% of the gap, so roughly the last fifty visits dominate and one bad visit is informative but not catastrophic. Live reputation drives arrival demand. Every reputation unlock gate (stalls, placeables, dishes and their menus, customer personas and nutrition intents) reads `progression.peakReputation` instead, the highest live reputation the centre has reached, so content unlocked once never locks again after a poor day. The wait component treats the first 40% of a guest's patience as free and then falls linearly to zero. Exact rounding is centralized and covered by unit tests.
+Experience per sale is the price × (1 + quality/5) plus 2 service XP (`SERVICE_XP_PER_SALE`); the level curve is 100 × (level − 1)², owned by `calculateLevel` in `src/game/core/economy.ts`. Reputation is an exponentially weighted average of recent visit ratings: each rating maps to a target (0 at a score of 55, the full scale at 95) and closes 2% of the gap, so roughly the last fifty visits dominate and one bad visit is informative but not catastrophic. Live reputation drives arrival demand. Every reputation unlock gate (stalls, placeables, dishes and their menus, customer personas and nutrition intents) reads `progression.peakReputation` instead, the highest live reputation the centre has reached, so content unlocked once never locks again after a poor day. The wait component treats the first 40% of a guest's patience as free and then falls linearly to zero. Exact rounding is centralized and covered by unit tests.
 
 ## Unlock curve
 
@@ -52,7 +65,7 @@ New stalls also arrive by **stall tender**, one at a time. Beyond the two starte
 
 ## Objectives
 
-Objectives are optional guidance, not blockers. Each day has three: a service objective, a quality objective and a nutrition objective, each rewarding C80 plus C20 per level and 25 XP plus 5 per level. Day 1 (and any centre without a neighbourhood) uses the fixed templates, whose formulas are also the floors below. From day 2 the seeded neighbourhood's objective stream for the day picks the service objective (serve a count or earn a sum) and the quality objective (happiness, queue flow, variety or tray returns; variety needs at least three open stall types and tray returns at least one tray-return station), and draws one stretch factor from 95% to 115% that scales the previous day's Service Review:
+Objectives are optional guidance, not blockers. Each day has three: a service objective, a quality objective and a nutrition objective, each rewarding $80 plus $20 per level and 25 XP plus 5 per level. Day 1 (and any centre without a neighbourhood) uses the fixed templates, whose formulas are also the floors below. From day 2 the seeded neighbourhood's objective stream for the day picks the service objective (serve a count or earn a sum) and the quality objective (happiness, queue flow, variety or tray returns; variety needs at least three open stall types and tray returns at least one tray-return station), and draws one stretch factor from 95% to 115% that scales the previous day's Service Review:
 
 | Objective | Seeded target | Floor |
 |---|---|---|
@@ -72,7 +85,7 @@ A food-writer visit reviews one placed stall's sales from 12:00 to 14:00 and set
 ## Recovery safeguards
 
 - Essential starter objects may be reclaimed for free if none remain.
-- If cash is below the cheapest valid earning setup and no openable stall exists, grant C650 once per recovery condition and explain why.
+- If cash is below the cheapest valid earning setup and no openable stall exists, grant $650 once per recovery condition and explain why.
 - Selling returns 70% of base price; the confirmation shows resulting capability.
 - A stall can always run at least one owned starter menu.
 - Reset and new game require confirmation; import/export is a debug/support feature.

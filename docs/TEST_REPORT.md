@@ -1,12 +1,20 @@
 # Test Report
 
 Report date: 2026-10-19
-Build/commit: Content `1.4.0` working source validated with Node.js `v22.22.0`; commit/publication record pending
+Build/commit: Content `1.5.0` working source validated with Node.js `v22.22.0`; commit/publication record pending
 Release verdict: **NO-GO pending exact-production browser/offline QA and required human reviews**
 
 This document owns the dated test and gate evidence; other documents link here instead of restating results (see the [documentation index](README.md)). Release blockers are listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md), and content counts in [CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md#roster-counts).
 
-Scope note: this report records the content `1.4.0` working-source gate, retains the content `1.3.0` gate as the previous record, and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
+Scope note: this report records the content `1.5.0` working-source gate, retains the content `1.4.0` and `1.3.0` gates as previous records, and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
+
+## Content `1.5.0` working-source validation
+
+On 2026-10-19, Node.js `v22.22.0` passed `CI=true npm run test:release` (typecheck, lint with no warnings, 107 Vitest files / 1,199 tests, the Vinext build, and 2/2 rendered-output/offline-shell assertions) and the native Next.js Vercel build. The deterministic generated nutrition snapshot (review revision 3, `dataVersion` `sg-1bc212db6eda-c87987b4281c-r3`) contains 116 released profiles across 14 variant families for 67 dishes, rated by the guideline-anchored model with the snack basis, edible-portion density, gated credits and source plausibility rules ([ADR 0008](decisions/0008-snack-basis-edible-density-and-source-plausibility.md)); it matches the review panel chair's reference output on every rating, intent fit, nutrient value and serving amount. The Linux build stamps service-worker build ID `0a6468deeee5`. The `benchmark-80-agents` Node run reported a mean of 0.087 ms and a p95 of 0.103 ms per fixed step.
+
+The goldens moved intentionally, one change per commit: the nutrition snapshot and importer pins (revision 3), the content and app snapshots (the 2025-26 street prices, four dish names, copy, tags and three Star inputs, and the removed unused economy fields), the seeded-simulation, runtime and render digests (prices and the two service XP per sale), and the content golden for the `1.5.0` version. `tests/content/prices.test.ts` checks every price against [DISH_PRICE_SOURCES.csv](design/DISH_PRICE_SOURCES.csv) and the two price-health checks: a Spearman correlation of −0.33 between price and Health rating, and 10 of the 11 dishes rated 3.5 or above within a Student Saver's $6.50 mid budget.
+
+A seeded economy probe (not committed) ran the landed state at speed 10 for seven operating days on five world seeds (the default and 11, 222, 3333 and 44444). Every seed reached level 7 on day 5 and level 8 on day 7. Day-5 XP was 4,317-4,654 (mean +3.9% against the previous prices), day-5 takings were 1,868-1,917, and price turn-aways on day 5 fell from about 100 to 1-3. Cash runs about 6% behind on day 5 and 9% behind on day 7; [KNOWN_ISSUES.md](KNOWN_ISSUES.md#open-gameplay-balance-issues) records it. The four-member review panel's checks were made by AI agents and are internal; no browser pass, qualified nutrition review or human cultural review was run for this change.
 
 ## Content `1.4.0` working-source validation
 

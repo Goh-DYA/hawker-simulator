@@ -18,6 +18,7 @@ The launch content counts are the one exception. These requirement and evidence 
 | Simulation benchmark and payload measurements | [TEST_REPORT.md](TEST_REPORT.md#performance-evidence) | Budgets live in [TEST_PLAN.md](TEST_PLAN.md#performance-budget). |
 | Release blockers, open issues, risks and deferred engineering debt | [KNOWN_ISSUES.md](KNOWN_ISSUES.md) | The project status summary heads the same document. The scored tech-debt register and its follow-ups are in [TECH_DEBT.md](TECH_DEBT.md). |
 | Save format and versions | [SAVE_FORMAT.md](SAVE_FORMAT.md) | |
+| Dish prices and their sources | [design/DISH_PRICE_SOURCES.csv](design/DISH_PRICE_SOURCES.csv) | `tests/content/prices.test.ts` checks every price in `src/content/dishes.ts` against it; the price rule is in [design/ECONOMY_AND_PROGRESSION.md](design/ECONOMY_AND_PROGRESSION.md#dish-prices). |
 
 ## Essential documents
 
@@ -37,6 +38,7 @@ The launch content counts are the one exception. These requirement and evidence 
 - [design/ECONOMY_AND_PROGRESSION.md](design/ECONOMY_AND_PROGRESSION.md): provisional balance specification.
 - [design/CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md): the launch roster and its counts.
 - [design/NUTRITION_DATA.md](design/NUTRITION_DATA.md): nutrition sources, scoring and educational-use policy.
+- [design/DISH_PRICE_SOURCES.csv](design/DISH_PRICE_SOURCES.csv): each dish's 2025-26 street price, source tier and source.
 - [design/ART_BIBLE.md](design/ART_BIBLE.md): visual direction.
 - [design/VISUAL_OVERHAUL_PLAN.md](design/VISUAL_OVERHAUL_PLAN.md): the graphical-overhaul audit, direction, rendering architecture and work packages.
 - [design/ROADMAP.md](design/ROADMAP.md): the long-term progression roadmap and the post-launch backlog.
@@ -50,6 +52,8 @@ The launch content counts are the one exception. These requirement and evidence 
 - [ADR 0004](decisions/0004-simulation-and-ui-boundaries.md): simulation and UI boundaries.
 - [ADR 0005](decisions/0005-painted-sprite-rendering.md): painted sprite rendering.
 - [ADR 0006](decisions/0006-seeded-neighbourhood-and-save-v5.md): seeded neighbourhood and save schema V5.
+- [ADR 0007](decisions/0007-guideline-anchored-nutrition-ratings.md): guideline-anchored nutrition ratings and realistic hawker servings.
+- [ADR 0008](decisions/0008-snack-basis-edible-density-and-source-plausibility.md): snack basis, edible-portion density and source plausibility rules.
 
 ## Release
 
