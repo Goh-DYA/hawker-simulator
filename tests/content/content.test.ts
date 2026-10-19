@@ -137,6 +137,7 @@ describe("launch content", () => {
       "dish.beef-satay-set",
       "dish.thunder-tea-rice",
       "dish.popiah",
+      "dish.duck-rice",
     ]);
   });
 

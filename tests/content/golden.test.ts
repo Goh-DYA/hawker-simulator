@@ -24,19 +24,19 @@ import {
 } from "@/src/content";
 
 /** sha256 of `JSON.stringify` of the combined launch data. */
-const CONTENT_SHA256 = "cc15961f9dd721ff27c55477dcf57f3d10627678eddb94cd8a41cedbd2116c26";
+const CONTENT_SHA256 = "1a1f5c5e6bd19fe5ba13f5714d36745ab26e7daf970d4ff4d783955eb96fefec";
 
 /** sha256 of `JSON.stringify` of each part of {@link CONTENT_SHA256}, as a diff aid. */
 const CONTENT_PART_SHA256 = {
   stalls: "044ef6d0f012446b15d02ee48bad79eaaa7d1e569c4eb793e3ef59884c62fcd2",
-  dishes: "af257ebfb1a37928c43700bc55471e88650b674ae9b1e217493a8bda9851a893",
+  dishes: "7c646d7d1ce56453351c899858fc045ad60a412979fe85070c0b2b7ec573b0c8",
   placeables: "5244912bfba4e749105eb988e6af89961d0affbdc0eea8a855490e7428e00dfe",
   customerArchetypes: "960a2929f347478ee2f62ab561cf5ebeddf1266985ccddd246fbce2a59023d91",
-  localizationEntries: "f389e29e43075dee4d2a4aff66c9ef124d0612e7e3e51763bea700555677fd91",
+  localizationEntries: "4cabda0d2a1fce8ae148facec620fc3059e07f57027d0381d1da1f6e69360558",
 } as const;
 
 /** sha256 of `JSON.stringify(LAUNCH_CONTENT)`, which adds the economy and nutrition data. */
-const LAUNCH_CONTENT_SHA256 = "25a35df7b1098b451675ab3c493961c0b5c05ebc4a8021beeb455643f4e2c3b2";
+const LAUNCH_CONTENT_SHA256 = "7ba48ef92241c385d90a4eeb184f92fdc77ef7b4ea80dcc3c7981a74bddaa7ec";
 
 /** sha256 of `JSON.stringify(validateContent())`. */
 const VALIDATION_REPORT_SHA256 = "b6679c4c5e763f82cada7135925a766f9aa4a4990813a2bcd30e37a8b185f296";
