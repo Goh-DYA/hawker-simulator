@@ -106,7 +106,7 @@ const dishInputs = [
     stallId: "stall.sunrise-roost",
     name: "Vegetarian Chicken Rice",
     description:
-      "A Singapore-style meat-free plate of mock chicken with seasoned rice, presented as the dataset's complete vegetarian chicken rice serving.",
+      "A meat-free plate of mock chicken served with flavoured rice, in the style of Singapore vegetarian chicken rice stalls.",
     category: "rice",
     price: 6,
     demand: 0.61,
@@ -226,7 +226,7 @@ const dishInputs = [
     stallId: "stall.kopi-canopy",
     name: "Kopi",
     description:
-      "Robust local-style coffee brewed through a cloth filter and rounded with sweetened condensed milk.",
+      "Local-style coffee brewed through a cloth sock and finished with condensed and evaporated milk.",
     category: "drink",
     price: 3,
     demand: 0.82,
@@ -286,7 +286,7 @@ const dishInputs = [
     stallId: "stall.cinder-wok",
     name: "Char Kway Teow",
     description:
-      "Flat rice noodles wok-fried with dark soy, egg, beansprouts, chives, fish cake, and prawns in this stall's recipe.",
+      "Flat rice noodles and yellow noodles wok-fried in sweet dark soy with cockles, Chinese sausage, fish cake, bean sprouts, and egg.",
     category: "noodles",
     price: 9,
     demand: 0.9,
@@ -294,7 +294,7 @@ const dishInputs = [
     eatingSeconds: 52,
     quality: 0.8,
     preferenceTags: ["wok", "noodles", "smoky", "seafood"],
-    dietaryTags: ["contains-egg", "contains-seafood"],
+    dietaryTags: ["contains-egg", "contains-pork", "contains-seafood"],
     level: 3,
     reputation: 16,
     container: "plate",
@@ -346,7 +346,7 @@ const dishInputs = [
     stallId: "stall.cinder-wok",
     name: "Oyster Omelette",
     description:
-      "A crisp-chewy egg and starch batter scattered with oysters and coriander, served with a tangy chilli dip.",
+      "Beaten egg and starch batter fried until crisp at the edges, folded with fresh oysters, and served with a chilli dip.",
     category: "small-plate",
     price: 11,
     demand: 0.73,
@@ -366,7 +366,7 @@ const dishInputs = [
     stallId: "stall.tiffin-lantern",
     name: "Roti Prata Set",
     description:
-      "Flaky griddled flatbread served torn or folded with separate dhal and fish curry for dipping.",
+      "Two flaky griddled flatbreads served with a bowl of curry for dipping.",
     category: "bread",
     price: 6,
     demand: 0.86,
@@ -386,7 +386,7 @@ const dishInputs = [
     stallId: "stall.tiffin-lantern",
     name: "Mee Goreng Mamak",
     description:
-      "Yellow noodles stir-fried with tofu, potato, greens, tomato, egg, and a sweet-spicy sauce, finished with lime.",
+      "Yellow noodles fried with egg and a tomato-based chilli sauce, served with cucumber and lime.",
     category: "noodles",
     price: 8,
     demand: 0.8,
@@ -466,7 +466,7 @@ const dishInputs = [
     stallId: "stall.tamarind-leaf",
     name: "Idli Sambar",
     description:
-      "Steamed rice-and-lentil cakes with lentil-vegetable sambar and two house chutneys.",
+      "Steamed rice-and-lentil cakes served as a set with lentil-vegetable sambar and coconut chutney.",
     category: "small-plate",
     price: 6,
     demand: 0.67,
@@ -546,7 +546,7 @@ const dishInputs = [
     stallId: "stall.straits-hearth",
     name: "Ayam Pongteh",
     description:
-      "A Nonya chicken-and-potato stew gently braised in a savoury fermented-soybean gravy.",
+      "Nonya chicken and potato braised in a fermented soybean gravy, served as a side plate.",
     category: "small-plate",
     price: 14,
     demand: 0.68,
@@ -566,7 +566,7 @@ const dishInputs = [
     stallId: "stall.straits-hearth",
     name: "Nonya Chap Chye",
     description:
-      "A Nonya vegetable dish of cabbage, carrots, baby corn, and black fungus stir-fried until tender.",
+      "A Nonya braise of cabbage, carrot, baby corn, and black fungus, served as a side plate.",
     category: "small-plate",
     price: 9,
     demand: 0.63,
@@ -586,7 +586,7 @@ const dishInputs = [
     stallId: "stall.straits-hearth",
     name: "Babi Pongteh",
     description:
-      "Nyonya pork braised until tender in a mellow fermented-soybean gravy, served as a savoury scoop.",
+      "Nonya pork braised in a fermented soybean gravy, served as a side plate.",
     category: "small-plate",
     price: 13,
     demand: 0.7,
@@ -646,7 +646,7 @@ const dishInputs = [
     stallId: "stall.harbour-ember",
     name: "Black Pepper Crab",
     description:
-      "A substantial crab pincer stir-fried in a glossy, peppery black-pepper sauce.",
+      "A quarter crab stir-fried in a glossy, peppery black-pepper sauce.",
     category: "seafood",
     price: 24,
     demand: 0.72,
@@ -666,7 +666,7 @@ const dishInputs = [
     stallId: "stall.mee-pok-junction",
     name: "Bak Chor Mee",
     description:
-      "Springy mee pok tossed with black vinegar, chilli, and pork lard, topped with minced pork, mushrooms, fish cake, and a side of soup.",
+      "Springy egg noodles tossed in a vinegar-chilli sauce with minced pork, sliced liver, meatballs, and greens, with a side of soup.",
     category: "noodles",
     price: 8,
     demand: 0.88,
@@ -724,9 +724,9 @@ const dishInputs = [
   {
     id: "dish.teochew-fish-dumpling-soup",
     stallId: "stall.mee-pok-junction",
-    name: "Fishball Soup",
+    name: "Fishball Tang Hoon Soup",
     description:
-      "Seven springy fishballs boiled in a clear fish broth with spring onion, white pepper, and salt, served without noodles.",
+      "Glass noodles in clear soup with fishballs, thinly sliced fish cake, and bean sprouts.",
     category: "soup",
     price: 9,
     demand: 0.7,
@@ -786,7 +786,7 @@ const dishInputs = [
     stallId: "stall.sweet-monsoon",
     name: "Teh Tarik",
     description:
-      "Strong black tea and condensed milk pulled between metal mugs until smooth, aromatic, and crowned with a fine foam.",
+      "Strong black tea with condensed and evaporated milk, pulled between metal mugs until smooth and crowned with a fine foam.",
     category: "drink",
     price: 4,
     demand: 0.78,
@@ -844,9 +844,9 @@ const dishInputs = [
   {
     id: "dish.bbq-chicken-wings",
     stallId: "stall.satay-meridian",
-    name: "Three Barbecued Chicken Wings",
+    name: "Barbecued Chicken Wings",
     description:
-      "Three whole chicken wings grilled over charcoal until bronze, smoky, and lightly crisp at the edges.",
+      "Three chicken wing pieces grilled over charcoal until bronze, smoky, and lightly crisp at the edges.",
     category: "small-plate",
     price: 9,
     demand: 0.8,
@@ -884,17 +884,17 @@ const dishInputs = [
   {
     id: "dish.sambal-grilled-squid",
     stallId: "stall.satay-meridian",
-    name: "Salted Egg Squid",
+    name: "Sotong Panggang",
     description:
-      "Deep-fried squid coated in a rich, savoury salted-egg sauce and served as a crisp seafood plate.",
+      "Squid marinated in spices and grilled over charcoal, served as a smoky seafood plate.",
     category: "seafood",
     price: 15,
     demand: 0.78,
     preparationSeconds: 50,
     eatingSeconds: 57,
     quality: 0.85,
-    preferenceTags: ["seafood", "crisp", "salted-egg", "shareable"],
-    dietaryTags: ["contains-egg", "contains-seafood"],
+    preferenceTags: ["seafood", "grilled", "smoky", "spicy"],
+    dietaryTags: ["contains-seafood", "spicy"],
     level: 9,
     reputation: 47,
     container: "leaf-lined-plate",
@@ -926,7 +926,7 @@ const dishInputs = [
     stallId: "stall.bamboo-basket",
     name: "Siew Mai",
     description:
-      "Open-topped yellow dumplings packed with seasoned pork and prawn, each crowned with carrot and steamed until glossy.",
+      "Four steamed open-topped dumplings of seasoned minced pork in wanton skin, each topped with crab roe.",
     category: "small-plate",
     price: 8,
     demand: 0.82,
@@ -986,7 +986,7 @@ const dishInputs = [
     stallId: "stall.pick-and-mix",
     name: "Yong Tau Foo",
     description:
-      "Seven assorted stuffed tofu and vegetable pieces served in clear soup, with boiled, fried, mixed, noodle, and laksa variants available.",
+      "Seven assorted stuffed tofu, fish-paste, and vegetable pieces served in clear soup, with fried, noodle, and laksa variants available.",
     category: "soup",
     price: 8,
     demand: 0.8,
@@ -1006,7 +1006,7 @@ const dishInputs = [
     stallId: "stall.pick-and-mix",
     name: "Ban Mian",
     description:
-      "Hand-torn wheat noodles served in a comforting soup, with dry, chilli, dumpling, seafood, and vegetable preparations available.",
+      "Flat handmade wheat noodles in an ikan bilis soup with minced pork, mushrooms, leafy greens, and egg, with dry, chilli, dumpling, seafood, and vegetable preparations available.",
     category: "noodles",
     price: 8,
     demand: 0.82,
@@ -1086,7 +1086,7 @@ const dishInputs = [
     stallId: "stall.herbal-cauldron",
     name: "Duck Rice",
     description:
-      "Braised duck rice served with egg and tau kwa by default, with roasted duck and rice-only dataset variants available.",
+      "Sliced braised duck served with rice, a braised egg, braised firm tofu, and cucumber.",
     category: "rice",
     price: 10,
     demand: 0.81,

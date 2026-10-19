@@ -174,7 +174,7 @@ const FAT_KCAL_PER_G = 9;
 /** The Atwater energy factor for carbohydrate, in kcal per gram, for the energy cross-check. */
 const CARBOHYDRATE_KCAL_PER_G = 4;
 /** Lowest permitted ratio of reported energy to the macronutrient energy estimate. */
-const MIN_ENERGY_ESTIMATE_RATIO = 0.5;
+const MIN_ENERGY_ESTIMATE_RATIO = 0.75;
 /** Highest permitted ratio of reported energy to the macronutrient energy estimate. */
 const MAX_ENERGY_ESTIMATE_RATIO = 2;
 /** Energy per serving, in kcal, above which a row needs manual review. */

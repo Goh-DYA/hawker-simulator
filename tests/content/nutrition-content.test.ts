@@ -43,7 +43,7 @@ const VARIANT_IDS: Readonly<Record<string, readonly string[]>> = {
   "dish.chicken-murtabak": ["murtabak-chicken", "murtabak-chicken-mushroom-cheese", "murtabak-mutton", "murtabak-vegetable"],
   "dish.nasi-briyani": ["briyani-chicken", "briyani-fish-prawn", "briyani-mutton", "briyani-vegetable"],
   "dish.masala-thosai": ["thosai-masala", "thosai-plain", "thosai-egg", "thosai-ghee"],
-  "dish.yong-tau-foo": ["ytf-clear-boiled", "ytf-clear-fried", "ytf-clear-mixed", "ytf-clear-noodles", "ytf-laksa-boiled", "ytf-laksa-fried", "ytf-laksa-mixed", "ytf-laksa-noodles"],
+  "dish.yong-tau-foo": ["ytf-clear-mixed", "ytf-clear-fried", "ytf-laksa-boiled", "ytf-clear-noodles", "ytf-laksa-fried", "ytf-laksa-mixed", "ytf-laksa-noodles"],
   "dish.ban-mian": ["ban-mian-soup", "ban-mian-dry", "chilli-ban-mian", "pork-dumpling-ban-mian", "seafood-tom-yum-ban-mian", "vegetable-ban-mian"],
   "dish.bak-kut-teh": ["bak-kut-teh-soup", "bak-kut-teh-dry", "bak-kut-teh-herbal"],
   "dish.duck-rice": ["duck-rice-braised", "duck-rice-roasted", "duck-rice-rice-only"],
@@ -56,7 +56,7 @@ describe("nutrition content", () => {
     );
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
-      "df7a62eaf2ef0abe4f118cbbffe51e1ccc718691c078ccc2b305293b911bacc9",
+      "3145acb21eb5f2e30771affa34170e1b9257ed1318a5406e72260aa301edcbd1",
     );
   });
 
@@ -66,7 +66,7 @@ describe("nutrition content", () => {
     assert.equal(LAUNCH_CONTENT.version, "1.3.0");
     assert.equal(LAUNCH_CONTENT.nutrition, NUTRITION_CONTENT);
     assert.equal(NUTRITION_CONTENT.schemaVersion, 2);
-    assert.equal(report.counts.nutritionProfiles, 104);
+    assert.equal(report.counts.nutritionProfiles, 103);
     assert.equal(
       report.counts.nutritionVariantFamilies,
       LAUNCH_ROSTER.nutritionVariantFamilies,
@@ -133,7 +133,7 @@ describe("nutrition content", () => {
           family.variants.map((variant) => variant.visualKey),
         ),
       ).size,
-      64,
+      63,
     );
   });
 
