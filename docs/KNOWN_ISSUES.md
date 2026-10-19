@@ -29,7 +29,7 @@ Package version `1.0.0` remains an internal artifact identifier until the exact-
 | Product/game/technical/art plans | Implemented and documented | Product brief, GDD, technical design, art bible, economy, content, accessibility, testing, security, deployment, and ADRs are present |
 | Stack and architecture | Implemented | TypeScript + React/Vinext/Vite with Phaser 4.2.1; deterministic simulation is separated from rendering |
 | Perspective/style | Implemented | Orthographic top-down square grid with code-native, shape-led illustrated 2D rendering |
-| Launch content | Content `1.4.0` typed roster passes automated validation | The roster and its counts are in [CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md#roster-counts); every nutrition profile is released, and every profile has overall and condition-specific Health ratings |
+| Launch content | Content `1.5.0` typed roster passes automated validation | The roster and its counts are in [CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md#roster-counts); every nutrition profile is released, and every profile has overall and condition-specific Health ratings |
 | Core simulation | Automated coverage present | Placement/path validation, deterministic lifecycle, balanced stall selection, weighted preferred guest routes, obstacle-safe queue reservations, custom queue routes, target recovery, economy, progression, moving expansion boundaries/entry/exit, and undo |
 | Game/UI integration | Implemented | Build catalogue, camera/input, menus, separate legacy and nutrition tutorials, objectives/insights, Nutrition Lens, Variant Lab, selectable customer inspector, responsive Focus access, Nutrition Pulse, settings, save tools, coherent expansion, preferred-route and per-stall queue editors, utility descriptions, visible food, and live status UI |
 | Persistence | Implemented with automated core coverage | IndexedDB active/backup envelopes, checksums, serialized writes, core V1-to-V5 and runtime V1-to-V2 migrations, nutrition history and active-variant recovery, import/export, and reset; real-browser storage fault injection remains open |
@@ -74,7 +74,9 @@ Do not translate "implemented," "compiled," or "unit-tested" into an exact-produ
 ## Open gameplay balance issues
 
 - **The 120-second visit cap can still end a visit before the meal.** Seated guests now finish their meal and clear their tray past the cap, but a served guest still walking to a seat or searching for one leaves when the cap is reached. Preparation and eating durations still need a balance pass against the cap.
-- **Some authored persona fields remain future hooks.** Budgets, patience, walking speed, stall-choice sensitivities, novelty, dish preferences, progression gates, visit schedules, and tray-return chance are active. Seat preference, group range, satisfaction modifiers, and spend multiplier are validated content metadata but do not yet alter the simulation.
+- **Some authored persona fields remain future hooks.** Budgets, patience, walking speed, stall-choice sensitivities, novelty, dish preferences, progression gates, visit schedules, and tray-return chance are active. Seat preference, group range and satisfaction modifiers are validated content metadata but do not yet alter the simulation.
+- **A visit buys one item.** About a fifth of full-hall sales are a lone drink (22.4% under the 2025-26 price table, 26.3% before it). The average ticket is $3.97, against a real diner's main plus drink of about $6-7, and the price term (price × price sensitivity) outweighs the whole Star spread. A main-plus-drink order is the proposed follow-up; prices must not be distorted to compensate.
+- **Cash runs behind under street prices.** Real SGD prices with two service XP per sale keep the level pace (level 7 on day 5 and level 8 on day 7 on five seeds), but cash runs 6% behind on day 5 and 9% on day 7. If playtests show cash binding, raise the objective reward base ($80), not prices.
 - **Reloading mid-day empties the hall.** Customers, queues, seat reservations and uncleared trays are runtime-only, so a reload during a rush removes the waiting guests (they count as neither served nor left early) and clears every tray.
 - **Late dinner ratings count towards the next day's report.** A visit is added to the day ledger when its rating settles, so a dinner guest who arrived before last orders but finishes after the day ends at 18:30 is counted in the next day's Service Review and the next day's objectives' baseline, not the day they visited.
 - **The day systems are not playtested.** The rush curve, backpressure share, tray-return distance, crew size and clearing time, card factors, director weights, writer chance and threshold ladder and the seeded objective stretch are first-pass values checked only by seeded Node runs. By design the starter layout sees about 40% of guests leave early at the height of a rush, to push investment in seating and tray returns; whether that reads as a fair challenge, and whether the director eases off enough after rough days, needs human playtests.
@@ -82,14 +84,30 @@ Do not translate "implemented," "compiled," or "unit-tested" into an exact-produ
 
 ## Open nutrition data and rating issues
 
-The guideline-anchored ratings ([ADR 0007](decisions/0007-guideline-anchored-nutrition-ratings.md)) passed an internal clinical-style review, which matched about 85% of meal ratings to within half a star of an independent judgement. The remaining gaps are mostly source-data problems that cannot be corrected without inventing values, so they are recorded here rather than tuned around:
+The guideline-anchored ratings ([ADR 0007](decisions/0007-guideline-anchored-nutrition-ratings.md)), with the snack basis, edible-portion density, gated credits and source plausibility rules of [ADR 0008](decisions/0008-snack-basis-edible-density-and-source-plausibility.md), were re-examined value by value by the project's four-member review panel of AI agents. The panel's checks are not a qualified dietitian's or a cultural reviewer's sign-off; that human review remains a release gate (see [NUTRITION_DATA.md](design/NUTRITION_DATA.md#review-requirements)).
 
-- **Implausible source rows drive some ratings.** Vegetarian chicken rice has 11 g of water and 261 mg sodium in a 290 g plate, so it rates 5.0 throughout; ayam pongteh (151 mg sodium per 100 g) and beancurd with toppings (7.5 g fibre) also rate 5.0 overall. Babi pongteh's sodium (240 mg per 100 g) looks low for a taucheo braise, which is why it rates above chap chye for hypertension. Fibre looks inflated in several Lab rows (mee siam 30.9 g, claypot chicken rice 19.6 g with 1,330 mg calcium, mee rebus, chendol, ice kacang), which mostly affects the fibre-forward customer intent. Laksa's energy looks low beside the source's laksa gravy row.
-- **Variant families are not always monotone in the source.** Kopi siu dai reports more sugar than kopi, teh tarik less than teh, and one plain prata more energy than one egg prata. The milky fish soups rate above the clear ones because the clear default bowl is larger and the no-milk sliced-fish row was replaced by a fried-fish row.
-- **Desserts are rated against a meal's share.** Ice kacang, chendol, pulut hitam and beancurd are meal-class servings, so they are compared with a third of the day rather than a snack's share, and chendol rates 5.0 for obesity. Rating them as snacks would need a new nutrition class and changes to how meal intents apply.
-- **Refined starch is not penalised.** Congee, lemon rice and chwee kueh rate 5.0 for diabetes because the model counts carbohydrate amount, sugar and fibre but not carbohydrate quality.
-- **Thresholds need qualified review.** The Nutri-Grade band transcription and the clinical references in [NUTRITION_DATA.md](design/NUTRITION_DATA.md#rating-methodology) were taken from public guidance but not confirmed against the gazetted regulation or by a dietitian.
-- **Mee goreng mamak's painting** still shows tofu and potato, which its source row and description no longer mention.
+### Data limitations kept by decision
+
+No objective rule reaches these values, so they stay as the source reports them rather than being tuned around:
+
+- **(a) Roasted duck rice sodium, 641 mg in 411 g.** The 'Braised duck rice set (rice only)' row is stock-cooked braised rice, not plain rice, so it is not a component. At 159 mg per 100 g, roasted duck rice ranks 6th lowest of 112 Lab rice dishes.
+- **(b) Dessert fibre** (tau huay 7.5 g, chendol 14.1 g, ice kacang 11.1 g). The snack basis and the credit gates stop fibre from offsetting dessert sugar, but fibre-forward intent fits still read it.
+- **(c) The vegetarian chicken rice composite.** Its rice row is cooked in chicken stock, so saturated fat and sodium may be overstated by about 1-2 g and 100-200 mg. This errs strict.
+- **(d) Pongteh sodium.** Babi pongteh has 240 mg per 100 g, inside the Lab braise range (196-331 mg), and ayam pongteh 252 mg per 100 g edible. Both are kept, and the model is not tuned to them.
+- **(e) Teh tarik against teh.** No order is required between two orders that are not reduced-sugar.
+- **(f) The clear default 'Sliced fish beehoon soup (no milk)'.** It is Derived from a soup row that states 84 kcal against 154 kcal from its macronutrients. The bowl states 389 kcal against 456 kcal (a ratio of 0.85, which passes the 0.75 cross-check). Its obesity 5.0 depends on the 389 kcal; at 456 kcal it would be about 4.1, and its overall rating would not change.
+- **(g) The milky fish variants.** They use the fried-fish rows, so part of their saturated fat (8.73 g in the beehoon bowl, 8.37 g in the soup) comes from the batter of the fried fish rather than from the milk. In the source's like-for-like fried pair, milk adds about 2.5 g of saturated fat (5.86 to 8.37 g) and 131 mg of sodium. Variant copy must not attribute the whole difference from the clear sliced-fish default to milk.
+- **(h) Claypot chicken rice fibre, 19.6 g.** Its calcium is withheld as an extreme outlier, but its fibre passes the rule.
+- **(i) Char siew rice sodium, 833 mg.** A rice-plus-char-siew composite gives 536 mg, which is worse because the sauce is missing.
+- **(j) The density high anchor stays 0.75.** At 0.75, 0.9 and 1.0 the Spearman correlation with the FSA bands is 0.80, 0.77 and 0.74, so 0.75 fits best.
+- **(k) Chwee kueh still rates 5.0 for diabetes, and lemon rice 4.9.** Their carbohydrate is small (29 g and 42 g) and their carbohydrate-to-fibre ratio moderate, which the carbohydrate-quality term's single-exchange allowance accepts.
+
+Revisit (f) and (g) only when an objective rule carries a component row's cross-check failure into the Derived rows built from it.
+
+### Other open nutrition items
+
+- **Fried-fish art for the soup-only fish variants.** The clear and milky sliced-fish paintings show sliced fish, while both soup-only variants now use fried-fish rows. A repaint moves the render digests, so it waits for an art pass.
+- **Desserts keep the meal nutrition class.** The snack basis changes only their rating; meal intents still rank them among meals. A separate snack class needs intent-rule design.
 
 ## Implemented but awaiting exact-production evidence
 
@@ -104,6 +122,7 @@ The guideline-anchored ratings ([ADR 0007](decisions/0007-guideline-anchored-nut
 
 ## Previously listed concerns closed by implementation or current automated evidence
 
+- The content `1.5.0` review panel closed these nutrition and copy concerns: vegetarian chicken rice is a composite of exact rows instead of an implausible Derived row; ayam pongteh no longer rates 5.0 overall once density is read per edible portion; mee siam and mee rebus sugar and fibre and lor mee fibre are withheld by the paired-component rule; claypot chicken rice calcium is withheld as an extreme outlier; laksa is a composite that no longer falls below its own gravy; kopi's sugar is withheld by the drink-family rule, which restores the kopi order; plain prata is scaled by its dough, so it sits below egg prata; the milky fish soups use their like-for-like rows and rate below the clear ones; desserts are rated on a snack basis; refined starch carries a diabetes carbohydrate-quality term; the thresholds were checked against their primary sources by the panel (qualified review remains a gate); and mee goreng mamak's description now matches its painting and source row.
 - Pick & Mix and Herbal Cauldron no longer use the generic stall art (TD-47): every stall is painted as its own cutaway kitchen, and `tests/game/runtime/art/stalls.test.ts` requires each stall to paint differently from the others at every rotation.
 - Entrance-nearest-stall crowding is mitigated by a deterministic score that accounts for preference, quality, price, wait, novelty, scaled distance, and global wayfinding; comparable stalls and preference-over-distance behavior have regression tests.
 - Straight queues through furniture are replaced with obstacle-aware automatic paths and validated custom routes; every admitted customer is asserted to receive walkable route cells.

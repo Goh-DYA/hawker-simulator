@@ -55,7 +55,7 @@ The release must pass the acceptance checklist in [RELEASE_CHECKLIST.md](../rele
 - Current stable desktop Chrome is tested and its exact version recorded.
 - Human Singapore cultural review, qualified legal/privacy review, and independent security review are complete or explicitly waived by the accountable human owner.
 
-The content `1.4.0` source contract, complete automated working-source gate, and both local production builds are recorded. Exact-production browser/offline validation, publication evidence, and all external review gates remain incomplete as of this document date.
+The content `1.5.0` source contract, complete automated working-source gate, and both local production builds are recorded. Exact-production browser/offline validation, publication evidence, and all external review gates remain incomplete as of this document date.
 
 ### Product assumptions
 
@@ -165,7 +165,7 @@ Day 1 uses fixed objectives. From day 2, the day's stream picks one service obje
 
 Cash buys placeables, stalls, upgrades, and expansions. Experience unlocks levels through ordinary play. Live reputation is a smoothed average of recent visit ratings and drives arrival demand, so it rises and falls with service. Every reputation unlock gate reads peak reputation, the highest live reputation the centre has reached, so a poor day never relocks content. New stalls beyond the starter stalls are also offered by stall tender, one every few operating days (see [ECONOMY_AND_PROGRESSION.md](ECONOMY_AND_PROGRESSION.md#unlock-curve)), so the hall grows at a pace its takings can fund. There is no premium currency and no real-time waiting.
 
-The player cannot enter a hard fail state: starter essentials are protected from accidental sale or can be reclaimed; a recovery grant is available after an affordability check; operating costs cannot silently drive cash below zero; and objectives never require a single irreversible layout.
+The player cannot enter a hard fail state: starter essentials are protected from accidental sale or can be reclaimed; a recovery grant is available after an affordability check; there are no operating costs; and objectives never require a single irreversible layout.
 
 ### Tutorial
 

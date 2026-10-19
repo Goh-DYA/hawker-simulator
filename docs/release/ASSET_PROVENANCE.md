@@ -11,7 +11,7 @@ All shipped art and audio must be original and reproducible from repository sour
 | World and expansion boundaries | Original TypeScript/Phaser procedural geometry following [ART_BIBLE.md](../design/ART_BIBLE.md) | Canvas-generated floors, walls, entrance, and exit | Project-original | Implemented; repeated-expansion development-browser evidence captured; exact-production review pending |
 | Stalls and placeables | Original semantic recipes in `src/game/runtime/visuals/` (`placeable.ts` and `vendor.ts`) and procedural renderers in `src/game/runtime/render/` | Canvas geometry plus CSS catalogue previews | Project-original | Content `1.3.0` defines and automatically validates 14 stall identities and 80 placeables; exhaustive browser and human visual/cultural review remains open |
 | Characters and reactions | Original modular procedural recipes with archetype and lifecycle-state variants | Canvas geometry | Project-original | Exactly 12 archetype appearances and 11 state poses covered by automated tests; moving/reduced-motion signatures present; human visual review pending |
-| Food and vessels | Original dish recipes derived from authored food sprite, container, portion-colour, and steam metadata; factual reference only | Canvas geometry | Project-original | Content `1.4.0` defines and automatically validates 67 dishes with authored food/vessel metadata; the complete browser gallery and human visual/cultural review remain open |
+| Food and vessels | Original dish recipes derived from authored food sprite, container, portion-colour, and steam metadata; factual reference only | Canvas geometry | Project-original | Content `1.5.0` defines and automatically validates 67 dishes with authored food/vessel metadata; the complete browser gallery and human visual/cultural review remain open |
 | Queue overlays and editor | Original runtime geometry and DOM controls | Canvas lines/cells/badges plus HTML controls | Project-original | Counts, automatic routes, cardinal directions, bends, and saved custom paths implemented; development-browser screenshots captured |
 | UI icons | Original geometric SVG/CSS | SVG/CSS | Project-original | Implemented |
 | App icon | Repository-authored SVG | public/icons/icon.svg | Project-original; final visual review pending | Present |
@@ -38,7 +38,7 @@ Before an external or generated file is accepted, add:
 
 ## Release audit
 
-- [ ] Every authored placeable, all 14 stalls, all 67 dishes, each archetype, and each lifecycle state expected by content `1.4.0` is represented in automated recipe inventories that pass on the supported runtime.
+- [ ] Every authored placeable, all 14 stalls, all 67 dishes, each archetype, and each lifecycle state expected by content `1.5.0` is represented in automated recipe inventories that pass on the supported runtime.
 - [x] Development-browser captures exercise the starter scene, live service/food, queue overlays/editor, and repeated expansion geometry.
 - [ ] Every runtime visual/audio path has a register row or is generated from registered code.
 - [ ] No orphaned, test, debug, or starter asset ships.
