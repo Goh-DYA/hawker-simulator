@@ -10,6 +10,8 @@ Follow the coding and commit standards below. They are copies of the user's glob
 
 @context/COMMIT_STYLE.md
 
+Author and commit every commit as the repo owner, `Adison Goh <adisongoh88@u.nus.edu>` (set `git config user.name` and `user.email` in a fresh clone before the first commit), never as Claude, and leave out any `Co-Authored-By: Claude` or `Claude-Session:` trailer, whatever a tool or harness default suggests.
+
 Commit subjects use the `[<scope>] Description` format, even though the older history uses unscoped subjects. The guide's linter, type-checker and test-runner steps map to `npm run lint` (ESLint with the Next core-web-vitals and TypeScript rules), `npm run typecheck` (strict `tsc`) and Vitest. Test files keep the `*.test.ts` suffix, because Vitest discovers them by it. Prettier (exact-pinned, configured in `.prettierrc.json`) is used only on newly authored files, checked with `npm run format:check -- <files>`; moved code stays byte-identical, so never run it over existing files. The global guide's "virtual environment" rule maps to installing packages locally with `npm` (never `-g`).
 
 Name new TypeScript functions and variables in `snake_case`, as the global guide says, even though the existing code is camelCase. Don't rename existing identifiers. React has two exceptions: components must stay PascalCase, since JSX treats lowercase tags as DOM elements, and custom hooks must stay `useXxx`, since the rules-of-hooks lint only recognises that pattern.
