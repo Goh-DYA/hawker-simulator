@@ -27,6 +27,7 @@ import {
 import {
   dishPreview,
   dishStarRating,
+  get_unlock_reputation,
   humanize_id,
   is_requirement_met,
   localize,
@@ -40,7 +41,8 @@ import { NO_PREVIEWS, PaintedPreview, preview_key, type PreviewUrls } from "../p
 type MenuProgress = Pick<
   RuntimeSnapshot,
   "level" | "reputation" | "unlockedContentIds" | "stallMenus" | "stallMastery"
->;
+> &
+  Partial<Pick<RuntimeSnapshot, "peakReputation">>;
 
 /** One dish row of a stall's menu, as the Dishes panel renders it. */
 export interface MenuRow {
@@ -99,7 +101,7 @@ export function build_menu_rows(
     const gated = !is_requirement_met(dish.unlockRequirement, snapshot);
     const atCapacity = !checked && activeMenu.length >= menuSlots;
     const unavailableReason = gated
-      ? unlockLabel(dish, snapshot.level, snapshot.reputation, snapshot.unlockedContentIds)
+      ? unlockLabel(dish, snapshot.level, get_unlock_reputation(snapshot), snapshot.unlockedContentIds)
       : atCapacity
         ? `All ${menuSlots} menu slots are active`
         : undefined;

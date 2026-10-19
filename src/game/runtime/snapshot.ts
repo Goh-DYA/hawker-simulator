@@ -40,6 +40,7 @@ import {
 import { deriveQueueFlowInsight } from "./queueInsight";
 import { MAP_EXPANSION, REPUTATION_SCALE } from "./rules";
 import { deriveSatisfactionTips } from "./satisfactionInsight";
+import { build_neighbourhood_view, count_hall_cleaning_crew, find_next_unlock } from "./neighbourhood";
 import type { BuildTool, GameSpeed, RuntimeMilestoneTrack, RuntimeSnapshot } from "./types";
 
 type MilestoneTrackId = (typeof MILESTONE_TRACKS)[number]["id"];
@@ -397,7 +398,10 @@ export function build_runtime_snapshot(input: SnapshotInput): RuntimeSnapshot {
     queuePressure: queueFlow.pressure,
     queueFlowState: queueFlow.state,
     queueFlowMessage: queueFlow.message,
-    freeSeats: Math.max(0, seats.length - Object.keys(snapshot.seatReservations).length),
+    freeSeats: Math.max(
+      0,
+      seats.length - Object.keys(snapshot.seatReservations).length - Object.keys(snapshot.unclearedTrays).length,
+    ),
     totalSeats: seats.length,
     cleanliness: estimate_hall_cleanliness({
       cleanlinessSupport,
@@ -406,6 +410,11 @@ export function build_runtime_snapshot(input: SnapshotInput): RuntimeSnapshot {
       queueCount,
     }),
     trayReturnStations,
+    unclearedTrays: Object.keys(snapshot.unclearedTrays).length,
+    cleaningCrew: count_hall_cleaning_crew(state),
+    peakReputation: snapshot.progression.peakReputation * REPUTATION_SCALE,
+    neighbourhood: build_neighbourhood_view(state, visuals),
+    nextUnlock: find_next_unlock(state),
     buildTool,
     selectedBuildId,
     selectedObjectId,

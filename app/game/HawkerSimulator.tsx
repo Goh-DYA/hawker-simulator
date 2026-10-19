@@ -6,11 +6,15 @@
  *
  * It owns the UI state (open panel, dialogs, tutorial and tour steps, settings and
  * toasts), mirrors the runtime's snapshot, and composes the hooks, panels, HUD and
- * dialog modules that render it. Until the runtime publishes its first snapshot, the UI
+ * dialog modules that render it. It also decides when the end-of-day Service Review
+ * opens: for a report day that appears during play, below 4× speed and with no other
+ * dialog open, pausing the simulation until the review closes; otherwise the review
+ * waits, marked unread, in the Focus panel. Until the runtime publishes its first snapshot, the UI
  * renders from `INITIAL_SNAPSHOT`, which is also what server rendering shows.
  */
 
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -55,6 +59,7 @@ import {
   dishLabel,
   dishStarRating,
   getContentPrice,
+  get_unlock_reputation,
   localize,
   money,
   PANEL_COPY,
@@ -77,6 +82,7 @@ import {
   HelpDialog,
   NutritionTourDialog,
   ResetDialog,
+  ServiceReviewDialog,
   SettingsDialog,
   TutorialDialog,
 } from "./dialogs";
@@ -93,6 +99,7 @@ import { BuildPanel, SelectionCard, StallsPanel } from "./panels/catalogue";
 import { ActionStrip, BottomDock, DebugPanel, TopBar, ToastStack, WorldToolbar } from "./hud";
 import { MenuPanel } from "./panels/menu";
 import { ActivityPanel, FocusPanel, InsightsPanel, ObjectiveCard } from "./panels/overview";
+import { NextUnlockSignpost, TodayStrip } from "./panels/today";
 
 const INITIAL_LEVEL = 1;
 const INITIAL_REPUTATION = ECONOMY.startingReputation;
@@ -120,6 +127,11 @@ const INITIAL_SNAPSHOT: RuntimeSnapshot = {
   totalSeats: 8,
   cleanliness: 100,
   trayReturnStations: 1,
+  unclearedTrays: 0,
+  cleaningCrew: 1,
+  peakReputation: INITIAL_REPUTATION,
+  neighbourhood: undefined,
+  nextUnlock: undefined,
   buildTool: "select",
   routeGuidePoints: [],
   unlockedContentIds: [],
@@ -184,7 +196,15 @@ export function HawkerSimulator() {
   const settingsDialogRef = useRef<HTMLElement>(null);
   const helpDialogRef = useRef<HTMLElement>(null);
   const resetDialogRef = useRef<HTMLElement>(null);
+  const serviceReviewDialogRef = useRef<HTMLElement>(null);
   const managementReturnFocusRef = useRef<HTMLElement | null>(null);
+  // The Service Review opens for a report day the shell sees appear during play. The first
+  // runtime snapshot, and the first after an import or a reset, only records the day, so a
+  // reload or a loaded save never reopens an old review.
+  const has_runtime_snapshot_ref = useRef(false);
+  const should_resync_review_ref = useRef(false);
+  const seen_report_day_ref = useRef<number | undefined>(undefined);
+  const review_resume_speed_ref = useRef<GameSpeed | undefined>(undefined);
 
   const [snapshot, setSnapshot] = useState(INITIAL_SNAPSHOT);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -206,6 +226,8 @@ export function HawkerSimulator() {
   const [offlineReady, setOfflineReady] = useState(false);
   const [updateReady, setUpdateReady] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
+  const [is_review_open, set_is_review_open] = useState(false);
+  const [is_review_unread, set_is_review_unread] = useState(false);
   const debugEnabled = useSyncExternalStore(
     subscribeToStaticValue,
     getDebugSnapshot,
@@ -257,6 +279,7 @@ export function HawkerSimulator() {
         ...nextSnapshot,
         autosaveState: current.autosaveState,
       }));
+      track_service_review(nextSnapshot);
     },
     onEvent: announce,
     onPersistentChange(state) {
@@ -320,6 +343,16 @@ export function HawkerSimulator() {
     return () => mediaQuery.removeEventListener("change", updateCompactManagement);
   }, []);
 
+  const close_service_review = useCallback(() => {
+    set_is_review_open(false);
+    const resume_speed = review_resume_speed_ref.current;
+    review_resume_speed_ref.current = undefined;
+    if (resume_speed !== undefined) controllerRef.current?.setSpeed(resume_speed);
+  }, [controllerRef]);
+
+  const review_report = snapshot.neighbourhood?.lastReport;
+  const is_review_showing = is_review_open && review_report !== undefined;
+
   useEffect(() => {
     const active_modal = resolve_active_modal({
       resetOpen,
@@ -327,6 +360,7 @@ export function HawkerSimulator() {
       helpOpen,
       tutorialStep,
       nutritionTourStep,
+      isServiceReviewOpen: is_review_showing,
     });
     const modal = active_modal
       ? {
@@ -335,6 +369,7 @@ export function HawkerSimulator() {
           help: helpDialogRef,
           tutorial: tutorialDialogRef,
           "nutrition-tour": nutritionTourDialogRef,
+          "service-review": serviceReviewDialogRef,
         }[active_modal].current
       : null;
     if (!modal) return;
@@ -355,6 +390,8 @@ export function HawkerSimulator() {
             true,
             "Tutorial progress could not be saved.",
           );
+        } else if (active_modal === "service-review") {
+          close_service_review();
         } else {
           setNutritionTourStep(NUTRITION_TOUR_DONE_STEP);
           void persist_preference(
@@ -365,7 +402,16 @@ export function HawkerSimulator() {
         }
       },
     });
-  }, [helpOpen, nutritionTourStep, persist_preference, resetOpen, settingsOpen, tutorialStep]);
+  }, [
+    close_service_review,
+    helpOpen,
+    is_review_showing,
+    nutritionTourStep,
+    persist_preference,
+    resetOpen,
+    settingsOpen,
+    tutorialStep,
+  ]);
 
   const visiblePlaceables = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("en-SG");
@@ -382,6 +428,53 @@ export function HawkerSimulator() {
       STALLS.find((stall) => stall.id === selectedId),
     [selectedId],
   );
+
+  /**
+   * Open the Service Review, pausing the simulation until it closes.
+   *
+   * @param current_speed - The speed to restore when the review closes.
+   */
+  function open_service_review(current_speed: GameSpeed) {
+    if (is_review_open) return;
+    review_resume_speed_ref.current = current_speed;
+    controllerRef.current?.setSpeed(0);
+    set_is_review_open(true);
+    set_is_review_unread(false);
+  }
+
+  /**
+   * Open the Service Review when a runtime snapshot brings a new report day. At 4× speed and
+   * above, or while another dialog or the Variant Lab is open, the review is only marked unread
+   * and waits in the Focus panel.
+   *
+   * @param next_snapshot - The snapshot the runtime just pushed.
+   */
+  function track_service_review(next_snapshot: RuntimeSnapshot) {
+    const report_day = next_snapshot.neighbourhood?.lastReport?.day;
+    const previous_day = seen_report_day_ref.current;
+    seen_report_day_ref.current = report_day ?? previous_day;
+    if (!has_runtime_snapshot_ref.current || should_resync_review_ref.current) {
+      has_runtime_snapshot_ref.current = true;
+      should_resync_review_ref.current = false;
+      seen_report_day_ref.current = report_day;
+      return;
+    }
+    if (report_day === undefined || report_day === previous_day) return;
+    if (previous_day !== undefined && report_day < previous_day) return;
+    const is_blocked =
+      next_snapshot.speed >= 4 ||
+      is_interface_inert({
+        resetOpen,
+        settingsOpen,
+        helpOpen,
+        tutorialStep,
+        nutritionTourStep,
+        isVariantLabOpen: variantLabDishId !== undefined,
+        isServiceReviewOpen: is_review_open,
+      });
+    if (is_blocked) set_is_review_unread(true);
+    else open_service_review(next_snapshot.speed);
+  }
 
   function unlockAudio() {
     void audioRef.current
@@ -404,7 +497,7 @@ export function HawkerSimulator() {
     if (!snapshot.unlockedContentIds.includes(item.id)) {
       announce({
         kind: "warning",
-        message: `${localize(item.nameKey)} unlocks with ${unlockLabel(item, snapshot.level, snapshot.reputation, snapshot.unlockedContentIds).toLocaleLowerCase("en-SG")}.`,
+        message: `${localize(item.nameKey)} unlocks with ${unlockLabel(item, snapshot.level, get_unlock_reputation(snapshot), snapshot.unlockedContentIds).toLocaleLowerCase("en-SG")}.`,
       });
       return;
     }
@@ -521,10 +614,13 @@ export function HawkerSimulator() {
       const payload = importSave(await file.text());
       const controller = controllerRef.current;
       if (!controller) throw new Error("The game is not ready to import a save.");
+      should_resync_review_ref.current = true;
       controller.importState(payload);
+      set_is_review_unread(false);
       await get_autosave().save(controller.exportState());
       announce({ kind: "success", message: "Save imported and checked.", importance: "important" });
     } catch (error) {
+      should_resync_review_ref.current = false;
       announce({
         kind: "error",
         message: error instanceof Error ? error.message : "Could not import that save.",
@@ -539,7 +635,9 @@ export function HawkerSimulator() {
       report_failure("save clear failed", error);
       reportStorageIssue("The stored save could not be removed.");
     });
+    should_resync_review_ref.current = true;
     controllerRef.current?.reset();
+    set_is_review_unread(false);
     setResetOpen(false);
     setTutorialStep(0);
     setNutritionTourStep(0);
@@ -576,6 +674,7 @@ export function HawkerSimulator() {
     tutorialStep,
     nutritionTourStep,
     isVariantLabOpen: Boolean(variantLabFamily),
+    isServiceReviewOpen: is_review_showing,
   });
   const previewRequests = useMemo(
     () =>
@@ -639,6 +738,8 @@ export function HawkerSimulator() {
         <aside className="left-rail" aria-label="Objectives and centre pulse">
           <ObjectiveCard snapshot={snapshot} />
 
+          <NextUnlockSignpost nextUnlock={snapshot.nextUnlock} />
+
           <NutritionPulseCard
             compact
             pulse={nutritionPulse}
@@ -646,13 +747,7 @@ export function HawkerSimulator() {
             onReview={() => openPanel("dishes")}
           />
 
-          <section className="tip-card">
-            <span aria-hidden="true">✦</span>
-            <div>
-              <strong>Layout tip</strong>
-              <p>Leave two tiles before popular stall queues to reduce crowd knots.</p>
-            </div>
-          </section>
+          <TodayStrip neighbourhood={snapshot.neighbourhood} />
         </aside>
 
         <section className="world-column" aria-label="Hawker centre map">
@@ -777,7 +872,12 @@ export function HawkerSimulator() {
           </div>
 
           {panel === "focus" ? (
-            <FocusPanel snapshot={snapshot} onReviewDishes={() => openPanel("dishes")} />
+            <FocusPanel
+              snapshot={snapshot}
+              isReviewUnread={is_review_unread}
+              onReviewDishes={() => openPanel("dishes")}
+              onOpenReview={() => open_service_review(snapshot.speed)}
+            />
           ) : null}
 
           {panel === "build" ? (
@@ -897,6 +997,15 @@ export function HawkerSimulator() {
           step={nutritionTourStep}
           onFinish={() => void finishNutritionTour()}
           onStepChange={setNutritionTourStep}
+        />
+      ) : null}
+
+      {is_review_showing ? (
+        <ServiceReviewDialog
+          ref={serviceReviewDialogRef}
+          report={review_report}
+          nextDay={snapshot.neighbourhood?.today}
+          onClose={close_service_review}
         />
       ) : null}
 

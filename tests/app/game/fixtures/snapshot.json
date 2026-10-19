@@ -4,7 +4,7 @@
   "level": 2,
   "experience": 132,
   "nextLevelExperience": 400,
-  "day": 1,
+  "day": 2,
   "timeLabel": "11:30 AM",
   "isOpen": true,
   "speed": 1,
@@ -43,6 +43,94 @@
   "totalSeats": 6,
   "cleanliness": 99.4,
   "trayReturnStations": 1,
+  "unclearedTrays": 1,
+  "cleaningCrew": 1,
+  "peakReputation": 8,
+  "neighbourhood": {
+    "today": {
+      "id": "calendar.late-morning-kopi-crowd",
+      "name": "Late-morning kopi crowd",
+      "summary": "An early wave wanting kopi and toast.",
+      "forecast": "Expect an early wave of kopi and toast orders before the lunch crowd arrives."
+    },
+    "tomorrow": {
+      "id": "calendar.quiet-weekday",
+      "name": "Quiet weekday",
+      "summary": "Gentle crowds. A good day to rearrange or try a recipe.",
+      "forecast": "A gentle weekday is coming: smaller crowds and a good chance to rearrange or try a new recipe."
+    },
+    "minuteOfDay": 690,
+    "openingMinute": 630,
+    "lastOrdersMinute": 1090,
+    "closingMinute": 1110,
+    "rushWindows": [
+      {
+        "kind": "lunch",
+        "label": "Lunch",
+        "startMinute": 714,
+        "endMinute": 786
+      },
+      {
+        "kind": "dinner",
+        "label": "Dinner",
+        "startMinute": 1011,
+        "endMinute": 1059
+      }
+    ],
+    "rushNotice": "Lunch crowd from about 11:54 AM. Ready the queues and seats.",
+    "isWriterTomorrow": true,
+    "writerPickStallIds": [],
+    "lastReport": {
+      "day": 1,
+      "cardName": "Opening day",
+      "grade": "Steady",
+      "gradeGlyph": "■",
+      "headline": "The hall kept going; the busy hours showed where it strains.",
+      "served": 31,
+      "leftEarly": 6,
+      "revenue": 214,
+      "averageScore": 58.4,
+      "ratedVisits": 29,
+      "leftEarlyReasons": [
+        {
+          "reason": "no-seat",
+          "label": "Had food but found no free seat",
+          "count": 3
+        },
+        {
+          "reason": "long-queue",
+          "label": "Gave up waiting in a queue",
+          "count": 2
+        },
+        {
+          "reason": "no-dish",
+          "label": "Found nothing to order within budget",
+          "count": 1
+        }
+      ],
+      "focusTip": {
+        "factor": "comfort",
+        "label": "Comfort",
+        "score": 41,
+        "action": "Add enough seating and place fans, lighting or décor near dining tables."
+      },
+      "trayReturns": 18,
+      "objectivesCompleted": 2,
+      "objectivesTotal": 3,
+      "unlockedCount": 1
+    }
+  },
+  "nextUnlock": {
+    "id": "stall.kopi-canopy",
+    "name": "Kopi Canopy",
+    "kind": "stall",
+    "requiredLevel": 2,
+    "requiredReputation": 10,
+    "isLevelMet": true,
+    "isReputationMet": false,
+    "progress": 0.8,
+    "hint": "Keep visits averaging about 59 so reputation climbs to 10."
+  },
   "buildTool": "select",
   "unlockedContentIds": [
     "item.ceiling-tube-light",

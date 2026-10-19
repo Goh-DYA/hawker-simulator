@@ -159,6 +159,118 @@ export interface RuntimeStallSummary {
   readonly open: boolean;
 }
 
+/** One neighbourhood day card as the HUD shows it. */
+export interface RuntimeDayCard {
+  id: string;
+  name: string;
+  /** One short line naming the day's effect. */
+  summary: string;
+  /** The forecast line shown the day before. */
+  forecast: string;
+}
+
+/** One of the day's crowds on the HUD timeline, in in-game minutes of the day. */
+export interface RuntimeRushWindow {
+  kind: "lunch" | "dinner";
+  label: string;
+  /** Start and end of the rush core, which the timeline draws as a band. */
+  startMinute: number;
+  endMinute: number;
+}
+
+/** Today's food-writer visit as the HUD shows it. */
+export interface RuntimeWriterVisit {
+  stallDefinitionId: string;
+  stallName: string;
+  threshold: number;
+  /** In-game minutes of the day during which sales are reviewed. */
+  windowStartMinute: number;
+  windowEndMinute: number;
+  /** `upcoming` before the window, `reviewing` during it and until the verdict, then `done`. */
+  status: "upcoming" | "reviewing" | "done";
+  outcome: "pending" | "plaque" | "no-plaque" | "too-few-visits";
+  visitCount: number;
+  /** Average score of the counted visits so far, or 0 before any. */
+  averageScore: number;
+}
+
+/** A count of guests who left for one reason. */
+export interface RuntimeDepartureReason {
+  reason: string;
+  label: string;
+  count: number;
+}
+
+/** The finished day's Service Review. */
+export interface RuntimeDayReport {
+  day: number;
+  cardName: string;
+  /** Warm grade word; never a fail grade. */
+  grade: string;
+  /** A glyph that pairs with the grade, so it never relies on colour alone. */
+  gradeGlyph: string;
+  /** One sentence that sums the day up. */
+  headline: string;
+  served: number;
+  leftEarly: number;
+  revenue: number;
+  averageScore: number;
+  ratedVisits: number;
+  /** The reasons guests left early, most common first. */
+  leftEarlyReasons: readonly RuntimeDepartureReason[];
+  /** The weakest rating factor and one thing to try, or `undefined` without ratings. */
+  focusTip?: SatisfactionTip;
+  trayReturns: number;
+  objectivesCompleted: number;
+  objectivesTotal: number;
+  unlockedCount: number;
+  /** The food writer's verdict, if the writer visited. */
+  writer?: {
+    stallName: string;
+    outcome: "plaque" | "no-plaque" | "too-few-visits";
+    averageScore: number;
+    threshold: number;
+    quote: string;
+  };
+}
+
+/** The neighbourhood as the HUD shows it. */
+export interface RuntimeNeighbourhood {
+  today: RuntimeDayCard;
+  tomorrow: RuntimeDayCard;
+  /** In-game minute of the day now. */
+  minuteOfDay: number;
+  /** The day's opening, last-orders and closing minutes, for the timeline. */
+  openingMinute: number;
+  lastOrdersMinute: number;
+  closingMinute: number;
+  rushWindows: readonly RuntimeRushWindow[];
+  /** The crowd under way now, if any. */
+  activeRush?: "lunch" | "dinner";
+  /** A short notice of the next rush within the warning lead time, if any. */
+  rushNotice?: string;
+  writer?: RuntimeWriterVisit;
+  isWriterTomorrow: boolean;
+  writerPickStallIds: readonly string[];
+  lastReport?: RuntimeDayReport;
+}
+
+/** The nearest locked item and what it still needs. */
+export interface RuntimeNextUnlock {
+  id: string;
+  name: string;
+  kind: "stall" | "placeable" | "dish";
+  requiredLevel: number;
+  /** Required reputation on the 0-100 display scale. */
+  requiredReputation: number;
+  isLevelMet: boolean;
+  isReputationMet: boolean;
+  /** Share of the way there, from 0 to 1, for a progress bar. */
+  progress: number;
+  /** One actionable sentence. */
+  hint: string;
+}
+
 /**
  * Everything the HUD shows, pushed through `RuntimeOptions.onSnapshot` after each change and
  * periodically while running.
@@ -187,6 +299,14 @@ export interface RuntimeSnapshot {
   totalSeats: number;
   cleanliness: number;
   trayReturnStations: number;
+  /** Seats holding a tray that the table-cleaning crew has not cleared yet. */
+  unclearedTrays: number;
+  /** Trays the crew can clear at once. */
+  cleaningCrew: number;
+  /** Peak reputation on the 0-100 display scale, which unlocks read. */
+  peakReputation: number;
+  neighbourhood?: RuntimeNeighbourhood;
+  nextUnlock?: RuntimeNextUnlock;
   buildTool: BuildTool;
   selectedBuildId?: string;
   selectedObjectId?: string;

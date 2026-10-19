@@ -134,7 +134,7 @@ Accessibility needs remain separate from archetype so disability is not treated 
 
 Health conditions also remain separate from archetype and appearance. A deterministic visit roll assigns at most one of high cholesterol, obesity, diabetes, or hypertension when released comparison data is available. The condition changes only that customer's food-choice weighting, explanation, and bounded meal satisfaction effect; it is not a diagnosis, prevalence claim, or demographic inference.
 
-The active simulation consumes each persona's budget, patience, walking speed, stall-choice sensitivities, novelty, dish tags, progression gate, and visit schedule. Authored seat preference, group range, satisfaction modifiers, spend multiplier, and tray-return chance remain future balance hooks and are not advertised as current mechanics.
+The active simulation consumes each persona's budget, patience, walking speed, stall-choice sensitivities, novelty, dish tags, progression gate, visit schedule, and tray-return chance (read per guest from a hash of the guest's ID, together with a reachable tray return within 14 path tiles). Authored seat preference, group range, satisfaction modifiers, and spend multiplier remain future balance hooks and are not advertised as current mechanics.
 
 ## Eighty placeables
 
@@ -258,6 +258,27 @@ Sign copy and symbols require legibility, translation/cultural, and accessible-w
 78. Fabric Ceiling Bunting.
 79. Tabletop Flower Vase.
 80. Feature Centre Clock.
+
+## Neighbourhood calendar
+
+The day cards in `src/content/calendar.ts` give each operating day of the seeded neighbourhood an identity (see [GAME_DESIGN.md](GAME_DESIGN.md#neighbourhood-calendar)). There are ten: a fixed opening day for day 1, which is never drawn again, and nine activity-based cards that later days draw from a shuffle bag. Cards describe activities and weather, never who people are.
+
+Intensity runs from 0 (calm) to 1 (busy) and sets how the director weighs the card. Arrivals, lunch, dinner and eating time are multipliers, where 1 changes nothing and eating time above 1 means guests linger; persona factors multiply those personas' arrival weights, and category bonuses add appeal when guests choose a stall and a dish.
+
+| Card | Intensity | Arrivals | Lunch | Dinner | Eating time | Personas | Dish categories |
+|---|---:|---:|---:|---:|---:|---|---|
+| Opening day (day 1 only) | 0.2 | 1 | 1 | 1 | 1 | — | — |
+| Quiet weekday | 0.1 | 0.9 | 0.85 | 0.85 | 1 | Quiet Break Regular ×1.4 | — |
+| Late-morning kopi crowd | 0.3 | 1 | 0.9 | 1 | 1 | Early-Shift Regular ×2, Quiet Break Regular ×1.5 | drink +1.2, bread +0.8 |
+| Office move-in week | 0.8 | 1.05 | 1.35 | 0.9 | 0.9 | Office Lunch Sprinter ×2.2 | rice +0.8, noodles +0.6 |
+| School sports day | 0.7 | 1.05 | 1.1 | 1 | 1.1 | Student Saver ×1.8, Family Table ×1.8 | dessert +1, drink +0.8 |
+| Community football final | 0.85 | 1.05 | 0.9 | 1.6 | 1.25 | Evening Social Diner ×2.2 | drink +1.2, small-plate +0.8 |
+| Heatwave afternoon | 0.5 | 0.95 | 0.9 | 1 | 1 | Afternoon Treat Stopper ×1.8 | drink +1.5, dessert +1.2, soup −0.6 |
+| Monsoon shower | 0.6 | 0.9 | 1 | 1 | 1.35 | — | soup +1.2, noodles +0.8 |
+| Heritage food walk | 0.65 | 1 | 1.05 | 1 | 1 | Curious Food Explorer ×2.2, Quality Treat Seeker ×1.6 | small-plate +0.8, seafood +0.8 |
+| Public holiday: families out | 0.6 | 1.05 | 1.2 | 1 | 1.15 | Family Table ×2, Comfort-Seeking Regular ×1.4, Office Lunch Sprinter ×0.4 | rice +0.6 |
+
+Each card's English copy (name, a one-line summary and the forecast shown the day before) lives with the card in `src/content/calendar.ts`, not in the launch localization table, so the 320 English localization entries in the [roster counts](#roster-counts) do not include it and the cards are not part of `LAUNCH_ROSTER`. The cards are parsed with `calendarCardSchema` at import (multipliers from 0.25 to 3, category bonuses from −2 to 2), and `tests/content/calendar.test.ts` checks that IDs are unique with exactly one opening day, that the bag has enough cards to avoid repeats, that every card names only launch personas and dish categories, that the bag has both calm and busy cards, that the opening day changes nothing, and that the copy labels neither food nor people.
 
 ## Validation requirements
 

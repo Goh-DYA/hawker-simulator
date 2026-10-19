@@ -10,10 +10,12 @@ This roadmap deliberately avoids premium currency, real-time waits, timed exclus
 
 ### Phase 1 — Neighbourhood demand events and peak periods
 
-- [ ] Add seeded breakfast, lunch, tea, and evening demand profiles with readable advance notice.
-- [ ] Add local, fictional events such as community-club meetings and school activity days.
-- [ ] Let events change preference mix and group size, never customer identity stereotypes.
-- [ ] Add a calendar preview and post-event explanation of demand, throughput, and satisfaction.
+- [x] Add seeded demand profiles with readable advance notice: a lunch and a dinner rush with last orders at 18:10, shifted and scaled by the day's card, with tomorrow's card forecast a day ahead and each rush announced before it starts.
+- [x] Add local, fictional events: nine activity-based day cards plus a fixed opening day, drawn from a seeded shuffle bag ([catalogue](CONTENT_CATALOGUE.md#neighbourhood-calendar)).
+- [ ] Let events change preference mix and group size, never customer identity stereotypes. Cards change persona weights, dish-category appeal and eating time; group size changes remain open.
+- [ ] Add a calendar preview and post-event explanation of demand, throughput, and satisfaction. The post-event explanation is done (the end-of-day Service Review); the preview reaches only tomorrow, and a calendar preview further ahead remains open.
+
+Progress: mostly delivered by the seeded neighbourhood ([ADR 0006](../decisions/0006-seeded-neighbourhood-and-save-v5.md)); the open items are group size changes and a calendar preview beyond tomorrow.
 
 Dependencies: adaptive arrival model, objective eligibility, multi-entrance routing.
 
@@ -34,7 +36,7 @@ Acceptance: scenarios are reproducible, completable without one exact layout, an
 
 - [ ] Add dish mastery based on service quality and customer preference matches.
 - [ ] Unlock recipe presentation variants and centre decorations through play, not random drops.
-- [ ] Add locally stored collection pages with clear gameplay sources for every item.
+- [ ] Add locally stored collection pages with clear gameplay sources for every item. Partial: Writer's Pick plaques are a first collection with no missable entries (any stall can earn one on a later food-writer visit, and a miss costs nothing); collection pages are not built.
 - [ ] Add centre colour and signage themes that preserve contrast and cultural-review requirements.
 
 Dependencies: stall mastery, content validation, save-schema extension policy.
@@ -55,7 +57,7 @@ Acceptance: group routing cannot orphan reservations; stories remain optional an
 ### Phase 5 — Endgame mastery contracts
 
 - [ ] Add rotating mastery contracts for high-level layout, service, menu, and hospitality play.
-- [ ] Scale targets from demonstrated throughput rather than fixed endgame crowd counts.
+- [ ] Scale targets from demonstrated throughput rather than fixed endgame crowd counts. Partial: from day 2 the daily objectives scale their targets from the previous day's Service Review, within fixed floors; mastery contracts do not exist yet.
 - [ ] Reward centre titles, visual flourishes, and optional challenge modifiers.
 - [ ] Continue stall mastery ranks without requiring a progression reset.
 
@@ -70,6 +72,18 @@ Acceptance: contracts remain achievable after arbitrary layout changes, rewards 
 - [ ] Add accessible UI text and non-audio/non-colour feedback.
 - [ ] Update economy, design, provenance, risk, and release documentation.
 - [ ] Complete browser performance, cultural, accessibility, and save-compatibility review.
+
+## Next: engagement backlog
+
+Ideas raised while designing the seeded neighbourhood and deferred or cut. None is scheduled; each needs its own design pass against the principles above.
+
+- **Named regulars with hearts.** Recurring named guests whose affection grows with good visits, reading the authored `seatPreference` and `groupSizeRange` persona fields that the simulation does not use yet. Deferred.
+- **Hawker Almanac collection log.** A local log of dishes served, cards seen and plaques earned, with a gameplay source for every entry. Deferred; it would build on the Writer's Pick plaques (Phase 3).
+- **Choose one of three contracts.** Cut for now: it duplicated the daily objectives, one stretch tier dominated, and it inflated cash.
+- **Chope seat holding with tissue packets.** Cut: holding a seat while queueing risked orphaned reservations, queue reconciliation wiping queue places and starving the six-seat starter layout. Tissue packets may return later as a cosmetic touch only.
+- **Streak counter.** Cut: it risks notification fatigue and highlights failure when a streak breaks.
+- **Markov weather.** Weather that follows from the day before, rather than independent weather cards. Deferred.
+- **Upkeep or food-cost sink.** A recurring cost to balance late-game cash. Deferred until cash at day 5 has been measured.
 
 ## Post-launch backlog
 

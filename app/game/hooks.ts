@@ -54,12 +54,58 @@ const ERROR_TOAST_MS = 6_000;
 /** How long every other toast stays up, in milliseconds. */
 const TOAST_MS = 3_400;
 
+/** The most toasts on screen at once. */
+export const MAX_VISIBLE_TOASTS = 3;
+
 /** The most unread events the Activity dock tab counts. */
 const MAX_UNREAD_ACTIVITY = 99;
 
 /** A popup toast: an announced event with its own sequence number. */
 export interface Toast extends RuntimeEvent {
   id: number;
+}
+
+/**
+ * Rank a toast for the queue: errors first, then important events, then warnings, then the rest.
+ *
+ * @param toast - The toast.
+ * @returns A higher number for a toast that must stay on screen longer.
+ */
+function get_toast_priority(toast: RuntimeEvent): number {
+  if (toast.kind === "error") return 3;
+  if (toast.importance === "important") return 2;
+  if (toast.kind === "warning") return 1;
+  return 0;
+}
+
+/**
+ * Add a toast to the front of the visible toasts, keeping at most `limit`.
+ *
+ * When there are too many, the oldest toast of the lowest priority goes, so an error or an
+ * important event is never pushed off screen by a routine one; a new toast that ranks below
+ * every visible one is the one dropped.
+ *
+ * @param current - The visible toasts, newest first.
+ * @param toast - The new toast.
+ * @param limit - The most toasts kept; defaults to {@link MAX_VISIBLE_TOASTS}.
+ * @returns The visible toasts, newest first.
+ */
+export function queue_toast(
+  current: readonly Toast[],
+  toast: Toast,
+  limit = MAX_VISIBLE_TOASTS,
+): Toast[] {
+  const next = [toast, ...current];
+  while (next.length > Math.max(1, limit)) {
+    let drop_index = next.length - 1;
+    for (let index = next.length - 1; index >= 0; index -= 1) {
+      if (get_toast_priority(next[index]!) < get_toast_priority(next[drop_index]!)) {
+        drop_index = index;
+      }
+    }
+    next.splice(drop_index, 1);
+  }
+  return next;
 }
 
 /**
@@ -90,7 +136,7 @@ export interface Announcer {
   announce(event: RuntimeEvent): void;
   /** Announces a storage warning, but only the first one of the component's life. */
   reportStorageIssue(message: string): void;
-  /** The toasts on screen: the latest popup event, while its timer runs. */
+  /** The toasts on screen, newest first: up to three popup events, while their timers run. */
   toasts: Toast[];
   /** The activity feed, newest first. */
   activityEntries: readonly ActivityEntry[];
@@ -104,6 +150,9 @@ export interface Announcer {
 
 /**
  * Own the toasts, the activity feed and its unread count, and the storage warning latch.
+ *
+ * Toasts queue through {@link queue_toast}: up to three stay on screen, newest first, each
+ * until its own timer ends.
  *
  * `announce` and `reportStorageIssue` are stable for the component's life, so effects
  * that depend on them never restart.
@@ -129,7 +178,7 @@ export function useAnnouncer(is_activity_panel_open: boolean): Announcer {
     }
     if (!shouldShowPopup(event)) return;
     const id = ++toastSequenceRef.current;
-    setToasts([{ ...event, id }]);
+    setToasts((current) => queue_toast(current, { ...event, id }));
     window.setTimeout(
       () => setToasts((current) => current.filter((toast) => toast.id !== id)),
       event.kind === "error" ? ERROR_TOAST_MS : TOAST_MS,

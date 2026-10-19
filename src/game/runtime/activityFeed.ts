@@ -81,9 +81,14 @@ export function activityEntryMessage(entry: ActivityEntry): string {
  * Turns a simulation event into the activity-feed event the HUD shows, if it shows one.
  *
  * @param event - The event emitted by the core simulation or a command.
+ * @param resolve_name - Names a definition ID, such as the stall a food writer reviewed;
+ *   without it the ID itself is shown.
  * @returns The player-facing runtime event, or `undefined` for events the feed ignores.
  */
-export function formatSimulationEvent(event: SimulationEvent): RuntimeEvent | undefined {
+export function formatSimulationEvent(
+  event: SimulationEvent,
+  resolve_name: (definition_id: string) => string = (definition_id) => definition_id,
+): RuntimeEvent | undefined {
   if (event.type === "sale-completed") {
     return {
       kind: "success",
@@ -104,6 +109,28 @@ export function formatSimulationEvent(event: SimulationEvent): RuntimeEvent | un
   }
   if (event.type === "command-rejected") {
     return { kind: "error", message: event.message ?? "That build action is not valid.", importance: "important" };
+  }
+  if (event.type === "day-ended") {
+    return {
+      kind: "info",
+      message: `${event.amount === undefined ? "The day" : `Day ${event.amount}`} wrapped. Your Service Review is ready.`,
+      importance: "important",
+    };
+  }
+  if (event.type === "writer-reviewed") {
+    const stall_name = resolve_name(event.entityId ?? "");
+    if (event.message === "plaque") {
+      return {
+        kind: "success",
+        message: `${stall_name} earned a Writer's Pick plaque from the food writer!`,
+        importance: "important",
+      };
+    }
+    return {
+      kind: "info",
+      message: `The food writer finished their review of ${stall_name}.`,
+      importance: "routine",
+    };
   }
   if (event.type === "target-recovered") {
     return { kind: "warning", message: "A guest rerouted after the layout changed.", importance: "routine", groupKey: "reroutes" };

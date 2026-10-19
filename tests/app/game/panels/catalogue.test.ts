@@ -149,6 +149,22 @@ describe("StallsPanel", () => {
     );
   });
 
+  it("marks each stall with a Writer's Pick plaque, in its queue plan and its card", () => {
+    const [placed] = SNAPSHOT_FIXTURE.placedStalls;
+    const html = render_stalls_panel({
+      ...SNAPSHOT_FIXTURE,
+      neighbourhood: { ...SNAPSHOT_FIXTURE.neighbourhood!, writerPickStallIds: [placed!.definitionId] },
+    });
+
+    expect([
+      count_occurrences(
+        html,
+        '<span class="writer-pick-badge"><span aria-hidden="true">★</span> Writer&#x27;s Pick</span>',
+      ),
+      count_occurrences(render_stalls_panel(SNAPSHOT_FIXTURE), "writer-pick-badge"),
+    ]).toEqual([2, 0]);
+  });
+
   it("leaves out the queue plans when no stall operates", () => {
     const html = render_stalls_panel({ ...SNAPSHOT_FIXTURE, placedStalls: [] });
 

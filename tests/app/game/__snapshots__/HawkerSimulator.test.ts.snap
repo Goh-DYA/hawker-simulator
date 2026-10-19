@@ -1261,6 +1261,32 @@ exports[`HawkerSimulator panels > renders the Focus panel for a captured runtime
 </article>
 </div>
 </section>
+<section class="service-review-summary" aria-labelledby="service-review-summary-title" data-unread="false">
+<div class="card-kicker">
+<span>Service review</span>
+</div>
+<h3 id="service-review-summary-title">Day 1 · Opening day</h3>
+<p class="service-review-grade">
+<span aria-hidden="true">■</span> <strong>Steady</strong>
+</p>
+<dl>
+<div>
+<dt>Served</dt>
+<dd>31</dd>
+</div>
+<div>
+<dt>Left early</dt>
+<dd>6</dd>
+</div>
+<div>
+<dt>Takings</dt>
+<dd>$214</dd>
+</div>
+</dl>
+<p>
+<strong>One thing to try:</strong> Comfort — Add enough seating and place fans, lighting or décor near dining tables.</p>
+<button type="button">Read the full review</button>
+</section>
 <section class="nutrition-pulse-card">
 <div class="nutrition-pulse-heading">
 <div class="nutrition-pulse-heading-meta">
@@ -1340,6 +1366,7 @@ exports[`HawkerSimulator panels > renders the Focus panel for a captured runtime
 <dd>99%</dd>
 </div>
 </dl>
+<p class="service-pulse-note">1 seat waiting for the table-cleaning crew (crew of 1).</p>
 </section>
 <details class="nutrition-disclosure">
 <summary>Nutrition data &amp; education note</summary>
@@ -1373,8 +1400,17 @@ exports[`HawkerSimulator panels > renders the Insights panel for a captured runt
 <div>
 <strong>Communal seating</strong>
 <p>2 seats are ready for arriving diners.</p>
+<p class="seating-clearing-note">1 seat waiting for the table-cleaning crew (crew of 1).</p>
 </div>
 <em>2/6</em>
+</article>
+<article data-state="neutral">
+<span aria-hidden="true">♥</span>
+<div>
+<strong>Reputation</strong>
+<p>Reputation now 6. Best reputation reached: 8 — unlocks use this, so nothing locks again after a quieter day.</p>
+</div>
+<em>8</em>
 </article>
 <article data-state="good">
 <span aria-hidden="true">★</span>
@@ -1465,7 +1501,7 @@ exports[`HawkerSimulator panels > renders the Insights panel for a captured runt
 <span aria-hidden="true">◎</span>
 <div>
 <strong>Customer personas</strong>
-<p>2 of 12 distinct behaviour profiles can currently visit.</p>
+<p>3 of 12 distinct behaviour profiles can currently visit.</p>
 <details class="persona-roster">
 <summary>Browse the persona roster</summary>
 <ul>
@@ -1479,10 +1515,10 @@ exports[`HawkerSimulator panels > renders the Insights panel for a captured runt
 <span>Visits in the lunch rush with a firm time budget, preferring fast service and a seat close to the chosen stall.</span>
 <small>Can visit now</small>
 </li>
-<li data-locked="true">
+<li data-locked="false">
 <strong>Student Saver</strong>
 <span>Compares prices carefully, often arrives with friends, and will walk farther for filling food at a fair price.</span>
-<small>Rep 8</small>
+<small>Can visit now</small>
 </li>
 <li data-locked="true">
 <strong>Afternoon Treat Stopper</strong>
@@ -1532,7 +1568,7 @@ exports[`HawkerSimulator panels > renders the Insights panel for a captured runt
 </ul>
 </details>
 </div>
-<em>2/12</em>
+<em>3/12</em>
 </article>
 <button type="button" class="expansion-button" disabled="">
 <span>Expand hall · plot 1</span>

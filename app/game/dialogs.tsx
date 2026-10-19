@@ -1,6 +1,7 @@
 /**
  * The game screen's modal dialogs: the first-run tutorial, the nutrition tour, Settings (with
- * the customer status icon guide), Help and the reset confirmation.
+ * the customer status icon guide), Help, the reset confirmation and the end-of-day Service
+ * Review.
  *
  * The dialogs are presentational and moved out of the `HawkerSimulator` shell with their
  * markup, classes, ARIA attributes and copy unchanged. The shell keeps which dialog is open,
@@ -8,6 +9,8 @@
  * section ref as a React 19 `ref` prop, so the trap still installs on the same `section`, and
  * the primary buttons keep `autoFocus`. The Settings switches and sliders are `SettingSwitch`
  * and `SettingSlider`, which hand each change to the shell's `update_setting(key, value)`.
+ * `ServiceReviewDialog` follows the same pattern: the shell decides when it opens, pauses the
+ * simulation behind it and installs the modal focus trap on its section.
  */
 import { type ChangeEvent, type Ref, useRef, useState } from "react";
 import {
@@ -15,12 +18,17 @@ import {
   TEXT_SCALE_MIN,
   TEXT_SCALE_STEP,
 } from "@/src/game/persistence/preferences";
-import type { RuntimeSettings } from "@/src/game/runtime/types";
+import type {
+  RuntimeDayCard,
+  RuntimeDayReport,
+  RuntimeSettings,
+} from "@/src/game/runtime/types";
 import {
   CUSTOMER_INDICATOR_LEGEND,
   type CustomerIndicator,
 } from "@/src/game/runtime/visuals/customer";
 import { NutritionDisclosure } from "./NutritionEducation";
+import { describe_writer_verdict, money } from "./display";
 import { type NutritionTourStep, TUTORIAL_DONE_STEP, type TutorialStep } from "./focus";
 
 type CustomerLegendSymbol = CustomerIndicator | "patience";
@@ -625,6 +633,122 @@ export function ResetDialog({ ref, onCancel, onConfirm }: ResetDialogProps) {
         <h2 id="reset-title">Reset this centre?</h2>
         <p id="reset-description">This removes the local save and starts again. Export first if you may want it later.</p>
         <div><button type="button" onClick={onCancel}>Keep playing</button><button type="button" className="danger-button" onClick={onConfirm}>Reset game</button></div>
+      </section>
+    </div>
+  );
+}
+
+/** How many of the reasons guests left early the Service Review lists. */
+const REVIEW_REASON_LIMIT = 3;
+
+/** The props of {@link ServiceReviewDialog}. */
+export interface ServiceReviewDialogProps {
+  /** The dialog section, which the shell's focus trap installs on. */
+  readonly ref: Ref<HTMLElement>;
+  /** The finished day's review. */
+  readonly report: RuntimeDayReport;
+  /**
+   * The day card of the day the review opens onto. The calendar has already turned when the
+   * review appears, so this is the neighbourhood's `today` card: the "tomorrow" of the day
+   * under review.
+   */
+  readonly nextDay?: RuntimeDayCard;
+  /** Close the review and carry on with the next day. */
+  readonly onClose: () => void;
+}
+
+/**
+ * The end-of-day Service Review: the grade, the day's figures, why guests left early, one thing
+ * to try, the food writer's verdict, the objectives and unlocks, the next day's forecast and
+ * one button that opens it.
+ *
+ * The grade pairs a glyph with a warm word and is never a fail; the copy describes what
+ * happened and never labels food or guests.
+ *
+ * @param props - See {@link ServiceReviewDialogProps}.
+ * @returns The review's backdrop and dialog.
+ */
+export function ServiceReviewDialog({ ref, report, nextDay, onClose }: ServiceReviewDialogProps) {
+  const reasons = report.leftEarlyReasons.slice(0, REVIEW_REASON_LIMIT);
+  const verdict = report.writer
+    ? describe_writer_verdict(report.writer.stallName, report.writer.outcome)
+    : undefined;
+  const unlocks =
+    report.unlockedCount === 1 ? "1 new unlock" : `${report.unlockedCount} new unlocks`;
+
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <section
+        ref={ref}
+        className="service-review-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="service-review-title"
+        aria-describedby="service-review-headline"
+        tabIndex={-1}
+      >
+        <span className="service-review-kicker">Service review</span>
+        <h2 id="service-review-title">
+          Day {report.day} wrapped · {report.cardName}
+        </h2>
+        <p className="service-review-grade" id="service-review-headline">
+          <span aria-hidden="true">{report.gradeGlyph}</span> <strong>{report.grade}</strong>
+          {" — "}
+          {report.headline}
+        </p>
+        <dl className="service-review-figures">
+          <div>
+            <dt>Served</dt>
+            <dd>{report.served}</dd>
+          </div>
+          <div>
+            <dt>Left early</dt>
+            <dd>{report.leftEarly}</dd>
+          </div>
+          <div>
+            <dt>Takings</dt>
+            <dd>{money(report.revenue)}</dd>
+          </div>
+        </dl>
+        {reasons.length > 0 ? (
+          <div className="service-review-reasons">
+            <h3>Why some guests left early</h3>
+            <ul>
+              {reasons.map((reason) => (
+                <li key={reason.reason}>
+                  {reason.label} · {reason.count}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {report.focusTip ? (
+          <p className="service-review-tip">
+            <strong>One thing to try:</strong> {report.focusTip.label} — {report.focusTip.action}
+          </p>
+        ) : null}
+        {report.writer && verdict ? (
+          <div className="service-review-writer" data-outcome={report.writer.outcome}>
+            <p>
+              <span aria-hidden="true">{verdict.glyph}</span> {verdict.text}
+            </p>
+            <blockquote>{report.writer.quote}</blockquote>
+          </div>
+        ) : null}
+        <p className="service-review-progress">
+          Objectives completed: {report.objectivesCompleted}/{report.objectivesTotal} · {unlocks}
+        </p>
+        {nextDay ? (
+          <p className="service-review-tomorrow">
+            <strong>Tomorrow:</strong> {nextDay.name} — {nextDay.forecast}
+          </p>
+        ) : null}
+        <div className="tutorial-actions">
+          <button type="button" className="primary-button" autoFocus onClick={onClose}>
+            Open for Day {report.day + 1}
+            <span aria-hidden="true"> →</span>
+          </button>
+        </div>
       </section>
     </div>
   );

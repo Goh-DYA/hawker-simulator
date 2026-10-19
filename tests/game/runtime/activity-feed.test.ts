@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   activityEntryMessage,
   appendActivityEvent,
+  formatSimulationEvent,
   shouldShowPopup,
   type ActivityEntry,
 } from "@/src/game/runtime/activityFeed";
@@ -46,5 +47,69 @@ describe("activity feed notification routing", () => {
     }
 
     expect(entries.map((entry) => entry.message)).toEqual(["Event 5", "Event 4", "Event 3"]);
+  });
+});
+
+describe("neighbourhood events in the activity feed", () => {
+  const stall_names: Readonly<Record<string, string>> = { "stall.kopi-canopy": "Kopi Canopy" };
+  const resolve_name = (definition_id: string) => stall_names[definition_id] ?? definition_id;
+
+  it("announces the end of a day and its Service Review", () => {
+    expect(
+      formatSimulationEvent(
+        { type: "day-ended", tick: 10, amount: 4, message: "calendar.quiet-weekday" },
+        resolve_name,
+      ),
+    ).toEqual({
+      kind: "info",
+      message: "Day 4 wrapped. Your Service Review is ready.",
+      importance: "important",
+    });
+  });
+
+  it("celebrates a Writer's Pick plaque as an important success", () => {
+    const event = formatSimulationEvent(
+      { type: "writer-reviewed", tick: 10, entityId: "stall.kopi-canopy", message: "plaque", amount: 78 },
+      resolve_name,
+    );
+
+    expect([event, event && shouldShowPopup(event)]).toEqual([
+      {
+        kind: "success",
+        message: "Kopi Canopy earned a Writer's Pick plaque from the food writer!",
+        importance: "important",
+      },
+      true,
+    ]);
+  });
+
+  it.each(["no-plaque", "too-few-visits"])(
+    "notes a %s review quietly in the feed, without a popup",
+    (outcome) => {
+      const event = formatSimulationEvent(
+        { type: "writer-reviewed", tick: 10, entityId: "stall.kopi-canopy", message: outcome, amount: 61 },
+        resolve_name,
+      );
+
+      expect([event, event && shouldShowPopup(event)]).toEqual([
+        {
+          kind: "info",
+          message: "The food writer finished their review of Kopi Canopy.",
+          importance: "routine",
+        },
+        false,
+      ]);
+    },
+  );
+
+  it("names the stall by its ID without a name resolver", () => {
+    expect(
+      formatSimulationEvent({
+        type: "writer-reviewed",
+        tick: 10,
+        entityId: "stall.kopi-canopy",
+        message: "plaque",
+      })?.message,
+    ).toBe("stall.kopi-canopy earned a Writer's Pick plaque from the food writer!");
   });
 });
