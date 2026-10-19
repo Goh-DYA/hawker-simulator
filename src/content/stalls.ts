@@ -141,7 +141,7 @@ const stallSeeds = [
     queueAnchor: { x: 1, y: 2 },
     queueDirection: "south",
     menuSlots: 3,
-    dishIds: ["dish.kopi", "dish.sugarcane-juice", "dish.ice-kacang"],
+    dishIds: ["dish.kopi", "dish.sugarcane-juice", "dish.teh-tarik"],
     serviceTimeMs: 3_800,
     preparationCapacity: 5,
     quality: 0.64,
@@ -310,8 +310,8 @@ const stallSeeds = [
     dishIds: [
       "dish.chendol",
       "dish.tau-huay",
-      "dish.teh-tarik",
       "dish.pulut-hitam",
+      "dish.ice-kacang",
     ],
     serviceTimeMs: 4_100,
     preparationCapacity: 5,

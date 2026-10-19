@@ -2324,7 +2324,7 @@
     "stall.kopi-canopy": [
       "dish.kopi",
       "dish.sugarcane-juice",
-      "dish.ice-kacang"
+      "dish.teh-tarik"
     ],
     "stall.cinder-wok": [
       "dish.fried-carrot-cake",
@@ -2342,7 +2342,7 @@
       "dish.nasi-briyani"
     ],
     "stall.sweet-monsoon": [
-      "dish.teh-tarik",
+      "dish.ice-kacang",
       "dish.chendol",
       "dish.tau-huay"
     ],

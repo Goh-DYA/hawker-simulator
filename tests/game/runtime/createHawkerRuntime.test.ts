@@ -61,10 +61,10 @@ const MULTI_DAY_FRAMES = 1_100;
 const MULTI_DAY_TIMEOUT_MS = 60_000;
 /** Checkpoints around the end of the first and second operating days. */
 const MULTI_DAY_CORE_SHA256: Readonly<Record<number, string>> = {
-  480: "02e86d9270023292cfe382487eb0dd04da3f6a6db0efb3ef4c5a153405a30aab",
-  500: "447a2ac1b72f8b5273cbcdbb9b2502d6502b793354f48de0b5538b98bb8d3fb3",
-  960: "1709ead0cc723a3b46c7aae0daf787cfeccb1c3c282bae26f7ad287dae8c3cad",
-  1_000: "09adf0a1f3beb285238104adfabbb268724acd40f5855ca3f85db529202f3387",
+  480: "a1c50fb5d2886e71d6ff7c30daaeeaf75247c7fa704970d6d212b67f21ad1903",
+  500: "1d23dbc221f096613fcef310abd8af6b385abfe0a014b1b17af780ec4c4a3564",
+  960: "edf37af46b476f0aa36244c962a7ae7d86ec68df5d3a2ae232fc8e5396a9e04d",
+  1_000: "1991aa1b73594ff5dcd5957b2268937d57adc4c0cf68f04d679c74395341d1db",
 };
 
 /**

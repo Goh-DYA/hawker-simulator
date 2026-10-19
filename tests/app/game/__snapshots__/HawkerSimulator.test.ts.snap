@@ -748,7 +748,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </span>
 <div class="dish-menu-main">
 <h3 id="dish-menu-title-poached-chicken-rice">Poached Chicken Rice</h3>
-<small>rice · $7 · demand 86%</small>
+<small>rice · $7 · demand 96%</small>
 </div>
 <div class="nutrition-summary">
 <div class="dish-rating-summary" aria-label="Dish health and star ratings">
@@ -759,11 +759,11 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <strong>3.4/5</strong>
 </span>
 </span>
-<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.1/5">
+<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.6/5">
 <i aria-hidden="true">★</i>
 <span>
 <small>Star rating</small>
-<strong>4.1/5</strong>
+<strong>4.6/5</strong>
 </span>
 </span>
 </div>
@@ -864,7 +864,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </span>
 <div class="dish-menu-main">
 <h3 id="dish-menu-title-roast-chicken-rice">Roast Chicken Rice</h3>
-<small>rice · $8 · demand 82%</small>
+<small>rice · $8 · demand 85%</small>
 </div>
 <div class="nutrition-summary">
 <div class="dish-rating-summary" aria-label="Dish health and star ratings">
@@ -875,11 +875,11 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <strong>2.8/5</strong>
 </span>
 </span>
-<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.1/5">
+<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.3/5">
 <i aria-hidden="true">★</i>
 <span>
 <small>Star rating</small>
-<strong>4.1/5</strong>
+<strong>4.3/5</strong>
 </span>
 </span>
 </div>
@@ -981,7 +981,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </span>
 <div class="dish-menu-main">
 <h3 id="dish-menu-title-soya-tofu-rice">Vegetarian Chicken Rice</h3>
-<small>rice · $6 · demand 61%</small>
+<small>rice · $6 · demand 40%</small>
 </div>
 <div class="nutrition-summary">
 <div class="dish-rating-summary" aria-label="Dish health and star ratings">
@@ -992,11 +992,11 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <strong>5.0/5</strong>
 </span>
 </span>
-<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 3.7/5">
+<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 3.2/5">
 <i aria-hidden="true">★</i>
 <span>
 <small>Star rating</small>
-<strong>3.7/5</strong>
+<strong>3.2/5</strong>
 </span>
 </span>
 </div>
@@ -1098,7 +1098,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </span>
 <div class="dish-menu-main">
 <h3 id="dish-menu-title-chicken-congee">Chicken Congee</h3>
-<small>rice · $6 · demand 66%</small>
+<small>rice · $6 · demand 55%</small>
 </div>
 <div class="nutrition-summary">
 <div class="dish-rating-summary" aria-label="Dish health and star ratings">
@@ -1109,11 +1109,11 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <strong>3.3/5</strong>
 </span>
 </span>
-<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 3.8/5">
+<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 3.5/5">
 <i aria-hidden="true">★</i>
 <span>
 <small>Star rating</small>
-<strong>3.8/5</strong>
+<strong>3.5/5</strong>
 </span>
 </span>
 </div>
