@@ -48,7 +48,7 @@ const OPEN_RUN_FRAMES = 600;
 const OPEN_RUN_CORE_SHA256: Readonly<Record<number, string>> = {
   100: "36e84c1fcb4c52c050196755d913f54cf6e198a37fdd2d019b96af0515331c9e",
   300: "e7b6b56a699f566e79d594b55fbcca960838b48bec7a865c06f6377373409ee0",
-  600: "0214e6d4116f2ec0991bbebb5faf541ff0853439f56c35a4ecbd469fdd32ff6c",
+  600: "b4203bf3d20a3cd09246b14e7143ce23ba6e3b2f6e14293388659a2dcc652029",
 };
 
 /** Speed 10 turns each 100 ms frame into one simulated second, so a day is 480 frames. */
@@ -61,10 +61,10 @@ const MULTI_DAY_FRAMES = 1_100;
 const MULTI_DAY_TIMEOUT_MS = 60_000;
 /** Checkpoints around the end of the first and second operating days. */
 const MULTI_DAY_CORE_SHA256: Readonly<Record<number, string>> = {
-  480: "6d0eb0dd70cbaea2b28288367d4c1fee6848b983fb55cec80bf9843775b4006a",
-  500: "de483b3be8fa76977ed34a7645f24d290543a038760e52a9956d1952bb2ac47e",
-  960: "95e521713fe7fe56efc7d5ef2fab6b81b28cbd78170ffbed935c316def57ecd7",
-  1_000: "e235867a949b1acbd69de71fe333134e514ac21ffb84ddbeb275e711e9092f97",
+  480: "adae554c79341b44c2432193cc52152e4d58dddbac35f62c2efa4e1dea895be1",
+  500: "b589c626c1121a36213f0e5c8c93287f22e7ee67e95179ac98f7b4fdc7bd593a",
+  960: "694c278df917e7b381f0d652c3e3d022865c5dc319cd12c584cf12c2678e28be",
+  1_000: "00faa46932869f6cbdc81123a9507a7b5936a62a741f284ecc680888e0408bc4",
 };
 
 /**
@@ -83,7 +83,7 @@ const MULTI_DAY_CORE_SHA256: Readonly<Record<number, string>> = {
 const PRESSURE_SIMULATION_SPAN_MS = 12;
 const PRESSURE_CALL_OFFSETS_MS: readonly number[] = [0, 0, PRESSURE_SIMULATION_SPAN_MS];
 /** sha256 of `JSON.stringify(exportState().core)` after the pressure run. */
-const PRESSURE_RUN_CORE_SHA256 = "bfaf08cede935e831a9616d7198203a04ce4ed14b71d5af40602bb1b611b9e69";
+const PRESSURE_RUN_CORE_SHA256 = "cd2a08965629d7018b119fdf13772a75c2dbd15488a9b598d3cfe618e7c5e78f";
 
 const IMPORT_RUN_FRAMES = 300;
 const RESET_RUN_FRAMES = 50;

@@ -195,7 +195,7 @@ describe("economy and progression", () => {
     const update = applySale(state.economy, { ...state.progression, xp: 99, level: 1 }, 10, 5);
     expect(update.economy.currency).toBe(state.economy.currency + 10);
     expect(update.economy.lifetimeRevenue).toBe(10);
-    expect(update.progression.xp).toBe(119);
+    expect(update.progression.xp).toBe(121);
     expect(update.progression.level).toBe(2);
     expect(update.levelUp).toBe(true);
   });

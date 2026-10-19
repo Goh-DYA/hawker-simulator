@@ -25,6 +25,11 @@ export const MAX_QUALITY = 5;
 const DEFAULT_REFUND_RATE = 0.5;
 /** Reputation a new hawker centre starts with. */
 export const STARTING_REPUTATION = 2.5;
+/**
+ * Flat service experience earned per completed sale, on top of the price-scaled XP, so cheap
+ * drinks and snacks priced at street rates still advance the level.
+ */
+const SERVICE_XP_PER_SALE = 2;
 
 /** The economy and progression after a sale, and whether the sale raised the level. */
 export interface EconomyUpdate {
@@ -147,7 +152,8 @@ export function calculateExpansionCost(
 
 /**
  * Settles a sale: adds the price to the currency and revenue, counts a completed visit, awards XP
- * scaled by dish quality, recomputes the level and raises reputation within its bounds.
+ * scaled by dish quality plus the flat service XP, recomputes the level and raises reputation
+ * within its bounds.
  *
  * @param economy - The current economy.
  * @param progression - The current progression.
@@ -166,7 +172,10 @@ export function applySale(
 ): EconomyUpdate {
   if (!Number.isFinite(price) || price < 0) throw new RangeError("Sale price cannot be negative");
   const normalizedQuality = Math.max(0, Math.min(MAX_QUALITY, dishQuality));
-  const xpGain = Math.max(1, Math.round(price * (1 + normalizedQuality / MAX_QUALITY)));
+  const xpGain = Math.max(
+    1,
+    Math.round(price * (1 + normalizedQuality / MAX_QUALITY) + SERVICE_XP_PER_SALE),
+  );
   const nextXp = progression.xp + xpGain;
   const nextLevel = calculateLevel(nextXp);
   return {

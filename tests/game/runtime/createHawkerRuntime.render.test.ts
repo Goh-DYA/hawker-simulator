@@ -115,12 +115,12 @@ const RENDER_DIGESTS = {
     sha256: "260ec5214d29b54e2cee3f407aa8c9539a9e5d09a1c3e9e04f2181405aa1a045",
   },
   multiDayFrame480: {
-    calls: 240,
-    sha256: "fe0f5400ef558a4a388c6c353bb6243837c790c645ab013f217d50ef572223be",
+    calls: 225,
+    sha256: "704a3431061facfe25c5c1fc254ee3ef47193c84f5dc1c9f6ffbc6a91c08af85",
   },
   multiDayFrame960: {
-    calls: 253,
-    sha256: "dc5bef5435219c0045fb38e230fe7bc61d402d62e9d68dee38d20dd705cfe7b7",
+    calls: 237,
+    sha256: "782d2d1ec25d48dd80fd7d4cd02c7f602bedcfb34f2befe3f9bd48602680823f",
   },
 } satisfies Record<string, RenderLogDigest>;
 

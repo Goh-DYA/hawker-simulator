@@ -283,7 +283,7 @@ export function createDailyObjectives(state: GameState, day = operatingDay(state
     ? objective(day, 1, {
         kind: "revenue",
         title: "A lively service",
-        description: `Earn ${Math.round(35 + scale * 8)} credits today.`,
+        description: `Earn $${Math.round(35 + scale * 8)} today.`,
         target: Math.round(35 + scale * 8),
         startValue: state.economy.lifetimeRevenue,
         rewardCash,
@@ -380,7 +380,7 @@ function create_seeded_objectives(
     : objective(day, 1, {
         kind: "revenue",
         title: "A lively service",
-        description: `Earn ${revenue_target} credits today.`,
+        description: `Earn $${revenue_target} today.`,
         target: revenue_target,
         startValue: state.economy.lifetimeRevenue,
         rewardCash,
