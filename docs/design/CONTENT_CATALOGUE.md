@@ -267,7 +267,7 @@ Intensity runs from 0 (calm) to 1 (busy) and sets how the director weighs the ca
 
 | Card | Intensity | Arrivals | Lunch | Dinner | Eating time | Personas | Dish categories |
 |---|---:|---:|---:|---:|---:|---|---|
-| Opening day (day 1 only) | 0.2 | 1 | 1 | 1 | 1 | — | — |
+| Opening day (day 1 only) | 0.2 | 0.85 | 0.8 | 0.85 | 1 | — | — |
 | Quiet weekday | 0.1 | 0.9 | 0.85 | 0.85 | 1 | Quiet Break Regular ×1.4 | — |
 | Late-morning kopi crowd | 0.3 | 1 | 0.9 | 1 | 1 | Early-Shift Regular ×2, Quiet Break Regular ×1.5 | drink +1.2, bread +0.8 |
 | Office move-in week | 0.8 | 1.05 | 1.35 | 0.9 | 0.9 | Office Lunch Sprinter ×2.2 | rice +0.8, noodles +0.6 |

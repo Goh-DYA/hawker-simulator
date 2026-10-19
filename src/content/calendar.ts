@@ -21,17 +21,17 @@ const AUTHORED_CALENDAR_CARDS: readonly z.input<typeof calendarCardSchema>[] = [
     id: "calendar.opening-day",
     isOpeningDay: true,
     intensity: 0.2,
-    arrivalFactor: 1,
-    lunchPeakFactor: 1,
-    dinnerPeakFactor: 1,
+    arrivalFactor: 0.85,
+    lunchPeakFactor: 0.8,
+    dinnerPeakFactor: 0.85,
     eatingTimeFactor: 1,
     archetypeFactors: [],
     categoryAppeal: [],
     copy: {
       name: "Opening day",
-      summary: "An ordinary day to find your feet.",
+      summary: "A gentler crowd while you find your feet.",
       forecast:
-        "The neighbourhood is curious about the new hall. Expect an ordinary day to find your feet.",
+        "The neighbourhood is curious about the new hall. Expect a gentler crowd while you find your feet.",
     },
   },
   {

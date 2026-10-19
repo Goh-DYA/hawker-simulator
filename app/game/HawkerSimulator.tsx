@@ -736,6 +736,8 @@ export function HawkerSimulator() {
 
       <section className="play-layout" inert={interfaceInert} aria-hidden={interfaceInert}>
         <aside className="left-rail" aria-label="Objectives and centre pulse">
+          <TodayStrip neighbourhood={snapshot.neighbourhood} />
+
           <ObjectiveCard snapshot={snapshot} />
 
           <NextUnlockSignpost nextUnlock={snapshot.nextUnlock} />
@@ -746,8 +748,6 @@ export function HawkerSimulator() {
             dishLabel={dishLabel}
             onReview={() => openPanel("dishes")}
           />
-
-          <TodayStrip neighbourhood={snapshot.neighbourhood} />
         </aside>
 
         <section className="world-column" aria-label="Hawker centre map">

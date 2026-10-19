@@ -116,7 +116,12 @@ describe("neighbourhood view", () => {
 
 describe("service review", () => {
   it("grades warmly, lists why guests left and names one thing to try", () => {
-    const review = build_day_review(report_with({}), VISUALS);
+    const review = build_day_review(
+      report_with({
+        departureCounts: { ...report_with({}).departureCounts, "no-seat": 12 },
+      }),
+      VISUALS,
+    );
     expect(review.grade).toBe("Good");
     expect(review.gradeGlyph).toBe("●");
     expect(review.cardName).toBe("Monsoon shower");
@@ -125,6 +130,22 @@ describe("service review", () => {
       "long-queue",
       "no-stall",
     ]);
+    expect(review.focusTip?.label).toBe("Seating");
+    expect(review.focusTip?.action).toMatch(/tables and seats/);
+  });
+
+  it("falls back to the weakest rating factor when few guests left early", () => {
+    const review = build_day_review(
+      report_with({
+        departureCounts: {
+          ...report_with({}).departureCounts,
+          "no-seat": 2,
+          "long-queue": 1,
+          "no-stall": 0,
+        },
+      }),
+      VISUALS,
+    );
     expect(review.focusTip?.factor).toBe("wait");
   });
 

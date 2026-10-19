@@ -41,14 +41,16 @@ describe("calendar cards", () => {
     expect(bag.some((card) => card.intensity >= 0.7)).toBe(true);
   });
 
-  it("keep the opening day ordinary", () => {
+  it("keep the opening day gentle, with no persona or menu twist", () => {
     const opening = CALENDAR_CARDS.find((card) => card.isOpeningDay)!;
-    expect([
+    for (const factor of [
       opening.arrivalFactor,
       opening.lunchPeakFactor,
       opening.dinnerPeakFactor,
-      opening.eatingTimeFactor,
-    ]).toEqual([1, 1, 1, 1]);
+    ]) {
+      expect(factor).toBeLessThanOrEqual(1);
+    }
+    expect(opening.eatingTimeFactor).toBe(1);
     expect(opening.archetypeFactors).toEqual([]);
     expect(opening.categoryAppeal).toEqual([]);
   });
