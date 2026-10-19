@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 /**
- * Render tests of the Settings, Help and reset dialogs from `app/game/dialogs.tsx`.
+ * Render tests of the Settings, Help, reset and Service Review dialogs from
+ * `app/game/dialogs.tsx`.
  *
  * Each dialog renders on its own with recorded callbacks, so these cases pin which callback a
  * control calls and with what, that the section receives the `ref` the shell's focus trap
@@ -16,6 +17,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   HelpDialog,
   ResetDialog,
+  ServiceReviewDialog,
   SettingsDialog,
   SettingSlider,
   SettingSwitch,
@@ -23,7 +25,8 @@ import {
   type NumberSettingKey,
 } from "@/app/game/dialogs";
 import { DEFAULT_SETTINGS } from "@/src/game/persistence/preferences";
-import type { RuntimeSettings } from "@/src/game/runtime/types";
+import type { RuntimeDayReport, RuntimeSettings } from "@/src/game/runtime/types";
+import { SNAPSHOT_FIXTURE } from "./panels/fixtures";
 
 /** Settings that differ from the defaults in every field, so each control shows its own value. */
 const CUSTOM_SETTINGS: RuntimeSettings = {
@@ -267,5 +270,129 @@ describe("ResetDialog", () => {
     const { dialog, callbacks } = render_reset();
     fireEvent.click(within(dialog).getByRole("button", { name }));
     expect(callbacks[callback]).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("ServiceReviewDialog", () => {
+  /** The fixture's day 1 review with four departure reasons and a food writer's plaque. */
+  const REPORT: RuntimeDayReport = {
+    ...SNAPSHOT_FIXTURE.neighbourhood!.lastReport!,
+    leftEarlyReasons: [
+      ...SNAPSHOT_FIXTURE.neighbourhood!.lastReport!.leftEarlyReasons,
+      { reason: "visit-cap", label: "Ran out of time before sitting down", count: 1 },
+    ],
+    writer: {
+      stallName: "Sunrise Roost",
+      outcome: "plaque",
+      averageScore: 74,
+      threshold: 68,
+      quote: "“Food worth crossing town for, though seats that were hard to find.” — The Lane Weekly",
+    },
+  };
+
+  /**
+   * @param report - The review to show.
+   * @returns The review dialog element, its section ref and the close callback.
+   */
+  function render_review(report: RuntimeDayReport = REPORT) {
+    const ref = createRef<HTMLElement>();
+    const onClose = vi.fn();
+    render(
+      createElement(ServiceReviewDialog, {
+        ref,
+        report,
+        nextDay: SNAPSHOT_FIXTURE.neighbourhood!.today,
+        onClose,
+      }),
+    );
+    const dialog = within(document.body).getByRole("dialog", {
+      name: "Day 1 wrapped · Opening day",
+    });
+    return { dialog, ref, onClose };
+  }
+
+  it("hands the shell's focus trap its section through the ref", () => {
+    const { dialog, ref } = render_review();
+    expect([ref.current, dialog.getAttribute("aria-modal")]).toEqual([dialog, "true"]);
+  });
+
+  it("orders the grade, figures, reasons, tip, writer, progress, forecast and button", () => {
+    const { dialog } = render_review();
+    expect(Array.from(dialog.children, (child) => child.className || child.tagName)).toEqual([
+      "service-review-kicker",
+      "H2",
+      "service-review-grade",
+      "service-review-figures",
+      "service-review-reasons",
+      "service-review-tip",
+      "service-review-writer",
+      "service-review-progress",
+      "service-review-tomorrow",
+      "tutorial-actions",
+    ]);
+  });
+
+  it("pairs the grade glyph with the grade word and headline", () => {
+    const { dialog } = render_review();
+    expect(dialog.querySelector(".service-review-grade")?.textContent).toBe(
+      "■ Steady — The hall kept going; the busy hours showed where it strains.",
+    );
+  });
+
+  it("shows served, left early and takings", () => {
+    const { dialog } = render_review();
+    expect(
+      Array.from(dialog.querySelectorAll(".service-review-figures > div"), (row) => row.textContent),
+    ).toEqual(["Served31", "Left early6", "Takings$214"]);
+  });
+
+  it("lists only the top three reasons guests left early", () => {
+    const { dialog } = render_review();
+    expect(
+      Array.from(dialog.querySelectorAll(".service-review-reasons li"), (item) => item.textContent),
+    ).toEqual([
+      "Had food but found no free seat · 3",
+      "Gave up waiting in a queue · 2",
+      "Found nothing to order within budget · 1",
+    ]);
+  });
+
+  it("offers one thing to try, the writer's verdict, progress and the next day", () => {
+    const { dialog } = render_review();
+    expect(
+      [
+        ".service-review-tip",
+        ".service-review-writer p",
+        ".service-review-writer blockquote",
+        ".service-review-progress",
+        ".service-review-tomorrow",
+      ].map((selector) => dialog.querySelector(selector)?.textContent),
+    ).toEqual([
+      "One thing to try: Comfort — Add enough seating and place fans, lighting or décor near dining tables.",
+      "★ Sunrise Roost earned a Writer's Pick plaque!",
+      "“Food worth crossing town for, though seats that were hard to find.” — The Lane Weekly",
+      "Objectives completed: 2/3 · 1 new unlock",
+      "Tomorrow: Late-morning kopi crowd — Expect an early wave of kopi and toast orders before the lunch crowd arrives.",
+    ]);
+  });
+
+  it("leaves out the reasons and writer blocks on a day without them", () => {
+    const { dialog } = render_review({ ...REPORT, leftEarlyReasons: [], writer: undefined });
+    expect([
+      dialog.querySelector(".service-review-reasons"),
+      dialog.querySelector(".service-review-writer"),
+    ]).toEqual([null, null]);
+  });
+
+  it("closes from its single primary button, which opens the next day", () => {
+    const { dialog, onClose } = render_review();
+    const buttons = within(dialog).getAllByRole("button");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Open for Day 2" }));
+    expect([buttons.length, onClose.mock.calls.length]).toEqual([1, 1]);
+  });
+
+  it("never labels food or the day as healthy or unhealthy", () => {
+    const { dialog } = render_review();
+    expect(dialog.textContent?.toLowerCase()).not.toMatch(/healthy|unhealthy/);
   });
 });

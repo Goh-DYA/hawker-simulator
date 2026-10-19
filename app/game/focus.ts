@@ -11,7 +11,10 @@
  * initial-focus frame. The modal priority and the inert rule are encoded once here.
  */
 
-/** The focusable elements of a modal dialog (tutorial, nutrition tour, settings, help, reset). */
+/**
+ * The focusable elements of a modal dialog (tutorial, nutrition tour, settings, help, reset and
+ * the Service Review).
+ */
 export const MODAL_FOCUSABLE_SELECTOR = [
   "button:not([disabled])",
   "input:not([disabled])",
@@ -81,7 +84,13 @@ export function dialogFocusAction(
 }
 
 /** A modal dialog that traps focus, in priority order. */
-export type ActiveModal = "reset" | "settings" | "help" | "tutorial" | "nutrition-tour";
+export type ActiveModal =
+  | "reset"
+  | "settings"
+  | "help"
+  | "tutorial"
+  | "nutrition-tour"
+  | "service-review";
 
 /** The UI state that decides which modal dialog holds focus. */
 export interface ModalState {
@@ -90,14 +99,16 @@ export interface ModalState {
   readonly helpOpen: boolean;
   readonly tutorialStep: number;
   readonly nutritionTourStep: number;
+  /** Whether the end-of-day Service Review is open; absent counts as closed. */
+  readonly isServiceReviewOpen?: boolean;
 }
 
 /**
  * Pick the modal dialog that holds focus.
  *
- * Reset sits above Settings, which sits above Help; the tutorial and then the nutrition tour
- * hold focus only when none of those is open. The Variant Lab traps its own focus, so it is not
- * one of these.
+ * Reset sits above Settings, which sits above Help; the tutorial, then the nutrition tour,
+ * then the Service Review hold focus only when none of those is open. The Variant Lab traps its
+ * own focus, so it is not one of these.
  *
  * @param state - Which dialogs are open and how far the tutorial and tour have got.
  * @returns The modal that holds focus, or `undefined` when none is open.
@@ -108,6 +119,7 @@ export function resolve_active_modal(state: ModalState): ActiveModal | undefined
   if (state.helpOpen) return "help";
   if (state.tutorialStep < TUTORIAL_DONE_STEP) return "tutorial";
   if (state.nutritionTourStep < NUTRITION_TOUR_DONE_STEP) return "nutrition-tour";
+  if (state.isServiceReviewOpen) return "service-review";
   return undefined;
 }
 

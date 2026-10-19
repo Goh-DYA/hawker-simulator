@@ -1,8 +1,9 @@
 /**
  * The catalogue panels of the game screen's management panel.
  *
- * The Build catalogue, the Stalls list with its operating queue plans and upgrades, and the
- * card describing the selected build item. They are presentational: they read the snapshot
+ * The Build catalogue, the Stalls list with its operating queue plans and upgrades (and the
+ * food writer's Writer's Pick plaque on the stalls that earned one), and the card describing
+ * the selected build item. They are presentational: they read the snapshot
  * fields and UI state their markup needs and report choices through callbacks, while the
  * `HawkerSimulator` shell keeps the state, the audio and the runtime calls behind those
  * callbacks. Their classes, IDs, ARIA attributes and copy are the shell's former inline markup.
@@ -16,6 +17,7 @@ import {
   BUILD_CATEGORIES,
   catalogueIcon,
   getContentPrice,
+  get_unlock_reputation,
   humanize_id,
   localize,
   money,
@@ -27,7 +29,8 @@ import {
 import { NO_PREVIEWS, PaintedPreview, preview_key, type PreviewUrls } from "../previews";
 
 /** The snapshot fields that decide whether a catalogue item is locked and what unlocks it. */
-type UnlockProgress = Pick<RuntimeSnapshot, "level" | "reputation" | "unlockedContentIds">;
+type UnlockProgress = Pick<RuntimeSnapshot, "level" | "reputation" | "unlockedContentIds"> &
+  Partial<Pick<RuntimeSnapshot, "peakReputation">>;
 
 /** The props of {@link BuildPanel}. */
 export interface BuildPanelProps {
@@ -104,7 +107,7 @@ export function BuildPanel({
               key={item.id}
               className={`catalogue-item ${selected ? "is-selected" : ""}`}
               aria-pressed={selected}
-              aria-label={`${localize(item.nameKey)}, ${money(item.price)}${locked ? `, locked: ${unlockLabel(item, snapshot.level, snapshot.reputation, snapshot.unlockedContentIds)}` : ""}`}
+              aria-label={`${localize(item.nameKey)}, ${money(item.price)}${locked ? `, locked: ${unlockLabel(item, snapshot.level, get_unlock_reputation(snapshot), snapshot.unlockedContentIds)}` : ""}`}
               onClick={() => onSelectBuildItem(item)}
             >
               <span
@@ -124,7 +127,7 @@ export function BuildPanel({
               <strong>{localize(item.nameKey)}</strong>
               <small>
                 {locked
-                  ? unlockLabel(item, snapshot.level, snapshot.reputation, snapshot.unlockedContentIds)
+                  ? unlockLabel(item, snapshot.level, get_unlock_reputation(snapshot), snapshot.unlockedContentIds)
                   : `${money(item.price)} · ${primaryUtility(item)}`}
               </small>
               {locked ? <i aria-hidden="true">●</i> : null}
@@ -136,11 +139,26 @@ export function BuildPanel({
   );
 }
 
+/**
+ * Render the Writer's Pick plaque badge: a star glyph with the words, so it never relies on
+ * colour alone.
+ *
+ * @returns The badge.
+ */
+export function WriterPickBadge() {
+  return (
+    <span className="writer-pick-badge">
+      <span aria-hidden="true">★</span> Writer&apos;s Pick
+    </span>
+  );
+}
+
 /** The props of {@link StallsPanel}. */
 export interface StallsPanelProps {
   /** The centre's placed stalls, stall mastery, cash and unlock progress. */
   readonly snapshot: UnlockProgress &
-    Pick<RuntimeSnapshot, "placedStalls" | "stallMastery" | "cash">;
+    Pick<RuntimeSnapshot, "placedStalls" | "stallMastery" | "cash"> &
+    Partial<Pick<RuntimeSnapshot, "neighbourhood">>;
   /** The selected build item's ID, if any. */
   readonly selectedId: string | undefined;
   /** The runtime controller, for queue direction, queue edit and upgrade commands. */
@@ -164,6 +182,7 @@ export function StallsPanel({
   previewUrls = NO_PREVIEWS,
   onSelectBuildItem,
 }: StallsPanelProps) {
+  const writer_pick_ids = new Set(snapshot.neighbourhood?.writerPickStallIds ?? []);
   return (
     <div className="stall-list" data-testid="stall-catalogue">
       {snapshot.placedStalls.length > 0 ? (
@@ -173,6 +192,7 @@ export function StallsPanel({
             <article key={placed.objectId} className="queue-manager-row">
               <div>
                 <strong>{placed.name}</strong>
+                {writer_pick_ids.has(placed.definitionId) ? <WriterPickBadge /> : null}
                 <small>
                   {placed.queueCount} queueing · {placed.customQueue ? "custom path" : `${placed.queueDirection} auto-line`}
                 </small>
@@ -243,9 +263,10 @@ export function StallsPanel({
             </span>
             <span>
               <strong>{localize(stall.nameKey)}</strong>
+              {writer_pick_ids.has(stall.id) ? <WriterPickBadge /> : null}
               <small>{stall.dishIds.length} dishes · {Math.round(stall.quality * 100)} quality</small>
             </span>
-            <em>{locked ? unlockLabel(stall, snapshot.level, snapshot.reputation, snapshot.unlockedContentIds) : money(stall.purchaseCost)}</em>
+            <em>{locked ? unlockLabel(stall, snapshot.level, get_unlock_reputation(snapshot), snapshot.unlockedContentIds) : money(stall.purchaseCost)}</em>
           </button>
         );
       })}

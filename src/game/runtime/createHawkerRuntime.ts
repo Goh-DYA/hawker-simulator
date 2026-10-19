@@ -164,10 +164,15 @@ export async function createHawkerRuntime(
 
   synchronize_stall_menus(session);
 
+  /** Names a definition ID for the activity feed, falling back to the ID. */
+  function resolve_definition_name(definition_id: string): string {
+    return session.visuals[definition_id]?.name ?? definition_id;
+  }
+
   function runCommand(command: GameCommand, persist = true) {
     const result = dispatch_session_command(session, command);
     for (const event of result.events) {
-      const runtimeEvent = formatSimulationEvent(event);
+      const runtimeEvent = formatSimulationEvent(event, resolve_definition_name);
       if (runtimeEvent) options.onEvent(runtimeEvent);
     }
     if ((result.accepted || result.hasMenusChanged) && persist) {
@@ -243,7 +248,7 @@ export async function createHawkerRuntime(
       const menusChanged = synchronize_stall_menus(session);
       session.lastSimulationMs = performance.now() - startedAt;
       for (const event of result.events) {
-        const runtimeEvent = formatSimulationEvent(event);
+        const runtimeEvent = formatSimulationEvent(event, resolve_definition_name);
         if (runtimeEvent) options.onEvent(runtimeEvent);
       }
       const catalogueChanged =

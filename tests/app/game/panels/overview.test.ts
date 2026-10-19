@@ -15,6 +15,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   ActivityPanel,
+  describe_uncleared_trays,
   FocusPanel,
   InsightsPanel,
   ObjectiveCard,
@@ -75,7 +76,89 @@ describe("FocusPanel", () => {
   });
 });
 
+describe("FocusPanel Service Review", () => {
+  it("shows the latest review after the objectives, with a New mark while unread", () => {
+    const html = renderToStaticMarkup(
+      createElement(FocusPanel, {
+        snapshot: SNAPSHOT_FIXTURE,
+        isReviewUnread: true,
+        onReviewDishes: () => undefined,
+        onOpenReview: () => undefined,
+      }),
+    );
+
+    expect([
+      html.indexOf('class="objective-card"') < html.indexOf('class="service-review-summary"'),
+      html.includes('<span class="service-review-new">New</span>'),
+      html.includes("Day 1 · Opening day"),
+      html.includes('<button type="button">Read the full review</button>'),
+    ]).toEqual([true, true, true, true]);
+  });
+
+  it("leaves the review out before the first day has ended", () => {
+    const html = renderToStaticMarkup(
+      createElement(FocusPanel, {
+        snapshot: { ...SNAPSHOT_FIXTURE, neighbourhood: undefined },
+        onReviewDishes: () => undefined,
+      }),
+    );
+
+    expect(html.includes("service-review-summary")).toBe(false);
+  });
+
+  it("names the seats waiting for the table-cleaning crew in the service pulse", () => {
+    const html = renderToStaticMarkup(
+      createElement(FocusPanel, {
+        snapshot: { ...SNAPSHOT_FIXTURE, unclearedTrays: 3, cleaningCrew: 2 },
+        onReviewDishes: () => undefined,
+      }),
+    );
+
+    expect(html).toContain(
+      '<p class="service-pulse-note">3 seats waiting for the table-cleaning crew (crew of 2).</p>',
+    );
+  });
+});
+
+describe("describe_uncleared_trays", () => {
+  it("counts one seat or many, and says nothing when every seat is clear", () => {
+    expect([
+      describe_uncleared_trays(0, 1),
+      describe_uncleared_trays(1, 1),
+      describe_uncleared_trays(4, 3),
+    ]).toEqual([
+      undefined,
+      "1 seat waiting for the table-cleaning crew (crew of 1).",
+      "4 seats waiting for the table-cleaning crew (crew of 3).",
+    ]);
+  });
+});
+
 describe("InsightsPanel", () => {
+  it("adds the trays waiting for the crew to the seating card", () => {
+    const html = renderToStaticMarkup(
+      createElement(InsightsPanel, { snapshot: SNAPSHOT_FIXTURE, onExpandMap: () => undefined }),
+    );
+
+    expect(html).toContain(
+      '<p class="seating-clearing-note">1 seat waiting for the table-cleaning crew (crew of 1).</p>',
+    );
+  });
+
+  it("shows the best reputation reached, which unlocks read", () => {
+    const html = renderToStaticMarkup(
+      createElement(InsightsPanel, {
+        snapshot: { ...SNAPSHOT_FIXTURE, reputation: 11.6, peakReputation: 24.2 },
+        onExpandMap: () => undefined,
+      }),
+    );
+
+    expect([
+      html.includes("Reputation now 12. Best reputation reached: 24 — unlocks use this"),
+      html.includes("<em>24</em>"),
+    ]).toEqual([true, true]);
+  });
+
   it("counts the personas that can visit against the whole roster", () => {
     const html = renderToStaticMarkup(
       createElement(InsightsPanel, { snapshot: NEW_CENTRE_INSIGHTS, onExpandMap: () => undefined }),

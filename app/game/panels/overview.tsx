@@ -3,22 +3,25 @@
  *
  * `ObjectiveCard` is the "Today's focus" card that both the left rail and the Focus panel show;
  * the two copies rendered the same markup, so one component serves both. `FocusPanel` adds the
- * nutrition and service pulses, `InsightsPanel` explains queues, seating, milestones, happiness,
- * tray return and the persona roster and offers the hall expansion, and `ActivityPanel` lists
- * the activity feed. They are presentational: the `HawkerSimulator` shell keeps the state, the
+ * latest Service Review (`ServiceReviewSummary`, so a review can be re-read at any time), the
+ * nutrition and service pulses, `InsightsPanel` explains queues, seating (with the trays still
+ * waiting for the table-cleaning crew), reputation, milestones, happiness, tray return and the
+ * persona roster and offers the hall expansion, and `ActivityPanel` lists the activity feed. They are presentational: the `HawkerSimulator` shell keeps the state, the
  * audio and the runtime calls behind their callbacks. Their classes, ARIA attributes and copy
  * are the shell's former inline markup.
  */
 import { CUSTOMER_ARCHETYPES } from "@/src/content";
 import { activityEntryMessage, type ActivityEntry } from "@/src/game/runtime/activityFeed";
 import { MAP_EXPANSION } from "@/src/game/runtime/rules";
-import type { RuntimeSnapshot } from "@/src/game/runtime/types";
+import type { RuntimeDayReport, RuntimeSnapshot } from "@/src/game/runtime/types";
 import { NutritionDisclosure, NutritionPulseCard } from "../NutritionEducation";
 import {
   ACTIVITY_KIND_GLYPHS,
   CUSTOMER_PERSONAS_BY_UNLOCK,
   dishLabel,
+  describe_writer_verdict,
   format_progress_percent,
+  get_unlock_reputation,
   is_requirement_met,
   localize,
   money,
@@ -76,9 +79,91 @@ export function ObjectiveCard({ snapshot }: ObjectiveCardProps) {
   );
 }
 
+/**
+ * Describe the seats the table-cleaning crew has still to clear.
+ *
+ * @param uncleared_trays - Seats holding a tray that has not been cleared yet.
+ * @param cleaning_crew - Trays the crew can clear at once.
+ * @returns The sentence, or `undefined` when every seat is clear.
+ */
+export function describe_uncleared_trays(uncleared_trays: number, cleaning_crew: number) {
+  if (uncleared_trays <= 0) return undefined;
+  return `${uncleared_trays} ${uncleared_trays === 1 ? "seat" : "seats"} waiting for the table-cleaning crew (crew of ${cleaning_crew}).`;
+}
+
+/** The props of {@link ServiceReviewSummary}. */
+export interface ServiceReviewSummaryProps {
+  /** The latest finished day's review. */
+  readonly report: RuntimeDayReport;
+  /** Whether the player has not read this review yet. */
+  readonly isUnread?: boolean;
+  /** Opens the full review; the button is left out without it. */
+  onOpenReview?(): void;
+}
+
+/**
+ * Render the latest Service Review in brief: the grade, the three day figures, one thing to
+ * try and the food writer's verdict.
+ *
+ * @param props - See {@link ServiceReviewSummaryProps}.
+ * @returns The review card.
+ */
+export function ServiceReviewSummary({ report, isUnread = false, onOpenReview }: ServiceReviewSummaryProps) {
+  const verdict = report.writer
+    ? describe_writer_verdict(report.writer.stallName, report.writer.outcome)
+    : undefined;
+  return (
+    <section
+      className="service-review-summary"
+      aria-labelledby="service-review-summary-title"
+      data-unread={isUnread}
+    >
+      <div className="card-kicker">
+        <span>Service review</span>
+        {isUnread ? <span className="service-review-new">New</span> : null}
+      </div>
+      <h3 id="service-review-summary-title">
+        Day {report.day} · {report.cardName}
+      </h3>
+      <p className="service-review-grade">
+        <span aria-hidden="true">{report.gradeGlyph}</span> <strong>{report.grade}</strong>
+      </p>
+      <dl>
+        <div>
+          <dt>Served</dt>
+          <dd>{report.served}</dd>
+        </div>
+        <div>
+          <dt>Left early</dt>
+          <dd>{report.leftEarly}</dd>
+        </div>
+        <div>
+          <dt>Takings</dt>
+          <dd>{money(report.revenue)}</dd>
+        </div>
+      </dl>
+      {report.focusTip ? (
+        <p>
+          <strong>One thing to try:</strong> {report.focusTip.label} — {report.focusTip.action}
+        </p>
+      ) : null}
+      {verdict ? (
+        <p data-outcome={report.writer?.outcome}>
+          <span aria-hidden="true">{verdict.glyph}</span> {verdict.text}
+        </p>
+      ) : null}
+      {onOpenReview ? (
+        <button type="button" onClick={onOpenReview}>
+          Read the full review
+        </button>
+      ) : null}
+    </section>
+  );
+}
+
 /** The props of {@link FocusPanel}. */
 export interface FocusPanelProps {
-  /** The objectives, the nutrition pulse and the service figures the panel shows. */
+  /** The objectives, the nutrition pulse, the service figures and the latest review. */
   readonly snapshot: ObjectiveBoard &
     Pick<
       RuntimeSnapshot,
@@ -89,21 +174,44 @@ export interface FocusPanelProps {
       | "hasSatisfactionRatings"
       | "averageSatisfaction"
       | "cleanliness"
-    >;
+    > &
+    Partial<Pick<RuntimeSnapshot, "unclearedTrays" | "cleaningCrew" | "neighbourhood">>;
+  /** Whether the latest review has not been read yet. */
+  readonly isReviewUnread?: boolean;
   /** Called when the player asks to review the dishes from the nutrition pulse. */
   onReviewDishes(): void;
+  /** Called when the player opens the full latest review. */
+  onOpenReview?(): void;
 }
 
 /**
- * Render the Focus panel: the objective card, the nutrition pulse and the service pulse.
+ * Render the Focus panel: the objective card, the latest Service Review when there is one, the
+ * nutrition pulse and the service pulse.
  *
  * @param props - See {@link FocusPanelProps}.
  * @returns The Focus panel.
  */
-export function FocusPanel({ snapshot, onReviewDishes }: FocusPanelProps) {
+export function FocusPanel({
+  snapshot,
+  isReviewUnread = false,
+  onReviewDishes,
+  onOpenReview,
+}: FocusPanelProps) {
+  const last_report = snapshot.neighbourhood?.lastReport;
+  const uncleared_line = describe_uncleared_trays(
+    snapshot.unclearedTrays ?? 0,
+    snapshot.cleaningCrew ?? 1,
+  );
   return (
     <div className="focus-panel">
       <ObjectiveCard snapshot={snapshot} />
+      {last_report ? (
+        <ServiceReviewSummary
+          report={last_report}
+          isUnread={isReviewUnread}
+          onOpenReview={onOpenReview}
+        />
+      ) : null}
       <NutritionPulseCard
         pulse={snapshot.nutritionPulse}
         dishLabel={dishLabel}
@@ -135,6 +243,7 @@ export function FocusPanel({ snapshot, onReviewDishes }: FocusPanelProps) {
             <dd>{Math.round(snapshot.cleanliness)}%</dd>
           </div>
         </dl>
+        {uncleared_line ? <p className="service-pulse-note">{uncleared_line}</p> : null}
       </section>
       <NutritionDisclosure />
     </div>
@@ -165,7 +274,8 @@ export interface InsightsPanelProps {
     | "cash"
     | "nextExpansionCost"
     | "expansionCount"
-  >;
+  > &
+    Partial<Pick<RuntimeSnapshot, "unclearedTrays" | "cleaningCrew" | "peakReputation">>;
   /** Called when the player buys the next hall expansion. */
   onExpandMap(): void;
 }
@@ -180,6 +290,10 @@ export function InsightsPanel({ snapshot, onExpandMap }: InsightsPanelProps) {
   const unlockedCustomerCount = CUSTOMER_ARCHETYPES.filter((customer) =>
     is_requirement_met(customer.unlockRequirement, snapshot),
   ).length;
+  const uncleared_line = describe_uncleared_trays(
+    snapshot.unclearedTrays ?? 0,
+    snapshot.cleaningCrew ?? 1,
+  );
 
   return (
     <div className="insights-list">
@@ -200,11 +314,26 @@ export function InsightsPanel({ snapshot, onExpandMap }: InsightsPanelProps) {
               ? "Very few seats are free. Add a table family or improve turnover."
               : `${snapshot.freeSeats} seats are ready for arriving diners.`}
           </p>
+          {uncleared_line ? <p className="seating-clearing-note">{uncleared_line}</p> : null}
         </div>
         <em>
           {snapshot.freeSeats}/{snapshot.totalSeats}
         </em>
       </article>
+      {snapshot.peakReputation !== undefined ? (
+        <article data-state="neutral">
+          <span aria-hidden="true">♥</span>
+          <div>
+            <strong>Reputation</strong>
+            <p>
+              Reputation now {Math.round(snapshot.reputation)}. Best reputation reached:{" "}
+              {Math.round(get_unlock_reputation(snapshot))} — unlocks use this, so nothing locks
+              again after a quieter day.
+            </p>
+          </div>
+          <em>{Math.round(get_unlock_reputation(snapshot))}</em>
+        </article>
+      ) : null}
       <article data-state="good">
         <span aria-hidden="true">★</span>
         <div>
@@ -319,7 +448,7 @@ export function InsightsPanel({ snapshot, onExpandMap }: InsightsPanelProps) {
                         : unlockLabel(
                             customer,
                             snapshot.level,
-                            snapshot.reputation,
+                            get_unlock_reputation(snapshot),
                             snapshot.unlockedContentIds,
                           )}
                     </small>

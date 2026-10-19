@@ -49,6 +49,7 @@ The launch content counts are the one exception. These requirement and evidence 
 - [ADR 0003](decisions/0003-local-first-persistence-and-offline.md): local-first persistence and offline operation.
 - [ADR 0004](decisions/0004-simulation-and-ui-boundaries.md): simulation and UI boundaries.
 - [ADR 0005](decisions/0005-painted-sprite-rendering.md): painted sprite rendering.
+- [ADR 0006](decisions/0006-seeded-neighbourhood-and-save-v5.md): seeded neighbourhood and save schema V5.
 
 ## Release
 

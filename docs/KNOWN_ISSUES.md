@@ -6,7 +6,7 @@ This document owns the release blockers, the open issues and the deferred engine
 
 ## Project status
 
-Last updated: 2026-10-17
+Last updated: 2026-10-19
 Phase: Content `1.3.0` nutrition and stall expansion passes working-source automation and targeted nutrition browser QA; exact-production and human verification pending
 Release status: **NO-GO for production approval**
 
@@ -32,7 +32,7 @@ Package version `1.0.0` remains an internal artifact identifier until the exact-
 | Launch content | Content `1.3.0` typed roster passes automated validation | The roster and its counts are in [CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md#roster-counts); every nutrition profile is released, and every profile has overall and condition-specific Health ratings |
 | Core simulation | Automated coverage present | Placement/path validation, deterministic lifecycle, balanced stall selection, weighted preferred guest routes, obstacle-safe queue reservations, custom queue routes, target recovery, economy, progression, moving expansion boundaries/entry/exit, and undo |
 | Game/UI integration | Implemented | Build catalogue, camera/input, menus, separate legacy and nutrition tutorials, objectives/insights, Nutrition Lens, Variant Lab, selectable customer inspector, responsive Focus access, Nutrition Pulse, settings, save tools, coherent expansion, preferred-route and per-stall queue editors, utility descriptions, visible food, and live status UI |
-| Persistence | Implemented with automated core coverage | IndexedDB active/backup envelopes, checksums, serialized writes, core V3-to-V4 and runtime V1-to-V2 migrations, nutrition history and active-variant recovery, import/export, and reset; real-browser storage fault injection remains open |
+| Persistence | Implemented with automated core coverage | IndexedDB active/backup envelopes, checksums, serialized writes, core V1-to-V5 and runtime V1-to-V2 migrations, nutrition history and active-variant recovery, import/export, and reset; real-browser storage fault injection remains open |
 | Offline/PWA | Implemented; replacement static assertions pass | Real offline restart/update verification must still be exercised on the replacement production artifact |
 | Automated QA | Current working-source gate passes | Typecheck, lint, Vitest, both production builds, and the rendered-output/offline-shell assertions pass; see [TEST_REPORT.md](TEST_REPORT.md) |
 | Browser QA | Current targeted nutrition pass plus retained earlier evidence | At 1280 x 720, the development browser passed nutrition badges, 12-field details, condition ratings, variant comparison, and a condition-aware customer inspector with no warning/error console messages. Exact-production, all-stall / all-dish, 1024 x 640, offline, storage, accessibility, and secondary-browser gates remain open |
@@ -51,6 +51,7 @@ Package version `1.0.0` remains an internal artifact identifier until the exact-
 - Code-native visual system: the working source defines and automatically validates a distinct contract for every placeable, a layered identity with vendor workwear/tools/actions for every stall, active-menu food displays, a food/vessel recipe for every dish, an appearance for every customer archetype, every lifecycle pose, carried/seated meals, queue overlays, high-contrast separation, and reduced-motion-safe animation. The complete browser gallery and human visual/cultural review remain open; no source contract constitutes human approval.
 - Meaningful facilities and signage: spatial/global wayfinding, patience, movement, turnover, cleanliness, ambience, satisfaction, tray-return, and facility effects are surfaced and applied by the simulation.
 - Economy/progression, onboarding, objectives, diagnostics, accessibility settings, procedural audio, local saves, PWA manifest, offline fallback, and update-ready flow.
+- A seeded day rhythm: lunch and dinner rushes with last orders, tray returns that depend on distance and persona habit with a capacity-limited table-cleaning crew, a neighbourhood calendar of day cards forecast a day ahead, a food writer awarding Writer's Pick plaques, seeded daily objectives scaled from the previous day, and an end-of-day Service Review ([ADR 0006](decisions/0006-seeded-neighbourhood-and-save-v5.md)).
 - Reviewed nutrition variants, separate Health and Star ratings, independently assigned condition-aware customer choices and bounded satisfaction effects, fictional nutrition intents, order-time variant snapshots, serving feedback, daily nutrition objectives, contextual Singapore-adult reference data, and an explicit educational-not-medical-advice disclosure.
 
 ### Remaining NO-GO gates
@@ -75,6 +76,9 @@ Do not translate "implemented," "compiled," or "unit-tested" into an exact-produ
 - **The 120-second visit cap can still end a visit before the meal.** Seated guests now finish their meal and clear their tray past the cap, but a served guest still walking to a seat or searching for one leaves when the cap is reached. Preparation and eating durations still need a balance pass against the cap.
 - **Some authored persona fields remain future hooks.** Budgets, patience, walking speed, stall-choice sensitivities, novelty, dish preferences, progression gates, visit schedules, and tray-return chance are active. Seat preference, group range, satisfaction modifiers, and spend multiplier are validated content metadata but do not yet alter the simulation.
 - **Reloading mid-day empties the hall.** Customers, queues, seat reservations and uncleared trays are runtime-only, so a reload during a rush removes the waiting guests (they count as neither served nor left early) and clears every tray.
+- **Late dinner ratings count towards the next day's report.** A visit is added to the day ledger when its rating settles, so a dinner guest who arrived before last orders but finishes after the day ends at 18:30 is counted in the next day's Service Review and the next day's objectives' baseline, not the day they visited.
+- **The day systems are not playtested.** The rush curve, backpressure share, tray-return distance, crew size and clearing time, card factors, director weights, writer chance and threshold ladder and the seeded objective stretch are first-pass values checked only by seeded Node runs. By design the starter layout sees about 40% of guests leave early at the height of a rush, to push investment in seating and tray returns; whether that reads as a fair challenge, and whether the director eases off enough after rough days, needs human playtests.
+- **The food writer's quote reads the whole day.** The verdict itself uses only the reviewed stall's lunch-window visits, but the quote's strongest and weakest factors come from the whole day's component averages, so it can name a factor that did not apply to that stall's lunch.
 
 ## Implemented but awaiting exact-production evidence
 
@@ -83,6 +87,7 @@ Do not translate "implemented," "compiled," or "unit-tested" into an exact-produ
 - Expansion migrates the former right/bottom perimeter outward, projects entrance/exit points to the new boundary, refreshes exiting paths, and restores endpoints on undo. Core regressions and development-browser expansion screenshots pass; exact-production save/reload and repeated-expansion play remain open.
 - Signage/facilities now apply visible, documented effects such as wayfinding, patience, movement, turnover, cleanliness, ambience, satisfaction, and tray-return support. Balance tuning across a complete progression playthrough is not yet accepted.
 - IndexedDB, service-worker, accessibility, audio-degradation, and security-header implementations retain automated coverage, but final browser/fault-injection evidence (including active/backup IndexedDB recovery under quota and private-mode limits) must target the replacement artifact.
+- The neighbourhood HUD (today's and tomorrow's cards, the rush timeline and notice, the food-writer visit, the Service Review, the uncleared-tray count, plaque badges and the next-unlock signpost) has automated coverage of its projections only; browser QA at both viewports, screen-reader announcement checks and human accessibility review of the new surfaces are pending.
 - The current Node benchmark passes with 80 active agents over 1,200 fixed steps, but it cannot establish Phaser FPS, TTI, memory stability, or a supported browser customer cap.
 - The renderer paints each texture once and keeps retained sprites and pooled labels ([ADR 0005](decisions/0005-painted-sprite-rendering.md)), but browser FPS, texture memory and the one-off painting cost (for example the floor repaint after a route-guide edit, about 147,000 canvas calls at full detail on the expanded map) are outside the Node benchmark and still require profiling before performance approval (see TD-50 under [Deferred engineering debt](#deferred-engineering-debt)).
 
@@ -147,7 +152,7 @@ Scale: probability and impact are Low / Medium / High. Owner is the solo develop
 |---|---|---|---|---|---|
 | R-01 | Scope exceeds solo capacity | H | H | Lock 1.0 non-goals; data-driven reuse; phase gates; cut optional polish first | Open |
 | R-02 | Customer reservation/path deadlock | H | H | Explicit ownership/release, map revisions, stuck recovery, seeded soak assertions | Open |
-| R-03 | Save corruption or migration loss | M | H | Single-transaction active/backup slots, envelope checksum, frozen V1-V4 fixtures and migration tests, documented invariants in [SAVE_FORMAT.md](SAVE_FORMAT.md#invariants), non-destructive failure UI | Open |
+| R-03 | Save corruption or migration loss | M | H | Single-transaction active/backup slots, envelope checksum, frozen V1-V5 fixtures and migration tests, documented invariants in [SAVE_FORMAT.md](SAVE_FORMAT.md#invariants), non-destructive failure UI; a V5 save cannot be loaded by an earlier build, so a rollback after players have saved needs a build patched to accept V5 ([ADR 0006](decisions/0006-seeded-neighbourhood-and-save-v5.md)) | Open |
 | R-04 | Service-worker mixed versions or stale shell | M | H | Atomic precache, version manifest, waiting-worker save/reload, update E2E | Open |
 | R-05 | Cultural flattening, misattribution, or certification misuse | M | H | [CULTURAL_REVIEW](release/CULTURAL_REVIEW.md) checklist, no marks/claims, compensated human review | Open; release blocker |
 | R-06 | Canvas blocks keyboard/screen-reader access | H | H | DOM command layer, grid cursor, reason summaries, human AT audit | Open |

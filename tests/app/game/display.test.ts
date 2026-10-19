@@ -18,9 +18,13 @@ import {
   CUSTOMER_PERSONAS_BY_UNLOCK,
   dishLabel,
   dishPreview,
+  describe_writer_verdict,
   dishStarRating,
   format_hex_colour,
+  format_minute_of_day,
+  format_minute_range,
   format_progress_percent,
+  get_unlock_reputation,
   getContentPrice,
   humanize_id,
   is_requirement_met,
@@ -306,6 +310,68 @@ describe("is_requirement_met", () => {
       is_requirement_met(requirement, { ...centre, reputation: 19 }),
       is_requirement_met(requirement, { ...centre, unlockedContentIds: ["stall.a"] }),
     ]).toEqual([false, false, false]);
+  });
+});
+
+describe("get_unlock_reputation", () => {
+  it("reads the best reputation reached, falling back to the live one", () => {
+    expect([
+      get_unlock_reputation({ reputation: 6, peakReputation: 12 }),
+      get_unlock_reputation({ reputation: 14, peakReputation: 12 }),
+      get_unlock_reputation({ reputation: 6 }),
+    ]).toEqual([12, 14, 6]);
+  });
+
+  it("lets a requirement stay met after the live reputation falls below it", () => {
+    const requirement = { level: 1, reputation: 10, prerequisiteIds: [] };
+    expect(
+      is_requirement_met(requirement, {
+        level: 1,
+        reputation: 7,
+        peakReputation: 10,
+        unlockedContentIds: [],
+      }),
+    ).toBe(true);
+  });
+});
+
+describe("in-game clock formatting", () => {
+  it.each<[number, string]>([
+    [630, "10:30 AM"],
+    [720, "12:00 PM"],
+    [714.4, "11:54 AM"],
+    [1110, "6:30 PM"],
+  ])("formats minute %s as %s", (minute, expected) => {
+    expect(format_minute_of_day(minute)).toBe(expected);
+  });
+
+  it("names AM or PM once when both ends of a span share it", () => {
+    expect([format_minute_range(720, 840), format_minute_range(714, 786)]).toEqual([
+      "12:00–2:00 PM",
+      "11:54 AM–1:06 PM",
+    ]);
+  });
+});
+
+describe("describe_writer_verdict", () => {
+  it("celebrates a plaque with a star and words", () => {
+    expect(describe_writer_verdict("Kopi Canopy", "plaque")).toEqual({
+      glyph: "★",
+      text: "Kopi Canopy earned a Writer's Pick plaque!",
+    });
+  });
+
+  it("describes the other outcomes gently, never as a failure", () => {
+    const lines = (["no-plaque", "too-few-visits"] as const).map(
+      (outcome) => describe_writer_verdict("Kopi Canopy", outcome).text,
+    );
+    expect([lines, lines.some((line) => /fail|poor|bad/i.test(line))]).toEqual([
+      [
+        "The food writer enjoyed their visit to Kopi Canopy and will be back another day.",
+        "The food writer saw too few meals at Kopi Canopy to write a review. They will be back another day.",
+      ],
+      false,
+    ]);
   });
 });
 

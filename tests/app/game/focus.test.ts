@@ -219,6 +219,13 @@ describe("resolve_active_modal", () => {
     ["help over the tutorial", { helpOpen: true, tutorialStep: 2 }, "help"],
     ["the tutorial over the tour", { tutorialStep: 4, nutritionTourStep: 0 }, "tutorial"],
     ["the tour once the tutorial is done", { nutritionTourStep: 1 }, "nutrition-tour"],
+    [
+      "the tour over the Service Review",
+      { nutritionTourStep: 0, isServiceReviewOpen: true },
+      "nutrition-tour",
+    ],
+    ["help over the Service Review", { helpOpen: true, isServiceReviewOpen: true }, "help"],
+    ["the Service Review once nothing else is open", { isServiceReviewOpen: true }, "service-review"],
   ];
 
   it.each(cases)("picks %s", (_name, state, expected) => {
@@ -235,6 +242,7 @@ describe("is_interface_inert", () => {
     ["settings is open", { settingsOpen: true }, false, true],
     ["help is open", { helpOpen: true }, false, true],
     ["reset is open", { resetOpen: true }, false, true],
+    ["the Service Review is open", { isServiceReviewOpen: true }, false, true],
   ];
 
   it.each(cases)(

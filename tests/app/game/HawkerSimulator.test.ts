@@ -242,7 +242,9 @@ vi.mock("@/src/game/pwa/registerPwa", () => ({
  * The last runtime snapshot of the S14 harness's open run: a fresh centre opened and
  * stepped for 600 frames of 100 ms at speed 1, as `createHawkerRuntime.test.ts` (10)
  * does. It was written from `runtime.snapshots.at(-1)` with `JSON.stringify`, so its
- * `undefined` fields are absent.
+ * `undefined` fields are absent. The neighbourhood fields (day 2 with day 1's Service
+ * Review, the uncleared trays, the crew, the peak reputation and the next unlock) were added
+ * by hand when the HUD gained them.
  */
 const SNAPSHOT_FIXTURE = SNAPSHOT_FIXTURE_JSON as RuntimeSnapshot;
 
@@ -1326,5 +1328,190 @@ describe("HawkerSimulator focus", () => {
       focused: ["button: Show me around →", "button: ?", "button: Skip tutorial"],
       active: "button: Skip tutorial",
     });
+  });
+});
+
+describe("HawkerSimulator Service Review", () => {
+  /** The fixture's neighbourhood, whose last report is day 1's. */
+  const NEIGHBOURHOOD = SNAPSHOT_FIXTURE.neighbourhood!;
+
+  /**
+   * @param speed - The simulation speed the snapshot reports.
+   * @returns The fixture moved on to day 3, with day 2's report just in.
+   */
+  function snapshot_after_day_two(speed: RuntimeSnapshot["speed"] = 2): RuntimeSnapshot {
+    return {
+      ...SNAPSHOT_FIXTURE,
+      day: 3,
+      speed,
+      neighbourhood: {
+        ...NEIGHBOURHOOD,
+        lastReport: { ...NEIGHBOURHOOD.lastReport!, day: 2, cardName: "Late-morning kopi crowd" },
+      },
+    };
+  }
+
+  /**
+   * @param container - The component container.
+   * @returns The open Service Review dialog, or `null`.
+   */
+  function find_review(container: HTMLElement): HTMLElement | null {
+    return within(container).queryByRole("dialog", { name: /wrapped/ });
+  }
+
+  /**
+   * @returns Every speed the component asked the controller for, in order.
+   */
+  function speed_calls(): unknown[] {
+    return fakes.calls.filter(([method]) => method === "controller.setSpeed").map(([, speed]) => speed);
+  }
+
+  it("does not open for the report already in the first snapshot after mount", async () => {
+    const container = await boot_running_centre();
+
+    expect([find_review(container), speed_calls()]).toEqual([null, []]);
+  });
+
+  it("opens when a new report day arrives during play and pauses the simulation", async () => {
+    const container = await boot_running_centre();
+
+    act(() => {
+      runtime_options().onSnapshot(snapshot_after_day_two());
+    });
+
+    expect([
+      find_review(container)?.querySelector("h2")?.textContent,
+      open_modal_titles(container),
+      speed_calls(),
+    ]).toEqual([
+      "Day 2 wrapped · Late-morning kopi crowd",
+      ["service-review-title"],
+      [0],
+    ]);
+  });
+
+  it("does not reopen for the same report day on later snapshots", async () => {
+    const container = await boot_running_centre();
+    act(() => {
+      runtime_options().onSnapshot(snapshot_after_day_two());
+    });
+    fireEvent.click(within(container).getByRole("button", { name: "Open for Day 3" }));
+
+    act(() => {
+      runtime_options().onSnapshot(snapshot_after_day_two());
+    });
+
+    expect([find_review(container), speed_calls()]).toEqual([null, [0, 2]]);
+  });
+
+  it("restores the earlier speed when its button opens the next day", async () => {
+    const container = await boot_running_centre();
+    act(() => {
+      runtime_options().onSnapshot(snapshot_after_day_two(1));
+    });
+
+    fireEvent.click(within(container).getByRole("button", { name: "Open for Day 3" }));
+
+    expect([find_review(container), speed_calls()]).toEqual([null, [0, 1]]);
+  });
+
+  it("closes only the review on Escape, restoring the speed and leaving the tour alone", async () => {
+    const container = await boot_running_centre();
+    act(() => {
+      runtime_options().onSnapshot(snapshot_after_day_two());
+    });
+    fakes.calls.length = 0;
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    await settle();
+
+    expect({
+      modals: open_modal_titles(container),
+      calls: fakes.calls.filter(([method]) => method !== "loadPreference"),
+    }).toEqual({ modals: [], calls: [["controller.setSpeed", 2]] });
+  });
+
+  it("waits, unread, in the Focus panel instead of opening at 4× speed", async () => {
+    const container = await boot_running_centre();
+    act(() => {
+      runtime_options().onSnapshot(snapshot_after_day_two(4));
+    });
+
+    const summary = require_element(open_dock_tab(container, "Focus"), ".service-review-summary");
+
+    expect([
+      find_review(container),
+      speed_calls(),
+      summary.dataset.unread,
+      summary.querySelector("h3")?.textContent,
+    ]).toEqual([null, [], "true", "Day 2 · Late-morning kopi crowd"]);
+  });
+
+  it("waits while another dialog is open, then opens from the Focus panel", async () => {
+    const container = await boot_running_centre();
+    open_settings(container);
+    act(() => {
+      runtime_options().onSnapshot(snapshot_after_day_two());
+    });
+    const blocked = open_modal_titles(container);
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    fireEvent.click(
+      within(open_dock_tab(container, "Focus")).getByRole("button", {
+        name: "Read the full review",
+      }),
+    );
+
+    expect([blocked, open_modal_titles(container), speed_calls()]).toEqual([
+      ["settings-title"],
+      ["service-review-title"],
+      [0],
+    ]);
+  });
+
+  it("only records the report day of an imported save, then opens for the next new day", async () => {
+    const container = await boot_running_centre();
+    const file = new File([exportSave(fakes.runtime.exportedState)], "save.json", {
+      type: "application/json",
+    });
+    fireEvent.change(require_element(open_settings(container), 'input[type="file"]'), {
+      target: { files: [file] },
+    });
+    await settle();
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    act(() => {
+      runtime_options().onSnapshot(snapshot_after_day_two());
+    });
+    const after_import = open_modal_titles(container);
+    act(() => {
+      const next = snapshot_after_day_two();
+      runtime_options().onSnapshot({
+        ...next,
+        neighbourhood: {
+          ...next.neighbourhood!,
+          lastReport: { ...next.neighbourhood!.lastReport!, day: 3 },
+        },
+      });
+    });
+
+    expect([after_import, open_modal_titles(container)]).toEqual([[], ["service-review-title"]]);
+  });
+});
+
+describe("HawkerSimulator toasts", () => {
+  it("keeps up to three toasts, newest first, and drops a routine one before an error", async () => {
+    const container = await boot_simulator({ preferences: ONBOARDED_PREFERENCES });
+
+    act(() => {
+      runtime_options().onEvent({ kind: "error", message: "Save failed" });
+      runtime_options().onEvent({ kind: "warning", message: "Route blocked" });
+      runtime_options().onEvent({ kind: "success", message: "Plaque", importance: "important" });
+      runtime_options().onEvent({ kind: "warning", message: "Queue full" });
+    });
+
+    expect(
+      Array.from(container.querySelectorAll(".toast-stack .toast p"), (toast) => toast.textContent),
+    ).toEqual(["Queue full", "Plaque", "Save failed"]);
   });
 });

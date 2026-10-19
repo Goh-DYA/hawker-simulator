@@ -42,8 +42,8 @@ Before the structural refactor, the following suites were written to pin the beh
 
 | Suite | What it pins |
 |---|---|
-| `tests/game/core/golden.test.ts` | Seeded simulation and state digests for six scenarios. One of them runs the production adaptive-arrival model across two operating-day rollovers. |
-| `tests/game/core/persistence/index.test.ts`, `migrations.test.ts` | Frozen V1–V4 save fixtures, migration output and the serialisation contract. |
+| `tests/game/core/golden.test.ts` | Seeded simulation and state digests for six scenarios. One of them runs the production adaptive-arrival model across two operating-day rollovers. All six run without a neighbourhood (`GameState.neighbourhood` undefined), so the neighbourhood's own streams do not move them. |
+| `tests/game/core/persistence/index.test.ts`, `migrations.test.ts` | Frozen V1–V5 save fixtures (`save-v1.json` to `save-v5.json` in `tests/game/core/persistence/fixtures/`; `save-v5.json` holds a neighbourhood on day 2 with a finished day-1 report), migration output and the serialisation contract. |
 | `tests/game/core/simulation.recovery.test.ts` | In-step customer recovery branches. |
 | `tests/game/runtime/createHawkerRuntime.test.ts` | The headless runtime controller, using a deferred Phaser boot and a test-owned clock: export, import and reset, save fallback, and progression across several days. |
 | `tests/game/runtime/createHawkerRuntime.render.test.ts` | Exact canvas-paint and sprite-call logs for each render scenario, including every placeable and every recipe variant. |
@@ -54,6 +54,16 @@ Before the structural refactor, the following suites were written to pin the beh
 | `tests/app/game/HawkerSimulator.test.ts` | A jsdom interaction suite: panels, autosave debounce, failures, import, reset, settings clamping, and focus and Escape order. |
 | `tests/content/golden.test.ts`, `tests/content/validate.test.ts` | Derived content data, localisation order and validator issues. |
 | `tests/tools/nutrition/ratings.test.ts` | Nutrition importer ratings and serialised output from a varied fixture CSV. |
+
+The day-rhythm systems have their own suites:
+
+| Suite | What it covers |
+|---|---|
+| `tests/game/core/rush.test.ts` | The lunch and dinner demand bumps, the rush cores, last orders from 18:10 and no adaptive spawns until the next opening. |
+| `tests/game/core/table-clearing.test.ts` | The hash-based tray-return habit, the crew size, trays left when no return is reachable and their clearing, seats with trays skipped, crew capacity, trays dropped with their seat, seated guests finishing past the visit cap, and departure reasons on visit ratings. |
+| `tests/game/core/neighbourhood.test.ts` | Day streams seeded only from the world seed, system and day; the shuffle bag (opening day, no consecutive repeats, every card before a repeat); the director's tilt and day performance; card effects on the crowds; the day-end report, `day-ended` event and fresh ledger; seeded reproducibility; peak reputation; the food writer's threshold ladder, plaque, no-plaque and too-few-visits verdicts, review window and schedule; and the seeded daily objectives and their targets. |
+| `tests/game/core/reputation.test.ts` | The wait component's patience grace and linear fall, and the reputation moving average: its smoothing, settling, recovery, monotonicity and bounds. |
+| `tests/content/calendar.test.ts` | The authored day cards: unique IDs, one opening day, enough bag cards, launch personas and dish categories only, calm and busy cards, an ordinary opening day, and copy that labels neither food nor people. |
 
 Run the suites with `CI=true npm test`, so that a missing snapshot fails instead of being written. A golden literal or snapshot should change only in a commit that intentionally changes behaviour or balance, and that commit should state the reason.
 
@@ -86,6 +96,9 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 - Seat choice term sensitivity: path, group, comfort, cleanliness, congestion.
 - No available stall, unaffordable dish, no seat, all exits stressed, and centre close.
 - Deterministic seeded results and agent despawn.
+- Rush demand peaks at lunch and dinner, backpressure halves inside a rush core, and the adaptive model spawns nobody from last orders until the next opening.
+- Tray return requires a reachable return within 14 path tiles and the persona's hashed habit; an unreturned tray blocks its seat until the crew (one plus one per tray-return station) clears it, oldest first; seated guests finish past the visit cap.
+- The neighbourhood draws only from its day streams, never `rngState`; the same world seed reproduces the same calendar, writer schedule and objectives.
 - Nutrition-intent assignment is seed-reproducible, independent of persona, limited to one intent from level 2, and consumes one roll only under its documented conditions.
 - Health-condition assignment is seed-reproducible, independent of persona and appearance, limited to at most one eligible condition, and covers high cholesterol, obesity, diabetes, and hypertension without changing archetype data.
 - Star ratings affect taste/popularity appeal independently from general and condition-specific Health ratings; condition-aware customers prefer stalls and dishes using their personalized Health fit.
@@ -96,6 +109,8 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 
 - Sale/cost/upkeep rounding, satisfaction bounds, XP/reputation, upgrade effects.
 - Unlock graph, exact prerequisites, objective completion idempotency.
+- Unlock gates read peak reputation, which never falls below live reputation; live reputation settles at the level steady service reflects and recovers after poor visits.
+- Seeded objectives keep the fixed day-1 set, then scale from the previous day's report and never fall below the fixed floors; Writer's Pick thresholds rise by 3 per plaque up to 82, and a miss costs nothing.
 - Resale/undo accounting and recovery grant eligibility.
 - No negative cash from passive upkeep and no infinite reward loop.
 
@@ -127,7 +142,7 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 - Renamed/removed objects and dishes, added required fields, changed map size/upgrades.
 - Unsafe runtime customers normalize without losing map/economy/progression.
 - Quota error, denied/private storage, refresh during save, reset isolation.
-- Core V3-to-V4 and runtime V1-to-V2 nutrition migrations, default/locked/tampered variant repair, data-version recovery notice, and 50-record outcome cap.
+- Core V4-to-V5 migration (peak reputation at the saved reputation, a `null` neighbourhood that the runtime seeds from `rngState`). Core V3-to-V4 and runtime V1-to-V2 nutrition migrations, default/locked/tampered variant repair, data-version recovery notice, and 50-record outcome cap.
 
 ### Offline shell and UI
 
@@ -145,7 +160,7 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 3. Keyboard-place a table, seats, tray return, and stall; verify invalid placement feedback.
 4. Paint a preferred guest lane with pointer and keyboard controls; verify predicted-path shift, clear, undo, save/reload, and Escape speed restoration.
 5. Configure a menu, compare a reviewed variant, and open the centre.
-6. Observe one customer complete order, seat, eat, tray/clear, and exit.
+6. Observe one customer complete order, seat, eat, tray/clear, and exit. Without a nearby tray return, verify the tray stays on the seat, the seating card counts it and the crew clears it.
 7. Confirm cash/XP/reputation change, inspect the reason breakdown, fictional nutrition intent, optional health condition, Health/Star ratings, and Nutrition Pulse. Verify nutrition intents do not change satisfaction and any condition-aware meal effect stays within the documented bound.
 8. Move an active target and verify recovery.
 9. Save, reload, and compare persistent map/progression/economy state.
@@ -153,6 +168,7 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 11. Install/cache once, go offline, reload, continue, save, and reload again.
 12. Trigger update flow with a second build; preserve save.
 13. Reset with cancel first, then confirm; verify only game-owned data is cleared.
+14. Play through a full day: verify the forecast for tomorrow, the rush notice before lunch and dinner, last orders, the Service Review at day end and the next day's card matching the forecast; with a food-writer day, verify the review window and verdict.
 
 Run at 1280 × 720 and 1024 × 640, plus zoom levels in [ACCESSIBILITY.md](release/ACCESSIBILITY.md).
 

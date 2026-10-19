@@ -5,8 +5,9 @@
  * authored content: money, content names and unlock requirements, placeable utility
  * effects, dish and placeable previews, the nutrition view of a dish, and the panel copy.
  * It also holds the small formatters and predicates more than one surface shares (progress
- * bar widths, hex colours, readable IDs, unlock checks and event glyphs), so each has one
- * definition. They hold no React state, so they are tested directly in Node.
+ * bar widths, hex colours, readable IDs, unlock checks, in-game clock times, the food writer's
+ * verdict and event glyphs), so each has one definition. Unlock checks read the peak
+ * reputation, as the runtime's unlocks do. They hold no React state, so they are tested directly in Node.
  */
 import type { CSSProperties } from "react";
 import {
@@ -110,22 +111,92 @@ interface UnlockRequirement {
   readonly prerequisiteIds: readonly string[];
 }
 
+/** The reputation fields an unlock check reads; the peak is optional for older callers. */
+export type UnlockReputation = Pick<RuntimeSnapshot, "reputation"> &
+  Partial<Pick<RuntimeSnapshot, "peakReputation">>;
+
+/**
+ * Pick the reputation that unlocks read: the best reputation reached, which never falls, so
+ * nothing locks again after a rough day.
+ *
+ * @param snapshot - The live reputation and, when known, the peak reputation.
+ * @returns The larger of the two.
+ */
+export function get_unlock_reputation(snapshot: UnlockReputation) {
+  return Math.max(snapshot.reputation, snapshot.peakReputation ?? 0);
+}
+
 /**
  * Check whether the centre meets a content unlock requirement.
  *
  * @param requirement - The level, reputation and prerequisite content needed.
- * @param snapshot - The centre's level, reputation and unlocked content.
- * @returns Whether every part of the requirement is met.
+ * @param snapshot - The centre's level, reputation (live and peak) and unlocked content.
+ * @returns Whether every part of the requirement is met; reputation is checked against
+ *   {@link get_unlock_reputation}.
  */
 export function is_requirement_met(
   requirement: UnlockRequirement,
-  snapshot: Pick<RuntimeSnapshot, "level" | "reputation" | "unlockedContentIds">,
+  snapshot: Pick<RuntimeSnapshot, "level" | "unlockedContentIds"> & UnlockReputation,
 ) {
   return (
     requirement.level <= snapshot.level &&
-    requirement.reputation <= snapshot.reputation &&
+    requirement.reputation <= get_unlock_reputation(snapshot) &&
     requirement.prerequisiteIds.every((id) => snapshot.unlockedContentIds.includes(id))
   );
+}
+
+/**
+ * Format an in-game minute of the day as a clock time.
+ *
+ * @param minute - Minutes after midnight.
+ * @returns The 12-hour time, such as `"12:30 PM"`.
+ */
+export function format_minute_of_day(minute: number) {
+  const whole_minute = Math.round(minute);
+  const hour = Math.floor(whole_minute / 60);
+  const suffix = hour % 24 >= 12 ? "PM" : "AM";
+  return `${hour % 12 || 12}:${(whole_minute % 60).toString().padStart(2, "0")} ${suffix}`;
+}
+
+/**
+ * Format a span of in-game minutes, naming AM or PM once when both ends share it.
+ *
+ * @param start_minute - The first minute of the span.
+ * @param end_minute - The last minute of the span.
+ * @returns The span, such as `"12:00–2:00 PM"` or `"11:30 AM–1:00 PM"`.
+ */
+export function format_minute_range(start_minute: number, end_minute: number) {
+  const start = format_minute_of_day(start_minute);
+  const end = format_minute_of_day(end_minute);
+  const start_suffix = start.slice(-2);
+  return start_suffix === end.slice(-2) ? `${start.slice(0, -3)}–${end}` : `${start}–${end}`;
+}
+
+/** A food writer's finished verdict. */
+export type WriterOutcome = "plaque" | "no-plaque" | "too-few-visits";
+
+/**
+ * Describe a food writer's verdict in warm words that never frame it as a failure.
+ *
+ * @param stall_name - The reviewed stall's name.
+ * @param outcome - The verdict.
+ * @returns A glyph and one sentence; the glyph pairs with the words, so colour is never
+ *   the only cue.
+ */
+export function describe_writer_verdict(stall_name: string, outcome: WriterOutcome) {
+  if (outcome === "plaque") {
+    return { glyph: "★", text: `${stall_name} earned a Writer's Pick plaque!` };
+  }
+  if (outcome === "too-few-visits") {
+    return {
+      glyph: "✎",
+      text: `The food writer saw too few meals at ${stall_name} to write a review. They will be back another day.`,
+    };
+  }
+  return {
+    glyph: "✎",
+    text: `The food writer enjoyed their visit to ${stall_name} and will be back another day.`,
+  };
 }
 
 /** The glyph a toast shows for each event kind. */
