@@ -880,7 +880,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
   "cash": 4466,
   "reputation": 8,
   "level": 2,
-  "experience": 120,
+  "experience": 128,
   "nextLevelExperience": 400,
   "day": 1,
   "timeLabel": "11:30 AM",

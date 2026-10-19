@@ -12,7 +12,7 @@ exports[`core simulation golden master > (a) runs seed soak-2026 for 600 steps o
     "abandonedVisits": 1,
   },
   "progression": {
-    "xp": 1406,
+    "xp": 1576,
     "level": 4,
     "reputation": 3.382519864895492,
     "peakReputation": 3.431711212071928,
@@ -1502,7 +1502,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
     "abandonedVisits": 76,
   },
   "progression": {
-    "xp": 80,
+    "xp": 90,
     "level": 1,
     "reputation": 0.7869371927010003,
     "peakReputation": 2.5,
@@ -2674,8 +2674,8 @@ exports[`core simulation golden master > (c) advances lower-end mode with frames
     "abandonedVisits": 0,
   },
   "progression": {
-    "xp": 1458,
-    "level": 4,
+    "xp": 1644,
+    "level": 5,
     "reputation": 3.343715676671772,
     "peakReputation": 3.3521461391083114,
     "unlockedDefinitionIds": [
@@ -4204,7 +4204,7 @@ exports[`core simulation golden master > (d) runs the nutrition catalog at level
     "abandonedVisits": 0,
   },
   "progression": {
-    "xp": 1770,
+    "xp": 2026,
     "level": 5,
     "reputation": 3.303543549588014,
     "peakReputation": 3.303543549588014,
@@ -9360,8 +9360,8 @@ exports[`core simulation golden master > (e) applies a fixed build-command scrip
     "abandonedVisits": 0,
   },
   "progression": {
-    "xp": 810,
-    "level": 3,
+    "xp": 908,
+    "level": 4,
     "reputation": 3.046624374164913,
     "peakReputation": 3.046624374164913,
     "unlockedDefinitionIds": [
@@ -10786,15 +10786,15 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
   "tick": 10000,
   "rngState": 2437290273,
   "economy": {
-    "currency": 8678,
+    "currency": 8778,
     "lifetimeRevenue": 4908,
     "lifetimeSpend": 0,
     "completedVisits": 818,
     "abandonedVisits": 0,
   },
   "progression": {
-    "xp": 9400,
-    "level": 10,
+    "xp": 11061,
+    "level": 11,
     "reputation": 3.3749999393981582,
     "peakReputation": 3.3749999393981582,
     "unlockedDefinitionIds": [
@@ -10809,15 +10809,15 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
       {
         "id": "day-3-1-serve",
         "day": 3,
-        "progress": 25,
+        "progress": 27,
         "completed": true,
         "kind": "serve",
         "title": "Warm welcome",
-        "description": "Serve 25 neighbours today.",
-        "target": 25,
+        "description": "Serve 27 neighbours today.",
+        "target": 27,
         "startValue": 790,
-        "rewardCash": 280,
-        "rewardXp": 75,
+        "rewardCash": 300,
+        "rewardXp": 80,
       },
       {
         "id": "day-3-2-flow",
@@ -10829,8 +10829,8 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "description": "Keep queue flow at 80% or better.",
         "target": 80,
         "startValue": 0,
-        "rewardCash": 280,
-        "rewardXp": 75,
+        "rewardCash": 300,
+        "rewardXp": 80,
       },
       {
         "id": "day-3-3-nutrition",
@@ -10843,8 +10843,8 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "description": "Serve 8 reviewed non-default variants today.",
         "target": 8,
         "startValue": 0,
-        "rewardCash": 280,
-        "rewardXp": 75,
+        "rewardCash": 300,
+        "rewardXp": 80,
       },
     ],
     "claimedMilestoneIds": [
