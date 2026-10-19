@@ -22,6 +22,7 @@ import {
   VARIANT_FAMILY_MAPPINGS,
 } from "@/tools/nutrition/manifest.mjs";
 import { LAUNCH_ROSTER } from "@/src/content";
+import { DRINK_FAMILY_BASES, PAIRED_COMPONENTS } from "@/tools/nutrition/plausibility.mjs";
 
 const unavailable = {
   status: "unavailable" as const,
@@ -56,6 +57,11 @@ describe("nutrition CSV importer", () => {
       ...VARIANT_FAMILY_MAPPINGS.flatMap((family) =>
         family.variants.map((variant) => variant.foodName),
       ),
+      ...PRIMARY_PROFILE_MAPPINGS.flatMap((mapping) =>
+        "components" in mapping ? mapping.components.map((part) => part.foodName) : [],
+      ),
+      ...Object.values(PAIRED_COMPONENTS),
+      ...DRINK_FAMILY_BASES.map((family) => family.base),
     ].filter((foodName, index, values) => values.indexOf(foodName) === index);
     const foodHeaders = [
       "Food Name",

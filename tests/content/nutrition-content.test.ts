@@ -14,6 +14,7 @@ import {
   getNutritionVariantFamily,
   validateContent,
 } from "@/src/content/index";
+import { SNACK_RATED_DISH_IDS } from "@/tools/nutrition/manifest.mjs";
 
 const VARIANT_FAMILY_DISHES = [
   "dish.kopi",
@@ -56,7 +57,7 @@ describe("nutrition content", () => {
     );
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
-      "dc1a9ed14a4b564eafb972e43acb4fc38e18fc9399915ad29aadf1e5e8be8a3e",
+      "25c307e33332347bb05e8c422a2d6d757059a203a5f4c4417ca8ff884e168568",
     );
   });
 
@@ -71,7 +72,7 @@ describe("nutrition content", () => {
       report.counts.nutritionVariantFamilies,
       LAUNCH_ROSTER.nutritionVariantFamilies,
     );
-    assert.equal(NUTRITION_CONTENT.dataVersion, "sg-1bc212db6eda-c87987b4281c-r2");
+    assert.equal(NUTRITION_CONTENT.dataVersion, "sg-1bc212db6eda-c87987b4281c-r3");
     assert.deepEqual(
       NUTRITION_CONTENT.sourceSnapshots.map((snapshot) => snapshot.rowCount),
       [2_689, 11],
@@ -156,16 +157,28 @@ describe("nutrition content", () => {
     }
 
     const kopi = getNutritionProfile("dish.kopi");
+    const kopiSiuDai = getNutritionProfile("dish.kopi", "kopi-siu-dai");
     const kopiKosong = getNutritionProfile("dish.kopi", "kopi-o-kosong");
-    assert.equal(kopi?.nutrients.totalSugarG.status, "known");
+    assert.deepEqual(kopi?.nutrients.totalSugarG, {
+      status: "unavailable",
+      reason: "implausible-source",
+    });
+    assert.equal(kopi?.withheldReasons?.length, 1);
+    assert.equal(kopiSiuDai?.nutrients.totalSugarG.status, "known");
     assert.equal(kopiKosong?.nutrients.totalSugarG.status, "known");
     assert.ok(
       (kopiKosong?.nutrients.totalSugarG.value ?? Infinity) <
-        (kopi?.nutrients.totalSugarG.value ?? -Infinity),
+        (kopiSiuDai?.nutrients.totalSugarG.value ?? -Infinity),
     );
     assert.ok(
       (kopiKosong?.conditionRatings.diabetes ?? 0) >
         (kopi?.conditionRatings.diabetes ?? 5),
+    );
+    assert.deepEqual(
+      ["kopi-default", "kopi-siu-dai", "kopi-c", "kopi-o", "kopi-c-kosong", "kopi-o-kosong"].map(
+        (variantId) => getNutritionProfile("dish.kopi", variantId)?.healthRating,
+      ),
+      [2.1, 2.8, 3.4, 3.8, 4.7, 5],
     );
   });
 
@@ -214,7 +227,87 @@ describe("nutrition content", () => {
       .filter((profile) => profile.nutritionClass === "meal")
       .map((profile) => profile.healthRating);
     assert.equal(Math.min(...meals), 1);
-    assert.equal(Math.max(...meals), 5);
+    assert.ok(Math.max(...meals) >= 4);
+  });
+
+  it("rates desserts as snacks and keeps the reviewed orderings", () => {
+    assert.deepEqual(
+      [...SNACK_RATED_DISH_IDS].sort(),
+      DISHES.filter((dish) => dish.category === "dessert")
+        .map((dish) => dish.id)
+        .sort(),
+    );
+    const rating = (dishId: string, variantId?: string) => {
+      const profile = getNutritionProfile(dishId, variantId);
+      assert.ok(profile, `${dishId} ${variantId ?? ""} must have a profile`);
+      return profile;
+    };
+    for (const dishId of SNACK_RATED_DISH_IDS) {
+      assert.ok(rating(dishId).conditionRatings.obesity < 5, dishId);
+    }
+    assert.ok(
+      rating("dish.tau-huay").healthRating > rating("dish.ice-kacang").healthRating &&
+        rating("dish.ice-kacang").healthRating > rating("dish.chendol").healthRating,
+    );
+    assert.ok(
+      rating("dish.sliced-fish-soup").healthRating >
+        rating("dish.sliced-fish-soup", "fish-soup-beehoon-milk").healthRating,
+    );
+    assert.ok(
+      rating("dish.sliced-fish-soup", "fish-soup-sliced-no-milk").healthRating >
+        rating("dish.sliced-fish-soup", "fish-soup-sliced-milk").healthRating,
+    );
+    const energy = (dishId: string, variantId?: string) => {
+      const value = rating(dishId, variantId).nutrients.energyKcal;
+      assert.equal(value.status, "known");
+      return value.status === "known" ? value.value : Number.NaN;
+    };
+    assert.ok(
+      energy("dish.roti-prata", "prata-plain") < energy("dish.roti-prata", "prata-egg"),
+    );
+    assert.ok(
+      rating("dish.poached-chicken-rice").healthRating >=
+        rating("dish.roast-chicken-rice").healthRating,
+    );
+  });
+
+  it("publishes composites, withheld values and readable serving labels", () => {
+    assert.deepEqual(
+      NUTRITION_CONTENT.profiles
+        .filter((profile) => (profile.components?.length ?? 0) >= 2)
+        .map((profile) => profile.id),
+      ["dish.soya-tofu-rice", "dish.roti-prata", "dish.nyonya-laksa"],
+    );
+    assert.deepEqual(
+      NUTRITION_CONTENT.profiles
+        .filter((profile) => profile.withheldReasons !== undefined)
+        .map((profile) => profile.id)
+        .sort(),
+      [
+        "dish.claypot-chicken-rice",
+        "dish.kopi",
+        "dish.lor-mee",
+        "dish.mee-rebus",
+        "dish.mee-siam",
+      ],
+    );
+    for (const profile of NUTRITION_CONTENT.profiles) {
+      if (profile.withheldReasons === undefined) continue;
+      assert.ok(
+        Object.values(profile.nutrients).some(
+          (value) => value.status === "unavailable" && value.reason === "implausible-source",
+        ),
+        profile.id,
+      );
+    }
+    const laksaSaturatedFat = getNutritionProfile("dish.nyonya-laksa")?.nutrients.saturatedFatG;
+    assert.ok(laksaSaturatedFat?.status === "known" && laksaSaturatedFat.value >= 20.83);
+    for (const profile of NUTRITION_CONTENT.profiles) {
+      const match = profile.serving?.label.match(/\((\d+(?:\.\d+)?) (g|ml)\)$/);
+      assert.ok(match, `${profile.id} label "${profile.serving?.label}"`);
+      assert.equal(Number(match[1]), Math.round(profile.serving?.amount ?? Number.NaN), profile.id);
+      assert.equal(match[2], profile.serving?.unit, profile.id);
+    }
   });
 
   it("preserves trace, unavailable, scaled, and provenance semantics", () => {

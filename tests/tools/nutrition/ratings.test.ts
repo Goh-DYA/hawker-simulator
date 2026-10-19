@@ -10,8 +10,11 @@
  * pins the sha256 of the exact text the CLI writes. The fixture has one row per mapped
  * food with distinct values, one Trace value (Kopi O kosong sugar), one quarantined row
  * (Mee rebus, saturated fat above total fat), one grouped number (Laksa sodium), one `-`
- * nutrient (Lor mee calcium), one `-` default serving label (Popiah), and the manifest's
- * scaled mappings.
+ * nutrient (Lor mee calcium), one `-` default serving label (Popiah), the manifest's
+ * scaled mappings, the rows of its three composites, and component and drink-base rows
+ * that make the paired-component and drink-family plausibility rules withhold values. It
+ * has no `Food Subgroup` column, so the outlier fence is covered by the unit tests in
+ * `plausibility.test.ts`.
  *
  * If a refactor makes either suite fail, the refactor changed importer output: fix the
  * code, never the literal or the fixture.
@@ -33,7 +36,7 @@ import {
 } from "@/tools/nutrition/importer.mjs";
 
 /** sha256 of `${JSON.stringify(content, null, 2)}\n` for the varied fixture. */
-const VARIED_OUTPUT_SHA256 = "8272e8d4c9afed42b19e4e9b4e025ae407144253c703c2364a80d6380772804f";
+const VARIED_OUTPUT_SHA256 = "0d9fe382d9680432861f42879cec620b1d10b0c869d9d28bd3aaba78b7707e78";
 
 /** Guideline rows for the 11 nutrients the importer recognises, in source order. */
 const GUIDELINE_ROWS = [
@@ -149,7 +152,7 @@ describe("nutrition importer output golden", () => {
     expect(result.error).toBeUndefined();
   });
 
-  it("covers a trace value, a quarantined row and scaled mappings", () => {
+  it("covers a trace value, a quarantined row, scaled mappings, withheld values and composites", () => {
     const content = nutritionContentSchema.parse(JSON.parse(serialise_varied_content()));
 
     expect({
@@ -165,7 +168,27 @@ describe("nutrition importer output golden", () => {
         (profile) =>
           profile.provenance?.mappingKind === "scaled-exact" && profile.provenance.multiplier > 1,
       ),
+      withheld: content.profiles
+        .filter((profile) => profile.withheldReasons !== undefined)
+        .map((profile) => profile.id),
+      composites: content.profiles
+        .filter((profile) => profile.components !== undefined)
+        .map((profile) => profile.id),
     }).toEqual({
+      withheld: [
+        "dish.poached-chicken-rice",
+        "dish.mee-rebus",
+        "dish.kopi",
+        "dish.lor-mee",
+        "dish.teh-tarik",
+        "dish.duck-rice",
+        "dish.kway-chap",
+        "dish.mee-siam",
+        "dish.kopi:kopi-c",
+        "dish.kopi:kopi-o",
+        "dish.teh-tarik:teh-c",
+      ],
+      composites: ["dish.soya-tofu-rice", "dish.roti-prata", "dish.nyonya-laksa"],
       quarantined: ["dish.mee-rebus"],
       traced: ["dish.kopi:kopi-o-kosong"],
       hasScaledMapping: true,

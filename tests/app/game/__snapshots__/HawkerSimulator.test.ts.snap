@@ -752,11 +752,11 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <div class="nutrition-summary">
 <div class="dish-rating-summary" aria-label="Dish health and star ratings">
-<span class="dish-rating-badge is-health" aria-label="Health rating: 3.4/5">
+<span class="dish-rating-badge is-health" aria-label="Health rating: 3.3/5">
 <i aria-hidden="true">♥</i>
 <span>
 <small>Health rating</small>
-<strong>3.4/5</strong>
+<strong>3.3/5</strong>
 </span>
 </span>
 <span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.6/5">
@@ -767,7 +767,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </span>
 </span>
 </div>
-<p>Serving · 1 plate(s) = 346g</p>
+<p>Serving · 1 plate (346 g)</p>
 <dl aria-label="Key nutrition per listed serving">
 <div>
 <dt>Energy</dt>
@@ -832,15 +832,15 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <div>
 <dt>Managing obesity</dt>
-<dd>5.0/5</dd>
+<dd>3.9/5</dd>
 </div>
 <div>
 <dt>Managing diabetes</dt>
-<dd>3.5/5</dd>
+<dd>3.3/5</dd>
 </div>
 <div>
 <dt>Managing hypertension</dt>
-<dd>3.4/5</dd>
+<dd>2.9/5</dd>
 </div>
 </dl>
 </details>
@@ -883,7 +883,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </span>
 </span>
 </div>
-<p>Serving · 1 plate(s) = 363g</p>
+<p>Serving · 1 plate (363 g)</p>
 <dl aria-label="Key nutrition per listed serving">
 <div>
 <dt>Energy</dt>
@@ -948,15 +948,15 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <div>
 <dt>Managing obesity</dt>
-<dd>3.8/5</dd>
-</div>
-<div>
-<dt>Managing diabetes</dt>
 <dd>2.7/5</dd>
 </div>
 <div>
+<dt>Managing diabetes</dt>
+<dd>2.4/5</dd>
+</div>
+<div>
 <dt>Managing hypertension</dt>
-<dd>3.5/5</dd>
+<dd>3.0/5</dd>
 </div>
 </dl>
 </details>
@@ -985,11 +985,11 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <div class="nutrition-summary">
 <div class="dish-rating-summary" aria-label="Dish health and star ratings">
-<span class="dish-rating-badge is-health" aria-label="Health rating: 5.0/5">
+<span class="dish-rating-badge is-health" aria-label="Health rating: 3.1/5">
 <i aria-hidden="true">♥</i>
 <span>
 <small>Health rating</small>
-<strong>5.0/5</strong>
+<strong>3.1/5</strong>
 </span>
 </span>
 <span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 3.2/5">
@@ -1000,35 +1000,35 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </span>
 </span>
 </div>
-<p>Serving · 1 plate(s) = 290g</p>
+<p>Serving · 1 plate (290 g)</p>
 <dl aria-label="Key nutrition per listed serving">
 <div>
 <dt>Energy</dt>
-<dd>400 kcal</dd>
+<dd>530 kcal</dd>
 </div>
 <div>
 <dt>Protein</dt>
-<dd>16.6 g</dd>
+<dd>19.2 g</dd>
 </div>
 <div>
 <dt>Total fat</dt>
-<dd>8.7 g</dd>
+<dd>16.4 g</dd>
 </div>
 <div>
 <dt>Carbohydrate</dt>
-<dd>61.6 g</dd>
+<dd>76.2 g</dd>
 </div>
 <div>
 <dt>Total sugar</dt>
-<dd>1.9 g</dd>
+<dd>2.3 g</dd>
 </div>
 <div>
 <dt>Fibre</dt>
-<dd>2.5 g</dd>
+<dd>4.8 g</dd>
 </div>
 <div>
 <dt>Sodium</dt>
-<dd>261 mg</dd>
+<dd>1,119 mg</dd>
 </div>
 </dl>
 <details class="nutrition-more-details">
@@ -1036,23 +1036,23 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <dl aria-label="Additional nutrition per listed serving">
 <div>
 <dt>Saturated fat</dt>
-<dd>1.9 g</dd>
+<dd>5.2 g</dd>
 </div>
 <div>
 <dt>Trans fat</dt>
-<dd>0.00 g</dd>
+<dd>Not available</dd>
 </div>
 <div>
 <dt>Calcium</dt>
-<dd>23 mg</dd>
+<dd>Not available</dd>
 </div>
 <div>
 <dt>Iron</dt>
-<dd>0.5 mg</dd>
+<dd>Not available</dd>
 </div>
 <div>
 <dt>Water</dt>
-<dd>11.1 g</dd>
+<dd>Not available</dd>
 </div>
 </dl>
 </details>
@@ -1061,19 +1061,19 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <dl aria-label="Condition-specific health ratings">
 <div>
 <dt>Managing high cholesterol</dt>
-<dd>5.0/5</dd>
+<dd>3.5/5</dd>
 </div>
 <div>
 <dt>Managing obesity</dt>
-<dd>5.0/5</dd>
+<dd>3.5/5</dd>
 </div>
 <div>
 <dt>Managing diabetes</dt>
-<dd>4.4/5</dd>
+<dd>3.1/5</dd>
 </div>
 <div>
 <dt>Managing hypertension</dt>
-<dd>5.0/5</dd>
+<dd>3.1/5</dd>
 </div>
 </dl>
 </details>
@@ -1117,7 +1117,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </span>
 </span>
 </div>
-<p>Serving · 1 bowl(s) = 556g</p>
+<p>Serving · 1 bowl (556 g)</p>
 <dl aria-label="Key nutrition per listed serving">
 <div>
 <dt>Energy</dt>
@@ -1186,11 +1186,11 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <div>
 <dt>Managing diabetes</dt>
-<dd>5.0/5</dd>
+<dd>4.2/5</dd>
 </div>
 <div>
 <dt>Managing hypertension</dt>
-<dd>2.9/5</dd>
+<dd>2.4/5</dd>
 </div>
 </dl>
 </details>
@@ -1234,7 +1234,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </span>
 </span>
 </div>
-<p>Serving · 1 plate(s) = 353g</p>
+<p>Serving · 1 plate (353 g)</p>
 <dl aria-label="Key nutrition per listed serving">
 <div>
 <dt>Energy</dt>
@@ -1299,7 +1299,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <div>
 <dt>Managing obesity</dt>
-<dd>4.3/5</dd>
+<dd>3.1/5</dd>
 </div>
 <div>
 <dt>Managing diabetes</dt>
@@ -1307,7 +1307,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <div>
 <dt>Managing hypertension</dt>
-<dd>4.4/5</dd>
+<dd>4.1/5</dd>
 </div>
 </dl>
 </details>

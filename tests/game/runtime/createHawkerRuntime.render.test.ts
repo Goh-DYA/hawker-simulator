@@ -116,11 +116,11 @@ const RENDER_DIGESTS = {
   },
   multiDayFrame480: {
     calls: 180,
-    sha256: "043300a98244e605bacaf74f303be35e2aa21bcdac20c72c6b44cbccd11004a6",
+    sha256: "384aece87b30e8e37a0f1652b96437f7cb9fc4015833f105f8719d072b371ce8",
   },
   multiDayFrame960: {
-    calls: 197,
-    sha256: "26f809e78318135182c250f80c5fd758507bdfa3f68ffe33ea5ca70fa8720b46",
+    calls: 199,
+    sha256: "3830566c7826b30b318a9bc03c0cd9cf020eb9f76779db9a7ab80f4adc62eb75",
   },
 } satisfies Record<string, RenderLogDigest>;
 

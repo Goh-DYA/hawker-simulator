@@ -30,7 +30,7 @@ export const EXPECTED_GUIDELINE_FILE_SHA256 =
  * the reviewed defaults, even though the source files are unchanged. Revision 2 adopted
  * the guideline-anchored ratings and realistic hawker servings.
  */
-export const NUTRITION_REVIEW_REVISION = 2;
+export const NUTRITION_REVIEW_REVISION = 3;
 
 /**
  * The number of adult daily guideline rows the reviewed guideline file holds. It matches
@@ -67,6 +67,18 @@ const released = (
   ...(servingLabel === undefined ? {} : { servingLabel }),
 });
 
+/**
+ * Dishes rated as a snack rather than a main meal: desserts eaten in addition to the day's
+ * meals, whose energy and sugar are held to HPB's 200 kcal snack share instead of a third
+ * of the day (see `SNACK_SHARE_OF_MEAL` in ratings.mjs).
+ */
+export const SNACK_RATED_DISH_IDS = new Set([
+  "dish.ice-kacang",
+  "dish.chendol",
+  "dish.tau-huay",
+  "dish.pulut-hitam",
+]);
+
 /** The primary profile mapping of every dish, in generated profile order. */
 export const PRIMARY_PROFILE_MAPPINGS = [
   released(
@@ -83,12 +95,21 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "The source uses roasted rather than roast in the food name.",
     "curated-synonym",
   ),
-  released(
-    "dish.soya-tofu-rice",
-    "Vegetarian chicken rice",
-    "meal",
-    "The in-game option was refined to the dataset's complete Singapore-style vegetarian chicken rice serving.",
-  ),
+  {
+    ...released(
+      "dish.soya-tofu-rice",
+      "Steamed chicken rice (rice only)",
+      "meal",
+      "Composite: the Derived 'Vegetarian chicken rice' row reports 11 g water in 290 g and 261 mg sodium, which back-calculates to 200 g plain rice plus about 70 g mock chicken, not the flavoured rice its description names; the Lab flavoured chicken-rice rice (220 g) plus 70 g of the Lab 'Mock chicken' keeps the source plate's 290 g.",
+      "curated-synonym",
+      1,
+      "1 plate (290 g)",
+    ),
+    components: [
+      { foodName: "Steamed chicken rice (rice only)", multiplier: 1 },
+      { foodName: "Mock chicken", multiplier: 0.7 },
+    ],
+  },
   released(
     "dish.chicken-congee",
     "Chicken porridge",
@@ -148,13 +169,21 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     2,
     "1 plate (200 g)",
   ),
-  released(
-    "dish.roti-prata",
-    "Plain prata (2 pc, with curry)",
-    "meal",
-    "The source serving matches the game's two-piece prata plate with curry.",
-    "curated-synonym",
-  ),
+  {
+    ...released(
+      "dish.roti-prata",
+      "Plain prata",
+      "meal",
+      "Composite: two plain prata scaled to the dough of the Lab egg prata (39.87 g carbohydrate each, x0.5433 of the 141 g Lab plain prata) plus the Lab curry served with the source's two-piece set.",
+      "scaled-exact",
+      1,
+      "2 pieces with curry (406 g)",
+    ),
+    components: [
+      { foodName: "Plain prata", multiplier: (2 * 39.87) / 73.39 },
+      { foodName: "Plain prata (2 pc, with curry) (curry only)", multiplier: 1 },
+    ],
+  },
   released(
     "dish.mee-goreng-mamak",
     "Mee goreng",
@@ -206,12 +235,22 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "The game recipe was refined to the source's complete lemon-rice bowl without unreported sides.",
   ),
-  released(
-    "dish.nyonya-laksa",
-    "Laksa",
-    "meal",
-    "The game dish was refined to the source's complete local laksa bowl.",
-  ),
+  {
+    ...released(
+      "dish.nyonya-laksa",
+      "Laksa gravy",
+      "meal",
+      "Composite: the Lab 'Laksa' bowl (604 g) reports 8.6 g saturated fat, less than half the 20.8 g of the source's own 'Laksa gravy' row (361 g) analysed from laksa, so the bowl is rebuilt from that gravy, the Derived thick beehoon bowl and one Lab fishcake (611 g).",
+      "curated-synonym",
+      1,
+      "1 bowl (611 g)",
+    ),
+    components: [
+      { foodName: "Laksa gravy", multiplier: 1 },
+      { foodName: "Thick beehoon", multiplier: 1 },
+      { foodName: "Fishcake", multiplier: 1 },
+    ],
+  },
   released(
     "dish.ayam-buah-keluak",
     "Ayam pongteh",
@@ -395,7 +434,15 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "meal",
     "Exact named complete dish match.",
   ),
-  released("dish.popiah", "Popiah", "meal", "Exact named complete snack match."),
+  released(
+    "dish.popiah",
+    "Popiah",
+    "meal",
+    "Exact named complete snack match.",
+    "exact",
+    1,
+    "1 roll (191 g)",
+  ),
   released(
     "dish.bak-kut-teh",
     "Bak kut teh (soup)",
@@ -460,6 +507,9 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "Roti john",
     "meal",
     "Exact named complete dish match.",
+    "exact",
+    1,
+    "1 roll (253 g)",
   ),
   released(
     "dish.soya-bean-milk",
@@ -592,8 +642,8 @@ export const VARIANT_FAMILY_MAPPINGS = [
     dishId: "dish.roti-prata",
     defaultVariantId: "prata-two-plain-curry",
     variants: [
-      variant("prata-two-plain-curry", "Two plain prata with curry", "Plain prata (2 pc, with curry)", 1, "prata-two-curry", "Default two-piece plate with curry."),
-      variant("prata-plain", "Plain prata", "Plain prata", 2, "prata-single-plain", "Single plain prata source serving."),
+      variant("prata-two-plain-curry", "Two plain prata with curry", "Plain prata", 1, "prata-two-curry", "Default two-piece plate with curry."),
+      variant("prata-plain", "Plain prata", "Plain prata", 2, "prata-single-plain", "The 141 g Lab plain prata holds 73.39 g carbohydrate, the dough of almost two egg prata (39.87 g); scaled to one egg-prata-sized piece.", "scaled-exact", 39.87 / 73.39, "1 piece (77 g)"),
       variant("prata-egg", "Egg prata", "Prata (egg)", 4, "prata-egg-centre", "Egg-filled prata."),
       variant("prata-egg-onion", "Egg and onion prata", "Prata (egg, onion)", 7, "prata-egg-onion", "Egg-and-onion prata."),
       variant("prata-egg-onion-cheese", "Egg, onion and cheese prata", "Prata (egg, onion, cheese)", 7, "prata-egg-onion-cheese", "Egg, onion and cheese prata."),
@@ -604,9 +654,9 @@ export const VARIANT_FAMILY_MAPPINGS = [
     defaultVariantId: "fish-soup-beehoon-no-milk",
     variants: [
       variant("fish-soup-beehoon-no-milk", "Fish beehoon, no milk", "Sliced fish beehoon soup (no milk)", 1, "fish-beehoon-clear", "Default clear soup with beehoon."),
-      variant("fish-soup-beehoon-milk", "Fish beehoon with milk", "Sliced fish beehoon soup (with milk)", 2, "fish-beehoon-milky", "Milky soup with beehoon."),
+      variant("fish-soup-beehoon-milk", "Fried fish beehoon with milk", "Fried fish beehoon soup (with milk)", 2, "fish-beehoon-milky", "Milky soup with the default bowl's 250 g of thick beehoon: the Derived row is the Lab milky fried-fish soup plus 1.25 thick beehoon, built the same way as the clear default; the milky sliced-fish Lab soup is not a like-for-like partner of the clear sliced-fish Lab soup (1,405 vs 2,407 mg sodium).", "curated-synonym"),
       variant("fish-soup-sliced-no-milk", "Fried fish soup, no milk", "Fried fish soup (no milk)", 4, "fish-slices-clear", "Clear fried-fish soup without noodles; the sliced-fish row states 84 kcal against about 154 kcal from its own macronutrients, so the reviewed fried-fish bowl stands in.", "curated-synonym"),
-      variant("fish-soup-sliced-milk", "Sliced fish soup with milk", "Sliced fish soup (with milk)", 7, "fish-slices-milky", "Milky sliced-fish soup without noodles."),
+      variant("fish-soup-sliced-milk", "Fried fish soup with milk", "Fried fish soup (with milk)", 7, "fish-slices-milky", "Milky fried-fish soup without noodles, the Lab pair of the clear fried-fish variant.", "curated-synonym"),
     ],
   },
   {
@@ -742,4 +792,4 @@ export const NUTRITION_INTENTS = [
 
 /** The educational disclosure shown with nutrition information. */
 export const NUTRITION_DISCLOSURE =
-  "Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed source serving; recipes and portions vary. Its 1-5 health and condition ratings compare each serving with a meal's share of general daily guidance from Singapore's Health Promotion Board and the World Health Organization, and with stricter guidance for each condition: they are not diagnoses, treatment advice, Health Promotion Board certifications, or universal judgements. Daily reference ranges are general guidance for Singaporean adults and do not represent individual needs. Total sugar is not the same as added sugar.";
+  "Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed source serving; recipes and portions vary. Its 1-5 health and condition ratings compare each serving with a meal's share (for a dessert, a snack's share) of general daily guidance from Singapore's Health Promotion Board and the World Health Organization, and with stricter guidance for each condition: they are not diagnoses, treatment advice, Health Promotion Board certifications, or universal judgements. Daily reference ranges are general guidance for Singaporean adults and do not represent individual needs. Total sugar is not the same as added sugar.";

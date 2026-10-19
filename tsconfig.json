@@ -37,6 +37,7 @@
     "tools/nutrition/csv.mjs",
     "tools/nutrition/importer.mjs",
     "tools/nutrition/manifest.mjs",
+    "tools/nutrition/plausibility.mjs",
     "tools/nutrition/ratings.mjs"
   ],
   "exclude": ["node_modules", "scratch"]
