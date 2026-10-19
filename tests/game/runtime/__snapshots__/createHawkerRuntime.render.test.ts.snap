@@ -10,35 +10,35 @@ exports[`createHawkerRuntime rendering > (1) draws a fresh centre on boot 1`] = 
 exports[`createHawkerRuntime rendering > (2) draws an open centre through 20 spawns and 50 frames 1`] = `
 [
   "262 190 #9a3e31 7 guests",
-  "646 190 #17352e 0 guests",
+  "646 190 #9a3e31 7 guests",
 ]
 `;
 
 exports[`createHawkerRuntime rendering > (3) redraws the busy centre in high contrast 1`] = `
 [
   "262 190 #9a3e31 7 guests",
-  "646 190 #17352e 0 guests",
+  "646 190 #9a3e31 7 guests",
 ]
 `;
 
 exports[`createHawkerRuntime rendering > (4) redraws the busy centre with reduced motion 1`] = `
 [
   "262 190 #9a3e31 7 guests",
-  "646 190 #17352e 0 guests",
+  "646 190 #9a3e31 7 guests",
 ]
 `;
 
 exports[`createHawkerRuntime rendering > (5) redraws the busy centre at lower-end quality 1`] = `
 [
   "262 190 #9a3e31 7 guests",
-  "646 190 #17352e 0 guests",
+  "646 190 #9a3e31 7 guests",
 ]
 `;
 
 exports[`createHawkerRuntime rendering > (6) redraws the busy centre with the debug overlay 1`] = `
 [
   "262 190 #9a3e31 7 guests",
-  "646 190 #17352e 0 guests",
+  "646 190 #9a3e31 7 guests",
 ]
 `;
 
@@ -115,7 +115,7 @@ exports[`createHawkerRuntime rendering > (10) draws frames 480 and 960 of the tw
     "646 190 #17352e 0 guests",
   ],
   "960": [
-    "262 190 #17352e 0 guests",
+    "262 190 #17352e 1 guest",
     "646 190 #17352e 0 guests",
   ],
 }

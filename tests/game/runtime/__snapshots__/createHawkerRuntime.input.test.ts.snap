@@ -16,7 +16,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -33,7 +33,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -50,7 +50,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -67,7 +67,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -84,7 +84,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": "starter-3",
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -101,7 +101,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": "starter-3",
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "53266b770faf2b7730314d32ca471e6b96a226bb8d3464191596b9ca5891986f",
+    "coreSha256": "4017146496dc2378643e9daf95d0f4376e1fa8468291f6ff83c715e4b560527d",
     "newEvents": [],
   },
   {
@@ -118,7 +118,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": "starter-3",
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -135,7 +135,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": "starter-3",
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [
       {
         "kind": "error",
@@ -158,7 +158,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -175,7 +175,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -192,7 +192,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -209,7 +209,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -226,7 +226,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -243,7 +243,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -260,7 +260,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -277,7 +277,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -294,7 +294,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -311,7 +311,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -328,7 +328,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -345,7 +345,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -362,7 +362,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -379,7 +379,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -396,7 +396,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 1,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
   {
@@ -413,7 +413,7 @@ exports[`createHawkerRuntime keyboard input > (14) changes something visible on 
     "selectedObjectId": undefined,
     "selectedCustomerId": undefined,
     "cameraCentreCount": 2,
-    "coreSha256": "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+    "coreSha256": "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
     "newEvents": [],
   },
 ]

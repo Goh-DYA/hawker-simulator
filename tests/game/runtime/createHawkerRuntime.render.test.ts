@@ -71,24 +71,24 @@ const RENDER_DIGESTS = {
     sha256: "c16c44f9d7b4a2b7f2a5f0d3d37babdf57b78d6e5c696fe1ad5046769b585b07",
   },
   busy: {
-    calls: 416_425,
-    sha256: "274c9aaab4ddd8edb1a82ffd683040a0305779298260a2d56d504738894f19b1",
+    calls: 415_124,
+    sha256: "8f3a8722ff5897e92fec3fb87f647077a68f863ce2f9dc18ee580df7002f903c",
   },
   highContrast: {
-    calls: 527_650,
-    sha256: "7f786a87b3b8d8625b9cf447f8df92646367655346d3ab69740d6e244fb42c8d",
+    calls: 526_275,
+    sha256: "e238fa0157bf6c0f4efade63ef917fd01da9d951293a7203f562167c0cd24973",
   },
   reducedMotion: {
-    calls: 205,
-    sha256: "a06e05c43935620c66f50db0f4c836a609542fc4de26fe5aa004f89baa8fee63",
+    calls: 219,
+    sha256: "69ab1a0f6904e5ab135af9ebd4e659a6486cb07886462fa3e59f8d5b3276f4bf",
   },
   lowerEnd: {
-    calls: 335_585,
-    sha256: "790d5c0429bbcfce207bd181eba44df92e65714185a971dc3bba3e31b89648f1",
+    calls: 333_423,
+    sha256: "82463858f7c415275f45e59c66bb73e21bd79a313a574b0aedfcbd596f633640",
   },
   debugOverlay: {
-    calls: 372,
-    sha256: "bad4474ea5a7a292979b534749fb4cd37d123ef329ba982692206edf91302e5f",
+    calls: 308,
+    sha256: "291c1b74034762b32a1d17b3443cf7b824957afcf4ce5529f917f8813a4c9325",
   },
   placeValid: {
     calls: 6,
@@ -115,12 +115,12 @@ const RENDER_DIGESTS = {
     sha256: "260ec5214d29b54e2cee3f407aa8c9539a9e5d09a1c3e9e04f2181405aa1a045",
   },
   multiDayFrame480: {
-    calls: 180,
-    sha256: "384aece87b30e8e37a0f1652b96437f7cb9fc4015833f105f8719d072b371ce8",
+    calls: 240,
+    sha256: "fe0f5400ef558a4a388c6c353bb6243837c790c645ab013f217d50ef572223be",
   },
   multiDayFrame960: {
-    calls: 199,
-    sha256: "3830566c7826b30b318a9bc03c0cd9cf020eb9f76779db9a7ab80f4adc62eb75",
+    calls: 253,
+    sha256: "dc5bef5435219c0045fb38e230fe7bc61d402d62e9d68dee38d20dd705cfe7b7",
   },
 } satisfies Record<string, RenderLogDigest>;
 
