@@ -1,6 +1,6 @@
 # Launch Content Catalogue
 
-Status: Content `1.3.0` typed roster passes automated validation; exact-production browser and human cultural verification pending
+Status: Content `1.4.0` typed roster passes automated validation; exact-production browser and human cultural verification pending
 Counting rule: unique ID plus meaningful functional, footprint, interaction, unlock, or constructed-visual difference. Palette-only recolours do not count.
 
 ## Roster counts
@@ -10,45 +10,45 @@ This document owns the launch content counts. Other documents link here, except 
 | Record | Count | Validator rule |
 |---|---:|---|
 | Fictional stalls | 14 | Exact |
-| Dishes | 54 | Exact |
+| Dishes | 67 | Exact |
 | Placeables | 80 | At least 80, with a minimum per category (see [Eighty placeables](#eighty-placeables)) |
 | Customer archetypes | 12 | Exact |
 | Customer lifecycle states | 11 | Fixed by the simulation's customer status type |
-| English localization entries | 320 | Pinned by the content tests |
-| Released nutrition profiles | 104 | Derived: one per dish plus each additional variant preparation |
-| Nutrition variant families | 14 | Exact; together they expose 64 selectable variants |
+| English localization entries | 346 | Pinned by the content tests |
+| Released nutrition profiles | 116 | Derived: one per dish plus each additional variant preparation |
+| Nutrition variant families | 14 | Exact; together they expose 63 selectable variants |
 | Nutrition source snapshots | 2 | Exact |
 | Nutrition intents | 5 | Exact |
 | Nutrition guidelines | 11 | Exact |
 
 ## Nutrition coverage
 
-Content `1.3.0` provides a released source profile for every one of the 54 dishes. Fourteen dish families add reviewed, rank-gated preparations for comparison: kopi, teh tarik, nasi lemak, fried carrot cake, roti prata, sliced fish soup, bak chor mee, chicken murtabak, chicken nasi briyani, masala thosai, yong tau foo, ban mian, bak kut teh, and duck rice. Together, the 54 base profiles and 50 additional preparation profiles produce 104 released nutrition profiles; the 14 families expose 64 selectable variants when their default preparations are included.
+Content `1.4.0` provides a released source profile for every one of the 67 dishes. Fourteen dish families add reviewed, rank-gated preparations for comparison: kopi, teh tarik, nasi lemak, fried carrot cake, roti prata, sliced fish soup, bak chor mee, chicken murtabak, chicken nasi briyani, masala thosai, yong tau foo, ban mian, bak kut teh, and duck rice. Together, the 67 base profiles and 49 additional preparation profiles produce 116 released nutrition profiles; the 14 families expose 63 selectable variants when their default preparations are included.
 
-Every profile has a 1-to-5 Health rating calculated comparatively within its meal or drink class, plus condition-specific ratings for high cholesterol, obesity, diabetes, and hypertension. Every dish separately has a 1-to-5 Star rating derived from its authored quality and demand, representing taste and popularity rather than nutritional suitability. Nutrition values and recipe selection do not rewrite a dish family's price, Star rating, preparation time, serving time, or eating time. Customers with a visit-specific health condition use the applicable condition rating when choosing a stall and dish; the ordered meal applies a bounded satisfaction change from -0.2 to +0.2. Conditions are assigned independently of customer archetype and are simplified game traits, not diagnoses or medical advice. See [NUTRITION_DATA.md](NUTRITION_DATA.md) for source, validation, scoring, and disclosure boundaries.
+Every profile has a 1-to-5 Health rating that compares its serving with a meal's share of general daily guidance (or, for a drink, Singapore's Nutri-Grade bands), plus condition-specific ratings for high cholesterol, obesity, diabetes, and hypertension. Every dish separately has a 1-to-5 Star rating derived from its authored quality and demand, representing taste and popularity rather than nutritional suitability. Nutrition values and recipe selection do not rewrite a dish family's price, Star rating, preparation time, serving time, or eating time. Customers with a visit-specific health condition use the applicable condition rating when choosing a stall and dish; the ordered meal applies a bounded satisfaction change from -0.2 to +0.2. Conditions are assigned independently of customer archetype and are simplified game traits, not diagnoses or medical advice. See [NUTRITION_DATA.md](NUTRITION_DATA.md) for source, validation, scoring, and disclosure boundaries.
 
-## Fourteen fictional stalls and 54 dishes
+## Fourteen fictional stalls and 67 dishes
 
 All stall identities are original. Real dish names are descriptive cultural references, not brands. Dietary tags are preference aids only and never safety, allergen, vegetarian, or halal certification claims. The table mirrors the current typed content roster; runtime IDs are authoritative, and the automated content gate confirms the tests match them.
 
 | # | Stall | Theme and operating identity | Menu | Unlock |
 |---:|---|---|---|---|
-| 1 | Sunrise Roost | Quick rice/chicken and breakfast service | Poached chicken rice; roast chicken rice; vegetarian chicken rice; chicken congee | Level 1 |
-| 2 | Coconut & Lime | Malay-inspired rice, noodle, and soup counter | Nasi lemak; mee rebus; soto ayam; sayur lodeh with lontong | Level 1 |
-| 3 | Kopi Canopy | Compact drinks and dessert counter | Kopi; fresh sugarcane juice; ice kacang | Level 2 |
-| 4 | Cinder Wok | Popular, slower batch-cooked wok dishes | Char kway teow; Hokkien mee; fried carrot cake; oyster omelette | Level 3 |
-| 5 | Mee Pok Junction | Teochew noodle and clear-soup counter | Bak chor mee; fishball mee pok; lor mee; fishball soup | Level 4 |
-| 6 | Tiffin Lantern | Indian-Muslim-inspired griddle, noodle, and rice counter | Roti prata set; mee goreng mamak; chicken murtabak; chicken nasi briyani | Level 5 |
-| 7 | Sweet Monsoon | Compact local dessert and drinks counter | Chendol; beancurd with toppings; teh tarik; pulut hitam | Level 5 |
-| 8 | Satay Meridian | Malay-inspired charcoal grill for skewers, chicken, and seafood | Ten chicken satay with sauce; three barbecued chicken wings; ten beef satay with sauce; salted egg squid | Level 6 |
-| 9 | Pick & Mix | Customisable noodle, soup, and vegetable-forward counter | Yong tau foo; ban mian; thunder tea rice; popiah | Level 6 |
+| 1 | Sunrise Roost | Quick rice/chicken and breakfast service | Poached chicken rice; roast chicken rice; vegetarian chicken rice; chicken congee; char siew rice | Level 1 |
+| 2 | Coconut & Lime | Malay-inspired rice, noodle, and soup counter | Nasi lemak; mee rebus; soto ayam; sayur lodeh with lontong; nasi padang beef set | Level 1 |
+| 3 | Kopi Canopy | Compact kopitiam drinks and toast counter | Kopi; fresh sugarcane juice; kaya butter toast; teh tarik; barley water | Level 2 |
+| 4 | Cinder Wok | Popular, slower batch-cooked wok dishes | Char kway teow; Hokkien mee; fried carrot cake; oyster omelette; beef hor fun | Level 3 |
+| 5 | Mee Pok Junction | Teochew noodle and clear-soup counter | Bak chor mee; fishball mee pok; lor mee; fishball tang hoon soup; chwee kueh | Level 4 |
+| 6 | Tiffin Lantern | Indian-Muslim-inspired griddle, noodle, and rice counter | Roti prata set; mee goreng mamak; chicken murtabak; chicken nasi briyani; roti john | Level 5 |
+| 7 | Sweet Monsoon | Compact local dessert and drinks counter | Chendol; beancurd with toppings; pulut hitam; ice kacang; soya bean milk | Level 5 |
+| 8 | Satay Meridian | Malay-inspired charcoal grill for skewers, chicken, and seafood | Ten chicken satay with sauce; barbecued chicken wings; ten beef satay with sauce; sotong panggang | Level 6 |
+| 9 | Pick & Mix | Customisable noodle, soup, and vegetable-forward counter | Yong tau foo; ban mian; thunder tea rice; popiah; economic rice | Level 6 |
 | 10 | Tamarind Leaf | South Indian vegetable-forward griddle and tiffin counter | Masala thosai; idli sambar; vadai duo; lemon rice | Level 7 |
-| 11 | Bamboo Basket | Cantonese dim sum and steamed small-plate counter | Four prawn dumplings; siew mai; char siew bao; lotus leaf rice | Level 8 |
-| 12 | Straits Hearth | Peranakan-inspired premium braises and noodles | Laksa; ayam pongteh; Nonya chap chye; babi pongteh | Level 9 |
+| 11 | Bamboo Basket | Cantonese dim sum, steamed small-plate and noodle counter | Four prawn dumplings; siew mai; char siew bao; lotus leaf rice; wanton mee | Level 8 |
+| 12 | Straits Hearth | Peranakan-inspired premium braises and noodles | Laksa; ayam pongteh; Nonya chap chye; babi pongteh; mee siam; kueh pie tee | Level 9 |
 | 13 | Herbal Cauldron | Heritage broth, braise, and claypot counter | Bak kut teh; duck rice; kway chap; claypot chicken rice | Level 11 |
-| 14 | Harbour Ember | Premium seafood grill and soup counter | Sambal stingray; sliced fish soup; black pepper crab | Level 12 |
+| 14 | Harbour Ember | Premium seafood grill and soup counter | Sambal stingray; black pepper crab; sliced fish soup; prawn noodle soup | Level 12 |
 
-Dish count is 54: twelve four-dish stalls plus two three-dish stalls.
+Dish count is 67: nine five-dish stalls, four four-dish stalls, and one six-dish stall. Content `1.4.0` added thirteen dishes, moved teh tarik to Kopi Canopy and ice kacang to Sweet Monsoon, and matched several dishes' names and servings to their nutrition source rows; see the [changelog](../CHANGELOG.md).
 
 ### Dish production matrix
 
@@ -72,7 +72,7 @@ Dish count is 54: twelve four-dish stalls plus two three-dish stalls.
 | Bak chor mee | 8 | tossed flat noodles, minced pork and mushroom garnish, bowl |
 | Fishball mee pok | 7 | flat noodles, fishballs, fish cake, bowl |
 | Lor mee | 9 | thick noodles, dark glossy gravy, egg, bowl |
-| Fishball soup | 9 | fishballs and fish cake in clear broth, bowl |
+| Fishball tang hoon soup | 9 | fishballs, fish cake and glass noodles in clear broth, bowl |
 | Roti prata set | 6 | layered flatbread and curry cup |
 | Mee goreng mamak | 8 | red-brown noodles, plate |
 | Chicken murtabak | 11 | cut filled flatbread and curry cup |
@@ -82,9 +82,9 @@ Dish count is 54: twelve four-dish stalls plus two three-dish stalls.
 | Teh tarik | 4 | caramel-coloured milk tea with a foam cap, cup |
 | Pulut hitam | 6 | dark purple rice porridge and coconut cream ribbon, bowl |
 | Ten chicken satay with sauce | 10 | grilled chicken skewers, peanut sauce, cucumber, pressed rice, platter |
-| Three barbecued chicken wings | 9 | bronze glazed wings, cucumber, chilli dip, platter |
+| Barbecued chicken wings | 9 | three bronze glazed wing pieces, cucumber, chilli dip, platter |
 | Ten beef satay with sauce | 12 | grilled beef skewers, peanut sauce, pressed rice, platter |
-| Salted egg squid | 15 | scored squid pieces, golden salted-egg coating, leaf-lined plate |
+| Sotong panggang | 15 | charcoal-grilled spiced squid with char marks, leaf-lined plate |
 | Yong tau foo | 8 | assorted stuffed tofu and vegetable pieces in clear soup, bowl |
 | Ban mian | 8 | hand-torn noodles and contrasting toppings in soup, bowl |
 | Thunder tea rice | 9 | rice, chopped vegetables, tofu, peanuts, and green herb broth, bowl |
@@ -94,20 +94,33 @@ Dish count is 54: twelve four-dish stalls plus two three-dish stalls.
 | Vadai duo | 6 | two savoury fritters and chutney/sambar cup |
 | Lemon rice | 7 | yellow rice, accompaniments, plate |
 | Four prawn dumplings | 8 | translucent pleated prawn dumplings, bamboo basket/platter |
-| Siew mai | 8 | open yellow dumplings with orange garnish, bamboo basket/platter |
+| Siew mai | 8 | four open yellow dumplings with orange crab-roe garnish, bamboo basket/platter |
 | Char siew bao | 7 | white steamed buns with visible red-brown filling, bamboo basket/platter |
 | Lotus leaf rice | 10 | opened leaf parcel with glutinous rice and fillings, leaf-lined plate |
 | Laksa | 11 | orange coconut gravy, noodles, bowl/spoon |
-| Ayam pongteh | 14 | dark soy-bean braise, chicken, potato, rice service |
-| Nonya chap chye | 9 | braised mixed vegetables and rice |
-| Babi pongteh | 13 | pork braise, potato, rice service |
+| Ayam pongteh | 14 | dark soy-bean braise, chicken, potato, side plate |
+| Nonya chap chye | 9 | braised cabbage, carrot, baby corn and black fungus, side plate |
+| Babi pongteh | 13 | pork braise, potato, side plate |
 | Bak kut teh | 12 | pork ribs in peppery clear broth, bowl |
 | Duck rice | 10 | braised duck, rice, egg, tau kwa, plate |
 | Kway chap | 10 | broad rice-noodle sheets, dark broth, braised pork, tofu, and egg, bowl |
 | Claypot chicken rice | 12 | chicken, sausage, mushrooms, rice, and crisp crust, clay pot |
 | Sambal stingray | 16 | grilled fish portion, sambal, lined plate |
 | Sliced fish soup | 10 | clear soup and fish slices, bowl |
-| Black pepper crab | 24 | crab silhouette, dark pepper sauce, platter |
+| Black pepper crab | 24 | quarter crab with claw, dark pepper sauce, platter |
+| Char siew rice | 8 | glazed red-edged pork slices, rice mound, cucumber, plate |
+| Nasi padang beef set | 10 | spiced beef in gravy beside rice, leaf-lined plate |
+| Kaya butter toast | 4 | toast with green-brown kaya and butter slices, plate |
+| Barley water | 3 | cloudy pale barley drink with ice, clear glass |
+| Beef hor fun | 10 | broad rice noodles, beef slices and egg gravy, plate |
+| Chwee kueh | 4 | five white rice cakes with preserved-radish topping, plate |
+| Roti john | 8 | long omelette-fried roll cut into strips, plate |
+| Soya bean milk | 3 | creamy off-white soy milk, clear glass |
+| Economic rice | 7 | rice with one vegetable and one meat dish, plate |
+| Wanton mee | 8 | springy noodles, wantons, char siew slices and greens, plate |
+| Mee siam | 7 | thin vermicelli in red tamarind gravy, egg halves and lime, plate |
+| Kueh pie tee | 8 | five crisp top-hat cups with turnip filling, platter |
+| Prawn noodle soup | 10 | yellow noodles, whole prawns and pork in red-orange broth, bowl |
 
 Descriptions, ingredient cues, spellings, vessels, stall grouping, and cross-cultural attribution require Singapore cultural review before release. Indian-Muslim and Malay-inspired framing must not imply unreviewed halal certification; Tamarind Leaf's vegetarian framing and all ingredient/dietary tags require recipe review. Pork and seafood ingredients, dim sum terminology, babi pongteh, ayam pongteh, bak kut teh, kway chap, seafood species, and religious/dietary implications are high-sensitivity items.
 
@@ -278,8 +291,8 @@ Intensity runs from 0 (calm) to 1 (busy) and sets how the director weighs the ca
 | Heritage food walk | 0.65 | 1 | 1.05 | 1 | 1 | Curious Food Explorer ×2.2, Quality Treat Seeker ×1.6 | small-plate +0.8, seafood +0.8 |
 | Public holiday: families out | 0.6 | 1.05 | 1.2 | 1 | 1.15 | Family Table ×2, Comfort-Seeking Regular ×1.4, Office Lunch Sprinter ×0.4 | rice +0.6 |
 
-Each card's English copy (name, a one-line summary and the forecast shown the day before) lives with the card in `src/content/calendar.ts`, not in the launch localization table, so the 320 English localization entries in the [roster counts](#roster-counts) do not include it and the cards are not part of `LAUNCH_ROSTER`. The cards are parsed with `calendarCardSchema` at import (multipliers from 0.25 to 3, category bonuses from −2 to 2), and `tests/content/calendar.test.ts` checks that IDs are unique with exactly one opening day, that the bag has enough cards to avoid repeats, that every card names only launch personas and dish categories, that the bag has both calm and busy cards, that the opening day changes nothing, and that the copy labels neither food nor people.
+Each card's English copy (name, a one-line summary and the forecast shown the day before) lives with the card in `src/content/calendar.ts`, not in the launch localization table, so the 346 English localization entries in the [roster counts](#roster-counts) do not include it and the cards are not part of `LAUNCH_ROSTER`. The cards are parsed with `calendarCardSchema` at import (multipliers from 0.25 to 3, category bonuses from −2 to 2), and `tests/content/calendar.test.ts` checks that IDs are unique with exactly one opening day, that the bag has enough cards to avoid repeats, that every card names only launch personas and dish categories, that the bag has both calm and busy cards, that the opening day changes nothing, and that the copy labels neither food nor people.
 
 ## Validation requirements
 
-Automated tests must prove the [roster counts](#roster-counts): exactly 14 stalls, 54 dishes, and 12 customer archetypes, at least 80 placeables with at least the listed number in each placeable category, and 320 English keys. They must also prove unique IDs and primary stall/food visual references, a playable dish when each stall unlocks, valid rotations/footprints, interaction points outside blocking collisions, known asset/audio references, reachable required interactions, a valid unlock graph, and no palette-only duplicate counted as content. Nutrition validation must additionally prove 104 released profiles, 14 variant families with 64 selectable variants, a released base profile and Star rating for every dish, complete Health and condition ratings, deterministic source generation, and valid provenance.
+Automated tests must prove the [roster counts](#roster-counts): exactly 14 stalls, 67 dishes, and 12 customer archetypes, at least 80 placeables with at least the listed number in each placeable category, and 346 English keys. They must also prove unique IDs and primary stall/food visual references, a playable dish when each stall unlocks, valid rotations/footprints, interaction points outside blocking collisions, known asset/audio references, reachable required interactions, a valid unlock graph, and no palette-only duplicate counted as content. Nutrition validation must additionally prove 116 released profiles, 14 variant families with 63 selectable variants, a released base profile and Star rating for every dish, complete Health and condition ratings, deterministic source generation, and valid provenance.
