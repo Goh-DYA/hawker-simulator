@@ -349,6 +349,7 @@ export const nutritionUnavailableReasonSchema = z.enum([
   "not-reported",
   "invalid-source",
   "unmapped",
+  "implausible-source",
 ]);
 
 export const nutritionProfileStatusSchema = z.enum(["released", "unavailable", "quarantined"]);
@@ -429,6 +430,24 @@ export const nutritionProfileSchema = z.object({
   unavailableReason: nutritionUnavailableReasonSchema.optional(),
   reviewNote: z.string().min(8),
   quarantineReasons: z.array(z.string().min(8)).min(1).optional(),
+  /** Values a documented plausibility rule withheld from a released profile, with the rule's finding. */
+  withheldReasons: z.array(z.string().min(8)).min(1).optional(),
+  /** Source rows summed into a composite profile, with each row's multiplier. */
+  components: z
+    .array(z.object({ foodName: z.string().min(2), multiplier: z.number().positive() }))
+    .min(2)
+    .optional(),
+  /**
+   * Amounts the ratings read that the nutrients do not show: the edible part of the serving,
+   * which the per-100 g density terms divide by, and the stand-in amounts used for values a
+   * plausibility rule withheld. They let the ratings be recomputed from the profile alone.
+   */
+  ratingInputs: z
+    .object({
+      edibleAmount: z.number().finite().positive(),
+      standIns: z.partialRecord(nutritionMetricSchema, z.number().finite().nonnegative()).optional(),
+    })
+    .optional(),
 });
 
 export const nutritionVariantSchema = z.object({

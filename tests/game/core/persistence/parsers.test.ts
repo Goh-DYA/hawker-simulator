@@ -172,6 +172,17 @@ describe("save loader vocabulary checks", () => {
     ).toBe("metrics.nutrition.recentOutcomes[49].profile.nutrients.energyKcal.reason is invalid");
   });
 
+  it("accepts a nutrient withheld as an implausible source value", () => {
+    const state = deserializeGameState(
+      with_recent_outcome({ profile: build_unavailable_profile("implausible-source") }),
+      TEST_CATALOG,
+    );
+    expect(state.metrics.nutrition.recentOutcomes[49]?.profile?.nutrients.energyKcal).toEqual({
+      status: "unavailable",
+      reason: "implausible-source",
+    });
+  });
+
   it("accepts an unavailable nutrient without a reason", () => {
     const state = deserializeGameState(
       with_recent_outcome({ profile: build_unavailable_profile(undefined) }),

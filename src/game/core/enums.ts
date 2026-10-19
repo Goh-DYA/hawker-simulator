@@ -67,6 +67,7 @@ export const NUTRITION_UNAVAILABLE_REASONS = [
   "not-reported",
   "invalid-source",
   "unmapped",
+  "implausible-source",
 ] as const;
 
 /** Health conditions a customer can carry. */
