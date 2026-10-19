@@ -1,21 +1,16 @@
 /**
- * The launch economy: starting balances, level and reputation caps, the recovery grant
- * and the XP needed for each level.
+ * The launch economy: starting balances, level and reputation caps and the recovery grant;
+ * the level curve is owned by `calculateLevel` in `src/game/core/economy.ts`.
  */
 import type { EconomyDefinition } from "./types";
 
-/** The launch economy constants. `levelXpThresholds[i]` is the total XP that reaches level `i + 1`. */
+/** The launch economy constants. */
 export const ECONOMY = {
   startingCash: 4_200,
   startingReputation: 8,
   maxLevel: 20,
   maxReputation: 100,
-  minimumVisitEarnings: 3,
+  minimumVisitEarnings: 2,
   starterRequiredSeats: 4,
   recoveryGrant: 650,
-  levelXpThresholds: [
-    0, 120, 300, 540, 850, 1_250, 1_750, 2_360, 3_100, 3_980,
-    5_020, 6_240, 7_660, 9_300, 11_180, 13_320, 15_740, 18_460,
-    21_500, 24_880,
-  ],
 } as const satisfies EconomyDefinition;
