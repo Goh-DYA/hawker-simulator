@@ -1,6 +1,7 @@
 /**
- * Rice dish motifs: chicken rice three ways, nasi lemak, briyani, lemon rice, duck rice,
- * claypot chicken rice, thunder tea rice and lotus leaf rice.
+ * Rice dish motifs: chicken rice three ways, char siew rice, nasi lemak, nasi padang, briyani,
+ * lemon rice, duck rice, claypot chicken rice, thunder tea rice, lotus leaf rice and economic
+ * rice.
  *
  * Each lays a domed rice mound (or the rice inside its pot or leaf) and two or three bold
  * toppings in the dish's true colours. Dishes with reviewed nutrition variants (nasi lemak,
@@ -9,11 +10,14 @@
 import {
   css,
   fill_ellipse,
+  fill_rounded_rect,
   line,
+  linear_gradient,
   radial_gradient,
   shade,
   SHADOW_INK,
   speckle,
+  stroke_rounded_rect,
   TAU,
   tint,
   type PaintContext,
@@ -21,10 +25,12 @@ import {
 import { at, heap_scale, pieces_left, type Motif, type MotifPaint } from "../motif";
 import {
   DARK_SOY,
+  paint_chilli_slice,
   paint_chunk,
   paint_citrus_wedge,
   paint_cucumber,
   paint_dots,
+  paint_drizzle,
   paint_liquid,
   paint_leaf,
   paint_rice_mound,
@@ -33,6 +39,7 @@ import {
   SAMBAL,
   SHALLOT,
   SPRING_ONION,
+  WHITE,
 } from "../parts";
 import {
   paint_dollop,
@@ -40,13 +47,19 @@ import {
   paint_mushroom,
   paint_sausage_slice,
   paint_scallions,
+  paint_shreds,
   paint_slice_row,
+  paint_slivers,
 } from "../toppings";
 
 /** Chicken rice's stock-cooked rice, a touch more golden than plain rice. */
 const CHICKEN_RICE = 0xf1e2b8;
 /** Coconut rice, creamy white. */
 const COCONUT_RICE = 0xf6efdc;
+/** Char siew's lacquered, honey-glazed edge and its pink roast meat. */
+const CHAR_SIEW = { glaze: 0xa8321e, meat: 0xd9826a } as const;
+/** Beef rendang's dark, reduced coconut-spice gravy and its slow-cooked beef. */
+const RENDANG = { gravy: 0x6e3a1c, beef: 0x5a2c18 } as const;
 /** Lotus leaf rice's soy-stained glutinous rice. */
 const LOTUS_RICE = 0xb98a52;
 /**
@@ -190,6 +203,141 @@ function paint_nasi_lemak(p: MotifPaint): void {
   const [sx, sy] = at(area, -0.05, 0.55);
   paint_dollop(ctx, sx, sy, 3.2, SAMBAL, seed ^ 0x5a);
   paint_cucumber_row(p, -0.85, 2);
+}
+
+/**
+ * Paints one slice of char siew lying on the rice: pink roast meat inside a lacquered
+ * mahogany-red rim, blackened where the fire caught its corners, with a glaze highlight.
+ *
+ * @param ctx - The paint context.
+ * @param x - Slice centre x.
+ * @param y - Slice centre y.
+ * @param angle - Tilt in radians.
+ */
+function paint_char_siew_slice(ctx: PaintContext, x: number, y: number, angle: number): void {
+  const width = 3.6;
+  const length = 8.4;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  fill_rounded_rect(
+    ctx,
+    -width / 2 + 0.6,
+    -length / 2 + 0.9,
+    width,
+    length,
+    1.4,
+    css(SHADOW_INK, 0.26),
+  );
+  fill_rounded_rect(
+    ctx,
+    -width / 2,
+    -length / 2,
+    width,
+    length,
+    1.4,
+    linear_gradient(ctx, -width / 2, 0, width / 2, 0, [
+      [0, CHAR_SIEW.glaze],
+      [0.25, CHAR_SIEW.meat],
+      [0.7, tint(CHAR_SIEW.meat, 0.15)],
+      [1, CHAR_SIEW.glaze],
+    ]),
+  );
+  stroke_rounded_rect(ctx, -width / 2, -length / 2, width, length, 1.4, css(0x7a1a10), 0.7);
+  fill_ellipse(ctx, -width / 2 + 0.5, -length / 2 + 0.8, 0.8, 0.6, css(0x2a0c06, 0.8));
+  fill_ellipse(ctx, width / 2 - 0.4, length / 2 - 1, 0.7, 0.9, css(0x2a0c06, 0.7));
+  fill_rounded_rect(
+    ctx,
+    -width / 2 + 0.9,
+    -length / 2 + 1.2,
+    0.7,
+    length * 0.55,
+    0.3,
+    css(WHITE, 0.45),
+  );
+  ctx.restore();
+}
+
+/**
+ * Char siew rice: lacquered barbecued pork slices, red at the glazed edge and pink inside,
+ * fanned over white rice under a glossy sweet sauce, with cucumber and spring onion.
+ *
+ * @param p - The motif paint.
+ */
+function paint_char_siew_rice(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  const size = heap_scale(p.remaining);
+  paint_rice_mound(
+    ctx,
+    area.x - 2,
+    area.y - 1,
+    area.rx * 0.75 * size,
+    area.ry * 0.78 * size,
+    0xf6f0e0,
+    seed,
+    isLowDetail,
+  );
+  // The sweet sauce poured over the slices soaks into the rice round them.
+  paint_liquid(ctx, area.x + 1, area.y, area.rx * 0.5 * size, area.ry * 0.45 * size, 0x7a2a16, {
+    sheen: 0.5,
+    alpha: 0.7,
+  });
+  const slices = pieces_left(5, p.remaining);
+  for (let slice = slices - 1; slice >= 0; slice -= 1) {
+    const [x, y] = at(area, -0.4 + slice * 0.24, -0.12 + slice * 0.06);
+    paint_char_siew_slice(ctx, x, y, 0.5 - slice * 0.06);
+  }
+  paint_cucumber_row(p, -0.85, 3);
+  const [gx, gy] = at(area, 0.62, -0.5);
+  paint_scallions(ctx, gx, gy, 2.4, isLowDetail ? 2 : 4, seed ^ 0x5d);
+  const [dx, dy] = at(area, 0.82, 0.58);
+  paint_sauce_cup(ctx, dx, dy, 3, 0xe0512f);
+}
+
+/**
+ * Nasi padang beef set: white rice on banana leaf beside dark beef rendang in its thick, oily
+ * coconut gravy, with a heap of long beans and sliced red chilli.
+ *
+ * @param p - The motif paint.
+ */
+function paint_nasi_padang(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  const size = heap_scale(p.remaining);
+  const [rx, ry] = at(area, -0.45, -0.12);
+  paint_rice_mound(
+    ctx,
+    rx,
+    ry,
+    area.rx * 0.48 * size,
+    area.ry * 0.62 * size,
+    0xf6f1e4,
+    seed,
+    isLowDetail,
+  );
+  const [gx, gy] = at(area, 0.3, 0.05);
+  paint_liquid(ctx, gx, gy, area.rx * 0.5 * size, area.ry * 0.55 * size, RENDANG.gravy, {
+    sheen: 0.35,
+    oil: isLowDetail ? 3 : 7,
+    oilColour: 0xc0642a,
+    seed: seed ^ 0x6a,
+  });
+  const pieces = pieces_left(4, p.remaining);
+  for (let piece = 0; piece < pieces; piece += 1) {
+    const [bx, by] = at(area, 0.12 + (piece % 2) * 0.36, -0.2 + Math.floor(piece / 2) * 0.42);
+    paint_chunk(ctx, bx, by, 4.8, RENDANG.beef, 0.35 * piece - 0.2, { radius: 1.6, gloss: 0.35 });
+  }
+  // Toasted coconut (kerisik) clinging to the beef.
+  paint_dots(ctx, gx, gy, area.rx * 0.32, isLowDetail ? 4 : 9, 0.55, 0x9a5a28, seed ^ 0x6b);
+  const beans = pieces_left(3, p.remaining);
+  for (let bean = 0; bean < beans; bean += 1) {
+    const [lx, ly] = at(area, -0.6 + bean * 0.2, 0.62 - bean * 0.05);
+    line(ctx, lx, ly, lx + 4.2, ly - 1.2, css(0x2f6a26), 1.6);
+    line(ctx, lx + 0.4, ly - 0.4, lx + 3.4, ly - 1.3, css(0x6aa64a, 0.8), 0.5);
+  }
+  for (let chilli = 0; chilli < 2; chilli += 1) {
+    const [cx, cy] = at(area, 0.48 - chilli * 0.3, -0.62 + chilli * 0.1);
+    paint_chilli_slice(ctx, cx, cy, 1.3);
+  }
 }
 
 /**
@@ -488,6 +636,58 @@ function paint_lotus_leaf_rice(p: MotifPaint): void {
   paint_chunk(ctx, cx, cy, 3.2, 0xa8402e, 0.4, { gloss: 0.45 });
 }
 
+/**
+ * Economic rice: a scoop of white rice with the two dishes picked from the trays beside it in
+ * their own heaps, stir-fried cabbage and carrot, and glossy red sweet-and-sour pork with
+ * green capsicum, with a ladle of curry over the rice.
+ *
+ * @param p - The motif paint.
+ */
+function paint_economic_rice(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  const size = heap_scale(p.remaining);
+  const [rx, ry] = at(area, -0.42, -0.3);
+  const mound_rx = area.rx * 0.48 * size;
+  const mound_ry = area.ry * 0.55 * size;
+  // The curry ladled over the rice runs down into a pool at its foot.
+  paint_liquid(ctx, rx + 2, ry + 2.2, mound_rx * 0.95, mound_ry * 0.75, 0xd2802a, {
+    sheen: 0.35,
+    oil: isLowDetail ? 2 : 5,
+    oilColour: 0xe8a040,
+    seed: seed ^ 0x80,
+  });
+  paint_rice_mound(
+    ctx,
+    rx - 1,
+    ry - 0.8,
+    mound_rx * 0.85,
+    mound_ry * 0.85,
+    0xf6f1e4,
+    seed,
+    isLowDetail,
+  );
+  paint_drizzle(ctx, rx, ry - 0.5, mound_rx * 0.45, 0xd2802a, seed ^ 0x83, 1, 0.8);
+  // The vegetable: pale cabbage leaves tossed with carrot strips.
+  const leaves = pieces_left(3, p.remaining);
+  for (let leaf = 0; leaf < leaves; leaf += 1) {
+    const [lx, ly] = at(area, -0.55 + leaf * 0.28, 0.5 + (leaf % 2) * 0.12);
+    paint_leaf(ctx, lx, ly, 6.4, -0.5 + leaf * 0.6, leaf % 2 ? 0xd8e6b0 : 0xb9d68a);
+  }
+  const [vx, vy] = at(area, -0.3, 0.5);
+  paint_shreds(ctx, vx, vy, 3.6, isLowDetail ? 2 : 4, 0xe8782a, seed ^ 0x81, 3, 1);
+  // The meat: sweet-and-sour pork in its glossy red sauce.
+  const [mx, my] = at(area, 0.45, 0.05);
+  paint_liquid(ctx, mx, my, area.rx * 0.42 * size, area.ry * 0.5 * size, 0xd0402a, {
+    sheen: 0.5,
+  });
+  const pork = pieces_left(4, p.remaining);
+  for (let piece = 0; piece < pork; piece += 1) {
+    const [px, py] = at(area, 0.3 + (piece % 2) * 0.3, -0.2 + Math.floor(piece / 2) * 0.4);
+    paint_chunk(ctx, px, py, 4, 0xc8452a, 0.4 * piece, { radius: 1.8, gloss: 0.55 });
+  }
+  paint_slivers(ctx, mx, my, 3.2, isLowDetail ? 2 : 3, 0x4f9a3a, seed ^ 0x82);
+}
+
 /** The rice dish motifs, keyed by dish ID without the `dish.` prefix. */
 export const RICE_MOTIFS: Readonly<Record<string, Motif>> = {
   "poached-chicken-rice": paint_poached_chicken_rice,
@@ -500,4 +700,7 @@ export const RICE_MOTIFS: Readonly<Record<string, Motif>> = {
   "claypot-chicken-rice": paint_claypot_chicken_rice,
   "thunder-tea-rice": paint_thunder_tea_rice,
   "lotus-leaf-rice": paint_lotus_leaf_rice,
+  "char-siew-rice": paint_char_siew_rice,
+  "nasi-padang": paint_nasi_padang,
+  "economic-rice": paint_economic_rice,
 };

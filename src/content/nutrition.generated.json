@@ -82,10 +82,10 @@
         "hypertension": 3.4
       },
       "intentFits": {
-        "lighter-energy": 0.5455,
-        "protein-forward": 0.3409,
-        "fibre-forward": 0.3977,
-        "sodium-aware": 0.6136
+        "lighter-energy": 0.5556,
+        "protein-forward": 0.3434,
+        "fibre-forward": 0.3939,
+        "sodium-aware": 0.6162
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -167,10 +167,10 @@
         "hypertension": 3.5
       },
       "intentFits": {
-        "lighter-energy": 0.375,
-        "protein-forward": 0.6591,
-        "fibre-forward": 0.0398,
-        "sodium-aware": 0.6818
+        "lighter-energy": 0.3838,
+        "protein-forward": 0.6566,
+        "fibre-forward": 0.0404,
+        "sodium-aware": 0.6768
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -254,10 +254,10 @@
         "hypertension": 5
       },
       "intentFits": {
-        "lighter-energy": 0.6818,
-        "protein-forward": 0.2955,
-        "fibre-forward": 0.1932,
-        "sodium-aware": 0.9545
+        "lighter-energy": 0.697,
+        "protein-forward": 0.303,
+        "fibre-forward": 0.202,
+        "sodium-aware": 0.9596
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -337,10 +337,10 @@
         "hypertension": 2.9
       },
       "intentFits": {
-        "lighter-energy": 0.7955,
+        "lighter-energy": 0.8081,
         "protein-forward": 0.2727,
-        "fibre-forward": 0.0398,
-        "sodium-aware": 0.5227
+        "fibre-forward": 0.0404,
+        "sodium-aware": 0.5354
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -424,10 +424,10 @@
         "hypertension": 2.2
       },
       "intentFits": {
-        "lighter-energy": 0.1932,
-        "protein-forward": 0.8068,
-        "fibre-forward": 0.6591,
-        "sodium-aware": 0.4545
+        "lighter-energy": 0.1919,
+        "protein-forward": 0.8182,
+        "fibre-forward": 0.6465,
+        "sodium-aware": 0.4444
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -512,10 +512,10 @@
         "hypertension": 1.1
       },
       "intentFits": {
-        "lighter-energy": 0.25,
-        "protein-forward": 0.5682,
-        "fibre-forward": 0.9886,
-        "sodium-aware": 0.1932
+        "lighter-energy": 0.2424,
+        "protein-forward": 0.5758,
+        "fibre-forward": 0.9798,
+        "sodium-aware": 0.1919
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -599,10 +599,10 @@
         "hypertension": 1.4
       },
       "intentFits": {
-        "lighter-energy": 0.9489,
-        "protein-forward": 0.3523,
-        "fibre-forward": 0.7159,
-        "sodium-aware": 0.2273
+        "lighter-energy": 0.9444,
+        "protein-forward": 0.3535,
+        "fibre-forward": 0.7071,
+        "sodium-aware": 0.2222
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -685,10 +685,10 @@
         "hypertension": 2.6
       },
       "intentFits": {
-        "lighter-energy": 0.5739,
-        "protein-forward": 0.2841,
-        "fibre-forward": 0.75,
-        "sodium-aware": 0.5
+        "lighter-energy": 0.5909,
+        "protein-forward": 0.2828,
+        "fibre-forward": 0.7374,
+        "sodium-aware": 0.5051
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -772,7 +772,7 @@
         "hypertension": 4.5
       },
       "intentFits": {
-        "lower-total-sugar-drink": 0.2308
+        "lower-total-sugar-drink": 0.3333
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -941,10 +941,10 @@
         "hypertension": 5
       },
       "intentFits": {
-        "lighter-energy": 0.858,
-        "protein-forward": 0.017,
-        "fibre-forward": 0.8977,
-        "sodium-aware": 0.9773
+        "lighter-energy": 0.8636,
+        "protein-forward": 0.0253,
+        "fibre-forward": 0.8788,
+        "sodium-aware": 0.9798
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -1028,10 +1028,10 @@
         "hypertension": 1.1
       },
       "intentFits": {
-        "lighter-energy": 0.0795,
-        "protein-forward": 0.5568,
-        "fibre-forward": 0.4318,
-        "sodium-aware": 0.2955
+        "lighter-energy": 0.0808,
+        "protein-forward": 0.5657,
+        "fibre-forward": 0.4242,
+        "sodium-aware": 0.2929
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -1114,10 +1114,10 @@
         "hypertension": 1.3
       },
       "intentFits": {
-        "lighter-energy": 0.2102,
-        "protein-forward": 0.6477,
-        "fibre-forward": 0.5,
-        "sodium-aware": 0.3295
+        "lighter-energy": 0.2071,
+        "protein-forward": 0.6465,
+        "fibre-forward": 0.4949,
+        "sodium-aware": 0.3333
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -1201,10 +1201,10 @@
         "hypertension": 2.4
       },
       "intentFits": {
-        "lighter-energy": 0.5568,
-        "protein-forward": 0.1477,
-        "fibre-forward": 0.5909,
-        "sodium-aware": 0.4659
+        "lighter-energy": 0.5707,
+        "protein-forward": 0.1616,
+        "fibre-forward": 0.5758,
+        "sodium-aware": 0.4545
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -1288,10 +1288,10 @@
         "hypertension": 3.7
       },
       "intentFits": {
-        "lighter-energy": 0.5227,
-        "protein-forward": 0.2273,
-        "fibre-forward": 0.0398,
-        "sodium-aware": 0.8636
+        "lighter-energy": 0.5354,
+        "protein-forward": 0.2323,
+        "fibre-forward": 0.0404,
+        "sodium-aware": 0.8687
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -1376,8 +1376,8 @@
       },
       "intentFits": {
         "lighter-energy": 0,
-        "protein-forward": 0.6705,
-        "fibre-forward": 0.9205,
+        "protein-forward": 0.6667,
+        "fibre-forward": 0.9192,
         "sodium-aware": 0.0909
       },
       "provenance": {
@@ -1463,10 +1463,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.1477,
-        "protein-forward": 0.5795,
-        "fibre-forward": 0.9773,
-        "sodium-aware": 0.125
+        "lighter-energy": 0.1515,
+        "protein-forward": 0.5859,
+        "fibre-forward": 0.9697,
+        "sodium-aware": 0.1313
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -1550,10 +1550,10 @@
         "hypertension": 2.6
       },
       "intentFits": {
-        "lighter-energy": 0.1591,
-        "protein-forward": 0.8864,
-        "fibre-forward": 0.4432,
-        "sodium-aware": 0.5682
+        "lighter-energy": 0.1616,
+        "protein-forward": 0.8889,
+        "fibre-forward": 0.4343,
+        "sodium-aware": 0.5758
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -1638,10 +1638,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.0455,
-        "protein-forward": 0.9659,
-        "fibre-forward": 0.9545,
-        "sodium-aware": 0.1477
+        "lighter-energy": 0.0404,
+        "protein-forward": 0.9596,
+        "fibre-forward": 0.9495,
+        "sodium-aware": 0.1515
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -1726,10 +1726,10 @@
         "hypertension": 3.7
       },
       "intentFits": {
-        "lighter-energy": 0.6136,
-        "protein-forward": 0.1591,
-        "fibre-forward": 0.7386,
-        "sodium-aware": 0.6705
+        "lighter-energy": 0.6364,
+        "protein-forward": 0.1717,
+        "fibre-forward": 0.7273,
+        "sodium-aware": 0.6667
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -1812,10 +1812,10 @@
         "hypertension": 4.4
       },
       "intentFits": {
-        "lighter-energy": 0.75,
-        "protein-forward": 0.25,
-        "fibre-forward": 0.8636,
-        "sodium-aware": 0.75
+        "lighter-energy": 0.7677,
+        "protein-forward": 0.2525,
+        "fibre-forward": 0.8485,
+        "sodium-aware": 0.7475
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -1899,10 +1899,10 @@
         "hypertension": 2.4
       },
       "intentFits": {
-        "lighter-energy": 0.7727,
-        "protein-forward": 0.1136,
-        "fibre-forward": 0.375,
-        "sodium-aware": 0.7955
+        "lighter-energy": 0.7879,
+        "protein-forward": 0.1313,
+        "fibre-forward": 0.3737,
+        "sodium-aware": 0.7879
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -1986,10 +1986,10 @@
         "hypertension": 3.3
       },
       "intentFits": {
-        "lighter-energy": 0.8409,
-        "protein-forward": 0.0341,
-        "fibre-forward": 0.2614,
-        "sodium-aware": 0.6932
+        "lighter-energy": 0.8485,
+        "protein-forward": 0.0404,
+        "fibre-forward": 0.2626,
+        "sodium-aware": 0.6869
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -2073,10 +2073,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.625,
-        "protein-forward": 0.392,
-        "fibre-forward": 0.4205,
-        "sodium-aware": 0.1023
+        "lighter-energy": 0.6465,
+        "protein-forward": 0.3889,
+        "fibre-forward": 0.4141,
+        "sodium-aware": 0.1111
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -2160,10 +2160,10 @@
         "hypertension": 4.9
       },
       "intentFits": {
-        "lighter-energy": 0.9659,
-        "protein-forward": 0.2614,
-        "fibre-forward": 0.1023,
-        "sodium-aware": 0.9432
+        "lighter-energy": 0.9596,
+        "protein-forward": 0.2626,
+        "fibre-forward": 0.101,
+        "sodium-aware": 0.9495
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -2247,10 +2247,10 @@
         "hypertension": 3.9
       },
       "intentFits": {
-        "lighter-energy": 0.9773,
-        "protein-forward": 0,
-        "fibre-forward": 0.3409,
-        "sodium-aware": 0.8068
+        "lighter-energy": 0.9697,
+        "protein-forward": 0.0101,
+        "fibre-forward": 0.3434,
+        "sodium-aware": 0.798
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -2334,10 +2334,10 @@
         "hypertension": 4.1
       },
       "intentFits": {
-        "lighter-energy": 0.6591,
-        "protein-forward": 0.7727,
-        "fibre-forward": 0.3182,
-        "sodium-aware": 0.9318
+        "lighter-energy": 0.6768,
+        "protein-forward": 0.7879,
+        "fibre-forward": 0.3131,
+        "sodium-aware": 0.9293
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -2421,10 +2421,10 @@
         "hypertension": 3.2
       },
       "intentFits": {
-        "lighter-energy": 0.6364,
-        "protein-forward": 0.875,
-        "fibre-forward": 0.5114,
-        "sodium-aware": 0.625
+        "lighter-energy": 0.6566,
+        "protein-forward": 0.8788,
+        "fibre-forward": 0.5051,
+        "sodium-aware": 0.6263
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -2508,10 +2508,10 @@
         "hypertension": 1.4
       },
       "intentFits": {
-        "lighter-energy": 0.6989,
-        "protein-forward": 0.4432,
-        "fibre-forward": 0.4886,
-        "sodium-aware": 0.2159
+        "lighter-energy": 0.7121,
+        "protein-forward": 0.4343,
+        "fibre-forward": 0.4848,
+        "sodium-aware": 0.2121
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -2596,10 +2596,10 @@
         "hypertension": 2.3
       },
       "intentFits": {
-        "lighter-energy": 0.8864,
-        "protein-forward": 0.7841,
-        "fibre-forward": 0.0398,
-        "sodium-aware": 0.4205
+        "lighter-energy": 0.8889,
+        "protein-forward": 0.798,
+        "fibre-forward": 0.0404,
+        "sodium-aware": 0.4141
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -2682,10 +2682,10 @@
         "hypertension": 2.5
       },
       "intentFits": {
-        "lighter-energy": 0.4773,
-        "protein-forward": 0.4659,
-        "fibre-forward": 0.8864,
-        "sodium-aware": 0.4432
+        "lighter-energy": 0.4949,
+        "protein-forward": 0.4545,
+        "fibre-forward": 0.8687,
+        "sodium-aware": 0.4343
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -2770,10 +2770,10 @@
         "hypertension": 2.2
       },
       "intentFits": {
-        "lighter-energy": 0.5114,
-        "protein-forward": 0.4205,
-        "fibre-forward": 0.7955,
-        "sodium-aware": 0.4091
+        "lighter-energy": 0.5253,
+        "protein-forward": 0.4141,
+        "fibre-forward": 0.7879,
+        "sodium-aware": 0.404
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -2856,10 +2856,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.2841,
-        "protein-forward": 0.5114,
-        "fibre-forward": 0.9318,
-        "sodium-aware": 0.0795
+        "lighter-energy": 0.2929,
+        "protein-forward": 0.5152,
+        "fibre-forward": 0.9293,
+        "sodium-aware": 0.0808
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -2941,10 +2941,10 @@
         "hypertension": 1.6
       },
       "intentFits": {
-        "lighter-energy": 0.9489,
-        "protein-forward": 0.1705,
-        "fibre-forward": 0.3068,
-        "sodium-aware": 0.3068
+        "lighter-energy": 0.9444,
+        "protein-forward": 0.1818,
+        "fibre-forward": 0.303,
+        "sodium-aware": 0.303
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -3027,10 +3027,10 @@
         "hypertension": 5
       },
       "intentFits": {
-        "lighter-energy": 0.7273,
-        "protein-forward": 0.0455,
-        "fibre-forward": 0.9432,
-        "sodium-aware": 0.9659
+        "lighter-energy": 0.7475,
+        "protein-forward": 0.0606,
+        "fibre-forward": 0.9394,
+        "sodium-aware": 0.9697
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -3114,9 +3114,9 @@
         "hypertension": 5
       },
       "intentFits": {
-        "lighter-energy": 1,
-        "protein-forward": 0.1023,
-        "fibre-forward": 0.6364,
+        "lighter-energy": 0.9899,
+        "protein-forward": 0.1212,
+        "fibre-forward": 0.6263,
         "sodium-aware": 1
       },
       "provenance": {
@@ -3201,7 +3201,7 @@
         "hypertension": 4.5
       },
       "intentFits": {
-        "lower-total-sugar-drink": 0.3846
+        "lower-total-sugar-drink": 0.4667
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -3286,10 +3286,10 @@
         "hypertension": 5
       },
       "intentFits": {
-        "lighter-energy": 0.8068,
-        "protein-forward": 0.017,
+        "lighter-energy": 0.8182,
+        "protein-forward": 0.0253,
         "fibre-forward": 0.0909,
-        "sodium-aware": 0.9886
+        "sodium-aware": 0.9899
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -3373,8 +3373,8 @@
         "hypertension": 3.5
       },
       "intentFits": {
-        "lighter-energy": 0.4659,
-        "protein-forward": 0.7159,
+        "lighter-energy": 0.4848,
+        "protein-forward": 0.7172,
         "fibre-forward": 0.9091,
         "sodium-aware": 0.6364
       },
@@ -3460,8 +3460,8 @@
       },
       "intentFits": {
         "lighter-energy": 0.9091,
-        "protein-forward": 0.6023,
-        "fibre-forward": 0.0398,
+        "protein-forward": 0.6061,
+        "fibre-forward": 0.0404,
         "sodium-aware": 0.8182
       },
       "provenance": {
@@ -3546,10 +3546,10 @@
         "hypertension": 3.5
       },
       "intentFits": {
-        "lighter-energy": 0.5909,
-        "protein-forward": 0.7614,
-        "fibre-forward": 0.8409,
-        "sodium-aware": 0.7159
+        "lighter-energy": 0.6061,
+        "protein-forward": 0.7778,
+        "fibre-forward": 0.8283,
+        "sodium-aware": 0.7071
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -3632,10 +3632,10 @@
         "hypertension": 3
       },
       "intentFits": {
-        "lighter-energy": 0.8977,
-        "protein-forward": 0.6136,
-        "fibre-forward": 0.5568,
-        "sodium-aware": 0.6591
+        "lighter-energy": 0.899,
+        "protein-forward": 0.6162,
+        "fibre-forward": 0.5455,
+        "sodium-aware": 0.6566
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -3718,10 +3718,10 @@
         "hypertension": 3.3
       },
       "intentFits": {
-        "lighter-energy": 0.8182,
-        "protein-forward": 0.375,
-        "fibre-forward": 0.0398,
-        "sodium-aware": 0.7273
+        "lighter-energy": 0.8283,
+        "protein-forward": 0.3737,
+        "fibre-forward": 0.0404,
+        "sodium-aware": 0.7172
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -3805,10 +3805,10 @@
         "hypertension": 2.9
       },
       "intentFits": {
-        "lighter-energy": 0.858,
-        "protein-forward": 0.1364,
-        "fibre-forward": 0.125,
-        "sodium-aware": 0.875
+        "lighter-energy": 0.8636,
+        "protein-forward": 0.1515,
+        "fibre-forward": 0.1212,
+        "sodium-aware": 0.8788
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -3892,9 +3892,9 @@
         "hypertension": 4.1
       },
       "intentFits": {
-        "lighter-energy": 0.6023,
-        "protein-forward": 0.3068,
-        "fibre-forward": 0.2955,
+        "lighter-energy": 0.6162,
+        "protein-forward": 0.3131,
+        "fibre-forward": 0.2929,
         "sodium-aware": 0.9091
       },
       "provenance": {
@@ -3979,10 +3979,10 @@
         "hypertension": 2.7
       },
       "intentFits": {
-        "lighter-energy": 0.4545,
-        "protein-forward": 0.5,
-        "fibre-forward": 0.2159,
-        "sodium-aware": 0.5114
+        "lighter-energy": 0.4747,
+        "protein-forward": 0.5051,
+        "fibre-forward": 0.2222,
+        "sodium-aware": 0.5253
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -4066,10 +4066,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.4432,
-        "protein-forward": 0.4886,
-        "fibre-forward": 0.6023,
-        "sodium-aware": 0.1705
+        "lighter-energy": 0.4646,
+        "protein-forward": 0.4747,
+        "fibre-forward": 0.596,
+        "sodium-aware": 0.1717
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -4151,10 +4151,10 @@
         "hypertension": 1.3
       },
       "intentFits": {
-        "lighter-energy": 0.4205,
-        "protein-forward": 0.5341,
-        "fibre-forward": 0.5227,
-        "sodium-aware": 0.2614
+        "lighter-energy": 0.4444,
+        "protein-forward": 0.5455,
+        "fibre-forward": 0.5152,
+        "sodium-aware": 0.2525
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -4239,10 +4239,10 @@
         "hypertension": 3
       },
       "intentFits": {
-        "lighter-energy": 0.4091,
-        "protein-forward": 0.5227,
-        "fibre-forward": 0.6705,
-        "sodium-aware": 0.5795
+        "lighter-energy": 0.4343,
+        "protein-forward": 0.5354,
+        "fibre-forward": 0.6566,
+        "sodium-aware": 0.5859
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -4325,10 +4325,10 @@
         "hypertension": 4.3
       },
       "intentFits": {
-        "lighter-energy": 0.9205,
-        "protein-forward": 0.0682,
-        "fibre-forward": 0.7273,
-        "sodium-aware": 0.8295
+        "lighter-energy": 0.9192,
+        "protein-forward": 0.0808,
+        "fibre-forward": 0.7172,
+        "sodium-aware": 0.8283
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -4407,9 +4407,9 @@
         "hypertension": 1.9
       },
       "intentFits": {
-        "lighter-energy": 0.9318,
+        "lighter-energy": 0.9293,
         "protein-forward": 0.3636,
-        "fibre-forward": 0.0398,
+        "fibre-forward": 0.0404,
         "sodium-aware": 0.3636
       },
       "provenance": {
@@ -4493,10 +4493,10 @@
         "hypertension": 2.7
       },
       "intentFits": {
-        "lighter-energy": 0.3523,
-        "protein-forward": 0.6932,
-        "fibre-forward": 0.8182,
-        "sodium-aware": 0.4886
+        "lighter-energy": 0.3535,
+        "protein-forward": 0.697,
+        "fibre-forward": 0.8081,
+        "sodium-aware": 0.4949
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -4581,10 +4581,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.0682,
-        "protein-forward": 0.9545,
-        "fibre-forward": 0.1364,
-        "sodium-aware": 0.0568
+        "lighter-energy": 0.0707,
+        "protein-forward": 0.9495,
+        "fibre-forward": 0.1313,
+        "sodium-aware": 0.0606
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -4669,8 +4669,8 @@
       },
       "intentFits": {
         "lighter-energy": 0.0909,
-        "protein-forward": 0.9886,
-        "fibre-forward": 1,
+        "protein-forward": 0.9899,
+        "fibre-forward": 0.9899,
         "sodium-aware": 0.1818
       },
       "provenance": {
@@ -4686,6 +4686,1124 @@
         "reviewNote": "Exact named complete dish match."
       },
       "reviewNote": "Exact named complete dish match."
+    },
+    {
+      "id": "dish.char-siew-rice",
+      "dishId": "dish.char-siew-rice",
+      "status": "released",
+      "nutritionClass": "meal",
+      "serving": {
+        "amount": 353,
+        "unit": "g",
+        "label": "1 plate(s) = 353g"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 621
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 31.13
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 12.36
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 4.2
+        },
+        "transFatG": {
+          "status": "trace"
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 95.66
+        },
+        "totalSugarG": {
+          "status": "known",
+          "value": 2.12
+        },
+        "dietaryFibreG": {
+          "status": "known",
+          "value": 8.44
+        },
+        "sodiumMg": {
+          "status": "known",
+          "value": 833
+        },
+        "calciumMg": {
+          "status": "known",
+          "value": 18
+        },
+        "ironMg": {
+          "status": "known",
+          "value": 1.62
+        },
+        "waterG": {
+          "status": "known",
+          "value": 208.8
+        }
+      },
+      "healthRating": 3.7,
+      "conditionRatings": {
+        "high-cholesterol": 4.1,
+        "obesity": 4.3,
+        "diabetes": 2.6,
+        "hypertension": 4.4
+      },
+      "intentFits": {
+        "lighter-energy": 0.4141,
+        "protein-forward": 0.6768,
+        "fibre-forward": 0.7475,
+        "sodium-aware": 0.7323
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 1445,
+        "sourceFoodName": "Char siew rice",
+        "sourceRowSha256": "4e96034107faebfcf9131990f33a36776c3ec7e4d8080e8747f51280c000fc9a",
+        "sourceDataType": "Lab Analysis",
+        "mappingKind": "exact",
+        "multiplier": 1,
+        "reviewNote": "Exact named complete dish match."
+      },
+      "reviewNote": "Exact named complete dish match."
+    },
+    {
+      "id": "dish.nasi-padang",
+      "dishId": "dish.nasi-padang",
+      "status": "released",
+      "nutritionClass": "meal",
+      "serving": {
+        "amount": 544,
+        "unit": "g",
+        "label": "1 plate(s) = 544g"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 1028
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 64.14
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 44.23
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 17.52
+        },
+        "transFatG": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 97.27
+        },
+        "totalSugarG": {
+          "status": "known",
+          "value": 5.98
+        },
+        "dietaryFibreG": {
+          "status": "known",
+          "value": 12.19
+        },
+        "sodiumMg": {
+          "status": "known",
+          "value": 1523
+        },
+        "calciumMg": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        },
+        "ironMg": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        },
+        "waterG": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        }
+      },
+      "healthRating": 1.2,
+      "conditionRatings": {
+        "high-cholesterol": 1.5,
+        "obesity": 1.9,
+        "diabetes": 1.4,
+        "hypertension": 2.3
+      },
+      "intentFits": {
+        "lighter-energy": 0.0606,
+        "protein-forward": 0.9798,
+        "fibre-forward": 0.899,
+        "sodium-aware": 0.4848
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 1524,
+        "sourceFoodName": "Nasi padang (beef set)",
+        "sourceRowSha256": "b0629ed15f5c5afb977d7cd4490f0ed40666300b29b04ec9190c75575763fde0",
+        "sourceDataType": "Lab Analysis",
+        "mappingKind": "curated-synonym",
+        "multiplier": 1,
+        "reviewNote": "The beef set is the game's default nasi padang plate."
+      },
+      "reviewNote": "The beef set is the game's default nasi padang plate."
+    },
+    {
+      "id": "dish.kaya-toast",
+      "dishId": "dish.kaya-toast",
+      "status": "released",
+      "nutritionClass": "meal",
+      "serving": {
+        "amount": 94,
+        "unit": "g",
+        "label": "1 piece(s) = 94g"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 380
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 6.11
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 20.54
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 11.23
+        },
+        "transFatG": {
+          "status": "known",
+          "value": 0.95
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 42.54
+        },
+        "totalSugarG": {
+          "status": "known",
+          "value": 17.86
+        },
+        "dietaryFibreG": {
+          "status": "known",
+          "value": 1.89
+        },
+        "sodiumMg": {
+          "status": "known",
+          "value": 357
+        },
+        "calciumMg": {
+          "status": "known",
+          "value": 42
+        },
+        "ironMg": {
+          "status": "known",
+          "value": 0.61
+        },
+        "waterG": {
+          "status": "known",
+          "value": 23.64
+        }
+      },
+      "healthRating": 1.8,
+      "conditionRatings": {
+        "high-cholesterol": 1.5,
+        "obesity": 2.2,
+        "diabetes": 1.4,
+        "hypertension": 3.4
+      },
+      "intentFits": {
+        "lighter-energy": 0.7273,
+        "protein-forward": 0.0505,
+        "fibre-forward": 0.1515,
+        "sodium-aware": 0.9394
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 1093,
+        "sourceFoodName": "Kaya and butter toast",
+        "sourceRowSha256": "a85bf75d5a6f1b520bd2fa7674623ec11e803d66828e867d8be45fbcbddea836",
+        "sourceDataType": "Lab Analysis",
+        "mappingKind": "exact",
+        "multiplier": 1,
+        "reviewNote": "Exact named kopitiam toast match."
+      },
+      "reviewNote": "Exact named kopitiam toast match."
+    },
+    {
+      "id": "dish.barley-drink",
+      "dishId": "dish.barley-drink",
+      "status": "released",
+      "nutritionClass": "drink",
+      "serving": {
+        "amount": 400,
+        "unit": "ml",
+        "label": "1 regular cup(s) = 400ml"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 128
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 0.52
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 0
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 0
+        },
+        "transFatG": {
+          "status": "known",
+          "value": 0
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 31.12
+        },
+        "totalSugarG": {
+          "status": "known",
+          "value": 24.24
+        },
+        "dietaryFibreG": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        },
+        "sodiumMg": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        },
+        "calciumMg": {
+          "status": "known",
+          "value": 8
+        },
+        "ironMg": {
+          "status": "trace"
+        },
+        "waterG": {
+          "status": "known",
+          "value": 378.28
+        }
+      },
+      "healthRating": 3.2,
+      "conditionRatings": {
+        "high-cholesterol": 4.4,
+        "obesity": 3,
+        "diabetes": 2.5,
+        "hypertension": 4.5
+      },
+      "intentFits": {
+        "lower-total-sugar-drink": 0.0667
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 165,
+        "sourceFoodName": "Barley drink",
+        "sourceRowSha256": "9bd07e6f058414b6fb1e958de4adfabb14a99a05fb18316c29bf495ade49c3b1",
+        "sourceDataType": "Derived",
+        "mappingKind": "exact",
+        "multiplier": 1,
+        "reviewNote": "Exact named drink match."
+      },
+      "reviewNote": "Exact named drink match."
+    },
+    {
+      "id": "dish.beef-hor-fun",
+      "dishId": "dish.beef-hor-fun",
+      "status": "released",
+      "nutritionClass": "meal",
+      "serving": {
+        "amount": 682,
+        "unit": "g",
+        "label": "1 plate(s) = 682g"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 662
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 16.3
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 23.19
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 9.14
+        },
+        "transFatG": {
+          "status": "known",
+          "value": 0.14
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 97.53
+        },
+        "totalSugarG": {
+          "status": "known",
+          "value": 2.05
+        },
+        "dietaryFibreG": {
+          "status": "known",
+          "value": 7.16
+        },
+        "sodiumMg": {
+          "status": "known",
+          "value": 2135
+        },
+        "calciumMg": {
+          "status": "known",
+          "value": 48
+        },
+        "ironMg": {
+          "status": "trace"
+        },
+        "waterG": {
+          "status": "known",
+          "value": 537.76
+        }
+      },
+      "healthRating": 1.9,
+      "conditionRatings": {
+        "high-cholesterol": 2.4,
+        "obesity": 3.6,
+        "diabetes": 2.3,
+        "hypertension": 1.2
+      },
+      "intentFits": {
+        "lighter-energy": 0.3636,
+        "protein-forward": 0.2929,
+        "fibre-forward": 0.5859,
+        "sodium-aware": 0.2778
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 1254,
+        "sourceFoodName": "Beef hor fun",
+        "sourceRowSha256": "1f055dd992b91b7b9d3e9296437216053ff6091fffb5035d1eeb54ca38a3036d",
+        "sourceDataType": "Lab Analysis",
+        "mappingKind": "exact",
+        "multiplier": 1,
+        "reviewNote": "Exact named complete dish match."
+      },
+      "reviewNote": "Exact named complete dish match."
+    },
+    {
+      "id": "dish.chwee-kueh",
+      "dishId": "dish.chwee-kueh",
+      "status": "released",
+      "nutritionClass": "meal",
+      "serving": {
+        "amount": 175,
+        "unit": "g",
+        "label": "5 pieces (175 g)"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 150
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 1.55
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 3.35
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 1.15
+        },
+        "transFatG": {
+          "status": "trace"
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 28.95
+        },
+        "totalSugarG": {
+          "status": "known",
+          "value": 4.2
+        },
+        "dietaryFibreG": {
+          "status": "known",
+          "value": 2.4
+        },
+        "sodiumMg": {
+          "status": "known",
+          "value": 710
+        },
+        "calciumMg": {
+          "status": "known",
+          "value": 20
+        },
+        "ironMg": {
+          "status": "known",
+          "value": 0.6
+        },
+        "waterG": {
+          "status": "known",
+          "value": 139.2
+        }
+      },
+      "healthRating": 4.2,
+      "conditionRatings": {
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 5,
+        "hypertension": 3.8
+      },
+      "intentFits": {
+        "lighter-energy": 1,
+        "protein-forward": 0,
+        "fibre-forward": 0.1919,
+        "sodium-aware": 0.8081
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 2320,
+        "sourceFoodName": "Chwee kueh",
+        "sourceRowSha256": "ebe4c4cf1d08207b9ffb4156e325f5a261e262a1a47740675ec7041d7291f14b",
+        "sourceDataType": "Lab Analysis",
+        "mappingKind": "scaled-exact",
+        "multiplier": 5,
+        "reviewNote": "The source reports one piece; values are scaled to the game's five-piece serving."
+      },
+      "reviewNote": "The source reports one piece; values are scaled to the game's five-piece serving."
+    },
+    {
+      "id": "dish.roti-john",
+      "dishId": "dish.roti-john",
+      "status": "released",
+      "nutritionClass": "meal",
+      "serving": {
+        "amount": 253,
+        "unit": "g",
+        "label": "1 whole = 253g"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 724
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 25.3
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 34.66
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 18.22
+        },
+        "transFatG": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 77.16
+        },
+        "totalSugarG": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        },
+        "dietaryFibreG": {
+          "status": "known",
+          "value": 11.39
+        },
+        "sodiumMg": {
+          "status": "known",
+          "value": 2019
+        },
+        "calciumMg": {
+          "status": "known",
+          "value": 89
+        },
+        "ironMg": {
+          "status": "known",
+          "value": 4.55
+        },
+        "waterG": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        }
+      },
+      "healthRating": 1,
+      "conditionRatings": {
+        "high-cholesterol": 1.3,
+        "obesity": 2.3,
+        "diabetes": 1,
+        "hypertension": 1.2
+      },
+      "intentFits": {
+        "lighter-energy": 0.2525,
+        "protein-forward": 0.5253,
+        "fibre-forward": 0.8889,
+        "sodium-aware": 0.3131
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 1140,
+        "sourceFoodName": "Roti john",
+        "sourceRowSha256": "a716ba73e698da328bd58466bee4ff65bde20e9740435a658982987b23741e08",
+        "sourceDataType": "Lab Analysis",
+        "mappingKind": "exact",
+        "multiplier": 1,
+        "reviewNote": "Exact named complete dish match."
+      },
+      "reviewNote": "Exact named complete dish match."
+    },
+    {
+      "id": "dish.soya-bean-milk",
+      "dishId": "dish.soya-bean-milk",
+      "status": "released",
+      "nutritionClass": "drink",
+      "serving": {
+        "amount": 450,
+        "unit": "ml",
+        "label": "1 cup(s) = 450ml"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 248
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 15.3
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 7.83
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 1.22
+        },
+        "transFatG": {
+          "status": "known",
+          "value": 0
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 29.25
+        },
+        "totalSugarG": {
+          "status": "known",
+          "value": 23.22
+        },
+        "dietaryFibreG": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        },
+        "sodiumMg": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        },
+        "calciumMg": {
+          "status": "known",
+          "value": 54
+        },
+        "ironMg": {
+          "status": "known",
+          "value": 2.21
+        },
+        "waterG": {
+          "status": "known",
+          "value": 409.59
+        }
+      },
+      "healthRating": 3.5,
+      "conditionRatings": {
+        "high-cholesterol": 4.4,
+        "obesity": 2.3,
+        "diabetes": 2.8,
+        "hypertension": 4.6
+      },
+      "intentFits": {
+        "lower-total-sugar-drink": 0.2
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 32,
+        "sourceFoodName": "Soy milk (no topping)",
+        "sourceRowSha256": "b87cd83a3480cfcbd86a96e117ab58d7a936b0865e8ad41419b770e7bea813f9",
+        "sourceDataType": "Derived",
+        "mappingKind": "curated-synonym",
+        "multiplier": 1,
+        "reviewNote": "The source's plain soybean milk cup is the game's default soya bean milk."
+      },
+      "reviewNote": "The source's plain soybean milk cup is the game's default soya bean milk."
+    },
+    {
+      "id": "dish.economic-rice",
+      "dishId": "dish.economic-rice",
+      "status": "released",
+      "nutritionClass": "meal",
+      "serving": {
+        "amount": 553,
+        "unit": "g",
+        "label": "1 plate(s) = 553g"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 697
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 34.51
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 27.48
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 9.68
+        },
+        "transFatG": {
+          "status": "known",
+          "value": 0.17
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 75.37
+        },
+        "totalSugarG": {
+          "status": "known",
+          "value": 5.03
+        },
+        "dietaryFibreG": {
+          "status": "known",
+          "value": 7.91
+        },
+        "sodiumMg": {
+          "status": "known",
+          "value": 1454
+        },
+        "calciumMg": {
+          "status": "known",
+          "value": 138
+        },
+        "ironMg": {
+          "status": "known",
+          "value": 3.65
+        },
+        "waterG": {
+          "status": "known",
+          "value": 272.35
+        }
+      },
+      "healthRating": 2.2,
+      "conditionRatings": {
+        "high-cholesterol": 2.2,
+        "obesity": 3.4,
+        "diabetes": 2.8,
+        "hypertension": 2.6
+      },
+      "intentFits": {
+        "lighter-energy": 0.2828,
+        "protein-forward": 0.7677,
+        "fibre-forward": 0.697,
+        "sodium-aware": 0.5152
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 1464,
+        "sourceFoodName": "Economic rice (1 vegetable, 1 meat)",
+        "sourceRowSha256": "e15b2d5a4819bab035bf06798d07754307771d01b39085de92c243a08dad082f",
+        "sourceDataType": "Derived",
+        "mappingKind": "curated-synonym",
+        "multiplier": 1,
+        "reviewNote": "The one-vegetable, one-meat plate is the game's default economic rice order."
+      },
+      "reviewNote": "The one-vegetable, one-meat plate is the game's default economic rice order."
+    },
+    {
+      "id": "dish.wanton-mee",
+      "dishId": "dish.wanton-mee",
+      "status": "released",
+      "nutritionClass": "meal",
+      "serving": {
+        "amount": 388,
+        "unit": "g",
+        "label": "1 bowl(s) = 388g"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 625
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 33.72
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 21.34
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 7.14
+        },
+        "transFatG": {
+          "status": "trace"
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 74.11
+        },
+        "totalSugarG": {
+          "status": "known",
+          "value": 9.12
+        },
+        "dietaryFibreG": {
+          "status": "trace"
+        },
+        "sodiumMg": {
+          "status": "known",
+          "value": 1564
+        },
+        "calciumMg": {
+          "status": "known",
+          "value": 70
+        },
+        "ironMg": {
+          "status": "known",
+          "value": 2.72
+        },
+        "waterG": {
+          "status": "known",
+          "value": 253.17
+        }
+      },
+      "healthRating": 2.3,
+      "conditionRatings": {
+        "high-cholesterol": 2.8,
+        "obesity": 3.9,
+        "diabetes": 2.1,
+        "hypertension": 2.4
+      },
+      "intentFits": {
+        "lighter-energy": 0.404,
+        "protein-forward": 0.7525,
+        "fibre-forward": 0.0404,
+        "sodium-aware": 0.4646
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 1379,
+        "sourceFoodName": "Wanton noodles (dry)",
+        "sourceRowSha256": "e6d0237c04d88906dae6ac02ae81aa6363e0b72751dc6845823ff2f014ea8f69",
+        "sourceDataType": "Lab Analysis",
+        "mappingKind": "curated-synonym",
+        "multiplier": 1,
+        "reviewNote": "Dry is the game's default wanton mee preparation."
+      },
+      "reviewNote": "Dry is the game's default wanton mee preparation."
+    },
+    {
+      "id": "dish.mee-siam",
+      "dishId": "dish.mee-siam",
+      "status": "released",
+      "nutritionClass": "meal",
+      "serving": {
+        "amount": 731,
+        "unit": "g",
+        "label": "1 plate(s) = 731g"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 864
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 23.09
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 30.49
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 11.18
+        },
+        "transFatG": {
+          "status": "known",
+          "value": 0.07
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 124.15
+        },
+        "totalSugarG": {
+          "status": "known",
+          "value": 7.62
+        },
+        "dietaryFibreG": {
+          "status": "known",
+          "value": 30.86
+        },
+        "sodiumMg": {
+          "status": "known",
+          "value": 3754
+        },
+        "calciumMg": {
+          "status": "known",
+          "value": 240
+        },
+        "ironMg": {
+          "status": "known",
+          "value": 4.57
+        },
+        "waterG": {
+          "status": "known",
+          "value": 538.71
+        }
+      },
+      "healthRating": 1.1,
+      "conditionRatings": {
+        "high-cholesterol": 1.9,
+        "obesity": 2.6,
+        "diabetes": 1,
+        "hypertension": 1
+      },
+      "intentFits": {
+        "lighter-energy": 0.1313,
+        "protein-forward": 0.4848,
+        "fibre-forward": 1,
+        "sodium-aware": 0.0505
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 1330,
+        "sourceFoodName": "Mee siam",
+        "sourceRowSha256": "d63ae6dfefcf707ed9b573b9944f0b311b107fe2bb48063469fe07c05214ee2b",
+        "sourceDataType": "Lab Analysis",
+        "mappingKind": "exact",
+        "multiplier": 1,
+        "reviewNote": "Exact named complete dish match."
+      },
+      "reviewNote": "Exact named complete dish match."
+    },
+    {
+      "id": "dish.kueh-pie-tee",
+      "dishId": "dish.kueh-pie-tee",
+      "status": "released",
+      "nutritionClass": "meal",
+      "serving": {
+        "amount": 185,
+        "unit": "g",
+        "label": "5 pieces (185 g)"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 440
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 8.35
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 30.35
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 15.15
+        },
+        "transFatG": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 32.95
+        },
+        "totalSugarG": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        },
+        "dietaryFibreG": {
+          "status": "known",
+          "value": 4.05
+        },
+        "sodiumMg": {
+          "status": "known",
+          "value": 605
+        },
+        "calciumMg": {
+          "status": "known",
+          "value": 65
+        },
+        "ironMg": {
+          "status": "known",
+          "value": 2.2
+        },
+        "waterG": {
+          "status": "unavailable",
+          "reason": "not-reported"
+        }
+      },
+      "healthRating": 2.3,
+      "conditionRatings": {
+        "high-cholesterol": 1.7,
+        "obesity": 3.2,
+        "diabetes": 3.4,
+        "hypertension": 3.6
+      },
+      "intentFits": {
+        "lighter-energy": 0.6263,
+        "protein-forward": 0.1111,
+        "fibre-forward": 0.3232,
+        "sodium-aware": 0.8586
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 2347,
+        "sourceFoodName": "Kueh pie tee",
+        "sourceRowSha256": "7d60ab57e623faa65ff03a488574fbcd51fbe84b8080ea87e01671785cce2577",
+        "sourceDataType": "Lab Analysis",
+        "mappingKind": "scaled-exact",
+        "multiplier": 5,
+        "reviewNote": "The source reports one cup; values are scaled to the game's five-piece serving."
+      },
+      "reviewNote": "The source reports one cup; values are scaled to the game's five-piece serving."
+    },
+    {
+      "id": "dish.prawn-noodle-soup",
+      "dishId": "dish.prawn-noodle-soup",
+      "status": "released",
+      "nutritionClass": "meal",
+      "serving": {
+        "amount": 732,
+        "unit": "g",
+        "label": "1 bowl(s) = 732g"
+      },
+      "nutrients": {
+        "energyKcal": {
+          "status": "known",
+          "value": 478
+        },
+        "proteinG": {
+          "status": "known",
+          "value": 24.29
+        },
+        "totalFatG": {
+          "status": "known",
+          "value": 8.34
+        },
+        "saturatedFatG": {
+          "status": "known",
+          "value": 2.97
+        },
+        "transFatG": {
+          "status": "trace"
+        },
+        "carbohydrateG": {
+          "status": "known",
+          "value": 77.57
+        },
+        "totalSugarG": {
+          "status": "known",
+          "value": 0.72
+        },
+        "dietaryFibreG": {
+          "status": "known",
+          "value": 5.87
+        },
+        "sodiumMg": {
+          "status": "known",
+          "value": 3378
+        },
+        "calciumMg": {
+          "status": "known",
+          "value": 254
+        },
+        "ironMg": {
+          "status": "known",
+          "value": 2.61
+        },
+        "waterG": {
+          "status": "known",
+          "value": 603.9
+        }
+      },
+      "healthRating": 2.7,
+      "conditionRatings": {
+        "high-cholesterol": 5,
+        "obesity": 5,
+        "diabetes": 3.5,
+        "hypertension": 1
+      },
+      "intentFits": {
+        "lighter-energy": 0.5707,
+        "protein-forward": 0.4949,
+        "fibre-forward": 0.4444,
+        "sodium-aware": 0.101
+      },
+      "provenance": {
+        "snapshotId": "food-1bc212db6eda",
+        "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
+        "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
+        "sourceRowNumber": 1351,
+        "sourceFoodName": "Prawn noodles (soup)",
+        "sourceRowSha256": "3c472029e2f901d7c1089f6c2b560ced1f1a3cc57a118ccbaccc116fa2369e0f",
+        "sourceDataType": "Lab Analysis",
+        "mappingKind": "curated-synonym",
+        "multiplier": 1,
+        "reviewNote": "The soup preparation is the game's default prawn noodle bowl."
+      },
+      "reviewNote": "The soup preparation is the game's default prawn noodle bowl."
     },
     {
       "id": "dish.kopi:kopi-siu-dai",
@@ -4756,7 +5874,7 @@
         "hypertension": 4.5
       },
       "intentFits": {
-        "lower-total-sugar-drink": 0.1538
+        "lower-total-sugar-drink": 0.2667
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -4840,7 +5958,7 @@
         "hypertension": 4.6
       },
       "intentFits": {
-        "lower-total-sugar-drink": 0.5385
+        "lower-total-sugar-drink": 0.6
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -4925,7 +6043,7 @@
         "hypertension": 5
       },
       "intentFits": {
-        "lower-total-sugar-drink": 0.7692
+        "lower-total-sugar-drink": 0.8
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -5010,7 +6128,7 @@
         "hypertension": 4.7
       },
       "intentFits": {
-        "lower-total-sugar-drink": 0.6154
+        "lower-total-sugar-drink": 0.6667
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -5179,7 +6297,7 @@
         "hypertension": 4.4
       },
       "intentFits": {
-        "lower-total-sugar-drink": 0.0769
+        "lower-total-sugar-drink": 0.1333
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -5264,7 +6382,7 @@
         "hypertension": 4.6
       },
       "intentFits": {
-        "lower-total-sugar-drink": 0.4615
+        "lower-total-sugar-drink": 0.5333
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -5348,7 +6466,7 @@
         "hypertension": 4.5
       },
       "intentFits": {
-        "lower-total-sugar-drink": 0.3077
+        "lower-total-sugar-drink": 0.4
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -5432,7 +6550,7 @@
         "hypertension": 5
       },
       "intentFits": {
-        "lower-total-sugar-drink": 0.8462
+        "lower-total-sugar-drink": 0.8667
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -5517,7 +6635,7 @@
         "hypertension": 4.8
       },
       "intentFits": {
-        "lower-total-sugar-drink": 0.6923
+        "lower-total-sugar-drink": 0.7333
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -5602,7 +6720,7 @@
         "hypertension": 5
       },
       "intentFits": {
-        "lower-total-sugar-drink": 0.9231
+        "lower-total-sugar-drink": 0.9333
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -5687,10 +6805,10 @@
         "hypertension": 1.7
       },
       "intentFits": {
-        "lighter-energy": 0.1023,
-        "protein-forward": 0.8523,
-        "fibre-forward": 0.6818,
-        "sodium-aware": 0.375
+        "lighter-energy": 0.101,
+        "protein-forward": 0.8586,
+        "fibre-forward": 0.6667,
+        "sodium-aware": 0.3737
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -5775,10 +6893,10 @@
         "hypertension": 1.2
       },
       "intentFits": {
-        "lighter-energy": 0.0341,
-        "protein-forward": 0.9773,
-        "fibre-forward": 0.7614,
-        "sodium-aware": 0.3182
+        "lighter-energy": 0.0303,
+        "protein-forward": 0.9697,
+        "fibre-forward": 0.7576,
+        "sodium-aware": 0.3232
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -5863,10 +6981,10 @@
         "hypertension": 2.8
       },
       "intentFits": {
-        "lighter-energy": 0.3636,
-        "protein-forward": 0.4545,
-        "fibre-forward": 0.5568,
-        "sodium-aware": 0.5568
+        "lighter-energy": 0.3737,
+        "protein-forward": 0.4444,
+        "fibre-forward": 0.5455,
+        "sodium-aware": 0.5657
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -5952,9 +7070,9 @@
       },
       "intentFits": {
         "lighter-energy": 0.2727,
-        "protein-forward": 0.625,
-        "fibre-forward": 0.5568,
-        "sodium-aware": 0.4773
+        "protein-forward": 0.6263,
+        "fibre-forward": 0.5455,
+        "sodium-aware": 0.4747
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -6036,10 +7154,10 @@
         "hypertension": 3.8
       },
       "intentFits": {
-        "lighter-energy": 0.7386,
-        "protein-forward": 0.0795,
-        "fibre-forward": 0.25,
-        "sodium-aware": 0.7727
+        "lighter-energy": 0.7576,
+        "protein-forward": 0.0909,
+        "fibre-forward": 0.2525,
+        "sodium-aware": 0.7677
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -6124,10 +7242,10 @@
         "hypertension": 1.8
       },
       "intentFits": {
-        "lighter-energy": 0.4318,
-        "protein-forward": 0.1932,
-        "fibre-forward": 0.8295,
-        "sodium-aware": 0.3523
+        "lighter-energy": 0.4545,
+        "protein-forward": 0.202,
+        "fibre-forward": 0.8182,
+        "sodium-aware": 0.3535
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -6212,10 +7330,10 @@
         "hypertension": 2.4
       },
       "intentFits": {
-        "lighter-energy": 0.5341,
-        "protein-forward": 0.1818,
+        "lighter-energy": 0.5455,
+        "protein-forward": 0.1919,
         "fibre-forward": 0.2727,
-        "sodium-aware": 0.7614
+        "sodium-aware": 0.7576
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -6300,10 +7418,10 @@
         "hypertension": 3.5
       },
       "intentFits": {
-        "lighter-energy": 0.7841,
-        "protein-forward": 0.2159,
-        "fibre-forward": 0.5341,
-        "sodium-aware": 0.8977
+        "lighter-energy": 0.798,
+        "protein-forward": 0.2222,
+        "fibre-forward": 0.5253,
+        "sodium-aware": 0.899
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -6388,10 +7506,10 @@
         "hypertension": 3.9
       },
       "intentFits": {
-        "lighter-energy": 0.6989,
-        "protein-forward": 0.2386,
-        "fibre-forward": 0.1477,
-        "sodium-aware": 0.9205
+        "lighter-energy": 0.7121,
+        "protein-forward": 0.2424,
+        "fibre-forward": 0.1414,
+        "sodium-aware": 0.9192
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -6476,10 +7594,10 @@
         "hypertension": 3
       },
       "intentFits": {
-        "lighter-energy": 0.5739,
-        "protein-forward": 0.4318,
-        "fibre-forward": 0.1591,
-        "sodium-aware": 0.7386
+        "lighter-energy": 0.5909,
+        "protein-forward": 0.4242,
+        "fibre-forward": 0.1616,
+        "sodium-aware": 0.7323
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -6564,10 +7682,10 @@
         "hypertension": 3
       },
       "intentFits": {
-        "lighter-energy": 0.8295,
-        "protein-forward": 0.4091,
-        "fibre-forward": 0.2045,
-        "sodium-aware": 0.5341
+        "lighter-energy": 0.8384,
+        "protein-forward": 0.404,
+        "fibre-forward": 0.2121,
+        "sodium-aware": 0.5455
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -6652,10 +7770,10 @@
         "hypertension": 1.2
       },
       "intentFits": {
-        "lighter-energy": 0.875,
-        "protein-forward": 0.3182,
-        "fibre-forward": 0.2841,
-        "sodium-aware": 0.25
+        "lighter-energy": 0.8788,
+        "protein-forward": 0.3232,
+        "fibre-forward": 0.2828,
+        "sodium-aware": 0.2424
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -6740,10 +7858,10 @@
         "hypertension": 3
       },
       "intentFits": {
-        "lighter-energy": 0.9886,
-        "protein-forward": 0.3295,
-        "fibre-forward": 0.1136,
-        "sodium-aware": 0.5455
+        "lighter-energy": 0.9798,
+        "protein-forward": 0.3333,
+        "fibre-forward": 0.1111,
+        "sodium-aware": 0.5556
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -6826,10 +7944,10 @@
         "hypertension": 1.6
       },
       "intentFits": {
-        "lighter-energy": 0.4886,
-        "protein-forward": 0.8295,
-        "fibre-forward": 0.8523,
-        "sodium-aware": 0.2841
+        "lighter-energy": 0.5051,
+        "protein-forward": 0.8384,
+        "fibre-forward": 0.8384,
+        "sodium-aware": 0.2778
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -6914,10 +8032,10 @@
         "hypertension": 3.2
       },
       "intentFits": {
-        "lighter-energy": 0.1136,
+        "lighter-energy": 0.1111,
         "protein-forward": 1,
-        "fibre-forward": 0.3523,
-        "sodium-aware": 0.6477
+        "fibre-forward": 0.3535,
+        "sodium-aware": 0.6465
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -7002,10 +8120,10 @@
         "hypertension": 2.8
       },
       "intentFits": {
-        "lighter-energy": 0.1705,
-        "protein-forward": 0.9432,
+        "lighter-energy": 0.1717,
+        "protein-forward": 0.9394,
         "fibre-forward": 0.3636,
-        "sodium-aware": 0.5909
+        "sodium-aware": 0.596
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -7090,10 +8208,10 @@
         "hypertension": 2
       },
       "intentFits": {
-        "lighter-energy": 0.2102,
-        "protein-forward": 0.4773,
-        "fibre-forward": 0.8068,
-        "sodium-aware": 0.4318
+        "lighter-energy": 0.2071,
+        "protein-forward": 0.4646,
+        "fibre-forward": 0.798,
+        "sodium-aware": 0.4242
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -7178,10 +8296,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.1364,
-        "protein-forward": 0.8182,
-        "fibre-forward": 0.5795,
-        "sodium-aware": 0.2045
+        "lighter-energy": 0.1414,
+        "protein-forward": 0.8283,
+        "fibre-forward": 0.5657,
+        "sodium-aware": 0.202
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -7266,10 +8384,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.0114,
+        "lighter-energy": 0.0101,
         "protein-forward": 0.9091,
-        "fibre-forward": 0.9659,
-        "sodium-aware": 0.1136
+        "fibre-forward": 0.9596,
+        "sodium-aware": 0.1212
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -7354,10 +8472,10 @@
         "hypertension": 1.9
       },
       "intentFits": {
-        "lighter-energy": 0.3409,
-        "protein-forward": 0.392,
-        "fibre-forward": 0.6136,
-        "sodium-aware": 0.3864
+        "lighter-energy": 0.3434,
+        "protein-forward": 0.3889,
+        "fibre-forward": 0.6061,
+        "sodium-aware": 0.3838
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -7442,10 +8560,10 @@
         "hypertension": 4.1
       },
       "intentFits": {
-        "lighter-energy": 0.6705,
-        "protein-forward": 0.125,
-        "fibre-forward": 0.3864,
-        "sodium-aware": 0.8864
+        "lighter-energy": 0.6869,
+        "protein-forward": 0.1414,
+        "fibre-forward": 0.3838,
+        "sodium-aware": 0.8889
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -7530,10 +8648,10 @@
         "hypertension": 2.9
       },
       "intentFits": {
-        "lighter-energy": 0.7614,
-        "protein-forward": 0.2045,
+        "lighter-energy": 0.7778,
+        "protein-forward": 0.2121,
         "fibre-forward": 0.1818,
-        "sodium-aware": 0.7841
+        "sodium-aware": 0.7778
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -7618,10 +8736,10 @@
         "hypertension": 2.3
       },
       "intentFits": {
-        "lighter-energy": 0.7159,
-        "protein-forward": 0.0568,
-        "fibre-forward": 0.1705,
-        "sodium-aware": 0.8523
+        "lighter-energy": 0.7374,
+        "protein-forward": 0.0707,
+        "fibre-forward": 0.1717,
+        "sodium-aware": 0.8485
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -7706,10 +8824,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.0227,
-        "protein-forward": 0.8977,
-        "fibre-forward": 0.875,
-        "sodium-aware": 0.0682
+        "lighter-energy": 0.0202,
+        "protein-forward": 0.899,
+        "fibre-forward": 0.8586,
+        "sodium-aware": 0.0707
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -7794,10 +8912,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.2386,
-        "protein-forward": 0.7386,
-        "fibre-forward": 0.3295,
-        "sodium-aware": 0.0455
+        "lighter-energy": 0.2323,
+        "protein-forward": 0.7374,
+        "fibre-forward": 0.3333,
+        "sodium-aware": 0.0404
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -7883,9 +9001,9 @@
       },
       "intentFits": {
         "lighter-energy": 0.1818,
-        "protein-forward": 0.5909,
-        "fibre-forward": 0.7727,
-        "sodium-aware": 0.1591
+        "protein-forward": 0.596,
+        "fibre-forward": 0.7677,
+        "sodium-aware": 0.1616
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -7970,10 +9088,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.125,
-        "protein-forward": 0.8409,
-        "fibre-forward": 0.7045,
-        "sodium-aware": 0.0114
+        "lighter-energy": 0.1212,
+        "protein-forward": 0.8485,
+        "fibre-forward": 0.6869,
+        "sodium-aware": 0.0101
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -8058,10 +9176,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.2273,
-        "protein-forward": 0.7955,
-        "fibre-forward": 0.4659,
-        "sodium-aware": 0.0341
+        "lighter-energy": 0.2222,
+        "protein-forward": 0.8081,
+        "fibre-forward": 0.4646,
+        "sodium-aware": 0.0303
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -8146,10 +9264,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.0568,
-        "protein-forward": 0.8636,
-        "fibre-forward": 0.6477,
-        "sodium-aware": 0.0227
+        "lighter-energy": 0.0505,
+        "protein-forward": 0.8687,
+        "fibre-forward": 0.6364,
+        "sodium-aware": 0.0202
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -8234,10 +9352,10 @@
         "hypertension": 1.8
       },
       "intentFits": {
-        "lighter-energy": 0.3295,
+        "lighter-energy": 0.3333,
         "protein-forward": 0.6364,
-        "fibre-forward": 0.6932,
-        "sodium-aware": 0.3409
+        "fibre-forward": 0.6768,
+        "sodium-aware": 0.3434
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -8322,10 +9440,10 @@
         "hypertension": 1.9
       },
       "intentFits": {
-        "lighter-energy": 0.3068,
-        "protein-forward": 0.7045,
-        "fibre-forward": 0.7841,
-        "sodium-aware": 0.3977
+        "lighter-energy": 0.3131,
+        "protein-forward": 0.7071,
+        "fibre-forward": 0.7778,
+        "sodium-aware": 0.3939
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -8410,10 +9528,10 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.3864,
-        "protein-forward": 0.6818,
-        "fibre-forward": 0.2273,
-        "sodium-aware": 0.1364
+        "lighter-energy": 0.3939,
+        "protein-forward": 0.6869,
+        "fibre-forward": 0.2323,
+        "sodium-aware": 0.1414
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -8498,9 +9616,9 @@
         "hypertension": 1
       },
       "intentFits": {
-        "lighter-energy": 0.3977,
-        "protein-forward": 0.75,
-        "fibre-forward": 0.625,
+        "lighter-energy": 0.4242,
+        "protein-forward": 0.7525,
+        "fibre-forward": 0.6162,
         "sodium-aware": 0
       },
       "provenance": {
@@ -8586,10 +9704,10 @@
         "hypertension": 1.2
       },
       "intentFits": {
-        "lighter-energy": 0.5,
-        "protein-forward": 0.5455,
+        "lighter-energy": 0.5152,
+        "protein-forward": 0.5556,
         "fibre-forward": 0.4545,
-        "sodium-aware": 0.2386
+        "sodium-aware": 0.2323
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -8674,10 +9792,10 @@
         "hypertension": 1.1
       },
       "intentFits": {
-        "lighter-energy": 0.3182,
-        "protein-forward": 0.9205,
-        "fibre-forward": 0.4773,
-        "sodium-aware": 0.2727
+        "lighter-energy": 0.3232,
+        "protein-forward": 0.9192,
+        "fibre-forward": 0.4747,
+        "sodium-aware": 0.2626
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -8762,10 +9880,10 @@
         "hypertension": 2.8
       },
       "intentFits": {
-        "lighter-energy": 0.2614,
-        "protein-forward": 0.9318,
-        "fibre-forward": 0.0398,
-        "sodium-aware": 0.6023
+        "lighter-energy": 0.2626,
+        "protein-forward": 0.9293,
+        "fibre-forward": 0.0404,
+        "sodium-aware": 0.6061
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -8849,10 +9967,10 @@
         "hypertension": 4.6
       },
       "intentFits": {
-        "lighter-energy": 0.2955,
+        "lighter-energy": 0.303,
         "protein-forward": 0.7273,
-        "fibre-forward": 0.2386,
-        "sodium-aware": 0.8409
+        "fibre-forward": 0.2424,
+        "sodium-aware": 0.8384
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
@@ -8935,10 +10053,10 @@
         "hypertension": 3.9
       },
       "intentFits": {
-        "lighter-energy": 0.6477,
-        "protein-forward": 0.0909,
-        "fibre-forward": 0.4091,
-        "sodium-aware": 0.7045
+        "lighter-energy": 0.6667,
+        "protein-forward": 0.101,
+        "fibre-forward": 0.404,
+        "sodium-aware": 0.697
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",

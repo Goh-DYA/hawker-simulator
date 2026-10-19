@@ -56,17 +56,17 @@ describe("nutrition content", () => {
     );
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
-      "3145acb21eb5f2e30771affa34170e1b9257ed1318a5406e72260aa301edcbd1",
+      "dc1a9ed14a4b564eafb972e43acb4fc38e18fc9399915ad29aadf1e5e8be8a3e",
     );
   });
 
   it("mounts deterministic schema-v2 nutrition content", () => {
     const report = validateContent();
 
-    assert.equal(LAUNCH_CONTENT.version, "1.3.0");
+    assert.equal(LAUNCH_CONTENT.version, "1.4.0");
     assert.equal(LAUNCH_CONTENT.nutrition, NUTRITION_CONTENT);
     assert.equal(NUTRITION_CONTENT.schemaVersion, 2);
-    assert.equal(report.counts.nutritionProfiles, 103);
+    assert.equal(report.counts.nutritionProfiles, 116);
     assert.equal(
       report.counts.nutritionVariantFamilies,
       LAUNCH_ROSTER.nutritionVariantFamilies,
@@ -86,7 +86,7 @@ describe("nutrition content", () => {
     assert.doesNotMatch(JSON.stringify(NUTRITION_CONTENT), /H:\\\\|My Drive/i);
   });
 
-  it("gives all 54 dishes and every variant a released source profile", () => {
+  it("gives all 67 dishes and every variant a released source profile", () => {
     const primary = NUTRITION_CONTENT.profiles.filter(
       (profile) => profile.id === profile.dishId,
     );

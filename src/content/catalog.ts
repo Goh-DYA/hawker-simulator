@@ -22,7 +22,7 @@ import type {
 
 /** The complete launch content bundle; `version` is reported by `validateContent`. */
 export const LAUNCH_CONTENT = {
-  version: "1.3.0",
+  version: "1.4.0",
   economy: ECONOMY,
   stalls: STALLS,
   dishes: DISHES,

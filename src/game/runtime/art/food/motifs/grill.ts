@@ -1,9 +1,9 @@
 /**
- * Grill and seafood motifs: chicken and beef satay, barbecued wings, salted egg squid, sambal
- * stingray and black pepper crab.
+ * Grill and seafood motifs: chicken and beef satay, barbecued wings, sotong panggang (grilled
+ * squid), sambal stingray and black pepper crab.
  *
- * Satay lies as a row of skewers beside its peanut sauce, wings and squid pile on their
- * platter or leaf, and the stingray and crab each fill their dish as one bold silhouette.
+ * Satay lies as a row of skewers beside its peanut sauce, wings and squid lie on their platter
+ * or leaf, and the stingray and the quarter crab each fill their dish as one bold silhouette.
  */
 import {
   css,
@@ -18,12 +18,8 @@ import {
 } from "../../canvas";
 import { at, heap_scale, pieces_left, type Motif, type MotifPaint } from "../motif";
 import {
-  paint_chilli_slice,
   paint_chunk,
-  paint_crab,
-  paint_cucumber,
   paint_dots,
-  paint_fried_ring,
   paint_gloss,
   paint_leaf,
   paint_liquid,
@@ -31,11 +27,16 @@ import {
   paint_skewer,
   PEANUT,
   SAMBAL,
+  WHITE,
 } from "../parts";
 import { paint_dollop, paint_lime_half, paint_slivers, paint_wing } from "../toppings";
 
 /** The stingray wing's fan: the angles its ridges span, from east round towards the south. */
 const STINGRAY_FAN = { start: 0.02, end: 1.2 } as const;
+/** Sotong panggang's red spice paste and the char of the coals. */
+const SQUID = { paste: 0xd0643a, char: 0x4a1e10 } as const;
+/** Black pepper crab's cooked shell, its pale meat and its dark peppery sauce. */
+const CRAB = { shell: 0xc04a28, meat: 0xf4e8d8, sauce: 0x4a2c1c } as const;
 /** The pale, translucent cartilage comb left once the flesh is eaten off the wing. */
 const STINGRAY_CARTILAGE = 0xeadcc0;
 
@@ -103,43 +104,111 @@ function paint_bbq_wings(p: MotifPaint): void {
 }
 
 /**
- * Salted egg squid: crisp golden squid rings tossed in frothy salted-egg yolk with curry leaves
- * and chilli.
+ * Paints one charcoal-grilled squid: a tapering body tube scored in a cross-hatch, rubbed with
+ * a red spice paste and charred along its edges, with its fins and a tuft of curled tentacles.
+ *
+ * @param ctx - The paint context.
+ * @param x - Body centre x.
+ * @param y - Body centre y.
+ * @param length - Body length.
+ * @param angle - Rotation in radians, the tentacles towards +x.
+ */
+function paint_grilled_squid(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  length: number,
+  angle: number,
+): void {
+  const half = length / 2;
+  const girth = length * 0.22;
+  const trace_body = () => {
+    ctx.beginPath();
+    ctx.moveTo(-half, 0);
+    ctx.quadraticCurveTo(-half * 0.6, -girth * 1.1, half * 0.55, -girth);
+    ctx.lineTo(half * 0.62, girth);
+    ctx.quadraticCurveTo(-half * 0.6, girth * 1.1, -half, 0);
+    ctx.closePath();
+  };
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.lineCap = "round";
+  // The tentacles, curling back from the cut end.
+  for (let arm = 0; arm < 5; arm += 1) {
+    const offset = (arm - 2) * girth * 0.3;
+    const curl = arm % 2 ? 1 : -1;
+    ctx.beginPath();
+    ctx.moveTo(half * 0.5, offset);
+    ctx.bezierCurveTo(
+      half * 0.8,
+      offset * 1.4,
+      half * 0.95,
+      offset * 1.6 + curl * girth * 0.5,
+      half * 0.8,
+      offset * 1.8 + curl * girth * 0.7,
+    );
+    ctx.strokeStyle = css(SQUID.char);
+    ctx.lineWidth = 1.1;
+    ctx.stroke();
+    ctx.strokeStyle = css(SQUID.paste, 0.85);
+    ctx.lineWidth = 0.6;
+    ctx.stroke();
+  }
+  // The fins at the tip.
+  fill_ellipse(ctx, -half * 0.82, 0, half * 0.24, girth * 1.25, css(shade(SQUID.paste, 0.15)));
+  ctx.save();
+  ctx.shadowBlur = 1.5;
+  ctx.shadowOffsetX = 0.8;
+  ctx.shadowOffsetY = 1.2;
+  ctx.shadowColor = css(SHADOW_INK, 0.35);
+  trace_body();
+  ctx.fillStyle = linear_gradient(ctx, 0, -girth, 0, girth, [
+    [0, tint(SQUID.paste, 0.25)],
+    [0.55, SQUID.paste],
+    [1, shade(SQUID.paste, 0.35)],
+  ]);
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  trace_body();
+  ctx.clip();
+  // The cross-hatch scoring, darkened by the coals.
+  for (let cut = -4; cut <= 4; cut += 1) {
+    const offset = cut * length * 0.1;
+    line(ctx, offset - girth, -girth, offset + girth, girth, css(SQUID.char, 0.55), 0.45);
+    line(ctx, offset - girth, girth, offset + girth, -girth, css(SQUID.char, 0.55), 0.45);
+  }
+  ctx.restore();
+  trace_body();
+  ctx.strokeStyle = css(SQUID.char, 0.8);
+  ctx.lineWidth = 0.7;
+  ctx.stroke();
+  paint_gloss(ctx, -half * 0.2, -girth * 0.45, half * 0.4, girth * 0.22, 0.45, 0);
+  ctx.restore();
+}
+
+/**
+ * Sotong panggang: two whole squid marinated in spice paste and grilled over charcoal until
+ * scored and charred, on banana leaf with sliced shallot, a calamansi half and sambal.
  *
  * @param p - The motif paint.
  */
-function paint_salted_egg_squid(p: MotifPaint): void {
+function paint_sotong_panggang(p: MotifPaint): void {
   const { ctx, area, seed, isLowDetail } = p;
-  const spots: ReadonlyArray<readonly [number, number]> = [
-    [-0.45, -0.3],
-    [0.1, -0.4],
-    [0.55, -0.15],
-    [-0.25, 0.3],
-    [0.3, 0.35],
-    [-0.65, 0.25],
-    [0, 0],
-  ];
-  const shown = pieces_left(spots.length, p.remaining);
-  spots.slice(0, shown).forEach(([u, v], index) => {
-    const [x, y] = at(area, u, v);
-    paint_fried_ring(ctx, x, y, 2.4, 2.4, 0xe0a840, seed ^ index);
-  });
-  const size = heap_scale(p.remaining);
-  for (let froth = 0; froth < (isLowDetail ? 2 : 4); froth += 1) {
-    const [x, y] = at(area, -0.4 + froth * 0.3, (froth % 2 ? 0.1 : -0.1) * size);
-    paint_dollop(ctx, x, y, 1.6, 0xf3c94a, seed ^ (0x21 + froth));
+  const squid = pieces_left(2, p.remaining);
+  // The second squid is eaten down to a shorter piece before it goes.
+  const lengths = p.remaining < 0.5 ? [12] : p.remaining < 1 ? [17, 12] : [17, 17];
+  for (let piece = 0; piece < squid; piece += 1) {
+    const [x, y] = at(area, -0.12 + piece * 0.08, -0.32 + piece * 0.55);
+    paint_grilled_squid(ctx, x, y, lengths[piece] ?? 12, -0.18 + piece * 0.12);
   }
-  for (const [u, v, angle] of [
-    [-0.15, -0.6, 0.4],
-    [0.45, 0.5, -0.8],
-    [-0.55, 0.55, 1.2],
-  ] as const) {
-    const [x, y] = at(area, u, v);
-    paint_leaf(ctx, x, y, 3.8, angle, 0x2f6a2c);
-  }
-  const [cx, cy] = at(area, 0.2, 0.05);
-  paint_chilli_slice(ctx, cx, cy, 1.3);
-  paint_chilli_slice(ctx, cx - 6, cy + 2, 1.2);
+  const [ox, oy] = at(area, 0.68, -0.55);
+  paint_slivers(ctx, ox, oy, 2.6, isLowDetail ? 3 : 5, 0xb04a7a, seed ^ 0x21);
+  const [lx, ly] = at(area, 0.75, 0.55);
+  paint_lime_half(ctx, lx, ly, 2.6);
+  const [sx, sy] = at(area, -0.75, 0.62);
+  paint_dollop(ctx, sx, sy, 2.2, SAMBAL, seed ^ 0x22);
 }
 
 /**
@@ -251,26 +320,145 @@ function paint_squeezed_lime(ctx: PaintContext, x: number, y: number, radius: nu
 }
 
 /**
- * Black pepper crab: a whole crab with raised claws in a glossy black-pepper sauce, flecked
- * with cracked pepper.
+ * Paints the big claw of a crab: the swollen, cracked shell of the pincer with its two dark
+ * tips, lying with its joint towards the body.
+ *
+ * @param ctx - The paint context.
+ * @param x - Claw centre x.
+ * @param y - Claw centre y.
+ * @param size - Claw length.
+ * @param angle - Rotation in radians, the pincer tips towards +x.
+ */
+function paint_crab_claw(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  size: number,
+  angle: number,
+): void {
+  const rx = size * 0.38;
+  const ry = size * 0.24;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.lineCap = "round";
+  // The arm joint back towards the body.
+  line(ctx, -rx * 1.6, ry * 0.3, -rx * 0.6, 0, css(shade(CRAB.shell, 0.15)), size * 0.16);
+  // The two fingers of the pincer.
+  line(ctx, rx * 0.6, -ry * 0.35, rx * 1.75, -ry * 0.5, css(CRAB.shell), size * 0.13);
+  line(ctx, rx * 0.6, ry * 0.35, rx * 1.55, ry * 0.15, css(shade(CRAB.shell, 0.1)), size * 0.11);
+  fill_ellipse(ctx, rx * 1.75, -ry * 0.5, size * 0.05, size * 0.05, css(0x1e120c));
+  fill_ellipse(ctx, rx * 1.55, ry * 0.15, size * 0.045, size * 0.045, css(0x1e120c));
+  fill_ellipse(ctx, 0.5, 0.8, rx, ry, css(SHADOW_INK, 0.24));
+  fill_ellipse(
+    ctx,
+    0,
+    0,
+    rx,
+    ry,
+    radial_gradient(ctx, -rx * 0.35, -ry * 0.4, 0.3, rx * 1.2, [
+      [0, tint(CRAB.shell, 0.35)],
+      [0.7, CRAB.shell],
+      [1, shade(CRAB.shell, 0.35)],
+    ]),
+  );
+  // The crack in the shell where the meat shows.
+  line(ctx, -rx * 0.3, ry * 0.2, rx * 0.4, ry * 0.45, css(CRAB.meat, 0.9), 0.8);
+  paint_gloss(ctx, -rx * 0.3, -ry * 0.4, rx * 0.35, ry * 0.18, 0.5, 0);
+  ctx.restore();
+}
+
+/**
+ * Paints a quarter of a crab: one wedge of the shell and body with its walking legs fanned out
+ * behind it, showing the pale meat along the cut.
+ *
+ * @param ctx - The paint context.
+ * @param x - The body piece's cut corner x.
+ * @param y - The body piece's cut corner y.
+ * @param size - The piece's reach.
+ */
+function paint_quarter_crab(ctx: PaintContext, x: number, y: number, size: number): void {
+  const rx = size * 0.85;
+  const ry = size * 0.6;
+  ctx.save();
+  ctx.lineCap = "round";
+  // The walking legs, jointed where they leave the shell's rim.
+  for (let leg = 0; leg < 3; leg += 1) {
+    const angle = Math.PI * (1.08 + leg * 0.16);
+    const root_x = x + Math.cos(angle) * rx * 0.9;
+    const root_y = y + Math.sin(angle) * ry * 0.9;
+    const knee_x = root_x + Math.cos(angle) * size * 0.4;
+    const knee_y = root_y + Math.sin(angle) * size * 0.3;
+    line(ctx, root_x + 0.4, root_y + 0.7, knee_x + 0.4, knee_y + 0.7, css(SHADOW_INK, 0.22), 1.8);
+    line(ctx, root_x, root_y, knee_x, knee_y, css(shade(CRAB.shell, 0.1)), 1.7);
+    line(ctx, knee_x, knee_y, knee_x - 1.2, knee_y + 2.6, css(shade(CRAB.shell, 0.25)), 1.2);
+  }
+  // The shell wedge: a quarter ellipse whose straight edges are the cuts.
+  const trace = (dx: number, dy: number) => {
+    ctx.beginPath();
+    ctx.moveTo(x + dx, y + dy);
+    ctx.ellipse(x + dx, y + dy, rx, ry, 0, Math.PI, Math.PI * 1.5, false);
+    ctx.closePath();
+  };
+  trace(0.6, 1.2);
+  ctx.fillStyle = css(SHADOW_INK, 0.26);
+  ctx.fill();
+  // The pale meat showing along the cuts.
+  trace(0.3, 1.1);
+  ctx.fillStyle = css(CRAB.meat);
+  ctx.fill();
+  trace(-0.5, -0.4);
+  ctx.fillStyle = radial_gradient(ctx, x - rx * 0.55, y - ry * 0.6, 0.3, rx, [
+    [0, tint(CRAB.shell, 0.35)],
+    [0.7, CRAB.shell],
+    [1, shade(CRAB.shell, 0.35)],
+  ]);
+  ctx.fill();
+  ctx.strokeStyle = css(shade(CRAB.shell, 0.45), 0.8);
+  ctx.lineWidth = 0.6;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(x - 0.5, y - 0.4, rx * 0.78, ry * 0.74, 0, Math.PI * 1.08, Math.PI * 1.42);
+  ctx.strokeStyle = css(WHITE, 0.35);
+  ctx.lineWidth = 0.9;
+  ctx.stroke();
+  ctx.restore();
+}
+
+/**
+ * Black pepper crab: a quarter crab, a wedge of the body with its legs and the big claw
+ * beside it, in a glossy black-pepper sauce flecked with cracked pepper and curry leaves.
+ * Each eaten third takes the legs, then cracks into the body.
  *
  * @param p - The motif paint.
  */
 function paint_black_pepper_crab(p: MotifPaint): void {
   const { ctx, area, seed, isLowDetail } = p;
   const size = heap_scale(p.remaining);
-  paint_liquid(ctx, area.x, area.y + 1, area.rx * 0.95, area.ry * 0.9, 0x4a2c1c, { sheen: 0.3 });
-  paint_crab(ctx, area.x, area.y + 0.5, 15 * size, 0xb0442a);
-  fill_ellipse(ctx, area.x, area.y + 1.5, 6 * size, 3 * size, css(0x3a2216, 0.45));
+  paint_liquid(ctx, area.x, area.y + 1, area.rx * 0.95 * size, area.ry * 0.9 * size, CRAB.sauce, {
+    sheen: 0.3,
+  });
+  if (p.remaining > 0.5) {
+    const [bx, by] = at(area, 0.72, 0.42);
+    paint_quarter_crab(ctx, bx, by, 15 * Math.max(0.85, size));
+  } else {
+    // Only cracked shell pieces with meat picked from them are left of the body.
+    for (let shard = 0; shard < 2; shard += 1) {
+      const [sx, sy] = at(area, 0.05 + shard * 0.35, -0.1 + shard * 0.2);
+      paint_chunk(ctx, sx, sy, 3.6, CRAB.shell, 0.5 + shard, { radius: 1, gloss: 0.4 });
+    }
+  }
+  const [cx, cy] = at(area, -0.42, 0.3);
+  paint_crab_claw(ctx, cx, cy, 14, -0.35);
   paint_dots(ctx, area.x, area.y, area.rx * 0.7, isLowDetail ? 6 : 14, 0.45, 0x1a1412, seed ^ 0x41);
   paint_gloss(ctx, area.x - 3 * size, area.y - 2 * size, 3 * size, 1.1, 0.5);
-  if (p.remaining > 0.5) {
-    const [cx, cy] = at(area, 0.75, 0.55);
-    paint_chunk(ctx, cx, cy, 3.4, tint(0xb0442a, 0.1), 0.6, { gloss: 0.4 });
+  for (const [u, v, angle] of [
+    [-0.7, -0.35, 0.6],
+    [0.7, 0.55, -0.9],
+  ] as const) {
+    const [lx, ly] = at(area, u, v);
+    paint_leaf(ctx, lx, ly, 3.6, angle, 0x2f6a2c);
   }
-  const [hx, hy] = at(area, -0.75, 0.55);
-  paint_leaf(ctx, hx, hy, 3.6, 0.6, 0x4e9a3e);
-  paint_cucumber(ctx, hx + 3, hy - 1, 1.8);
 }
 
 /** The grill and seafood motifs, keyed by dish ID without the `dish.` prefix. */
@@ -278,7 +466,7 @@ export const GRILL_MOTIFS: Readonly<Record<string, Motif>> = {
   "chicken-satay-set": paint_chicken_satay,
   "beef-satay-set": paint_beef_satay,
   "bbq-chicken-wings": paint_bbq_wings,
-  "sambal-grilled-squid": paint_salted_egg_squid,
+  "sambal-grilled-squid": paint_sotong_panggang,
   "sambal-stingray": paint_sambal_stingray,
   "black-pepper-crab": paint_black_pepper_crab,
 };

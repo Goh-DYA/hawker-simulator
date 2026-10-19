@@ -16,7 +16,7 @@ describe("LAUNCH_ROSTER", () => {
   it("pins the launch record counts", () => {
     expect(LAUNCH_ROSTER).toEqual({
       stalls: 14,
-      dishes: 54,
+      dishes: 67,
       placeables: 80,
       customerArchetypes: 12,
       nutritionSourceSnapshots: 2,

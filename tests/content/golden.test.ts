@@ -24,22 +24,22 @@ import {
 } from "@/src/content";
 
 /** sha256 of `JSON.stringify` of the combined launch data. */
-const CONTENT_SHA256 = "12966cead32e753d3f1ee2dd20f9dcbe8d473927934d8829a44394e4647c114b";
+const CONTENT_SHA256 = "2be26f55205b086b41cd6a0ada1338ed53e239faaf207feed68a59df6a97b4ac";
 
 /** sha256 of `JSON.stringify` of each part of {@link CONTENT_SHA256}, as a diff aid. */
 const CONTENT_PART_SHA256 = {
-  stalls: "efea476cfa74595c7a2a7128eec02aa77eb3f106173106775d996fb9d048b76f",
-  dishes: "9ae2d7aea88253b616e39398c836fd1040ae3c416153c06cfd3950391e737612",
+  stalls: "044ef6d0f012446b15d02ee48bad79eaaa7d1e569c4eb793e3ef59884c62fcd2",
+  dishes: "df4060fb290ebeae87c20c595a0601331fd9ceccb9410c8fe94a3f8c85b9da1c",
   placeables: "5244912bfba4e749105eb988e6af89961d0affbdc0eea8a855490e7428e00dfe",
   customerArchetypes: "960a2929f347478ee2f62ab561cf5ebeddf1266985ccddd246fbce2a59023d91",
-  localizationEntries: "cc4137fbf03c5d54fb09b1ede1ffdfd51e999ee03308b0c1e4126f1881b8b983",
+  localizationEntries: "f389e29e43075dee4d2a4aff66c9ef124d0612e7e3e51763bea700555677fd91",
 } as const;
 
 /** sha256 of `JSON.stringify(LAUNCH_CONTENT)`, which adds the economy and nutrition data. */
-const LAUNCH_CONTENT_SHA256 = "6a3b8e1bc926f7090e822221c34eed6779459c3fe13b9caa5c327a1548a1e527";
+const LAUNCH_CONTENT_SHA256 = "524568df648f3180f996e619d18c7140c180e02fd00db4dd951253a79a06ee4c";
 
 /** sha256 of `JSON.stringify(validateContent())`. */
-const VALIDATION_REPORT_SHA256 = "accb069bea32ce2b396aba929e62367dd5ad79b0e43c266018cbdf30b29eddcd";
+const VALIDATION_REPORT_SHA256 = "b6679c4c5e763f82cada7135925a766f9aa4a4990813a2bcd30e37a8b185f296";
 
 function hash_json(value: unknown): string {
   return createHash("sha256").update(JSON.stringify(value), "utf8").digest("hex");

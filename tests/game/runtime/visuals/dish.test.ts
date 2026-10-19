@@ -17,7 +17,7 @@ describe("code-native dish visual recipes", () => {
   it("gives every dish a unique, recognisable real-life serving profile", () => {
     const recipes = DISHES.map(visualRecipeForDish);
 
-    assert.equal(recipes.length, 54);
+    assert.equal(recipes.length, 67);
     assert.equal(new Set(recipes.map((recipe) => recipe.contractKey)).size, DISHES.length);
     assert.equal(
       new Set(recipes.map((recipe) => recipe.presentation.semanticKey)).size,
@@ -65,7 +65,7 @@ describe("code-native dish visual recipes", () => {
       "shaved-ice",
     );
     assert.ok(
-      recipes.get("dish.black-pepper-crab")?.presentation.ingredientCues.includes("crab-pincers"),
+      recipes.get("dish.black-pepper-crab")?.presentation.ingredientCues.includes("quarter-crab"),
     );
     assert.ok(
       recipes.get("dish.har-gow")?.presentation.detailCues.includes("light-soup"),
@@ -86,7 +86,7 @@ describe("code-native dish visual recipes", () => {
       !recipes.get("dish.babi-pongteh")?.presentation.ingredientCues.includes("rice"),
     );
     assert.ok(
-      recipes.get("dish.siew-mai")?.presentation.detailCues.includes("diced-carrot"),
+      recipes.get("dish.siew-mai")?.presentation.detailCues.includes("crab-roe"),
     );
     assert.equal(
       recipes.get("dish.siew-mai")?.presentation.vessel,

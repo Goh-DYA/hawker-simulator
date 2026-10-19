@@ -107,8 +107,8 @@ const RENDER_DIGESTS = {
     sha256: "918f2bd8a8e7bdd0a3479fc441f66ef3c970dcffd1e8fa5570b9c50bbcba7806",
   },
   gallery: {
-    calls: 768_282,
-    sha256: "1c1932364828831e33a422e8d8ce763efa5bc2053e9d2f6add7681b8e4e6665e",
+    calls: 768_269,
+    sha256: "8c7ac2c1b974aea891e37f523fa27158cec786a319d9bb635e288e7bb38497ee",
   },
   galleryVariants: {
     calls: 60_314,

@@ -707,7 +707,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <span>Dishes &amp; nutrition</span>
 <h2>Menu planning</h2>
 </div>
-<span class="count-badge">54</span>
+<span class="count-badge">67</span>
 <button type="button" class="sheet-close-button" aria-label="Close management sheet">×</button>
 </div>
 <div class="menu-manager">
@@ -1204,6 +1204,123 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 <em id="dish-menu-reason-chicken-congee">Level 4</em>
 </article>
+<article class="dish-row menu-dish-row" aria-labelledby="dish-menu-title-char-siew-rice">
+<span class="dish-preview" data-dish="char-siew-rice" data-form="rice" data-motif="glazed-char-siew-fanned-over-rice" data-presentation="composed-rice" data-semantic="glazed-char-siew-fanned-over-rice:ceramic-plate:rice-mound:rice+char-siew+cucumber:sweet-sauce+charred-edges" data-vessel="ceramic-plate" style="--dish-portion: #b5452f; --dish-garnish: #6e7e42;" aria-hidden="true">
+<i class="dish-preview-portion">
+</i>
+<i class="dish-preview-garnish">
+</i>
+<i class="dish-preview-side">
+</i>
+</span>
+<div class="dish-menu-main">
+<h3 id="dish-menu-title-char-siew-rice">Char Siew Rice</h3>
+<small>rice · $8 · demand 85%</small>
+</div>
+<div class="nutrition-summary">
+<div class="dish-rating-summary" aria-label="Dish health and star ratings">
+<span class="dish-rating-badge is-health" aria-label="Health rating: 3.7/5">
+<i aria-hidden="true">♥</i>
+<span>
+<small>Health rating</small>
+<strong>3.7/5</strong>
+</span>
+</span>
+<span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.3/5">
+<i aria-hidden="true">★</i>
+<span>
+<small>Star rating</small>
+<strong>4.3/5</strong>
+</span>
+</span>
+</div>
+<p>Serving · 1 plate(s) = 353g</p>
+<dl aria-label="Key nutrition per listed serving">
+<div>
+<dt>Energy</dt>
+<dd>621 kcal</dd>
+</div>
+<div>
+<dt>Protein</dt>
+<dd>31.1 g</dd>
+</div>
+<div>
+<dt>Total fat</dt>
+<dd>12.4 g</dd>
+</div>
+<div>
+<dt>Carbohydrate</dt>
+<dd>95.7 g</dd>
+</div>
+<div>
+<dt>Total sugar</dt>
+<dd>2.1 g</dd>
+</div>
+<div>
+<dt>Fibre</dt>
+<dd>8.4 g</dd>
+</div>
+<div>
+<dt>Sodium</dt>
+<dd>833 mg</dd>
+</div>
+</dl>
+<details class="nutrition-more-details">
+<summary>More nutrition details</summary>
+<dl aria-label="Additional nutrition per listed serving">
+<div>
+<dt>Saturated fat</dt>
+<dd>4.2 g</dd>
+</div>
+<div>
+<dt>Trans fat</dt>
+<dd>Trace amount</dd>
+</div>
+<div>
+<dt>Calcium</dt>
+<dd>18 mg</dd>
+</div>
+<div>
+<dt>Iron</dt>
+<dd>1.6 mg</dd>
+</div>
+<div>
+<dt>Water</dt>
+<dd>208.8 g</dd>
+</div>
+</dl>
+</details>
+<details class="condition-rating-details">
+<summary>Health rating by condition</summary>
+<dl aria-label="Condition-specific health ratings">
+<div>
+<dt>Managing high cholesterol</dt>
+<dd>4.1/5</dd>
+</div>
+<div>
+<dt>Managing obesity</dt>
+<dd>4.3/5</dd>
+</div>
+<div>
+<dt>Managing diabetes</dt>
+<dd>2.6/5</dd>
+</div>
+<div>
+<dt>Managing hypertension</dt>
+<dd>4.4/5</dd>
+</div>
+</dl>
+</details>
+</div>
+<div class="dish-menu-actions">
+<button type="button" aria-label="View nutrition for Char Siew Rice">View nutrition</button>
+<label class="dish-offer-control">
+<span>Offer</span>
+<input disabled="" aria-label="Offer Char Siew Rice, unavailable: Level 5" aria-describedby="dish-menu-reason-char-siew-rice" type="checkbox">
+</label>
+</div>
+<em id="dish-menu-reason-char-siew-rice">Level 5</em>
+</article>
 <p class="nutrition-lens-note">Nutrition values are estimates for the listed serving. Actual recipes and portions vary.</p>
 <details class="nutrition-disclosure">
 <summary>Nutrition data &amp; education note</summary>
@@ -1636,7 +1753,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <span class="stall-swatch" data-stall="sunrise-roost" style="background: linear-gradient(145deg, rgb(244, 201, 93), rgb(255, 243, 208));" aria-hidden="true">▰</span>
 <span>
 <strong>Sunrise Roost</strong>
-<small>4 dishes · 68 quality</small>
+<small>5 dishes · 68 quality</small>
 </span>
 <em>$1,200</em>
 </button>
@@ -1644,7 +1761,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <span class="stall-swatch" data-stall="coconut-lime" style="background: linear-gradient(145deg, rgb(58, 125, 68), rgb(242, 232, 207));" aria-hidden="true">▰</span>
 <span>
 <strong>Coconut &amp; Lime</strong>
-<small>4 dishes · 70 quality</small>
+<small>5 dishes · 70 quality</small>
 </span>
 <em>$1,350</em>
 </button>
@@ -1652,7 +1769,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <span class="stall-swatch" data-stall="kopi-canopy" style="background: linear-gradient(145deg, rgb(111, 78, 55), rgb(168, 218, 220));" aria-hidden="true">▰</span>
 <span>
 <strong>Kopi Canopy</strong>
-<small>3 dishes · 64 quality</small>
+<small>5 dishes · 64 quality</small>
 </span>
 <em>Rep 10</em>
 </button>
@@ -1660,7 +1777,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <span class="stall-swatch" data-stall="cinder-wok" style="background: linear-gradient(145deg, rgb(196, 69, 54), rgb(34, 34, 59));" aria-hidden="true">▰</span>
 <span>
 <strong>Cinder Wok</strong>
-<small>4 dishes · 75 quality</small>
+<small>5 dishes · 75 quality</small>
 </span>
 <em>Level 3</em>
 </button>
@@ -1668,7 +1785,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <span class="stall-swatch" data-stall="mee-pok-junction" style="background: linear-gradient(145deg, rgb(217, 108, 47), rgb(246, 232, 200));" aria-hidden="true">▰</span>
 <span>
 <strong>Mee Pok Junction</strong>
-<small>4 dishes · 76 quality</small>
+<small>5 dishes · 76 quality</small>
 </span>
 <em>Level 4</em>
 </button>
@@ -1676,7 +1793,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <span class="stall-swatch" data-stall="tiffin-lantern" style="background: linear-gradient(145deg, rgb(224, 122, 95), rgb(244, 241, 222));" aria-hidden="true">▰</span>
 <span>
 <strong>Tiffin Lantern</strong>
-<small>4 dishes · 76 quality</small>
+<small>5 dishes · 76 quality</small>
 </span>
 <em>Level 5</em>
 </button>
@@ -1684,7 +1801,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <span class="stall-swatch" data-stall="sweet-monsoon" style="background: linear-gradient(145deg, rgb(181, 23, 158), rgb(205, 231, 127));" aria-hidden="true">▰</span>
 <span>
 <strong>Sweet Monsoon</strong>
-<small>4 dishes · 72 quality</small>
+<small>5 dishes · 72 quality</small>
 </span>
 <em>Level 5</em>
 </button>
@@ -1700,7 +1817,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <span class="stall-swatch" data-stall="pick-and-mix" style="background: linear-gradient(145deg, rgb(77, 144, 142), rgb(246, 232, 177));" aria-hidden="true">▰</span>
 <span>
 <strong>Pick &amp; Mix</strong>
-<small>4 dishes · 77 quality</small>
+<small>5 dishes · 77 quality</small>
 </span>
 <em>Level 6</em>
 </button>
@@ -1716,7 +1833,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <span class="stall-swatch" data-stall="bamboo-basket" style="background: linear-gradient(145deg, rgb(47, 107, 79), rgb(200, 70, 48));" aria-hidden="true">▰</span>
 <span>
 <strong>Bamboo Basket</strong>
-<small>4 dishes · 82 quality</small>
+<small>5 dishes · 82 quality</small>
 </span>
 <em>Level 8</em>
 </button>
@@ -1724,7 +1841,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <span class="stall-swatch" data-stall="straits-hearth" style="background: linear-gradient(145deg, rgb(42, 157, 143), rgb(244, 162, 97));" aria-hidden="true">▰</span>
 <span>
 <strong>Straits Hearth</strong>
-<small>4 dishes · 86 quality</small>
+<small>6 dishes · 86 quality</small>
 </span>
 <em>Level 9</em>
 </button>
@@ -1740,7 +1857,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <span class="stall-swatch" data-stall="harbour-ember" style="background: linear-gradient(145deg, rgb(29, 53, 87), rgb(230, 57, 70));" aria-hidden="true">▰</span>
 <span>
 <strong>Harbour Ember</strong>
-<small>3 dishes · 90 quality</small>
+<small>4 dishes · 90 quality</small>
 </span>
 <em>Level 12</em>
 </button>
