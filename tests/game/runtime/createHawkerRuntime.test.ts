@@ -47,8 +47,8 @@ const OPEN_RUN_FRAMES = 600;
 /** sha256 of `JSON.stringify(exportState().core)` after each frame count, at speed 1. */
 const OPEN_RUN_CORE_SHA256: Readonly<Record<number, string>> = {
   100: "089871103019f66a03da112e76cad89bd2f0a40cfaa7eb4e6d9de0c2f6c6a223",
-  300: "4c8adcb47eaa7943473ae272a92265c28b552ae82aad192fe0c1dcf1bc90c360",
-  600: "b13e4f3ce3ab954ca43a8a8fe38fe7ca57484f338cd63d586c786fe7084af1da",
+  300: "f7c34e39dbb92d4c7c3bf88ac268c777346e0f5dbc953d804a4fd3ddb0870923",
+  600: "bfb8968616db41887660360a9db84b6eda503cff8286c13cf5172daefbe0acd1",
 };
 
 /** Speed 10 turns each 100 ms frame into one simulated second, so a day is 480 frames. */
@@ -61,10 +61,10 @@ const MULTI_DAY_FRAMES = 1_100;
 const MULTI_DAY_TIMEOUT_MS = 60_000;
 /** Checkpoints around the end of the first and second operating days. */
 const MULTI_DAY_CORE_SHA256: Readonly<Record<number, string>> = {
-  480: "9fd18bd8adc191334d4fe7d5b2807c90c81866fead29cf7ed8f12521b72b1033",
-  500: "9474a1c5f18543184ff7abe95a9940646ec770c8cc5e42ba9b30479670e5a5f8",
-  960: "cba7191ed5ea028c8f1d471a2123a7ab73bc892a136d937dcfc9f22c17de8ab8",
-  1_000: "44152770407884012adf10964430d23588ad8778cc45d0247471a131c9834b55",
+  480: "27f38d83f334a88e7cc4af18a3c8388b14ac071e8379f7b29145fc7fedd1304b",
+  500: "f29ae1269ad7313ee4b92d9785c048b31893f7c10d800825f23c9a166b92c636",
+  960: "5fceeb157b9ea12889ab699849aaab9e8d2c1df7cae3e9ceae86132204dcb4f8",
+  1_000: "a148e28c79556ed195bd90d0cf42929f07a6d293e37f0a5706487bc1f41cfc11",
 };
 
 /**
@@ -83,7 +83,7 @@ const MULTI_DAY_CORE_SHA256: Readonly<Record<number, string>> = {
 const PRESSURE_SIMULATION_SPAN_MS = 12;
 const PRESSURE_CALL_OFFSETS_MS: readonly number[] = [0, 0, PRESSURE_SIMULATION_SPAN_MS];
 /** sha256 of `JSON.stringify(exportState().core)` after the pressure run. */
-const PRESSURE_RUN_CORE_SHA256 = "d0861d31bdde36a0b536ce0d9d59552fbbc8aff4954357799fbd9e045500a9a0";
+const PRESSURE_RUN_CORE_SHA256 = "af311ee8725f7cbe679befede1b7a2d2c628c7ac06dadfa32f84f9069533b6d6";
 
 const IMPORT_RUN_FRAMES = 300;
 const RESET_RUN_FRAMES = 50;
