@@ -464,27 +464,27 @@ describe("core simulation golden master", () => {
       {
         tick: 4_799,
         focusDay: 1,
-        simulationDigestSha256: "743b775b9878bb9213df677e335afd5a2bc1322c00a164fdb5c714357303feff",
+        simulationDigestSha256: "0fc6f493ffd2380d855cd44dbbf933722dc6d0431f5c3e54b41348a23b0b38e7",
       },
       {
         tick: 4_801,
         focusDay: 2,
-        simulationDigestSha256: "8bf172619c7fd307dc2c87f01dca832e163a8faea0af276565d4651e97b9998a",
+        simulationDigestSha256: "a5c20319e254a824601591044b975e1e2a849433ee7fbb0c7f0a5e71e5b23741",
       },
       {
         tick: 9_599,
         focusDay: 2,
-        simulationDigestSha256: "43499eecac4153d72b9bd1a4bd50568868fcb82dced3d88f153e1a8608d9d2de",
+        simulationDigestSha256: "0e7b49335033af7e1b8539b0ce0b66b83400b9602a679bebbca357c43b1cd1df",
       },
       {
         tick: 9_601,
         focusDay: 3,
-        simulationDigestSha256: "f606a73f42258e6c529e9f22cd62692b1716898e240a225dc05a31a2515bcf1b",
+        simulationDigestSha256: "754f94bfa50c5a4c27209c5ae92b2b872443abe313c7f1cc3c30b25b88a783a6",
       },
       {
         tick: ADAPTIVE_TOTAL_STEPS,
         focusDay: 3,
-        simulationDigestSha256: "c7cb3602d1ff28279df2684466a4884dc9f6262cad5da35f2c817384899167ab",
+        simulationDigestSha256: "73236fed71cd08fc44ea4e39c0613b0ddd716779e7f2b022c4d25575fe4668e4",
       },
     ];
     let has_seen_health_condition = false;
@@ -504,8 +504,8 @@ describe("core simulation golden master", () => {
     expect(has_seen_nutrition_intent).toBe(true);
     expect(state.progression.level).toBeGreaterThanOrEqual(2);
     expect_scenario_end(state, "(f)", {
-      stateDigestSha256: "6cbaea2f5a9548d29dd72e717ee93ed8bd7c48feb1978db41b53608151e9b337",
-      stepperStateSha256: "cba78cf55beaaa5a98be868a74c8dc105cf798ca2185fcc67c33230effd4da77",
+      stateDigestSha256: "7137e0584f0f83f07c46275d1d759c9dbdc016eb3fb39d847fdd04d54e0ab1bc",
+      stepperStateSha256: "cc9453a5c3402a6755bb15420fd5262ce454aa5ce4a8f961be16bdeafd18770b",
     });
   });
 });

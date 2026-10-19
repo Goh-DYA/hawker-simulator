@@ -3,8 +3,8 @@
  * turns real elapsed time into fixed steps.
  *
  * Each step runs in a fixed order, which is part of the determinism contract. It first counts
- * down the spawn timer and, when it expires, spawns a customer and then computes the next
- * adaptive spawn interval, which uses no randomness. It then processes every customer once, in
+ * down the spawn timer and, when it expires, spawns a customer (unless the adaptive model is at
+ * last orders) and then computes the next adaptive spawn interval, which uses no randomness. It then processes every customer once, in
  * `compare_customer_ids` order, and finally runs `updateProgressionSystems`. Random numbers are
  * drawn from the draft's `rngState` only by `spawnCustomer` (the arrival, health and nutrition
  * rolls) and then by each processed customer's choices (stall and dish), in
@@ -13,7 +13,7 @@
  * from the state.
  */
 import { createDraft } from "./draft";
-import { compute_next_spawn_interval_ms, spawnCustomer } from "./arrivals";
+import { compute_next_spawn_interval_ms, is_arrival_window_closed, spawnCustomer } from "./arrivals";
 import { processCustomer } from "./lifecycle";
 import { compare_customer_ids } from "./ordering";
 import { compute_undo_window_ticks, get_quality_settings } from "./state";
@@ -33,7 +33,7 @@ export function stepSimulation(state: GameState): GameState {
   draft.spawnCountdownMs -= deltaMs;
 
   if (draft.spawnCountdownMs <= 0) {
-    spawnCustomer(draft);
+    if (!is_arrival_window_closed(draft)) spawnCustomer(draft);
     draft.spawnCountdownMs += compute_next_spawn_interval_ms(draft);
   }
 

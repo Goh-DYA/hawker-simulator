@@ -19,7 +19,14 @@ import {
   nutritionIntentFromRoll,
   record_intent_request,
 } from "./nutrition";
-import { OPERATING_DAY_MS, operatingDay, operatingMinuteOfDay } from "./progression";
+import { operatingDay, operatingMinuteOfDay } from "./progression";
+import {
+  active_rush_window,
+  compute_time_demand,
+  DEFAULT_RUSH_WINDOWS,
+  is_last_orders,
+  ms_until_day_end,
+} from "./rush";
 import type { CustomerArchetype, HealthCondition, NutritionIntent } from "./types";
 
 /** Spawn weight of a scheduled persona outside its visit window. */
@@ -27,9 +34,8 @@ const OFF_SCHEDULE_PERSONA_WEIGHT = 0.2;
 
 // Adaptive arrival model (stepSimulation). The spawn interval is the configured base interval
 // divided by demand (reputation x stall offer x time of day) and multiplied by backpressure.
+// The time-of-day curve and last orders live in `rush.ts`.
 
-/** Length of one operating day in simulated seconds (one second per in-game minute). */
-const OPERATING_DAY_SECONDS = OPERATING_DAY_MS / 1_000;
 /** Smallest infrastructure capacity used when measuring occupancy pressure. */
 const MIN_ARRIVAL_INFRASTRUCTURE = 4;
 /** Infrastructure capacity contributed by each stall preparation slot. */
@@ -44,14 +50,15 @@ const REPUTATION_DEMAND_RANGE = 1.25;
 const MIN_STALL_DEMAND = 0.6;
 /** Popularity assumed for a stall definition that does not author one. */
 const DEFAULT_STALL_POPULARITY = 0.5;
-/** Time-of-day demand at the start and end of the operating day. */
-const BASE_TIME_DEMAND = 0.8;
-/** Extra time-of-day demand at the midday peak. */
-const TIME_DEMAND_AMPLITUDE = 0.55;
 /** Backpressure added per squared unit of occupancy pressure. */
 const OCCUPANCY_BACKPRESSURE_WEIGHT = 2.5;
 /** Backpressure added per squared unit of queue pressure. */
 const QUEUE_BACKPRESSURE_WEIGHT = 3;
+/**
+ * Share of the occupancy and queue backpressure kept during a rush, so a crowded layout shows
+ * as visible queues and seat searches instead of quietly receiving fewer guests.
+ */
+const RUSH_BACKPRESSURE_SHARE = 0.5;
 /** Backpressure added per unit of reported arrival performance pressure. */
 const PERFORMANCE_BACKPRESSURE_WEIGHT = 4;
 /** Lowest combined demand multiplier, which caps how fast guests can arrive. */
@@ -308,16 +315,36 @@ export function compute_next_spawn_interval_ms(draft: Draft): number {
       (stalls.reduce((sum, stall) => sum + (stall.definition.stall?.popularity ?? DEFAULT_STALL_POPULARITY), 0) /
         Math.max(1, stalls.length)),
   );
-  const minute = (draft.source.elapsedMs / 1_000) % OPERATING_DAY_SECONDS;
-  const timeDemand = BASE_TIME_DEMAND + Math.sin((minute / OPERATING_DAY_SECONDS) * Math.PI) * TIME_DEMAND_AMPLITUDE;
+  const minute = operatingMinuteOfDay(draft.source.elapsedMs);
+  const rush_windows = DEFAULT_RUSH_WINDOWS;
+  const timeDemand = compute_time_demand(minute, rush_windows);
+  const crowd_share = active_rush_window(minute, rush_windows) ? RUSH_BACKPRESSURE_SHARE : 1;
   const backpressure =
     1 +
-    occupancyPressure ** 2 * OCCUPANCY_BACKPRESSURE_WEIGHT +
-    queuePressure ** 2 * QUEUE_BACKPRESSURE_WEIGHT +
+    occupancyPressure ** 2 * OCCUPANCY_BACKPRESSURE_WEIGHT * crowd_share +
+    queuePressure ** 2 * QUEUE_BACKPRESSURE_WEIGHT * crowd_share +
     draft.source.arrivalPerformancePressure * PERFORMANCE_BACKPRESSURE_WEIGHT;
   const quality = get_quality_settings(state);
-  const interval = quality.maxActiveCustomers === undefined
-    ? (state.config.spawnIntervalMs / Math.max(MIN_ARRIVAL_DEMAND, reputationDemand * stallDemand * timeDemand)) * backpressure
-    : state.config.spawnIntervalMs;
-  return Math.max(MIN_SPAWN_INTERVAL_MS, interval);
+  if (quality.maxActiveCustomers !== undefined) return Math.max(MIN_SPAWN_INTERVAL_MS, state.config.spawnIntervalMs);
+  const interval = (state.config.spawnIntervalMs / Math.max(MIN_ARRIVAL_DEMAND, reputationDemand * stallDemand * timeDemand)) * backpressure;
+  const next_arrival_ms = draft.source.elapsedMs + interval;
+  const day_end_ms = draft.source.elapsedMs + ms_until_day_end(draft.source.elapsedMs);
+  // An arrival that would land during last orders waits for the next day's opening instead.
+  const deferred_interval = next_arrival_ms < day_end_ms && is_last_orders(next_arrival_ms)
+    ? day_end_ms - draft.source.elapsedMs
+    : interval;
+  return Math.max(MIN_SPAWN_INTERVAL_MS, deferred_interval);
+}
+
+/**
+ * Whether the adaptive arrival model is closed to new guests for the rest of the day.
+ *
+ * Arrivals stop at last orders. A fixed arrival interval (`maxActiveCustomers`) ignores the
+ * operating clock and never closes.
+ *
+ * @param draft - The draft of the current step.
+ * @returns True while last orders apply to the adaptive model.
+ */
+export function is_arrival_window_closed(draft: Draft): boolean {
+  return get_quality_settings(draft.source).maxActiveCustomers === undefined && is_last_orders(draft.source.elapsedMs);
 }
