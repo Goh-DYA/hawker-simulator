@@ -216,11 +216,11 @@ describe("core simulation golden master", () => {
     const checkpoints = [
       {
         tick: 300,
-        simulationDigestSha256: "84d93322337105342888ccfa3fe64aa463be2c09b759279b91d8dba7e961e714",
+        simulationDigestSha256: "ad2d0d02f44df1561a74c8bff6556666e798c5392c456911340e3d62eb19f4dd",
       },
       {
         tick: 600,
-        simulationDigestSha256: "d710d9703f812bcb1176772c9b98193efd8e07224afd40efed65280b64ec2c3b",
+        simulationDigestSha256: "c2ed27ca5b69c7e3e05cb3993233b4ff097fcf5df546e39b9cd4f9f97909ac20",
       },
     ];
     let state = create_fixture_game({ seed: SOAK_SEED });
@@ -241,10 +241,10 @@ describe("core simulation golden master", () => {
     expect_checkpoint(
       state,
       "(a) tick 900",
-      "17a8ad983c05e911afc2f96d6e13c1fd8497e648e27655e31120013c39ade9ff",
+      "b4ba75887f51befbfcd66945e6b4ea8b9e39c54ff9a863eeb56f2a85edaf3ca5",
     );
     expect_scenario_end(state, "(a)", {
-      stateDigestSha256: "1cef0f6a39317b148e74f058437103930b8bb6c2858c48dd04d7865f5b98d4d7",
+      stateDigestSha256: "9d8b8f7fc5518d4de1f818bce83d5fc25406aae0349bc24d23c4ae0ddd4bf82e",
       stepperStateSha256: "ecb2d075af4e0a0213967f291df170bf8c9232db9b7afcf411be901a0b11b4a9",
     });
   });
@@ -287,17 +287,17 @@ describe("core simulation golden master", () => {
     expect_checkpoint(
       state,
       "(b) tick 1",
-      "070f1622a92ffef373a833e565d6c4be273d62ce39b27002c6ecc85d3498cd8c",
+      "3d1661f4b9b29eb369f7bdf3906aef22fabcd5f208cdfd239de7d2443d938a66",
     );
 
     const checkpoints = [
       {
         tick: 601,
-        simulationDigestSha256: "96deb9f1d52543f78aac22ede6ba971211105cf3ba57641c4d4ecd560f206280",
+        simulationDigestSha256: "2c43b0068c7b1fecdef5db97bda6c5782792d1e3544c53dc4a7bd4f2b8eb2644",
       },
       {
         tick: 1_201,
-        simulationDigestSha256: "6dd43795f64df3da434efcdcdfa65438b48f14e137b24f040386214870de3f75",
+        simulationDigestSha256: "eabd42eb6942cc2d29b0cf8d9f94b7d6729cb4f8f04ce55190e0841ebcb6aefc",
       },
     ];
     for (const checkpoint of checkpoints) {
@@ -307,7 +307,7 @@ describe("core simulation golden master", () => {
     }
     expect(state.tick).toBe(1 + EIGHTY_AGENT_STEPS);
     expect_scenario_end(state, "(b)", {
-      stateDigestSha256: "6aff9a89e5335b9ec7c247f3166c96fc5280fc9faa0d6503fd6fd2eb99d8c783",
+      stateDigestSha256: "bacdb552954e76eb61322461de4420178fa730393cbc0fa576c83738047b99be",
       stepperStateSha256: "2c45c82c6eef139e45f463df092b9b258b236e9781a20e6f8978ebf38be0976e",
     });
   });
@@ -316,19 +316,19 @@ describe("core simulation golden master", () => {
     const checkpoints = [
       {
         cycle: 1,
-        simulationDigestSha256: "56c2b2e42f58f5e25170ae9bd1e780735d8fbd50727a6cbe519d9ff18d9eedfe",
+        simulationDigestSha256: "80a58bbab983f31f022625bff1547bc5647d290bcdc57cc25e62ba96f15a9ba4",
       },
       {
         cycle: 2,
-        simulationDigestSha256: "cfdb92ca71eb0bc2ba754560e60a69126500734f9626f5137cb39fea34426e37",
+        simulationDigestSha256: "8a8b32d242cd392ca178d8fddc4172f554b8a3489068ba34e3c1403b1cc63071",
       },
       {
         cycle: 3,
-        simulationDigestSha256: "505beff6abf04338cb90328e8e8bdb2753f00328a59fea1ea9645e64727e74c4",
+        simulationDigestSha256: "130e82d75f402dac7923e4ec64e55ebfa01696afc4d9830cbc3aa46006550886",
       },
       {
         cycle: 4,
-        simulationDigestSha256: "d50e5b8bb7cabda6e239ffc9a11c9704d5c213e6b35447c763c3675c4396d6fc",
+        simulationDigestSha256: "d544a3f050c1377ec5cf58a9b2e97f897d7b47be40e855b7b4bafcc1dfbebf80",
       },
     ];
     let state = create_fixture_game({ seed: LOWER_END_SEED, qualityMode: "lower-end" });
@@ -349,7 +349,7 @@ describe("core simulation golden master", () => {
       droppedMs: 24000,
     });
     expect_scenario_end(state, "(c)", {
-      stateDigestSha256: "707326625cb3289a6793ff7b389777ceb370be2bc8af152b81b2d450c1dc8e2e",
+      stateDigestSha256: "1736183e8eb25f783fdeb888837adc286f2ecd4e22ad8c9384a1ed3b99ebf350",
       stepperStateSha256: "8819b23ed0746ecb0ffbcf4e25a8c7b83128af52ec566766db22cd5ddcab2bf0",
     });
   });
@@ -383,15 +383,15 @@ describe("core simulation golden master", () => {
     const checkpoints = [
       {
         tick: 300,
-        simulationDigestSha256: "63adfe5a7463bcdddbae3fb1485aafb2c91137013cb5b334155ec9df5ecf174a",
+        simulationDigestSha256: "9e8a936fe05026273a3f5dbe2046f2a4a59d033accc12d87a0100055098b6b68",
       },
       {
         tick: 600,
-        simulationDigestSha256: "f36cdedef09bcb5177a49e506db8d43824eebd1e3b8d748fcfdc38cd2ed049f6",
+        simulationDigestSha256: "47ea4cbfa89c7af59e7bd9093b5ba2f0c1f3b256ed895081b8c2f08720aab5a1",
       },
       {
         tick: 900,
-        simulationDigestSha256: "1b834cd9b7b30401702fcf9962495e09e57f873f86250c7b6696a30eaf241541",
+        simulationDigestSha256: "5d4b5726f09b1879abca759368756076b01af4fc0fad5e6bf34bacf0a6d8ec63",
       },
     ];
     for (const checkpoint of checkpoints) {
@@ -403,7 +403,7 @@ describe("core simulation golden master", () => {
     expect(state.progression.level).toBeGreaterThanOrEqual(2);
     expect(state.progression.stallMastery.stall?.upgradeLevel).toBe(2);
     expect_scenario_end(state, "(d)", {
-      stateDigestSha256: "e4594e0bde3a8cf801250876ad7f82c54d2eb69c07156b5cb207f58fbf57490a",
+      stateDigestSha256: "8c6ca6a3f56175eb1d3f3d2f6bbf57c0369748a507bc49c333521ac924659d48",
       stepperStateSha256: "a086ba8e966c13fa6aa2635d22e6cfa27f4627cfaa57bb9fc6a466df889d273e",
     });
   });
@@ -420,17 +420,17 @@ describe("core simulation golden master", () => {
     expect_checkpoint(
       state,
       "(e) after script",
-      "446862a0375f4036b1af9fa5eee953df3b24ff704df96bb15fff1ddbb2cd8cfb",
+      "af1f74765cd1b7b0929a0047fbac63c785f1f31ae9faef09d0177b7e16e2705f",
     );
 
     const checkpoints = [
       {
         tick: 200,
-        simulationDigestSha256: "aed6c9e9f66a7008e40f98996116c8b8613498037e14af16854d3bb2f25c4c4f",
+        simulationDigestSha256: "0787fadc75537efe5234b65e1e18fbc7b2112bedb97ab3cf2c35ee57b61ae7eb",
       },
       {
         tick: 350,
-        simulationDigestSha256: "573edc149b6e5a7b03f9581884769d604a8a4faa02af3243fe704c825bceb8f1",
+        simulationDigestSha256: "9afaf14c6f92effaa7ee9eb59bae3ebd39a289aaecd12e6cd9ccab832dfbdab2",
       },
     ];
     for (const checkpoint of checkpoints) {
@@ -440,7 +440,7 @@ describe("core simulation golden master", () => {
     }
     expect(state.tick).toBe(COMMAND_WARMUP_STEPS + COMMAND_FOLLOW_UP_STEPS);
     expect_scenario_end(state, "(e)", {
-      stateDigestSha256: "63836ebbd639c1cddc7affcbc0557d5fbe3e3aba8070ed403d61025c4c9eca61",
+      stateDigestSha256: "391d5398eed62875bec940a114c9650552245b4db61e639b8bae942f77c5b187",
       stepperStateSha256: "6c859945fa1cb267754351b6b879de27447ad3a649f02483908b16ff74dd04b3",
     });
   });
@@ -464,27 +464,27 @@ describe("core simulation golden master", () => {
       {
         tick: 4_799,
         focusDay: 1,
-        simulationDigestSha256: "8c468ace46c2272502f2e8a5d22ee724f8f2f9ee7ac8c1e5900ab2b8e48593e5",
+        simulationDigestSha256: "aaf1556a6b46e0143d43c58b3508f854617cb27ddb8555970cefca86b8c94c95",
       },
       {
         tick: 4_801,
         focusDay: 2,
-        simulationDigestSha256: "246c98b5d885206fd8afb3ab22207fde278b66f3e1de286ecc337904988d0afc",
+        simulationDigestSha256: "15608303e8bb131f1fce88931ddca168b393257b9d161d2320671e6512539285",
       },
       {
         tick: 9_599,
         focusDay: 2,
-        simulationDigestSha256: "e7dc296aff5f53a54928efca9484775703c66333e8849a88837e71ee0c638f37",
+        simulationDigestSha256: "6eccdd77c595aa180d042cfefcf443ebc41761aec1a041215f3a70d54c8d573a",
       },
       {
         tick: 9_601,
         focusDay: 3,
-        simulationDigestSha256: "523cf20c772ed5d8aeea9d8649ebcfa35b250261524dfe485306699ceb1777da",
+        simulationDigestSha256: "10c2e4c2abc210eb86bc067975a513bad5f87049f71d87dfae0770a910586d1d",
       },
       {
         tick: ADAPTIVE_TOTAL_STEPS,
         focusDay: 3,
-        simulationDigestSha256: "e06769c9e39a3b123736f4a4910bb76396f781b9817b6dab8e524ef77f02d815",
+        simulationDigestSha256: "001ed6c5cb93a65796b70a343cad2e7bee6e40f68aaf97417bfcd6fca2a15250",
       },
     ];
     let has_seen_health_condition = false;
@@ -504,7 +504,7 @@ describe("core simulation golden master", () => {
     expect(has_seen_nutrition_intent).toBe(true);
     expect(state.progression.level).toBeGreaterThanOrEqual(2);
     expect_scenario_end(state, "(f)", {
-      stateDigestSha256: "8e27a44f454d163b4d1e667be4264315822bffa56c6be47de0950da9908629ba",
+      stateDigestSha256: "01797d754bc1c9eadbede964b3fceb4c28c0a638bf62fd1bc72e3b2ad3e8e21e",
       stepperStateSha256: "cc9453a5c3402a6755bb15420fd5262ce454aa5ce4a8f961be16bdeafd18770b",
     });
   });

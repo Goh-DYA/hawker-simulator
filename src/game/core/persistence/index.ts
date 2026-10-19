@@ -11,10 +11,11 @@ import { normalizeBoundaryOpenings } from "../grid";
 import { clone_visit_ratings, createNewGame } from "../state";
 import { compareIds } from "../ordering";
 import { cloneNutritionMetrics } from "../nutrition";
+import { clone_neighbourhood } from "../neighbourhood";
 import type {
   AnyPersistentGameState,
   GameState,
-  PersistentGameStateV4,
+  PersistentGameStateV5,
   SimulationCatalog,
   SimulationConfigOverrides,
 } from "../types";
@@ -58,13 +59,13 @@ export interface DeserializeResult {
 /**
  * Copies the saved subset of a game state into a current-version persistent state.
  *
- * Objects are ordered by ID with `compareIds`. Runtime-only data (customers, queues and
- * reservations) is not saved.
+ * Objects are ordered by ID with `compareIds`. Runtime-only data (customers, queues,
+ * reservations and uncleared trays) is not saved; a centre without a neighbourhood saves `null`.
  *
  * @param state - The game state to save.
  * @returns A deep copy of the persisted fields.
  */
-export function persistentStateFromGame(state: GameState): PersistentGameStateV4 {
+export function persistentStateFromGame(state: GameState): PersistentGameStateV5 {
   return {
     schemaVersion: PERSISTENT_SCHEMA_VERSION,
     savedAtTick: state.tick,
@@ -97,6 +98,7 @@ export function persistentStateFromGame(state: GameState): PersistentGameStateV4
       nutrition: cloneNutritionMetrics(state.metrics.nutrition),
     },
     rngState: state.rngState,
+    neighbourhood: state.neighbourhood ? clone_neighbourhood(state.neighbourhood) : null,
     nextCustomerSequence: state.nextCustomerSequence,
     elapsedMs: state.elapsedMs,
   };
@@ -182,6 +184,7 @@ export function deserializeGameStateWithReport(
     economy: recoveredEconomy,
     progression: { ...save.progression, unlockedDefinitionIds },
     rngState: save.rngState,
+    ...(save.neighbourhood ? { neighbourhood: clone_neighbourhood(save.neighbourhood) } : {}),
     nextCustomerSequence: save.nextCustomerSequence,
     tick: save.savedAtTick,
     elapsedMs: save.elapsedMs,

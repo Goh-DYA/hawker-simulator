@@ -129,3 +129,23 @@ export {
   serializeGameState,
   type DeserializeOptions,
 } from "./persistence";
+
+/** The seeded neighbourhood: creation, today's card and the rush windows the HUD draws. */
+export {
+  compute_rush_windows,
+  compute_writer_threshold,
+  create_neighbourhood,
+  get_today_card,
+  WRITER_VERDICT_MINUTE,
+  WRITER_WINDOW_END_MINUTE,
+  WRITER_WINDOW_START_MINUTE,
+} from "./neighbourhood";
+
+/** Rush-hour demand windows and last orders. */
+export { active_rush_window, LAST_ORDERS_MINUTE, RUSH_CORE_SHARE } from "./rush";
+
+/** Table clearing: the cleaning crew size. */
+export { count_cleaning_crew } from "./clearing";
+
+/** Reputation: the steady visit score that holds a reputation level. */
+export { score_for_reputation } from "./visits";

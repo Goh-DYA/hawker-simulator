@@ -139,6 +139,8 @@ export function simulationDigest(state: GameState): string {
     reservations: state.seatReservations,
     customers,
     metrics: state.metrics,
+    unclearedTrays: state.unclearedTrays,
+    neighbourhood: state.neighbourhood,
   });
 }
 

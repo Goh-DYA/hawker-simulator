@@ -109,9 +109,9 @@ const DEPARTURE_GUEST_ID = "customer-3";
 const DEPARTURE_FRAME = 1_019;
 const DEPARTURE_FRAME_LIMIT = 1_500;
 /** Every event of the departure run, from opening to the departure frame. */
-const DEPARTURE_RUN_EVENT_COUNT = 20;
+const DEPARTURE_RUN_EVENT_COUNT = 19;
 const DEPARTURE_RUN_EVENTS_SHA256 =
-  "2e18177d7a3a8cfe6f51f631797af6d6efb1d6fd0cca8349577ac15c0c30843e";
+  "3e1325a36946d8d43b78d460ae7d1c2e45c40bef003e354eac9fe6719aa10a11";
 /** The departure run steps about 1,200 frames, so it gets the multi-day run's allowance. */
 const DEPARTURE_TIMEOUT_MS = 60_000;
 const DEPARTURE_MESSAGE = "The selected guest finished their visit.";
@@ -150,16 +150,16 @@ const EDGE_EXTRA_PRESSES = 2;
 
 /** sha256 of `JSON.stringify(exportState().core)` at the end of each flow. */
 const FLOW_CORE_SHA256 = {
-  fresh: "d33ede22bd0e100ab932a34d4f9e49918840989713da8067ce88b5d9a40c239f",
-  place: "847b517b67ec481032833fbc06aaaab142fc690bb6215df789decd1a54e33b16",
-  remove: "6c08688dbd890924174a19bfdcfdaa30d2cb2e8ea77d30457608ad336606fdd2",
-  move: "da07fc5121268ba073ce7e27ac5e7936e628be8ddbc807f49429a79220393c80",
-  queue: "f9692502aca1e3b63a3033657662c58cf7ab389863e2b3cf48032d3d352ccbe3",
-  access: "ee6ea40e1ad467f302f22ae99dca59fd4d3c47695c2cea269b0943593e9ee8f9",
-  accessCollision: "75f4e52be08db52637bff54681b1c153737c91c525239eedcfc0947eab78eaba",
-  departure: "40ea4a905671238f2581257235dbe3e99f6b5a5450cc1d3f3e80d3879844abf0",
-  keyboard: "f5eb1edc9563a606e64f334a8542d483febf0dd1819777ea6c877162ca10d890",
-  keyboardPlace: "30de23f2943cb40c5e9a7003ee7b2e6fdd72198075185aba6a5ea26543dc1237",
+  fresh: "37aa4d9f2eda17859c8d69ed99a01ae7694701374dcc8ac11b3c35f737c7d6df",
+  place: "216a0ceef68a77b9ccb5689e45d598a3db71f303ea560fb38afc7f55db7ed99e",
+  remove: "01d62eb38e1ae80bd73cac0e90211d8d4ed32a2345d34463582dac848e8d1c29",
+  move: "71c1f7b5fc710179d8b4e7214e649cd19f5796fd70f3e5fb0ac8f0215e019270",
+  queue: "56f37d706525542fd8bd654970681386e13891030d3708cd6c0f647c9f181a5f",
+  access: "6acc77b5ad2a7692200833d74ecfc09dbe0eef39ba498f530a9b82689df92982",
+  accessCollision: "cb571e923465162c07febcdc1696a5492eb47b6e8fe50795823d4d3663202245",
+  departure: "09cda6308a4e1151a3eeb66806e8eb4e6e040d20b149d16761ea3439a27aab86",
+  keyboard: "355ddfa549ad4d39f9891d7161af0ccf1e50c0da0278aeff61d9ae62f4c10621",
+  keyboardPlace: "5a8c157d11664b13ad7951ca5377fab21e6e51ee7d9b1f8b163c852d3b7f4fbd",
 } as const;
 
 /** The event every accepted placement reports. */

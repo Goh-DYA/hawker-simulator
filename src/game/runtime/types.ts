@@ -362,6 +362,11 @@ export interface RuntimeOptions {
   parent: HTMLElement;
   settings: RuntimeSettings;
   initialStates?: readonly unknown[];
+  /**
+   * Supplies the world seed of each new centre (first start without a save, recovery and
+   * reset). Without it every new centre uses the launch world seed.
+   */
+  createWorldSeed?: () => number;
   onSnapshot(snapshot: RuntimeSnapshot): void;
   onEvent(event: RuntimeEvent): void;
   onPersistentChange(state: unknown): void;

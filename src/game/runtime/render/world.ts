@@ -1,9 +1,10 @@
 /**
  * The world view: the retained sprites of the hall, diffed against each render context. It
  * keeps the floor texture, one sprite per placed object (plus the back and front layers, vendor,
- * counter dishes and steam of each stall), one sprite per guest (plus their tray, meal and status
- * bubble), the lamp light pools, the sale sparkles and the time-of-day tint, and destroys
- * whatever the latest snapshot no longer holds.
+ * counter dishes and steam of each stall, and its Writer's Pick plaque), one sprite per guest (plus
+ * their tray, meal and status bubble), the trays guests left on seats, the lamp light pools, the
+ * sale sparkles and the time-of-day tint, and destroys whatever the latest snapshot no longer
+ * holds.
  *
  * Textures come from the {@link TextureStudio}; the view only decides which texture, frame,
  * position, depth, tint and alpha each sprite has this render. Object textures are painted per
@@ -14,6 +15,7 @@ import type Phaser from "phaser";
 
 import { CUSTOMER_ARCHETYPES, DISH_BY_ID, PLACEABLE_BY_ID, STALL_BY_ID } from "@/src/content";
 import {
+  getSeatLocations,
   getUtilityInfluence,
   mealConsumptionFraction,
   type PlacedObject,
@@ -95,6 +97,12 @@ const VENDOR_PREPARE_TICKS = 2;
 const STEAM_PUFFS = 3;
 /** Ticks a steam puff takes to rise and fade. */
 const STEAM_CYCLE_TICKS = 18;
+/** Draw scale of the Writer's Pick plaque on a stall: about 13 px wide. */
+const WRITER_PLAQUE_SCALE = 0.5;
+/** How far above the queue badge the plaque hangs, in world pixels. */
+const WRITER_PLAQUE_LIFT = 14;
+/** How far up a left tray sits on a seat without a table, in world pixels. */
+const SEAT_TRAY_LIFT = 6;
 /** Ticks a sale sparkle stays on screen. */
 const SPARKLE_TICKS = 10;
 /** Most sale sparkles tracked at once. */
@@ -379,6 +387,7 @@ export class WorldView {
     this.sync_floor(context, frame);
     this.sync_objects(context, frame);
     this.sync_people(context, frame);
+    this.sync_left_trays(context, frame);
     this.sync_sparkles(context, frame);
     this.sync_tint(context);
     this.objects.sweep();
@@ -640,6 +649,18 @@ export class WorldView {
         });
       }
     }
+    // Writer's Pick plaque, beside the queue badge.
+    if (context.state.neighbourhood?.writerPickStallIds.includes(object.definitionId)) {
+      const plaque = this.studio.ensure({ kind: "effect", effect: "writer-plaque", frame });
+      const at = place(layout.badge);
+      this.objects.draw(`${object.id}:plaque`, {
+        key: plaque.key,
+        x: at.x,
+        y: at.y - WRITER_PLAQUE_LIFT,
+        scale: WRITER_PLAQUE_SCALE * plaque.scale,
+        depth: depthDishes,
+      });
+    }
     // Queue badge.
     const queue = snapshot.queues[object.id] ?? [];
     const capacity = catalog.placeables[object.definitionId]?.stall?.queueCapacity ?? 7;
@@ -858,6 +879,31 @@ export class WorldView {
       if (Math.abs(tick - lastUsed) <= CUSTOMER_SHEET_LINGER_TICKS) continue;
       this.studio.release(key);
       this.sheetLastUsed.delete(key);
+    }
+  }
+
+  /**
+   * Draws each tray a guest left behind on the table top beside its seat, where a diner's meal
+   * would sit, until the table-cleaning crew clears it.
+   */
+  private sync_left_trays(context: RenderContext, frame: PaintFrame): void {
+    const keys = Object.keys(context.snapshot.unclearedTrays);
+    if (keys.length === 0) return;
+    const seats = new Map(getSeatLocations(context.state.objects, context.catalog).map((seat) => [seat.key, seat]));
+    const tray = this.studio.ensure({ kind: "effect", effect: "left-tray", frame });
+    for (const key of keys) {
+      const seat = seats.get(key);
+      if (!seat) continue;
+      const seatX = (seat.point.x + 0.5) * TILE_SIZE;
+      const seatY = (seat.point.y + 0.5) * TILE_SIZE;
+      const anchor = nearest_table_meal_anchor(context, seatX, seatY);
+      this.people.draw(`left-tray:${key}`, {
+        key: tray.key,
+        x: anchor?.x ?? seatX,
+        y: anchor?.y ?? seatY - SEAT_TRAY_LIFT,
+        scale: TABLE_TRAY_SCALE * tray.scale,
+        depth: depth_for(DEPTH_WORLD, anchor?.sortY ?? seatY),
+      });
     }
   }
 

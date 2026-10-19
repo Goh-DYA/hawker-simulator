@@ -7,7 +7,7 @@
 import { getObjectQueueAnchor, samePoint, validatePlacement } from "../grid";
 import { get_navigation_reserved_points } from "../queueing";
 import { compareIds } from "../ordering";
-import type { PersistentGameStateV4, PlacedObject, SimulationCatalog } from "../types";
+import type { PersistentGameStateV5, PlacedObject, SimulationCatalog } from "../types";
 import { PersistenceError } from "./fields";
 import type { DeserializeOptions, PersistenceRecoveryReport } from "./index";
 
@@ -26,7 +26,7 @@ import type { DeserializeOptions, PersistenceRecoveryReport } from "./index";
  * @throws PersistenceError When an object ID repeats, a removed definition has no migration, a refund is invalid or a placement is invalid.
  */
 export function normalizeObjects(
-  save: PersistentGameStateV4,
+  save: PersistentGameStateV5,
   catalog: SimulationCatalog,
   options: DeserializeOptions,
 ): { readonly objects: readonly PlacedObject[]; readonly recovery: PersistenceRecoveryReport } {

@@ -9,6 +9,7 @@
 import { applySale, getUnlockedDefinitionIds, MAX_REPUTATION } from "./economy";
 import { event, getArchetype, removeFromAllQueues, transition, type Draft } from "./draft";
 import { recordIntentRequest } from "./arrivals";
+import { is_writer_sample, record_stall_sale, record_visit } from "./neighbourhood";
 import { VISIT_RATING_WEIGHTS, wait_satisfaction_score, walkingSatisfactionScore } from "./satisfaction";
 import {
   cloneNutritionProfile,
@@ -78,6 +79,18 @@ export function next_reputation(reputation: number, score: number): number {
   return Math.max(0, Math.min(MAX_REPUTATION, reputation + REPUTATION_SMOOTHING * (target - reputation)));
 }
 
+/**
+ * Returns the steady visit score at which reputation settles at a given level, the inverse of the
+ * target mapping in `next_reputation`.
+ *
+ * @param reputation - A reputation on the zero-to-five scale.
+ * @returns The visit score, from 55 to 95.
+ */
+export function score_for_reputation(reputation: number): number {
+  const clamped = Math.max(0, Math.min(MAX_REPUTATION, reputation));
+  return REPUTATION_FLOOR_SCORE + (clamped / MAX_REPUTATION) * REPUTATION_SCORE_SPAN;
+}
+
 function normalizeQuality(value: number): number {
   return Math.max(0, Math.min(100, value <= 1 ? value * 100 : value * 20));
 }
@@ -137,7 +150,12 @@ export function settleVisitRating(draft: Draft, source: Customer, abandoned: boo
   draft.metrics = { ...draft.metrics, visitRatings: [...draft.metrics.visitRatings, rating].slice(-VISIT_HISTORY_LIMIT) };
   if (abandoned) draft.economy = { ...draft.economy, abandonedVisits: draft.economy.abandonedVisits + 1 };
   const reputation = next_reputation(draft.progression.reputation, score);
-  draft.progression = { ...draft.progression, reputation };
+  draft.progression = {
+    ...draft.progression,
+    reputation,
+    peakReputation: Math.max(draft.progression.peakReputation, reputation),
+  };
+  if (draft.neighbourhood) draft.neighbourhood = record_visit(draft.neighbourhood, rating, source.isWriterSample === true);
   if (source.served && source.servedStallDefinitionId) {
     draft.progression = awardStallMastery(
       { progression: draft.progression },
@@ -190,6 +208,10 @@ export function completeSale(draft: Draft, source: Customer, dish: DishDefinitio
     ),
   };
   removeFromAllQueues(draft, source.id);
+  const is_sample = is_writer_sample(draft.neighbourhood, servedStall?.definitionId, draft.source.elapsedMs);
+  if (draft.neighbourhood && servedStall) {
+    draft.neighbourhood = record_stall_sale(draft.neighbourhood, servedStall.definitionId);
+  }
   event(draft, { type: "sale-completed", entityId: source.id, amount: dish.price, message: dish.id });
   if (update.levelUp) event(draft, { type: "level-up", entityId: source.id, message: String(update.progression.level) });
   const profile = cloneNutritionProfile(source.orderedNutritionProfile);
@@ -212,6 +234,7 @@ export function completeSale(draft: Draft, source: Customer, dish: DishDefinitio
     ...transition(draft, source, "seeking-seat"),
     targetStallId: undefined,
     servedStallDefinitionId: servedStall?.definitionId,
+    ...(is_sample ? { isWriterSample: true } : {}),
     orderedDishId: dish.id,
     nutritionRequestResult: requestResult,
     hasTray: true,

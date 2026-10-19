@@ -61,6 +61,8 @@ import type {
   placeableSchema,
   PlaceableDefinition,
   ReadonlyDeep,
+  calendarCardSchema,
+  CalendarCardContent,
   rotationSchema,
   Rotation,
   seatPointSchema,
@@ -82,6 +84,7 @@ describe("content types", () => {
   it("match the top-level record schemas", () => {
     expectTypeOf<Parsed<typeof stallSchema>>().toEqualTypeOf<StallDefinition>();
     expectTypeOf<Parsed<typeof dishSchema>>().toEqualTypeOf<DishDefinition>();
+    expectTypeOf<Parsed<typeof calendarCardSchema>>().toEqualTypeOf<CalendarCardContent>();
     expectTypeOf<Parsed<typeof placeableSchema>>().toEqualTypeOf<PlaceableDefinition>();
     expectTypeOf<
       Parsed<typeof customerArchetypeSchema>

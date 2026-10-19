@@ -55,6 +55,7 @@ export function stepSimulation(state: GameState): GameState {
     queues: draft.queues,
     seatReservations: draft.seatReservations,
     unclearedTrays: draft.unclearedTrays,
+    neighbourhood: draft.neighbourhood,
     economy: draft.economy,
     progression: draft.progression,
     rngState: draft.rngState,

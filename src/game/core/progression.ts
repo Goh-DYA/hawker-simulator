@@ -7,6 +7,9 @@
  * that order, so the rewards are deterministic.
  */
 import { calculateLevel, MAX_QUALITY } from "./economy";
+import { compute_rush_windows, day_stream, roll_neighbourhood_day, settle_writer_review } from "./neighbourhood";
+import { active_rush_window } from "./rush";
+import { nextFloat } from "./rng";
 import type {
   DailyObjective,
   GameState,
@@ -15,6 +18,7 @@ import type {
   StallDefinition,
   StallMasteryState,
   NutritionObjectiveCriterion,
+  ObjectiveKind,
 } from "./types";
 
 /** Length of one operating day in simulated milliseconds (eight minutes). */
@@ -205,7 +209,7 @@ function nutritionObjectiveCriterion(
       if (
         !dish ||
         state.progression.level < (dish.unlockLevel ?? 1) ||
-        state.progression.reputation < (dish.unlockReputation ?? 0)
+        state.progression.peakReputation < (dish.unlockReputation ?? 0)
       ) return [];
       return dish.nutritionVariants
         ?.filter((variant) => variant.unlockRank <= rank)
@@ -271,6 +275,7 @@ function nutritionObjective(state: GameState, day: number, scale: number): Daily
  * @returns The day's objectives.
  */
 export function createDailyObjectives(state: GameState, day = operatingDay(state.elapsedMs)): readonly DailyObjective[] {
+  if (state.neighbourhood) return create_seeded_objectives(state, state.neighbourhood, day);
   const scale = Math.max(1, state.progression.level);
   const rewardCash = 80 + scale * 20;
   const rewardXp = 25 + scale * 5;
@@ -315,6 +320,135 @@ export function createDailyObjectives(state: GameState, day = operatingDay(state
   return [service, quality, nutritionObjective(state, day, scale)];
 }
 
+/** Smallest stretch over yesterday's result that a seeded objective asks for. */
+const SEEDED_TARGET_MIN_STRETCH = 0.95;
+/** Largest stretch over yesterday's result that a seeded objective asks for. */
+const SEEDED_TARGET_MAX_STRETCH = 1.15;
+/** Visit score points above yesterday's average that a seeded happiness objective asks for. */
+const SEEDED_HAPPINESS_LIFT = 4;
+/** Lowest and highest seeded happiness targets. */
+const SEEDED_HAPPINESS_RANGE = [60, 92] as const;
+/** Fewest tray returns a seeded tray-return objective asks for. */
+const SEEDED_MIN_TRAY_RETURNS = 4;
+/** Fewest distinct stalls a seeded variety objective asks for. */
+const SEEDED_MIN_VARIETY = 3;
+
+/**
+ * Creates a day's objectives for a centre with a neighbourhood: one service and one quality
+ * objective picked by the day's objective stream, plus the nutrition objective.
+ *
+ * Targets follow what the centre showed it can do the day before (`lastReport`), stretched by a
+ * seeded 95-115%, with the fixed formulas as the floor, so goals keep pace with the hall without
+ * running away from it. The quality slot also offers the variety objective (guests served by
+ * several stalls today) and the tray-return objective, which the fixed rotation never generated.
+ *
+ * @param state - The state at the start of the day, after the previous day was closed.
+ * @param neighbourhood - The centre's neighbourhood.
+ * @param day - The day to create objectives for.
+ * @returns The three objectives.
+ */
+function create_seeded_objectives(
+  state: GameState,
+  neighbourhood: NonNullable<GameState["neighbourhood"]>,
+  day: number,
+): readonly DailyObjective[] {
+  const scale = Math.max(1, state.progression.level);
+  const rewardCash = 80 + scale * 20;
+  const rewardXp = 25 + scale * 5;
+  const report = neighbourhood.lastReport;
+  let stream = day_stream(neighbourhood.worldSeed, "objectives", day);
+  const draw = (): number => {
+    const result = nextFloat(stream);
+    stream = result.state;
+    return result.value;
+  };
+  const stretch = SEEDED_TARGET_MIN_STRETCH + draw() * (SEEDED_TARGET_MAX_STRETCH - SEEDED_TARGET_MIN_STRETCH);
+  const service_roll = draw();
+  const quality_roll = draw();
+  const serve_target = Math.max(5 + scale * 2, Math.round((report?.served ?? 0) * stretch));
+  const revenue_target = Math.max(Math.round(35 + scale * 8), Math.round((report?.revenue ?? 0) * stretch));
+  const service = service_roll < 0.5
+    ? objective(day, 1, {
+        kind: "serve",
+        title: "Warm welcome",
+        description: `Serve ${serve_target} neighbours today.`,
+        target: serve_target,
+        startValue: state.economy.completedVisits,
+        rewardCash,
+        rewardXp,
+      })
+    : objective(day, 1, {
+        kind: "revenue",
+        title: "A lively service",
+        description: `Earn ${revenue_target} credits today.`,
+        target: revenue_target,
+        startValue: state.economy.lifetimeRevenue,
+        rewardCash,
+        rewardXp,
+      });
+  const open_stalls = distinctOpenStallTypes(state);
+  const quality_kinds: ObjectiveKind[] = ["happiness", "flow"];
+  if (open_stalls >= SEEDED_MIN_VARIETY) quality_kinds.push("variety");
+  if (Object.values(state.objects).some((object) => state.catalog.placeables[object.definitionId]?.kind === "tray-return")) {
+    quality_kinds.push("facility");
+  }
+  const quality_kind = quality_kinds[Math.min(quality_kinds.length - 1, Math.floor(quality_roll * quality_kinds.length))];
+  const happiness_target = Math.max(
+    SEEDED_HAPPINESS_RANGE[0],
+    Math.min(SEEDED_HAPPINESS_RANGE[1], Math.round((report?.averageScore || 60) + SEEDED_HAPPINESS_LIFT)),
+  );
+  const variety_target = Math.min(open_stalls, Math.max(SEEDED_MIN_VARIETY, (report?.servedStallCount ?? 0) + 1));
+  const tray_target = Math.max(SEEDED_MIN_TRAY_RETURNS, Math.round((report?.trayReturns ?? 0) * stretch));
+  const quality = quality_kind === "flow"
+    ? objective(day, 2, {
+        kind: "flow",
+        title: "Easy movement",
+        description: "Keep queue flow at 80% or better during a rush.",
+        target: 80,
+        startValue: 0,
+        rewardCash,
+        rewardXp,
+      })
+    : quality_kind === "variety"
+      ? objective(day, 2, {
+          kind: "variety",
+          title: "Something for everyone",
+          description: `Serve guests from ${variety_target} different stalls today.`,
+          target: variety_target,
+          startValue: 0,
+          rewardCash,
+          rewardXp,
+        })
+      : quality_kind === "facility"
+        ? objective(day, 2, {
+            kind: "facility",
+            title: "Clear tables",
+            description: `Have guests return ${tray_target} trays today.`,
+            target: tray_target,
+            startValue: state.metrics.trayReturns,
+            rewardCash,
+            rewardXp,
+          })
+        : objective(day, 2, {
+            kind: "happiness",
+            title: "Happy tables",
+            description: `Reach ${happiness_target}% happiness after five new ratings.`,
+            target: happiness_target,
+            startValue: state.metrics.completedCustomers,
+            rewardCash,
+            rewardXp,
+          });
+  return [service, quality, nutritionObjective(state, day, scale)];
+}
+
+/**
+ * Whether one of the day's crowds is under way, which is when a centre with a neighbourhood
+ * measures the flow objective; an empty hall would otherwise flow perfectly.
+ */
+function is_rush_now(state: GameState): boolean {
+  return active_rush_window(operatingMinuteOfDay(state.elapsedMs), compute_rush_windows(state)) !== undefined;
+}
+
 function objectiveProgress(state: GameState, item: DailyObjective): number {
   switch (item.kind) {
     case "serve": return state.economy.completedVisits - item.startValue;
@@ -325,8 +459,8 @@ function objectiveProgress(state: GameState, item: DailyObjective): number {
       const newRatings = state.metrics.visitRatings.slice(-Math.min(VISIT_HISTORY_LIMIT, newRatingCount));
       return newRatings.reduce((sum, rating) => sum + rating.score, 0) / newRatings.length;
     }
-    case "flow": return queueFlowScore(state);
-    case "variety": return distinctOpenStallTypes(state);
+    case "flow": return state.neighbourhood && !is_rush_now(state) ? 0 : queueFlowScore(state);
+    case "variety": return state.neighbourhood ? state.neighbourhood.ledger.servedStallIds.length : distinctOpenStallTypes(state);
     case "facility": return state.metrics.trayReturns - item.startValue;
     case "nutrition": {
       if (item.nutritionCriterion === "intent-matches") {
@@ -378,21 +512,12 @@ export const MILESTONES = MILESTONE_TRACKS.flatMap((track) =>
 export const UPGRADE_RANK_REQUIREMENTS = { 2: 2, 3: 4, 4: 7 } as const;
 
 /**
- * Refreshes the daily objectives on a new day, then completes any objective or milestone that has
- * been met, adding their cash, XP and events.
+ * Completes every met daily objective, adding its cash, XP and event.
  *
- * @param source - The game state after a simulation step.
- * @returns The state with updated objectives, milestones, currency, XP, level and events.
+ * @param state - The state whose objectives are evaluated.
+ * @returns The state with progress updated and rewards added; the level is recomputed.
  */
-export function updateProgressionSystems(source: GameState): GameState {
-  const day = operatingDay(source.elapsedMs);
-  let state = source;
-  if (state.progression.focusDay !== day || state.progression.dailyObjectives.length !== DAILY_OBJECTIVE_COUNT) {
-    state = {
-      ...state,
-      progression: { ...state.progression, focusDay: day, dailyObjectives: createDailyObjectives(state, day) },
-    };
-  }
+function award_daily_objectives(state: GameState): GameState {
   let currency = state.economy.currency;
   let xp = state.progression.xp;
   const events: SimulationEvent[] = [...state.events];
@@ -405,6 +530,68 @@ export function updateProgressionSystems(source: GameState): GameState {
     events.push({ type: "objective-completed", tick: state.tick, entityId: item.id, amount: item.rewardCash, message: item.title });
     return { ...item, progress, completed: true };
   });
+  return {
+    ...state,
+    economy: { ...state.economy, currency },
+    progression: { ...state.progression, xp, level: calculateLevel(xp), dailyObjectives },
+    events,
+  };
+}
+
+/**
+ * Closes a finished day: awards the outgoing day's objectives, then, with a neighbourhood,
+ * reports the day, emits `day-ended` and turns the calendar.
+ *
+ * The outgoing objectives are evaluated against the step that crossed midnight, so its sales
+ * count towards the day they were made in.
+ *
+ * @param state - The state at the first step of `day`, still holding the old day's objectives.
+ * @param day - The new operating day.
+ * @returns The state with the old day closed.
+ */
+function close_finished_day(state: GameState, day: number): GameState {
+  let closed = state.progression.focusDay >= 1 && state.progression.dailyObjectives.length === DAILY_OBJECTIVE_COUNT
+    ? award_daily_objectives(state)
+    : state;
+  const neighbourhood = closed.neighbourhood;
+  if (neighbourhood && neighbourhood.ledger.day < day) {
+    const rolled = roll_neighbourhood_day(closed, day);
+    closed = {
+      ...closed,
+      neighbourhood: rolled.neighbourhood,
+      events: [
+        ...closed.events,
+        { type: "day-ended", tick: closed.tick, amount: rolled.report.day, message: rolled.report.cardId },
+      ],
+    };
+  }
+  return closed;
+}
+
+/**
+ * Refreshes the daily objectives on a new day, then completes any objective or milestone that has
+ * been met, adding their cash, XP and events, and settles the food writer's review.
+ *
+ * On a new day the outgoing day is closed first (`close_finished_day`), so its objectives and
+ * report see the step that crossed midnight.
+ *
+ * @param source - The game state after a simulation step.
+ * @returns The state with updated objectives, milestones, currency, XP, level and events.
+ */
+export function updateProgressionSystems(source: GameState): GameState {
+  const day = operatingDay(source.elapsedMs);
+  let state = source;
+  if (state.progression.focusDay !== day || state.progression.dailyObjectives.length !== DAILY_OBJECTIVE_COUNT) {
+    if (state.progression.focusDay !== day) state = close_finished_day(state, day);
+    state = {
+      ...state,
+      progression: { ...state.progression, focusDay: day, dailyObjectives: createDailyObjectives(state, day) },
+    };
+  }
+  state = award_daily_objectives(state);
+  let currency = state.economy.currency;
+  let xp = state.progression.xp;
+  const events: SimulationEvent[] = [...state.events];
   const claimed = new Set(state.progression.claimedMilestoneIds);
   for (const milestone of MILESTONES) {
     if (claimed.has(milestone.id) || !milestone.met(state)) continue;
@@ -415,16 +602,15 @@ export function updateProgressionSystems(source: GameState): GameState {
     xp += xpReward;
     events.push({ type: "milestone-completed", tick: state.tick, entityId: milestone.id, amount: cashReward });
   }
-  return {
+  return settle_writer_review({
     ...state,
     economy: { ...state.economy, currency },
     progression: {
       ...state.progression,
       xp,
       level: calculateLevel(xp),
-      dailyObjectives,
       claimedMilestoneIds: [...claimed],
     },
     events,
-  };
+  });
 }

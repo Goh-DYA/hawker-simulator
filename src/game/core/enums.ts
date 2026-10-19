@@ -108,4 +108,4 @@ export const NUTRITION_METRICS = [
  * It lives in this leaf module so that `state.ts` and `types.ts` can use it without importing
  * the persistence folder, which itself imports `state.ts`.
  */
-export const PERSISTENT_SCHEMA_VERSION = 4 as const;
+export const PERSISTENT_SCHEMA_VERSION = 5 as const;

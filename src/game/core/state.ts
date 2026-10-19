@@ -15,6 +15,7 @@ import { hashSeed } from "./rng";
 import { compareIds } from "./ordering";
 import { PERSISTENT_SCHEMA_VERSION } from "./enums";
 import { createDailyObjectives } from "./progression";
+import { clone_neighbourhood, create_neighbourhood } from "./neighbourhood";
 import {
   cloneNutritionMetrics,
   cloneNutritionProfile,
@@ -248,6 +249,7 @@ export function createNewGame(options: NewGameOptions): GameState {
       xp: 0,
       level: initialLevel,
       reputation: STARTING_REPUTATION,
+      peakReputation: STARTING_REPUTATION,
       unlockedDefinitionIds: getUnlockedDefinitionIds(
         options.catalog,
         initialLevel,
@@ -270,7 +272,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     metrics: { ...EMPTY_METRICS, nutrition: createEmptyNutritionMetrics() },
     events: [],
   };
-  return {
+  const started: GameState = {
     ...state,
     progression: {
       ...state.progression,
@@ -278,6 +280,9 @@ export function createNewGame(options: NewGameOptions): GameState {
       dailyObjectives: createDailyObjectives(state, 1),
     },
   };
+  return options.worldSeed === undefined
+    ? started
+    : { ...started, neighbourhood: create_neighbourhood(started, options.worldSeed) };
 }
 
 /**
@@ -441,6 +446,7 @@ export function createSnapshot(state: GameState): GameSnapshot {
     customers,
     queues: Object.fromEntries(Object.entries(state.queues).map(([id, queue]) => [id, [...queue]])),
     seatReservations: { ...state.seatReservations },
+    neighbourhood: state.neighbourhood ? clone_neighbourhood(state.neighbourhood) : undefined,
     unclearedTrays: Object.fromEntries(
       Object.entries(state.unclearedTrays).map(([key, tray]) => [key, { ...tray }]),
     ),

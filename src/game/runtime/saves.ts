@@ -20,7 +20,7 @@ import {
   stallMenuProgression,
   stallMenuSlotBonuses,
 } from "./stallMenus";
-import { assertRuntimeMap, reconcileRuntimeUnlocks } from "./world";
+import { assertRuntimeMap, ensure_neighbourhood, reconcileRuntimeUnlocks } from "./world";
 
 /** Version of the runtime save envelope that this build writes. */
 export const RUNTIME_SCHEMA_VERSION = 2 as const;
@@ -128,7 +128,7 @@ export interface LoadedRuntimeSave {
 export function load_runtime_save(value: unknown, authored: SimulationCatalog): LoadedRuntimeSave {
   const decoded = decodeRuntimeSave(value);
   const loadedCore = reconcileRuntimeUnlocks(
-    assertRuntimeMap(deserializeGameState(decoded.core, authored)),
+    ensure_neighbourhood(assertRuntimeMap(deserializeGameState(decoded.core, authored))),
   );
   const stallMenus = resolveStallMenus(decoded.menus ?? {}, {
     ...stallMenuProgression(loadedCore),
