@@ -1431,41 +1431,56 @@ describe("HawkerSimulator Service Review", () => {
     }).toEqual({ modals: [], calls: [["controller.setSpeed", 2]] });
   });
 
-  it("waits, unread, in the Focus panel instead of opening at 4× speed", async () => {
+  it("opens at 4× speed and faster too, pausing and then restoring that speed", async () => {
     const container = await boot_running_centre();
     act(() => {
-      runtime_options().onSnapshot(snapshot_after_day_two(4));
+      runtime_options().onSnapshot(snapshot_after_day_two(10));
     });
+    const title = find_review(container)?.querySelector("h2")?.textContent;
 
-    const summary = require_element(open_dock_tab(container, "Focus"), ".service-review-summary");
+    fireEvent.click(within(container).getByRole("button", { name: "Open for Day 3" }));
 
-    expect([
-      find_review(container),
-      speed_calls(),
-      summary.dataset.unread,
-      summary.querySelector("h3")?.textContent,
-    ]).toEqual([null, [], "true", "Day 2 · Late-morning kopi crowd"]);
+    expect([title, find_review(container), speed_calls()]).toEqual([
+      "Day 2 wrapped · Late-morning kopi crowd",
+      null,
+      [0, 10],
+    ]);
   });
 
-  it("waits while another dialog is open, then opens from the Focus panel", async () => {
+  it("waits, unread, while another dialog is open, then opens as soon as it closes", async () => {
     const container = await boot_running_centre();
     open_settings(container);
     act(() => {
       runtime_options().onSnapshot(snapshot_after_day_two());
     });
     const blocked = open_modal_titles(container);
+    const calls_while_blocked = speed_calls();
+
     fireEvent.keyDown(document, { key: "Escape" });
+    await settle();
 
-    fireEvent.click(
-      within(open_dock_tab(container, "Focus")).getByRole("button", {
-        name: "Read the full review",
-      }),
-    );
-
-    expect([blocked, open_modal_titles(container), speed_calls()]).toEqual([
+    expect([blocked, calls_while_blocked, open_modal_titles(container), speed_calls()]).toEqual([
       ["settings-title"],
+      [],
       ["service-review-title"],
       [0],
+    ]);
+  });
+
+  it("can still be reopened from the Focus panel after it closes", async () => {
+    const container = await boot_running_centre();
+    act(() => {
+      runtime_options().onSnapshot(snapshot_after_day_two());
+    });
+    fireEvent.click(within(container).getByRole("button", { name: "Open for Day 3" }));
+    const summary = require_element(open_dock_tab(container, "Focus"), ".service-review-summary");
+
+    fireEvent.click(within(summary).getByRole("button", { name: "Read the full review" }));
+
+    expect([summary.dataset.unread, open_modal_titles(container), speed_calls()]).toEqual([
+      "false",
+      ["service-review-title"],
+      [0, 2, 0],
     ]);
   });
 
