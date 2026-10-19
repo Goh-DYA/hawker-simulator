@@ -22,7 +22,7 @@ describe("launch content", () => {
     assert.equal(report.counts.dishes, LAUNCH_ROSTER.dishes);
     assert.equal(report.counts.placeables, LAUNCH_ROSTER.placeables);
     assert.equal(report.counts.customerArchetypes, LAUNCH_ROSTER.customerArchetypes);
-    assert.equal(report.counts.localizationKeys, 320);
+    assert.equal(report.counts.localizationKeys, 346);
   });
 
   it("ships four new customer personas with distinct demand roles", () => {
@@ -83,12 +83,14 @@ describe("launch content", () => {
         "dish.fishball-mee-pok",
         "dish.lor-mee",
         "dish.teochew-fish-dumpling-soup",
+        "dish.chwee-kueh",
       ],
       "stall.sweet-monsoon": [
         "dish.chendol",
         "dish.tau-huay",
         "dish.pulut-hitam",
         "dish.ice-kacang",
+        "dish.soya-bean-milk",
       ],
       "stall.satay-meridian": [
         "dish.chicken-satay-set",
@@ -101,6 +103,7 @@ describe("launch content", () => {
         "dish.siew-mai",
         "dish.char-siew-bao",
         "dish.lotus-leaf-rice",
+        "dish.wanton-mee",
       ],
     } as const;
 

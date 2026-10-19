@@ -1,6 +1,7 @@
 /**
- * Braise and dim sum motifs: ayam pongteh, chap chye and babi pongteh in their gravies, and the
- * siew mai and char siew bao standing in their bamboo steamers.
+ * Nonya and dim sum motifs: ayam pongteh, chap chye and babi pongteh plated in their gravies,
+ * kueh pie tee's crisp pastry cups, and the siew mai and char siew bao standing in their bamboo
+ * steamers.
  */
 import {
   css,
@@ -11,6 +12,7 @@ import {
   radial_gradient,
   shade,
   SHADOW_INK,
+  stroke_ellipse,
   tint,
 } from "../../canvas";
 import { at, heap_scale, pieces_left, type Motif, type MotifPaint } from "../motif";
@@ -20,11 +22,15 @@ import {
   paint_herb_flecks,
   paint_leaf,
   paint_liquid,
+  paint_prawn,
+  paint_sauce_cup,
   paint_slice,
   WHITE,
 } from "../parts";
 import { paint_dollop, paint_mushroom, paint_shreds } from "../toppings";
 
+/** Kueh pie tee's crisp fried pastry shell and its braised turnip filling. */
+const PIE_TEE = { shell: 0xd9a441, filling: 0xe6d3a2 } as const;
 /** The glossy brown-red barbecued pork filling that shows where a char siew bao splits. */
 const CHAR_SIEW_FILLING = 0x9a3424;
 
@@ -176,8 +182,101 @@ function paint_babi_pongteh(p: MotifPaint): void {
 }
 
 /**
- * Paints one siew mai standing upright: a pleated yellow wrapper cup with the pork-and-prawn
- * filling showing on top and a dot of orange roe.
+ * Paints one kueh pie tee standing on the platter: a fluted golden "top hat" shell fried crisp,
+ * its flared brim round a heap of braised turnip, crowned with a small prawn and a sliver of
+ * chilli.
+ *
+ * @param ctx - The paint context.
+ * @param x - Cup centre x.
+ * @param y - Cup base y.
+ * @param seed - Filling seed.
+ * @param is_low_detail - True for fewer turnip strands.
+ */
+function paint_pie_tee_cup(
+  ctx: MotifPaint["ctx"],
+  x: number,
+  y: number,
+  seed: number,
+  is_low_detail: boolean,
+): void {
+  const radius = 3;
+  const height = 3.6;
+  const brim = radius * 1.45;
+  const top = y - height;
+  fill_ellipse(ctx, x + 0.8, y + 0.8, brim, brim * 0.45, css(SHADOW_INK, 0.26));
+  fill_rounded_rect(
+    ctx,
+    x - radius,
+    top,
+    radius * 2,
+    height + radius * 0.3,
+    radius * 0.5,
+    linear_gradient(ctx, x - radius, 0, x + radius, 0, [
+      [0, tint(PIE_TEE.shell, 0.35)],
+      [0.5, PIE_TEE.shell],
+      [1, shade(PIE_TEE.shell, 0.35)],
+    ]),
+  );
+  for (let flute = -1; flute <= 1; flute += 1) {
+    line(
+      ctx,
+      x + flute * 1.4,
+      top + 0.8,
+      x + flute * 1.2,
+      y,
+      css(shade(PIE_TEE.shell, 0.4), 0.6),
+      0.5,
+    );
+  }
+  // The flared, fluted brim and the dark mouth of the cup inside it.
+  fill_ellipse(ctx, x, top, brim, brim * 0.42, css(tint(PIE_TEE.shell, 0.15)));
+  stroke_ellipse(ctx, x, top, brim, brim * 0.42, css(shade(PIE_TEE.shell, 0.35), 0.8), 0.5);
+  fill_ellipse(ctx, x, top + 0.1, radius * 0.95, radius * 0.38, css(shade(PIE_TEE.shell, 0.45)));
+  paint_dollop(ctx, x, top - 0.4, radius * 0.85, PIE_TEE.filling, seed);
+  paint_shreds(
+    ctx,
+    x,
+    top - 0.6,
+    radius * 0.7,
+    is_low_detail ? 2 : 4,
+    0xf3e6c2,
+    seed ^ 0x5,
+    2,
+    0.6,
+  );
+  paint_prawn(ctx, x + 0.2, top - 1.2, 2.8, 0.6);
+  fill_ellipse(ctx, x - 1.4, top - 1.2, 0.7, 0.4, css(0xd43b2a));
+}
+
+/**
+ * Kueh pie tee: five crisp golden top-hat pastry cups filled with braised turnip, each topped
+ * with a small prawn and chilli, with a dish of sweet chilli sauce.
+ *
+ * @param p - The motif paint.
+ */
+function paint_kueh_pie_tee(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  const spots: ReadonlyArray<readonly [number, number]> = [
+    [-0.55, -0.05],
+    [-0.12, -0.2],
+    [0.3, -0.05],
+    [-0.35, 0.68],
+    [0.1, 0.62],
+  ];
+  const shown = pieces_left(spots.length, p.remaining);
+  spots.slice(0, shown).forEach(([u, v], index) => {
+    const [x, y] = at(area, u, v);
+    paint_pie_tee_cup(ctx, x, y, seed ^ (index * 0x2d), isLowDetail);
+  });
+  const [sx, sy] = at(area, 0.72, 0.2);
+  paint_sauce_cup(ctx, sx, sy, 3.6, 0xd8502e);
+  const [lx, ly] = at(area, 0.7, -0.55);
+  paint_leaf(ctx, lx, ly, 3.6, 0.5, 0x4e9a3e);
+}
+
+/**
+ * Paints one siew mai standing upright: a pleated yellow wanton-skin cup with the minced pork
+ * filling showing on top and a dot of orange crab roe.
  *
  * @param ctx - The paint context.
  * @param x - Siew mai centre x.
@@ -227,7 +326,8 @@ function paint_siew_mai(ctx: MotifPaint["ctx"], x: number, y: number): void {
 }
 
 /**
- * Siew mai: four open-topped pork-and-prawn dumplings standing in their basket.
+ * Siew mai: four open-topped minced-pork dumplings in wanton skin, each topped with crab roe,
+ * standing in their basket.
  *
  * @param p - The motif paint.
  */
@@ -271,6 +371,7 @@ export const BRAISE_MOTIFS: Readonly<Record<string, Motif>> = {
   "ayam-buah-keluak": paint_ayam_pongteh,
   "chap-chye": paint_chap_chye,
   "babi-pongteh": paint_babi_pongteh,
+  "kueh-pie-tee": paint_kueh_pie_tee,
   "siew-mai": paint_siew_mai_basket,
   "char-siew-bao": paint_char_siew_bao,
 };

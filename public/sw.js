@@ -1,4 +1,4 @@
-const BUILD_ID = "hawker-simulator-1.0.0-5dfc7b8de508";
+const BUILD_ID = "hawker-simulator-1.0.0-878719bdd051";
 const CACHE_PREFIX = "hawker-simulator-";
 const SHELL_CACHE = `${BUILD_ID}-shell`;
 const RUNTIME_CACHE = `${BUILD_ID}-runtime`;

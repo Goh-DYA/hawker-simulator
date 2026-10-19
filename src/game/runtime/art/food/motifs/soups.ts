@@ -1,6 +1,6 @@
 /**
- * Soup and porridge motifs: chicken congee, soto ayam, sayur lodeh with lontong, Teochew fish
- * dumpling soup, kway chap and the prawn dumplings in light soup. (Sliced fish soup, yong tau
+ * Soup and porridge motifs: chicken congee, soto ayam, sayur lodeh with lontong, fishball tang
+ * hoon soup, kway chap and the prawn dumplings in light soup. (Sliced fish soup, yong tau
  * foo and bak kut teh paint their broth and pieces in their variant layers.)
  *
  * Each paints the broth's surface inside the bowl first, darker towards the rim with a sheen
@@ -16,12 +16,14 @@ import {
   paint_egg_half,
   paint_herb_flecks,
   paint_liquid,
+  paint_noodles,
   paint_slice,
   SAMBAL,
   SHALLOT,
 } from "../parts";
 import {
   paint_dollop,
+  paint_fish_cake,
   paint_greens,
   paint_scallions,
   paint_shreds,
@@ -167,25 +169,38 @@ function paint_lontong_sayur(p: MotifPaint): void {
 }
 
 /**
- * Teochew fish dumpling soup: a clear broth with bouncy fishballs, crescent fish dumplings,
- * lettuce, spring onion and fried shallots.
+ * Fishball tang hoon soup: a clear broth with a tangle of translucent glass noodles, bouncy
+ * white fishballs, thin fish cake slices, bean sprouts, spring onion and fried shallots.
  *
  * @param p - The motif paint.
  */
-function paint_fish_dumpling_soup(p: MotifPaint): void {
+function paint_fishball_tang_hoon_soup(p: MotifPaint): void {
   const { ctx, area, seed, isLowDetail } = p;
   paint_liquid(ctx, area.x, area.y, area.rx, area.ry, 0xd9cc9e, { sheen: 0.3 });
-  const [gx, gy] = at(area, -0.5, 0.35);
-  paint_greens(ctx, gx, gy, 9, 0.3, 0x86b85a);
-  const balls = pieces_left(3, p.remaining);
-  for (let ball = 0; ball < balls; ball += 1) {
-    const [x, y] = at(area, 0.1 + ball * 0.3, -0.35 + (ball % 2) * 0.45);
-    paint_ball(ctx, x, y, 2.6);
+  const size = heap_scale(p.remaining);
+  ctx.save();
+  ctx.globalAlpha = 0.85;
+  paint_noodles(
+    ctx,
+    area.x - 1,
+    area.y + 1,
+    area.rx * 0.6 * size,
+    0xeee8d8,
+    seed,
+    0.7,
+    isLowDetail,
+  );
+  ctx.restore();
+  paint_sprouts(ctx, area.x + 3, area.y + 2, area.rx * 0.35, isLowDetail ? 2 : 4, seed ^ 0x43);
+  const slices = pieces_left(3, p.remaining);
+  for (let slice = 0; slice < slices; slice += 1) {
+    const [x, y] = at(area, -0.55 + slice * 0.22, 0.3 + slice * 0.08);
+    paint_fish_cake(ctx, x, y, 2.2);
   }
-  const dumplings = pieces_left(2, p.remaining);
-  for (let dumpling = 0; dumpling < dumplings; dumpling += 1) {
-    const [x, y] = at(area, -0.35 + dumpling * 0.3, -0.35 + dumpling * 0.15);
-    paint_dumpling(ctx, x, y, 3.4, 0xf5efe2, { blush: 0xd9b48a, isCrescent: true, pleats: 3 });
+  const balls = pieces_left(4, p.remaining);
+  for (let ball = 0; ball < balls; ball += 1) {
+    const [x, y] = at(area, -0.3 + ball * 0.26, -0.38 + (ball % 2) * 0.32);
+    paint_ball(ctx, x, y, 2.6);
   }
   paint_scallions(ctx, area.x, area.y, area.rx * 0.55, isLowDetail ? 3 : 6, seed ^ 0x41);
   paint_dots(
@@ -281,7 +296,7 @@ export const SOUP_MOTIFS: Readonly<Record<string, Motif>> = {
   "chicken-congee": paint_chicken_congee,
   "soto-ayam": paint_soto_ayam,
   "lontong-sayur": paint_lontong_sayur,
-  "teochew-fish-dumpling-soup": paint_fish_dumpling_soup,
+  "teochew-fish-dumpling-soup": paint_fishball_tang_hoon_soup,
   "kway-chap": paint_kway_chap,
   "har-gow": paint_har_gow,
   "sliced-fish-soup": paint_in_layer,

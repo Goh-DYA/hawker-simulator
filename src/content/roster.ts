@@ -15,7 +15,7 @@ import type { PlaceableCategory } from "./types";
  */
 export const LAUNCH_ROSTER = {
   stalls: 14,
-  dishes: 54,
+  dishes: 67,
   placeables: 80,
   customerArchetypes: 12,
   nutritionSourceSnapshots: 2,

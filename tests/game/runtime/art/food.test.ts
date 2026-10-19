@@ -161,8 +161,8 @@ const REVIEWED_FAMILIES: readonly DishVariantVisualFamily[] = [
 ];
 
 /**
- * Sibling variants whose cues draw identically. Empty: the yong tau foo "mixed" variants now
- * float both boiled and fried pieces, so they differ from "boiled".
+ * Sibling variants whose cues draw identically. Empty: the yong tau foo "mixed" variants float
+ * both boiled and fried pieces, so they differ from the all-fried and laksa "boiled" variants.
  */
 const KNOWN_IDENTICAL_SIBLINGS: readonly (readonly string[])[] = [];
 
@@ -282,7 +282,7 @@ describe("dish serving draw output", () => {
     }
     const duplicates = [...ids_by_digest.values()].filter((ids) => ids.length > 1);
 
-    expect(DISHES.length).toBe(54);
+    expect(DISHES.length).toBe(67);
     expect(duplicates).toEqual([]);
   });
 

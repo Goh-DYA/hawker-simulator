@@ -1,6 +1,6 @@
 /**
- * Griddle and South Indian motifs: fried carrot cake, oyster omelette, roti prata, murtabak,
- * masala thosai, idli with sambar, vadai and popiah.
+ * Griddle, toast and steamed-cake motifs: fried carrot cake, oyster omelette, roti prata,
+ * murtabak, roti john, kaya toast, masala thosai, idli with sambar, vadai, chwee kueh and popiah.
  *
  * Prata, murtabak, thosai and carrot cake paint only their side dishes here (the curry cup,
  * pickled onions or chutneys); their variant layers lay the bread or cake itself.
@@ -9,6 +9,7 @@ import {
   css,
   fill_ellipse,
   fill_rounded_rect,
+  line,
   linear_gradient,
   radial_gradient,
   seeded,
@@ -41,6 +42,18 @@ const COCONUT_CHUTNEY = 0xf2ecd6;
 const SAMBAR = 0xc8742e;
 /** Curry leaf green. */
 const CURRY_LEAF = 0x2f6a2c;
+/** Kaya toast's colours: the charred crust, the toasted face, the crumb, kaya and cold butter. */
+const TOAST = {
+  crust: 0x8a4a1e,
+  face: 0xd9a55b,
+  crumb: 0xf2dfb0,
+  kaya: 0x8a6a22,
+  butter: 0xf7eab0,
+} as const;
+/** Roti john's colours: the toasted roll, its egg-and-mince face and the sauces over it. */
+const ROTI_JOHN = { bread: 0xc47a3a, egg: 0xe6b84a, mince: 0x7a4422, chilli: 0xd8442a } as const;
+/** Chwee kueh's soft white rice cake and its fried preserved radish topping. */
+const CHWEE_KUEH = { cake: 0xf1ece0, radish: 0x8a5524 } as const;
 /** Orh luak's colours: the crisp browned crust, the set golden egg, its lit top and the starch. */
 const OMELETTE = { crust: 0xa8621f, gold: 0xe6a63c, light: 0xf7d77a, starch: 0xf3e4bd } as const;
 
@@ -209,6 +222,214 @@ function paint_chicken_murtabak(p: MotifPaint): void {
 }
 
 /**
+ * Paints one strip of roti john: a section of toasted roll whose upturned face is the egg and
+ * minced meat fried onto it, with onion and a zigzag of chilli sauce.
+ *
+ * @param ctx - The paint context.
+ * @param x - Strip centre x.
+ * @param y - Strip centre y.
+ * @param angle - Tilt in radians.
+ * @param seed - Speckle seed.
+ */
+function paint_roti_john_strip(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  angle: number,
+  seed: number,
+): void {
+  const width = 4.6;
+  const length = 11;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  fill_rounded_rect(
+    ctx,
+    -width / 2 + 0.7,
+    -length / 2 + 1.2,
+    width,
+    length,
+    1.6,
+    css(SHADOW_INK, 0.25),
+  );
+  // The roll's crust shows along the near side.
+  fill_rounded_rect(
+    ctx,
+    -width / 2,
+    -length / 2 + 0.9,
+    width,
+    length,
+    1.6,
+    css(shade(ROTI_JOHN.bread, 0.25)),
+  );
+  fill_rounded_rect(
+    ctx,
+    -width / 2,
+    -length / 2,
+    width,
+    length,
+    1.6,
+    linear_gradient(ctx, -width / 2, 0, width / 2, 0, [
+      [0, tint(ROTI_JOHN.egg, 0.3)],
+      [0.6, ROTI_JOHN.egg],
+      [1, shade(ROTI_JOHN.egg, 0.25)],
+    ]),
+  );
+  ctx.restore();
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  const next = seeded(seed);
+  for (let fleck = 0; fleck < 6; fleck += 1) {
+    const fx = (next() - 0.5) * (width - 1.4);
+    const fy = (next() - 0.5) * (length - 2);
+    fill_ellipse(ctx, fx, fy, 0.7, 0.55, css(ROTI_JOHN.mince, 0.9));
+  }
+  ctx.beginPath();
+  for (let step = 0; step <= 6; step += 1) {
+    const zx = (step % 2 ? 1 : -1) * (width / 2 - 0.9);
+    const zy = -length / 2 + 1.2 + step * ((length - 2.4) / 6);
+    if (step === 0) ctx.moveTo(zx, zy);
+    else ctx.lineTo(zx, zy);
+  }
+  ctx.strokeStyle = css(ROTI_JOHN.chilli, 0.9);
+  ctx.lineWidth = 0.7;
+  ctx.lineJoin = "round";
+  ctx.stroke();
+  fill_rounded_rect(
+    ctx,
+    -width / 2 + 0.6,
+    -length / 2 + 0.8,
+    0.8,
+    length * 0.5,
+    0.4,
+    css(WHITE, 0.35),
+  );
+  ctx.restore();
+}
+
+/**
+ * Roti john: a long roll pan-fried with egg, minced meat and onion and cut into strips laid
+ * side by side, with chilli sauce over them, sliced onion and cucumber.
+ *
+ * @param p - The motif paint.
+ */
+function paint_roti_john(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  const strips = pieces_left(5, p.remaining);
+  for (let strip = 0; strip < strips; strip += 1) {
+    const [x, y] = at(area, -0.62 + strip * 0.3, -0.05 + strip * 0.03);
+    paint_roti_john_strip(ctx, x, y, -0.18, seed ^ (strip * 0x29));
+  }
+  const [ox, oy] = at(area, 0.78, -0.45);
+  paint_slivers(ctx, ox, oy, 2.4, isLowDetail ? 3 : 5, 0xe6d4e6, seed ^ 0x61);
+  const [cx, cy] = at(area, 0.8, 0.5);
+  paint_dollop(ctx, cx, cy, 2.2, ROTI_JOHN.chilli, seed ^ 0x62);
+  const [kx, ky] = at(area, -0.78, 0.68);
+  paint_leaf(ctx, kx, ky, 4, 0.3, 0x4e9a3e);
+}
+
+/**
+ * Paints one kaya toast triangle seen from above and a little in front: the toasted top slice
+ * with its dark crust, and along the cut edge the crumb, the green-brown kaya and the thick
+ * slab of cold butter between the slices.
+ *
+ * @param ctx - The paint context.
+ * @param x - Triangle centre x.
+ * @param y - Triangle centre y.
+ * @param size - Leg length.
+ * @param angle - Rotation in radians.
+ */
+function paint_toast_triangle(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  size: number,
+  angle: number,
+): void {
+  const half = size / 2;
+  const corners: ReadonlyArray<readonly [number, number]> = [
+    [-half, -half * 0.7],
+    [half, -half * 0.7],
+    [-half, half * 0.7],
+  ];
+  const depth = 3.4;
+  const trace = (dy: number) => {
+    ctx.beginPath();
+    corners.forEach(([cx, cy], index) => {
+      if (index === 0) ctx.moveTo(cx, cy + dy);
+      else ctx.lineTo(cx, cy + dy);
+    });
+    ctx.closePath();
+  };
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  trace(depth + 0.8);
+  ctx.fillStyle = css(SHADOW_INK, 0.25);
+  ctx.fill();
+  // The sandwich's cut side: bottom slice, kaya, butter and the top slice's crumb.
+  trace(depth);
+  ctx.fillStyle = css(TOAST.crumb);
+  ctx.fill();
+  trace(depth * 0.7);
+  ctx.fillStyle = css(TOAST.kaya);
+  ctx.fill();
+  trace(depth * 0.5);
+  ctx.fillStyle = css(TOAST.butter);
+  ctx.fill();
+  trace(depth * 0.22);
+  ctx.fillStyle = css(TOAST.crumb);
+  ctx.fill();
+  trace(0);
+  ctx.fillStyle = linear_gradient(ctx, -half, -half, half, half, [
+    [0, tint(TOAST.face, 0.2)],
+    [0.6, TOAST.face],
+    [1, shade(TOAST.face, 0.2)],
+  ]);
+  ctx.fill();
+  ctx.strokeStyle = css(TOAST.crust, 0.85);
+  ctx.lineWidth = 0.7;
+  ctx.lineJoin = "round";
+  ctx.stroke();
+  // Grill marks from the charcoal toaster.
+  for (let mark = 0; mark < 2; mark += 1) {
+    line(
+      ctx,
+      -half + 1.5 + mark * 2.4,
+      -half * 0.5,
+      -half + 1.5 + mark * 2.4,
+      half * 0.2,
+      css(TOAST.crust, 0.35),
+      0.6,
+    );
+  }
+  fill_ellipse(ctx, -half * 0.45, -half * 0.35, 1.4, 0.5, css(WHITE, 0.3));
+  ctx.restore();
+}
+
+/**
+ * Kaya butter toast: crisp toast triangles stacked on the plate, each sandwiching green-brown
+ * kaya jam and a thick slab of cold butter that shows along the cut edge.
+ *
+ * @param p - The motif paint.
+ */
+function paint_kaya_toast(p: MotifPaint): void {
+  const { ctx, area } = p;
+  const spots: ReadonlyArray<readonly [number, number, number]> = [
+    [-0.42, -0.38, 0.05],
+    [0.38, -0.42, 0.35],
+    [-0.36, 0.22, -0.1],
+    [0.45, 0.18, 0.55],
+  ];
+  const shown = pieces_left(spots.length, p.remaining);
+  for (const [u, v, angle] of spots.slice(0, shown)) {
+    const [x, y] = at(area, u, v);
+    paint_toast_triangle(ctx, x, y, 9, angle);
+  }
+}
+
+/**
  * Masala thosai's sides: coconut chutney and sambar in small cups. The variant layer lays the
  * thosai.
  *
@@ -326,6 +547,79 @@ function paint_vadai_set(p: MotifPaint): void {
 }
 
 /**
+ * Paints one chwee kueh: a shallow, soft white rice-cake disc with the dimple it set in, heaped
+ * with oily fried preserved radish.
+ *
+ * @param ctx - The paint context.
+ * @param x - Cake centre x.
+ * @param y - Cake centre y.
+ * @param radius - Cake radius.
+ * @param seed - Topping seed.
+ * @param is_low_detail - True for fewer radish bits.
+ */
+function paint_chwee_kueh_cake(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  radius: number,
+  seed: number,
+  is_low_detail: boolean,
+): void {
+  const ry = radius * FLAT_RATIO * 0.8;
+  fill_ellipse(ctx, x + 0.6, y + 1.2, radius, ry, css(SHADOW_INK, 0.25));
+  fill_ellipse(ctx, x, y + 0.9, radius, ry, css(shade(CHWEE_KUEH.cake, 0.14)));
+  fill_ellipse(
+    ctx,
+    x,
+    y,
+    radius,
+    ry,
+    radial_gradient(ctx, x - radius * 0.3, y - ry * 0.4, 0.2, radius * 1.2, [
+      [0, WHITE],
+      [0.7, CHWEE_KUEH.cake],
+      [1, shade(CHWEE_KUEH.cake, 0.1)],
+    ]),
+  );
+  fill_ellipse(ctx, x, y + 0.2, radius * 0.66, ry * 0.6, css(shade(CHWEE_KUEH.cake, 0.12)));
+  fill_ellipse(ctx, x, y + 0.1, radius * 0.6, ry * 0.52, css(CHWEE_KUEH.radish, 0.85));
+  paint_dots(
+    ctx,
+    x,
+    y - 0.1,
+    radius * 0.5,
+    is_low_detail ? 3 : 6,
+    0.55,
+    tint(CHWEE_KUEH.radish, 0.25),
+    seed,
+  );
+  paint_gloss(ctx, x - radius * 0.25, y - ry * 0.2, radius * 0.25, ry * 0.12, 0.6);
+}
+
+/**
+ * Chwee kueh: five soft white steamed rice cakes, each topped with savoury fried preserved
+ * radish, with a dab of chilli.
+ *
+ * @param p - The motif paint.
+ */
+function paint_chwee_kueh(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  const spots: ReadonlyArray<readonly [number, number]> = [
+    [-0.5, -0.32],
+    [0.05, -0.42],
+    [0.55, -0.2],
+    [-0.28, 0.36],
+    [0.3, 0.42],
+  ];
+  const shown = pieces_left(spots.length, p.remaining);
+  spots.slice(0, shown).forEach(([u, v], index) => {
+    const [x, y] = at(area, u, v);
+    paint_chwee_kueh_cake(ctx, x, y, 4.2, seed ^ (index * 0x1f), isLowDetail);
+  });
+  const [cx, cy] = at(area, 0.82, 0.58);
+  paint_dollop(ctx, cx, cy, 2.2, 0xc8301e, seed ^ 0x71);
+}
+
+/**
  * Paints one popiah roll lying north to south: a soft white wrapper whose cut south end shows
  * the turnip, carrot, egg and lettuce filling.
  *
@@ -417,4 +711,7 @@ export const GRIDDLE_MOTIFS: Readonly<Record<string, Motif>> = {
   "idli-sambar": paint_idli_sambar,
   "vadai-set": paint_vadai_set,
   popiah: paint_popiah,
+  "kaya-toast": paint_kaya_toast,
+  "roti-john": paint_roti_john,
+  "chwee-kueh": paint_chwee_kueh,
 };

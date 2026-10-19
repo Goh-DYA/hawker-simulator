@@ -1,6 +1,6 @@
 /**
  * Drink and dessert motifs: kopi and teh tarik (whose variant layers pour the drink),
- * sugarcane juice, ice kacang, chendol, tau huay and pulut hitam.
+ * sugarcane juice, barley water, soya bean milk, ice kacang, chendol, tau huay and pulut hitam.
  *
  * Drinks fill their cup or glass to a level that drops as they are drunk; shaved-ice desserts
  * rise above the bowl's rim in a dome streaked with syrup.
@@ -24,6 +24,7 @@ import {
   paint_straw,
 } from "../parts";
 import { paint_ice_mound, paint_shreds, paint_spoon, trace_ice_mound } from "../toppings";
+import type { FoodArea } from "../parts";
 import { paint_glass_drink } from "../vessels";
 
 /** Where a glass's straw tip rests, relative to the dish centre: just above the right rim. */
@@ -32,6 +33,10 @@ const STRAW_TIP = { x: 9.5, y: -15.5 } as const;
 const TAU_HUAY_SYRUP = 0xb5742c;
 /** Soft soy beancurd. */
 const BEANCURD = 0xf6eed6;
+/** Cloudy, pale gold barley water. */
+const BARLEY_WATER = 0xe2d4a4;
+/** Creamy off-white soy milk. */
+const SOY_MILK = 0xefe6cf;
 
 /**
  * Kopi's saucer furniture: the teaspoon resting on the saucer. The variant layer pours the
@@ -41,6 +46,28 @@ const BEANCURD = 0xf6eed6;
  */
 function paint_kopi(p: MotifPaint): void {
   paint_spoon(p.ctx, p.cx + 5.5, p.cy + 12.4, 9, -0.38);
+}
+
+/**
+ * Paints a drinking straw leaning on a glass's rim, with its tip just above the glass and
+ * inside the texture, and its foot in the drink as the level drops.
+ *
+ * @param p - The motif paint.
+ * @param surface - The drink's surface.
+ * @param colour_value - The straw colour.
+ */
+function paint_glass_straw(p: MotifPaint, surface: FoodArea, colour_value: number): void {
+  const straw_x = surface.x + 1.5;
+  const tip_x = p.cx + STRAW_TIP.x;
+  const tip_y = p.cy + STRAW_TIP.y;
+  paint_straw(
+    p.ctx,
+    straw_x,
+    surface.y,
+    Math.hypot(tip_x - straw_x, tip_y - surface.y),
+    Math.atan2(tip_y - surface.y, tip_x - straw_x),
+    colour_value,
+  );
 }
 
 /**
@@ -66,23 +93,76 @@ function paint_sugarcane_juice(p: MotifPaint): void {
   ctx.globalAlpha = 0.85;
   paint_dots(ctx, surface.x, surface.y + 8, 3, 4, 0.5, 0xeef4c8, p.seed);
   ctx.restore();
-  // The straw leans on the rim with its tip just above the glass and inside the texture, and
-  // its foot stays in the drink as the level drops.
-  const straw_x = surface.x + 1.5;
-  const tip_x = p.cx + STRAW_TIP.x;
-  const tip_y = p.cy + STRAW_TIP.y;
-  paint_straw(
-    ctx,
-    straw_x,
-    surface.y,
-    Math.hypot(tip_x - straw_x, tip_y - surface.y),
-    Math.atan2(tip_y - surface.y, tip_x - straw_x),
-    0x5f9e52,
-  );
+  paint_glass_straw(p, surface, 0x5f9e52);
   paint_citrus_wedge(ctx, surface.x - surface.rx + 0.5, p.cy - 12, 3.4, -0.5, {
     rind: 0xe3c02a,
     flesh: 0xf6eaa4,
   });
+}
+
+/**
+ * Barley water: a tall glass of cloudy, pale gold barley water over ice, with the softened
+ * pearl barley settled at the bottom of the glass.
+ *
+ * @param p - The motif paint.
+ */
+function paint_barley_drink(p: MotifPaint): void {
+  const { ctx } = p;
+  const surface = paint_glass_drink(ctx, p.cx, p.cy, 1, p.remaining, BARLEY_WATER);
+  // The pearl barley settled in a soft layer at the foot of the glass.
+  const base_y = p.cy + 10.4;
+  fill_ellipse(ctx, surface.x, base_y, 5, 1.8, css(shade(BARLEY_WATER, 0.12), 0.9));
+  paint_dots(ctx, surface.x, base_y - 0.4, 4.2, p.isLowDetail ? 6 : 12, 0.7, 0xf4ecd0, p.seed);
+  paint_dots(ctx, surface.x, base_y - 0.2, 4, p.isLowDetail ? 3 : 6, 0.55, 0xb8a070, p.seed ^ 0x31);
+  const cubes = pieces_left(4, p.remaining);
+  for (let cube = 0; cube < cubes; cube += 1) {
+    paint_ice_cube(
+      ctx,
+      surface.x - 3.6 + cube * 2.4,
+      surface.y + 0.4 - (cube % 2) * 1.1,
+      3,
+      0.4 - 0.25 * cube,
+    );
+  }
+  paint_glass_straw(p, surface, 0xe8eef0);
+}
+
+/**
+ * Soya bean milk: a tall glass of creamy, opaque off-white soy milk with a thin ring of fine
+ * bubbles round the surface and a red straw, served chilled without ice.
+ *
+ * @param p - The motif paint.
+ */
+function paint_soya_bean_milk(p: MotifPaint): void {
+  const { ctx } = p;
+  const surface = paint_glass_drink(ctx, p.cx, p.cy, 1, p.remaining, SOY_MILK);
+  stroke_ellipse(
+    ctx,
+    surface.x,
+    surface.y,
+    surface.rx - 0.8,
+    surface.ry - 0.4,
+    css(0xfffaf0, 0.95),
+    1.1,
+  );
+  const next_ring = p.isLowDetail ? 6 : 12;
+  for (let bubble = 0; bubble < next_ring; bubble += 1) {
+    const angle = (bubble / next_ring) * Math.PI * 2 + 0.3;
+    fill_ellipse(
+      ctx,
+      surface.x + Math.cos(angle) * (surface.rx - 1.2),
+      surface.y + Math.sin(angle) * (surface.ry - 0.5),
+      0.55,
+      0.4,
+      css(0xffffff, 0.9),
+    );
+  }
+  // Condensation beading on the cold glass.
+  ctx.save();
+  ctx.globalAlpha = 0.7;
+  paint_dots(ctx, surface.x - 2, surface.y + 9, 3.4, p.isLowDetail ? 3 : 6, 0.45, 0xffffff, p.seed);
+  ctx.restore();
+  paint_glass_straw(p, surface, 0xd8423a);
 }
 
 /**
@@ -343,6 +423,8 @@ export const SWEET_MOTIFS: Readonly<Record<string, Motif>> = {
   kopi: paint_kopi,
   "sugarcane-juice": paint_sugarcane_juice,
   "teh-tarik": paint_teh_tarik,
+  "barley-drink": paint_barley_drink,
+  "soya-bean-milk": paint_soya_bean_milk,
   "ice-kacang": paint_ice_kacang,
   chendol: paint_chendol,
   "tau-huay": paint_tau_huay,
