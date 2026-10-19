@@ -855,7 +855,7 @@ exports[`createHawkerRuntime > (1) exports a fresh centre built from the real co
     "stall.herbal-cauldron": [],
     "stall.harbour-ember": [],
   },
-  "nutritionDataVersion": "sg-1bc212db6eda-c87987b4281c-r2",
+  "nutritionDataVersion": "sg-1bc212db6eda-c87987b4281c-r3",
   "activeDishVariants": {
     "dish.kopi": "kopi-default",
     "dish.teh-tarik": "teh-tarik",
@@ -1045,7 +1045,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 regular cup(s) = 250ml",
+            "servingLabel": "1 regular cup (250 ml)",
             "energyKcal": {
               "status": "known",
               "value": 193,
@@ -1079,8 +1079,8 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "totalSugarG": {
-              "status": "known",
-              "value": 19.05,
+              "status": "unavailable",
+              "reason": "implausible-source",
             },
             "calciumMg": {
               "status": "known",
@@ -1094,16 +1094,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "status": "known",
               "value": 220.17,
             },
-            "healthRating": 2.9,
+            "healthRating": 2.1,
             "conditionRatings": {
-              "high-cholesterol": 3.6,
-              "obesity": 2.1,
-              "diabetes": 2.7,
-              "hypertension": 4.5,
+              "high-cholesterol": 3.4,
+              "obesity": 1.6,
+              "diabetes": 1.7,
+              "hypertension": 4.3,
             },
-            "intentFits": {
-              "lower-total-sugar-drink": 0.3333,
-            },
+            "intentFits": {},
           },
         },
         {
@@ -1116,7 +1114,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 regular cup(s) = 250ml",
+            "servingLabel": "1 regular cup (250 ml)",
             "energyKcal": {
               "status": "known",
               "value": 150,
@@ -1173,7 +1171,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.5,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.2667,
+              "lower-total-sugar-drink": 0.2857,
             },
           },
         },
@@ -1187,7 +1185,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 regular cup(s) = 250ml",
+            "servingLabel": "1 regular cup (250 ml)",
             "energyKcal": {
               "status": "known",
               "value": 130,
@@ -1243,7 +1241,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.6,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.6,
+              "lower-total-sugar-drink": 0.5714,
             },
           },
         },
@@ -1257,7 +1255,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 regular cup(s) = 250ml",
+            "servingLabel": "1 regular cup (250 ml)",
             "energyKcal": {
               "status": "known",
               "value": 93,
@@ -1314,7 +1312,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 5,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.8,
+              "lower-total-sugar-drink": 0.7857,
             },
           },
         },
@@ -1328,7 +1326,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 regular cup(s) = 250ml",
+            "servingLabel": "1 regular cup (250 ml)",
             "energyKcal": {
               "status": "known",
               "value": 78,
@@ -1385,7 +1383,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.7,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.6667,
+              "lower-total-sugar-drink": 0.6429,
             },
           },
         },
@@ -1399,7 +1397,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 regular cup(s) = 250ml",
+            "servingLabel": "1 regular cup (250 ml)",
             "energyKcal": {
               "status": "known",
               "value": 33,
@@ -1534,7 +1532,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.5,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.4667,
+              "lower-total-sugar-drink": 0.4286,
             },
           },
         },
@@ -1548,7 +1546,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 regular cup(s) = 250ml",
+            "servingLabel": "1 regular cup (250 ml)",
             "energyKcal": {
               "status": "known",
               "value": 150,
@@ -1605,7 +1603,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.4,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.1333,
+              "lower-total-sugar-drink": 0.1429,
             },
           },
         },
@@ -1619,7 +1617,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 regular cup(s) = 250ml",
+            "servingLabel": "1 regular cup (250 ml)",
             "energyKcal": {
               "status": "known",
               "value": 98,
@@ -1676,7 +1674,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.6,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.5333,
+              "lower-total-sugar-drink": 0.5,
             },
           },
         },
@@ -1690,7 +1688,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 regular cup(s) = 250ml",
+            "servingLabel": "1 regular cup (250 ml)",
             "energyKcal": {
               "status": "known",
               "value": 125,
@@ -1746,7 +1744,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.5,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.4,
+              "lower-total-sugar-drink": 0.3571,
             },
           },
         },
@@ -1760,7 +1758,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 regular cup(s) = 250ml",
+            "servingLabel": "1 regular cup (250 ml)",
             "energyKcal": {
               "status": "known",
               "value": 55,
@@ -1816,7 +1814,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 5,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.8667,
+              "lower-total-sugar-drink": 0.8571,
             },
           },
         },
@@ -1830,7 +1828,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 regular cup(s) = 250ml",
+            "servingLabel": "1 regular cup (250 ml)",
             "energyKcal": {
               "status": "known",
               "value": 48,
@@ -1887,7 +1885,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.8,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.7333,
+              "lower-total-sugar-drink": 0.7143,
             },
           },
         },
@@ -1901,7 +1899,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 regular cup(s) = 250ml",
+            "servingLabel": "1 regular cup (250 ml)",
             "energyKcal": {
               "status": "known",
               "value": 5,
@@ -1958,7 +1956,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 5,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.9333,
+              "lower-total-sugar-drink": 0.9286,
             },
           },
         },
@@ -1980,7 +1978,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 410g",
+            "servingLabel": "1 plate (410 g)",
             "energyKcal": {
               "status": "known",
               "value": 831,
@@ -2032,15 +2030,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1.7,
             "conditionRatings": {
               "high-cholesterol": 1.8,
-              "obesity": 2.7,
-              "diabetes": 1.4,
-              "hypertension": 2.2,
+              "obesity": 1.9,
+              "diabetes": 1.3,
+              "hypertension": 1.7,
             },
             "intentFits": {
-              "lighter-energy": 0.1919,
+              "lighter-energy": 0.1818,
               "protein-forward": 0.8182,
-              "fibre-forward": 0.6465,
-              "sodium-aware": 0.4444,
+              "fibre-forward": 0.6667,
+              "sodium-aware": 0.4646,
             },
           },
         },
@@ -2054,7 +2052,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 399g",
+            "servingLabel": "1 plate (399 g)",
             "energyKcal": {
               "status": "known",
               "value": 922,
@@ -2106,15 +2104,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1.4,
             "conditionRatings": {
               "high-cholesterol": 1.6,
-              "obesity": 2.2,
+              "obesity": 1.9,
               "diabetes": 1.1,
-              "hypertension": 1.7,
+              "hypertension": 1.4,
             },
             "intentFits": {
-              "lighter-energy": 0.101,
+              "lighter-energy": 0.0909,
               "protein-forward": 0.8586,
-              "fibre-forward": 0.6667,
-              "sodium-aware": 0.3737,
+              "fibre-forward": 0.6875,
+              "sodium-aware": 0.3939,
             },
           },
         },
@@ -2128,7 +2126,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 496g",
+            "servingLabel": "1 plate (496 g)",
             "energyKcal": {
               "status": "known",
               "value": 1107,
@@ -2185,10 +2183,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.2,
             },
             "intentFits": {
-              "lighter-energy": 0.0303,
+              "lighter-energy": 0.0202,
               "protein-forward": 0.9697,
-              "fibre-forward": 0.7576,
-              "sodium-aware": 0.3232,
+              "fibre-forward": 0.7813,
+              "sodium-aware": 0.3434,
             },
           },
         },
@@ -2202,7 +2200,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 313g",
+            "servingLabel": "1 plate (313 g)",
             "energyKcal": {
               "status": "known",
               "value": 645,
@@ -2254,14 +2252,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 2.2,
             "conditionRatings": {
               "high-cholesterol": 2.3,
-              "obesity": 3.7,
-              "diabetes": 1.9,
-              "hypertension": 2.8,
+              "obesity": 2.6,
+              "diabetes": 1.8,
+              "hypertension": 2.2,
             },
             "intentFits": {
-              "lighter-energy": 0.3737,
+              "lighter-energy": 0.3838,
               "protein-forward": 0.4444,
-              "fibre-forward": 0.5455,
+              "fibre-forward": 0.5521,
               "sodium-aware": 0.5657,
             },
           },
@@ -2276,7 +2274,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 349g",
+            "servingLabel": "1 plate (349 g)",
             "energyKcal": {
               "status": "known",
               "value": 707,
@@ -2328,15 +2326,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 2,
             "conditionRatings": {
               "high-cholesterol": 2,
-              "obesity": 3.3,
-              "diabetes": 1.8,
-              "hypertension": 2.4,
+              "obesity": 2.2,
+              "diabetes": 1.7,
+              "hypertension": 1.8,
             },
             "intentFits": {
               "lighter-energy": 0.2727,
-              "protein-forward": 0.6263,
-              "fibre-forward": 0.5455,
-              "sodium-aware": 0.4747,
+              "protein-forward": 0.6364,
+              "fibre-forward": 0.5521,
+              "sodium-aware": 0.4949,
             },
           },
         },
@@ -2350,7 +2348,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 214g",
+            "servingLabel": "1 plate (214 g)",
             "energyKcal": {
               "status": "known",
               "value": 366,
@@ -2400,13 +2398,13 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "conditionRatings": {
               "high-cholesterol": 4.1,
               "obesity": 4.5,
-              "diabetes": 3.8,
+              "diabetes": 3.3,
               "hypertension": 3.8,
             },
             "intentFits": {
               "lighter-energy": 0.7576,
-              "protein-forward": 0.0909,
-              "fibre-forward": 0.2525,
+              "protein-forward": 0.101,
+              "fibre-forward": 0.2396,
               "sodium-aware": 0.7677,
             },
           },
@@ -2429,7 +2427,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 321g",
+            "servingLabel": "1 plate (321 g)",
             "energyKcal": {
               "status": "known",
               "value": 478,
@@ -2481,15 +2479,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 2.6,
             "conditionRatings": {
               "high-cholesterol": 3.1,
-              "obesity": 4.7,
-              "diabetes": 4.5,
-              "hypertension": 2.4,
+              "obesity": 3.8,
+              "diabetes": 4.4,
+              "hypertension": 1.9,
             },
             "intentFits": {
-              "lighter-energy": 0.5707,
-              "protein-forward": 0.1616,
-              "fibre-forward": 0.5758,
-              "sodium-aware": 0.4545,
+              "lighter-energy": 0.5909,
+              "protein-forward": 0.1717,
+              "fibre-forward": 0.5833,
+              "sodium-aware": 0.4747,
             },
           },
         },
@@ -2503,7 +2501,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 331g",
+            "servingLabel": "1 plate (331 g)",
             "energyKcal": {
               "status": "known",
               "value": 606,
@@ -2555,15 +2553,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1.7,
             "conditionRatings": {
               "high-cholesterol": 2.3,
-              "obesity": 3.7,
+              "obesity": 2.5,
               "diabetes": 1.1,
-              "hypertension": 1.8,
+              "hypertension": 1.6,
             },
             "intentFits": {
-              "lighter-energy": 0.4545,
+              "lighter-energy": 0.4747,
               "protein-forward": 0.202,
-              "fibre-forward": 0.8182,
-              "sodium-aware": 0.3535,
+              "fibre-forward": 0.8438,
+              "sodium-aware": 0.3737,
             },
           },
         },
@@ -2585,67 +2583,67 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 set(s) = 535g",
+            "servingLabel": "2 pieces with curry (406 g)",
             "energyKcal": {
               "status": "known",
-              "value": 1241,
+              "value": 788.9159,
             },
             "proteinG": {
               "status": "known",
-              "value": 31.03,
+              "value": 19.5733,
             },
             "totalFatG": {
               "status": "known",
-              "value": 48.9,
+              "value": 33.434,
             },
             "saturatedFatG": {
               "status": "known",
-              "value": 20.17,
+              "value": 13.5647,
             },
             "transFatG": {
               "status": "known",
-              "value": 0.7,
+              "value": 0.6252,
             },
             "carbohydrateG": {
               "status": "known",
-              "value": 169.54,
+              "value": 102.51,
             },
             "dietaryFibreG": {
               "status": "known",
-              "value": 12.79,
+              "value": 10.0413,
             },
             "sodiumMg": {
               "status": "known",
-              "value": 3381,
+              "value": 2645.6519,
             },
             "totalSugarG": {
               "status": "known",
-              "value": 11.02,
+              "value": 5.9759,
             },
             "calciumMg": {
               "status": "known",
-              "value": 134,
+              "value": 118.5574,
             },
             "ironMg": {
               "status": "known",
-              "value": 5.4,
+              "value": 4.3221,
             },
             "waterG": {
               "status": "known",
-              "value": 275.79,
+              "value": 243.0784,
             },
-            "healthRating": 1,
+            "healthRating": 1.2,
             "conditionRatings": {
-              "high-cholesterol": 1.4,
-              "obesity": 1.7,
-              "diabetes": 1,
+              "high-cholesterol": 1.7,
+              "obesity": 1.9,
+              "diabetes": 1.5,
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0,
-              "protein-forward": 0.6667,
-              "fibre-forward": 0.9192,
-              "sodium-aware": 0.0909,
+              "lighter-energy": 0.2222,
+              "protein-forward": 0.3737,
+              "fibre-forward": 0.8958,
+              "sodium-aware": 0.1616,
             },
           },
         },
@@ -2659,67 +2657,67 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 piece(s) = 141g",
+            "servingLabel": "1 piece (77 g)",
             "energyKcal": {
               "status": "known",
-              "value": 496,
+              "value": 269.458,
             },
             "proteinG": {
               "status": "known",
-              "value": 12.52,
+              "value": 6.8016,
             },
             "totalFatG": {
               "status": "known",
-              "value": 16.92,
+              "value": 9.192,
             },
             "saturatedFatG": {
               "status": "known",
-              "value": 7.22,
+              "value": 3.9224,
             },
             "transFatG": {
               "status": "known",
-              "value": 0.06,
+              "value": 0.0326,
             },
             "carbohydrateG": {
               "status": "known",
-              "value": 73.39,
+              "value": 39.87,
             },
             "dietaryFibreG": {
               "status": "known",
-              "value": 3.02,
+              "value": 1.6407,
             },
             "sodiumMg": {
               "status": "known",
-              "value": 805,
+              "value": 437.3259,
             },
             "totalSugarG": {
               "status": "known",
-              "value": 5.5,
+              "value": 2.9879,
             },
             "calciumMg": {
               "status": "known",
-              "value": 18,
+              "value": 9.7787,
             },
             "ironMg": {
               "status": "known",
-              "value": 1.18,
+              "value": 0.641,
             },
             "waterG": {
               "status": "known",
-              "value": 35.81,
+              "value": 19.4542,
             },
             "healthRating": 2.1,
             "conditionRatings": {
               "high-cholesterol": 2.4,
               "obesity": 2.7,
-              "diabetes": 2.6,
+              "diabetes": 2.7,
               "hypertension": 2.4,
             },
             "intentFits": {
-              "lighter-energy": 0.5455,
-              "protein-forward": 0.1919,
-              "fibre-forward": 0.2727,
-              "sodium-aware": 0.7576,
+              "lighter-energy": 0.8586,
+              "protein-forward": 0.0808,
+              "fibre-forward": 0.125,
+              "sodium-aware": 0.9394,
             },
           },
         },
@@ -2733,7 +2731,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 piece(s) = 119g",
+            "servingLabel": "1 piece (119 g)",
             "energyKcal": {
               "status": "known",
               "value": 331,
@@ -2784,15 +2782,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             },
             "healthRating": 2.8,
             "conditionRatings": {
-              "high-cholesterol": 3.4,
+              "high-cholesterol": 3.3,
               "obesity": 2.9,
-              "diabetes": 4.5,
+              "diabetes": 4.1,
               "hypertension": 3.5,
             },
             "intentFits": {
               "lighter-energy": 0.798,
               "protein-forward": 0.2222,
-              "fibre-forward": 0.5253,
+              "fibre-forward": 0.5313,
               "sodium-aware": 0.899,
             },
           },
@@ -2807,7 +2805,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 piece(s) = 177g",
+            "servingLabel": "1 piece (177 g)",
             "energyKcal": {
               "status": "known",
               "value": 389,
@@ -2860,13 +2858,13 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "conditionRatings": {
               "high-cholesterol": 2.5,
               "obesity": 3.6,
-              "diabetes": 4.5,
+              "diabetes": 3.6,
               "hypertension": 3.9,
             },
             "intentFits": {
               "lighter-energy": 0.7121,
               "protein-forward": 0.2424,
-              "fibre-forward": 0.1414,
+              "fibre-forward": 0.1458,
               "sodium-aware": 0.9192,
             },
           },
@@ -2881,7 +2879,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 piece(s) = 185g",
+            "servingLabel": "1 piece (185 g)",
             "energyKcal": {
               "status": "known",
               "value": 459,
@@ -2934,14 +2932,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "conditionRatings": {
               "high-cholesterol": 1.8,
               "obesity": 3.1,
-              "diabetes": 4.4,
-              "hypertension": 3,
+              "diabetes": 3.7,
+              "hypertension": 2.9,
             },
             "intentFits": {
-              "lighter-energy": 0.5909,
+              "lighter-energy": 0.6111,
               "protein-forward": 0.4242,
-              "fibre-forward": 0.1616,
-              "sodium-aware": 0.7323,
+              "fibre-forward": 0.1667,
+              "sodium-aware": 0.7424,
             },
           },
         },
@@ -2963,7 +2961,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 811g",
+            "servingLabel": "1 bowl (811 g)",
             "energyKcal": {
               "status": "known",
               "value": 389,
@@ -3016,20 +3014,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "conditionRatings": {
               "high-cholesterol": 5,
               "obesity": 5,
-              "diabetes": 3.3,
+              "diabetes": 3.2,
               "hypertension": 1.4,
             },
             "intentFits": {
               "lighter-energy": 0.7121,
               "protein-forward": 0.4343,
-              "fibre-forward": 0.4848,
-              "sodium-aware": 0.2121,
+              "fibre-forward": 0.4896,
+              "sodium-aware": 0.2222,
             },
           },
         },
         {
           "id": "fish-soup-beehoon-milk",
-          "label": "Fish beehoon with milk",
+          "label": "Fried fish beehoon with milk",
           "unlockRank": 2,
           "profileId": "dish.sliced-fish-soup:fish-soup-beehoon-milk",
           "visualKey": "fish-beehoon-milky",
@@ -3037,67 +3035,67 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 600g",
+            "servingLabel": "1 bowl (848 g)",
             "energyKcal": {
               "status": "known",
-              "value": 294,
+              "value": 619,
             },
             "proteinG": {
               "status": "known",
-              "value": 20.34,
+              "value": 21.54,
             },
             "totalFatG": {
               "status": "known",
-              "value": 6.3,
+              "value": 29,
             },
             "saturatedFatG": {
               "status": "known",
-              "value": 3.18,
+              "value": 8.73,
             },
             "transFatG": {
-              "status": "known",
-              "value": 0.06,
+              "status": "unavailable",
+              "reason": "not-reported",
             },
             "carbohydrateG": {
               "status": "known",
-              "value": 38.1,
+              "value": 80.05,
             },
             "dietaryFibreG": {
               "status": "known",
-              "value": 2.58,
+              "value": 7.46,
             },
             "sodiumMg": {
               "status": "known",
-              "value": 1410,
+              "value": 2561,
             },
             "totalSugarG": {
               "status": "known",
-              "value": 4.26,
+              "value": 5.94,
             },
             "calciumMg": {
-              "status": "known",
-              "value": 102,
+              "status": "unavailable",
+              "reason": "not-reported",
             },
             "ironMg": {
-              "status": "known",
-              "value": 2.52,
+              "status": "unavailable",
+              "reason": "not-reported",
             },
             "waterG": {
-              "status": "known",
-              "value": 458.52,
+              "status": "unavailable",
+              "reason": "not-reported",
             },
-            "healthRating": 3.4,
+            "healthRating": 1.9,
             "conditionRatings": {
-              "high-cholesterol": 4.8,
-              "obesity": 5,
-              "diabetes": 5,
-              "hypertension": 3,
+              "high-cholesterol": 2.6,
+              "obesity": 2.8,
+              "diabetes": 2.5,
+              "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.8384,
-              "protein-forward": 0.404,
-              "fibre-forward": 0.2121,
-              "sodium-aware": 0.5455,
+              "lighter-energy": 0.4343,
+              "protein-forward": 0.4545,
+              "fibre-forward": 0.6458,
+              "sodium-aware": 0.1717,
             },
           },
         },
@@ -3111,7 +3109,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 543g",
+            "servingLabel": "1 bowl (543 g)",
             "energyKcal": {
               "status": "known",
               "value": 250,
@@ -3168,16 +3166,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.2,
             },
             "intentFits": {
-              "lighter-energy": 0.8788,
-              "protein-forward": 0.3232,
-              "fibre-forward": 0.2828,
-              "sodium-aware": 0.2424,
+              "lighter-energy": 0.8889,
+              "protein-forward": 0.3333,
+              "fibre-forward": 0.2604,
+              "sodium-aware": 0.2525,
             },
           },
         },
         {
           "id": "fish-soup-sliced-milk",
-          "label": "Sliced fish soup with milk",
+          "label": "Fried fish soup with milk",
           "unlockRank": 7,
           "profileId": "dish.sliced-fish-soup:fish-soup-sliced-milk",
           "visualKey": "fish-slices-milky",
@@ -3185,67 +3183,67 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 500g",
+            "servingLabel": "1 bowl (598 g)",
             "energyKcal": {
               "status": "known",
-              "value": 170,
+              "value": 317,
             },
             "proteinG": {
               "status": "known",
-              "value": 18.75,
+              "value": 17.58,
             },
             "totalFatG": {
               "status": "known",
-              "value": 6,
+              "value": 28.29,
             },
             "saturatedFatG": {
               "status": "known",
-              "value": 3,
+              "value": 8.37,
             },
             "transFatG": {
-              "status": "known",
-              "value": 0.05,
+              "status": "unavailable",
+              "reason": "not-reported",
             },
             "carbohydrateG": {
               "status": "known",
-              "value": 10.1,
+              "value": 10.05,
             },
             "dietaryFibreG": {
               "status": "known",
-              "value": 1.5,
+              "value": 4.72,
             },
             "sodiumMg": {
               "status": "known",
-              "value": 1405,
+              "value": 2542,
             },
             "totalSugarG": {
               "status": "known",
-              "value": 4,
+              "value": 5.32,
             },
             "calciumMg": {
-              "status": "known",
-              "value": 100,
+              "status": "unavailable",
+              "reason": "not-reported",
             },
             "ironMg": {
-              "status": "known",
-              "value": 2.5,
+              "status": "unavailable",
+              "reason": "not-reported",
             },
             "waterG": {
-              "status": "known",
-              "value": 458.5,
+              "status": "unavailable",
+              "reason": "not-reported",
             },
-            "healthRating": 3.4,
+            "healthRating": 2.4,
             "conditionRatings": {
-              "high-cholesterol": 5,
+              "high-cholesterol": 2.9,
               "obesity": 5,
-              "diabetes": 5,
-              "hypertension": 3,
+              "diabetes": 4.6,
+              "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.9798,
-              "protein-forward": 0.3333,
-              "fibre-forward": 0.1111,
-              "sodium-aware": 0.5556,
+              "lighter-energy": 0.8081,
+              "protein-forward": 0.3232,
+              "fibre-forward": 0.3542,
+              "sodium-aware": 0.1818,
             },
           },
         },
@@ -3267,7 +3265,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 430g",
+            "servingLabel": "1 bowl (430 g)",
             "energyKcal": {
               "status": "known",
               "value": 563,
@@ -3318,15 +3316,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 3,
             "conditionRatings": {
               "high-cholesterol": 3.6,
-              "obesity": 4.8,
+              "obesity": 3.4,
               "diabetes": 3,
-              "hypertension": 2.5,
+              "hypertension": 2,
             },
             "intentFits": {
-              "lighter-energy": 0.4949,
-              "protein-forward": 0.4545,
-              "fibre-forward": 0.8687,
-              "sodium-aware": 0.4343,
+              "lighter-energy": 0.5152,
+              "protein-forward": 0.4646,
+              "fibre-forward": 0.9063,
+              "sodium-aware": 0.4545,
             },
           },
         },
@@ -3340,7 +3338,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 682g",
+            "servingLabel": "1 bowl (682 g)",
             "energyKcal": {
               "status": "known",
               "value": 539,
@@ -3390,15 +3388,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 3.1,
             "conditionRatings": {
               "high-cholesterol": 5,
-              "obesity": 5,
+              "obesity": 3.6,
               "diabetes": 3.7,
               "hypertension": 1.6,
             },
             "intentFits": {
-              "lighter-energy": 0.5051,
+              "lighter-energy": 0.5253,
               "protein-forward": 0.8384,
-              "fibre-forward": 0.8384,
-              "sodium-aware": 0.2778,
+              "fibre-forward": 0.8646,
+              "sodium-aware": 0.298,
             },
           },
         },
@@ -3420,7 +3418,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 330g",
+            "servingLabel": "1 plate (330 g)",
             "energyKcal": {
               "status": "known",
               "value": 851,
@@ -3472,14 +3470,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1.4,
             "conditionRatings": {
               "high-cholesterol": 1.6,
-              "obesity": 2.5,
-              "diabetes": 3,
-              "hypertension": 2.6,
+              "obesity": 1.8,
+              "diabetes": 2.8,
+              "hypertension": 2.1,
             },
             "intentFits": {
-              "lighter-energy": 0.1616,
+              "lighter-energy": 0.1515,
               "protein-forward": 0.8889,
-              "fibre-forward": 0.4343,
+              "fibre-forward": 0.4375,
               "sodium-aware": 0.5758,
             },
           },
@@ -3546,15 +3544,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1.1,
             "conditionRatings": {
               "high-cholesterol": 1.6,
-              "obesity": 2.2,
-              "diabetes": 4.1,
-              "hypertension": 3.2,
+              "obesity": 1.8,
+              "diabetes": 4,
+              "hypertension": 2.7,
             },
             "intentFits": {
-              "lighter-energy": 0.1111,
+              "lighter-energy": 0.101,
               "protein-forward": 1,
-              "fibre-forward": 0.3535,
-              "sodium-aware": 0.6465,
+              "fibre-forward": 0.3333,
+              "sodium-aware": 0.6566,
             },
           },
         },
@@ -3568,7 +3566,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 345g",
+            "servingLabel": "1 plate (345 g)",
             "energyKcal": {
               "status": "known",
               "value": 849,
@@ -3620,14 +3618,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1.5,
             "conditionRatings": {
               "high-cholesterol": 1.6,
-              "obesity": 2.5,
-              "diabetes": 3.2,
-              "hypertension": 2.8,
+              "obesity": 1.8,
+              "diabetes": 2.9,
+              "hypertension": 2.2,
             },
             "intentFits": {
-              "lighter-energy": 0.1717,
+              "lighter-energy": 0.1616,
               "protein-forward": 0.9394,
-              "fibre-forward": 0.3636,
+              "fibre-forward": 0.3438,
               "sodium-aware": 0.596,
             },
           },
@@ -3642,7 +3640,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 437g",
+            "servingLabel": "1 plate (437 g)",
             "energyKcal": {
               "status": "known",
               "value": 830,
@@ -3694,15 +3692,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1.4,
             "conditionRatings": {
               "high-cholesterol": 1.6,
-              "obesity": 2.6,
-              "diabetes": 1.5,
-              "hypertension": 2,
+              "obesity": 1.9,
+              "diabetes": 1.4,
+              "hypertension": 1.5,
             },
             "intentFits": {
-              "lighter-energy": 0.2071,
-              "protein-forward": 0.4646,
-              "fibre-forward": 0.798,
-              "sodium-aware": 0.4242,
+              "lighter-energy": 0.197,
+              "protein-forward": 0.4747,
+              "fibre-forward": 0.8229,
+              "sodium-aware": 0.4444,
             },
           },
         },
@@ -3724,7 +3722,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 759g",
+            "servingLabel": "1 plate (759 g)",
             "energyKcal": {
               "status": "known",
               "value": 1100,
@@ -3781,10 +3779,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.0404,
+              "lighter-energy": 0.0303,
               "protein-forward": 0.9596,
-              "fibre-forward": 0.9495,
-              "sodium-aware": 0.1515,
+              "fibre-forward": 0.9688,
+              "sodium-aware": 0.1313,
             },
           },
         },
@@ -3798,7 +3796,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 587g",
+            "servingLabel": "1 plate (587 g)",
             "energyKcal": {
               "status": "known",
               "value": 863,
@@ -3850,15 +3848,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1.1,
             "conditionRatings": {
               "high-cholesterol": 1.6,
-              "obesity": 2.6,
-              "diabetes": 1.9,
+              "obesity": 1.9,
+              "diabetes": 1.8,
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.1414,
+              "lighter-energy": 0.1313,
               "protein-forward": 0.8283,
-              "fibre-forward": 0.5657,
-              "sodium-aware": 0.202,
+              "fibre-forward": 0.5729,
+              "sodium-aware": 0.2121,
             },
           },
         },
@@ -3872,7 +3870,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 724g",
+            "servingLabel": "1 plate (724 g)",
             "energyKcal": {
               "status": "known",
               "value": 1211,
@@ -3929,10 +3927,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.0101,
+              "lighter-energy": 0,
               "protein-forward": 0.9091,
-              "fibre-forward": 0.9596,
-              "sodium-aware": 0.1212,
+              "fibre-forward": 0.9792,
+              "sodium-aware": 0.101,
             },
           },
         },
@@ -3946,7 +3944,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 518g",
+            "servingLabel": "1 plate (518 g)",
             "energyKcal": {
               "status": "known",
               "value": 668,
@@ -3998,15 +3996,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 2,
             "conditionRatings": {
               "high-cholesterol": 2.1,
-              "obesity": 3.6,
+              "obesity": 2.6,
               "diabetes": 2.2,
-              "hypertension": 1.9,
+              "hypertension": 1.6,
             },
             "intentFits": {
               "lighter-energy": 0.3434,
-              "protein-forward": 0.3889,
-              "fibre-forward": 0.6061,
-              "sodium-aware": 0.3838,
+              "protein-forward": 0.404,
+              "fibre-forward": 0.6146,
+              "sodium-aware": 0.404,
             },
           },
         },
@@ -4028,7 +4026,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 piece(s) = 271g",
+            "servingLabel": "1 piece (271 g)",
             "energyKcal": {
               "status": "known",
               "value": 439,
@@ -4080,15 +4078,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 3.2,
             "conditionRatings": {
               "high-cholesterol": 3.4,
-              "obesity": 4.7,
+              "obesity": 4.5,
               "diabetes": 4.3,
-              "hypertension": 3.7,
+              "hypertension": 3.2,
             },
             "intentFits": {
-              "lighter-energy": 0.6364,
-              "protein-forward": 0.1717,
-              "fibre-forward": 0.7273,
-              "sodium-aware": 0.6667,
+              "lighter-energy": 0.6566,
+              "protein-forward": 0.1818,
+              "fibre-forward": 0.75,
+              "sodium-aware": 0.6768,
             },
           },
         },
@@ -4102,7 +4100,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 piece(s) = 156g",
+            "servingLabel": "1 piece (156 g)",
             "energyKcal": {
               "status": "known",
               "value": 402,
@@ -4153,15 +4151,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             },
             "healthRating": 3.3,
             "conditionRatings": {
-              "high-cholesterol": 3.9,
+              "high-cholesterol": 3.8,
               "obesity": 3.2,
-              "diabetes": 3.9,
-              "hypertension": 4.1,
+              "diabetes": 3.6,
+              "hypertension": 4,
             },
             "intentFits": {
-              "lighter-energy": 0.6869,
-              "protein-forward": 0.1414,
-              "fibre-forward": 0.3838,
+              "lighter-energy": 0.697,
+              "protein-forward": 0.1515,
+              "fibre-forward": 0.3854,
               "sodium-aware": 0.8889,
             },
           },
@@ -4176,7 +4174,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 piece(s) = 146g",
+            "servingLabel": "1 piece (146 g)",
             "energyKcal": {
               "status": "known",
               "value": 342,
@@ -4229,13 +4227,13 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "conditionRatings": {
               "high-cholesterol": 3.3,
               "obesity": 3.5,
-              "diabetes": 4.1,
+              "diabetes": 3.2,
               "hypertension": 2.9,
             },
             "intentFits": {
               "lighter-energy": 0.7778,
               "protein-forward": 0.2121,
-              "fibre-forward": 0.1818,
+              "fibre-forward": 0.1875,
               "sodium-aware": 0.7778,
             },
           },
@@ -4250,7 +4248,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 piece(s) = 108g",
+            "servingLabel": "1 piece (108 g)",
             "energyKcal": {
               "status": "known",
               "value": 373,
@@ -4303,13 +4301,13 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "conditionRatings": {
               "high-cholesterol": 1.9,
               "obesity": 2.6,
-              "diabetes": 3.6,
+              "diabetes": 2.9,
               "hypertension": 2.3,
             },
             "intentFits": {
               "lighter-energy": 0.7374,
               "protein-forward": 0.0707,
-              "fibre-forward": 0.1717,
+              "fibre-forward": 0.1771,
               "sodium-aware": 0.8485,
             },
           },
@@ -4332,7 +4330,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 771g",
+            "servingLabel": "1 bowl (771 g)",
             "energyKcal": {
               "status": "known",
               "value": 594,
@@ -4384,15 +4382,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1.7,
             "conditionRatings": {
               "high-cholesterol": 2.1,
-              "obesity": 4.1,
-              "diabetes": 3.7,
+              "obesity": 2.9,
+              "diabetes": 3.6,
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.4646,
-              "protein-forward": 0.4747,
-              "fibre-forward": 0.596,
-              "sodium-aware": 0.1717,
+              "lighter-energy": 0.4848,
+              "protein-forward": 0.4848,
+              "fibre-forward": 0.6042,
+              "sodium-aware": 0.1515,
             },
           },
         },
@@ -4406,7 +4404,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 928g",
+            "servingLabel": "1 bowl (928 g)",
             "energyKcal": {
               "status": "known",
               "value": 1206,
@@ -4463,9 +4461,9 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.0202,
+              "lighter-energy": 0.0101,
               "protein-forward": 0.899,
-              "fibre-forward": 0.8586,
+              "fibre-forward": 0.8854,
               "sodium-aware": 0.0707,
             },
           },
@@ -4480,7 +4478,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 815g",
+            "servingLabel": "1 bowl (815 g)",
             "energyKcal": {
               "status": "known",
               "value": 742,
@@ -4532,14 +4530,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1,
             "conditionRatings": {
               "high-cholesterol": 1.4,
-              "obesity": 2.6,
+              "obesity": 1.5,
               "diabetes": 2.4,
               "hypertension": 1,
             },
             "intentFits": {
               "lighter-energy": 0.2323,
               "protein-forward": 0.7374,
-              "fibre-forward": 0.3333,
+              "fibre-forward": 0.3125,
               "sodium-aware": 0.0404,
             },
           },
@@ -4554,7 +4552,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 971g",
+            "servingLabel": "1 bowl (971 g)",
             "energyKcal": {
               "status": "known",
               "value": 845,
@@ -4606,15 +4604,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1.1,
             "conditionRatings": {
               "high-cholesterol": 1.8,
-              "obesity": 2.6,
+              "obesity": 1.9,
               "diabetes": 1,
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.1818,
-              "protein-forward": 0.596,
-              "fibre-forward": 0.7677,
-              "sodium-aware": 0.1616,
+              "lighter-energy": 0.1717,
+              "protein-forward": 0.6061,
+              "fibre-forward": 0.7917,
+              "sodium-aware": 0.1414,
             },
           },
         },
@@ -4628,7 +4626,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 779g",
+            "servingLabel": "1 bowl (779 g)",
             "energyKcal": {
               "status": "known",
               "value": 904,
@@ -4680,14 +4678,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1,
             "conditionRatings": {
               "high-cholesterol": 1.3,
-              "obesity": 1.8,
+              "obesity": 1.3,
               "diabetes": 2,
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.1212,
+              "lighter-energy": 0.1111,
               "protein-forward": 0.8485,
-              "fibre-forward": 0.6869,
+              "fibre-forward": 0.7083,
               "sodium-aware": 0.0101,
             },
           },
@@ -4702,7 +4700,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 797g",
+            "servingLabel": "1 bowl (797 g)",
             "energyKcal": {
               "status": "known",
               "value": 821,
@@ -4754,14 +4752,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1,
             "conditionRatings": {
               "high-cholesterol": 1.4,
-              "obesity": 2.2,
+              "obesity": 1.4,
               "diabetes": 2.3,
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.2222,
+              "lighter-energy": 0.2121,
               "protein-forward": 0.8081,
-              "fibre-forward": 0.4646,
+              "fibre-forward": 0.4688,
               "sodium-aware": 0.0303,
             },
           },
@@ -4776,7 +4774,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 997g",
+            "servingLabel": "1 bowl (997 g)",
             "energyKcal": {
               "status": "known",
               "value": 1077,
@@ -4833,9 +4831,9 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.0505,
+              "lighter-energy": 0.0404,
               "protein-forward": 0.8687,
-              "fibre-forward": 0.6364,
+              "fibre-forward": 0.6563,
               "sodium-aware": 0.0202,
             },
           },
@@ -4858,7 +4856,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 792g",
+            "servingLabel": "1 bowl (792 g)",
             "energyKcal": {
               "status": "known",
               "value": 610,
@@ -4907,15 +4905,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 2.4,
             "conditionRatings": {
               "high-cholesterol": 3.4,
-              "obesity": 4.2,
-              "diabetes": 2.7,
+              "obesity": 3,
+              "diabetes": 2.6,
               "hypertension": 1.3,
             },
             "intentFits": {
-              "lighter-energy": 0.4444,
-              "protein-forward": 0.5455,
-              "fibre-forward": 0.5152,
-              "sodium-aware": 0.2525,
+              "lighter-energy": 0.4646,
+              "protein-forward": 0.5556,
+              "fibre-forward": 0.5208,
+              "sodium-aware": 0.2727,
             },
           },
         },
@@ -4929,7 +4927,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 407g",
+            "servingLabel": "1 bowl (407 g)",
             "energyKcal": {
               "status": "known",
               "value": 676,
@@ -4981,15 +4979,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 2.2,
             "conditionRatings": {
               "high-cholesterol": 2.8,
-              "obesity": 3.6,
-              "diabetes": 2.5,
-              "hypertension": 1.8,
+              "obesity": 2.5,
+              "diabetes": 2.4,
+              "hypertension": 1.6,
             },
             "intentFits": {
               "lighter-energy": 0.3333,
-              "protein-forward": 0.6364,
-              "fibre-forward": 0.6768,
-              "sodium-aware": 0.3434,
+              "protein-forward": 0.6465,
+              "fibre-forward": 0.6979,
+              "sodium-aware": 0.3636,
             },
           },
         },
@@ -5003,7 +5001,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 411g",
+            "servingLabel": "1 bowl (411 g)",
             "energyKcal": {
               "status": "known",
               "value": 678,
@@ -5055,15 +5053,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 2.1,
             "conditionRatings": {
               "high-cholesterol": 2.2,
-              "obesity": 3.6,
+              "obesity": 2.5,
               "diabetes": 2.1,
-              "hypertension": 1.9,
+              "hypertension": 1.6,
             },
             "intentFits": {
               "lighter-energy": 0.3131,
               "protein-forward": 0.7071,
-              "fibre-forward": 0.7778,
-              "sodium-aware": 0.3939,
+              "fibre-forward": 0.8021,
+              "sodium-aware": 0.4141,
             },
           },
         },
@@ -5077,7 +5075,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 894g",
+            "servingLabel": "1 bowl (894 g)",
             "energyKcal": {
               "status": "known",
               "value": 635,
@@ -5129,15 +5127,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1.7,
             "conditionRatings": {
               "high-cholesterol": 2.7,
-              "obesity": 4,
-              "diabetes": 1.5,
+              "obesity": 2.8,
+              "diabetes": 1.3,
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.3939,
+              "lighter-energy": 0.404,
               "protein-forward": 0.6869,
-              "fibre-forward": 0.2323,
-              "sodium-aware": 0.1414,
+              "fibre-forward": 0.2188,
+              "sodium-aware": 0.1212,
             },
           },
         },
@@ -5151,7 +5149,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 1057g",
+            "servingLabel": "1 bowl (1057 g)",
             "energyKcal": {
               "status": "known",
               "value": 613,
@@ -5203,14 +5201,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 2,
             "conditionRatings": {
               "high-cholesterol": 4.2,
-              "obesity": 4.1,
+              "obesity": 2.9,
               "diabetes": 1.2,
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.4242,
+              "lighter-energy": 0.4444,
               "protein-forward": 0.7525,
-              "fibre-forward": 0.6162,
+              "fibre-forward": 0.625,
               "sodium-aware": 0,
             },
           },
@@ -5225,7 +5223,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 989g",
+            "servingLabel": "1 bowl (989 g)",
             "energyKcal": {
               "status": "known",
               "value": 534,
@@ -5277,15 +5275,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 2.7,
             "conditionRatings": {
               "high-cholesterol": 3.5,
-              "obesity": 5,
-              "diabetes": 2.4,
+              "obesity": 3.6,
+              "diabetes": 2.3,
               "hypertension": 1.2,
             },
             "intentFits": {
-              "lighter-energy": 0.5152,
-              "protein-forward": 0.5556,
-              "fibre-forward": 0.4545,
-              "sodium-aware": 0.2323,
+              "lighter-energy": 0.5354,
+              "protein-forward": 0.5657,
+              "fibre-forward": 0.4583,
+              "sodium-aware": 0.2424,
             },
           },
         },
@@ -5307,7 +5305,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 574g",
+            "servingLabel": "1 bowl (574 g)",
             "energyKcal": {
               "status": "known",
               "value": 217,
@@ -5356,13 +5354,13 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "high-cholesterol": 3.4,
               "obesity": 5,
               "diabetes": 4.9,
-              "hypertension": 1.9,
+              "hypertension": 1.7,
             },
             "intentFits": {
-              "lighter-energy": 0.9293,
-              "protein-forward": 0.3636,
-              "fibre-forward": 0.0404,
-              "sodium-aware": 0.3636,
+              "lighter-energy": 0.9394,
+              "protein-forward": 0.3838,
+              "fibre-forward": 0.0417,
+              "sodium-aware": 0.3838,
             },
           },
         },
@@ -5376,7 +5374,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 282g",
+            "servingLabel": "1 bowl (282 g)",
             "energyKcal": {
               "status": "known",
               "value": 677,
@@ -5428,15 +5426,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1,
             "conditionRatings": {
               "high-cholesterol": 1.4,
-              "obesity": 2.8,
+              "obesity": 1.9,
               "diabetes": 2.3,
-              "hypertension": 1.1,
+              "hypertension": 1,
             },
             "intentFits": {
               "lighter-energy": 0.3232,
               "protein-forward": 0.9192,
-              "fibre-forward": 0.4747,
-              "sodium-aware": 0.2626,
+              "fibre-forward": 0.4792,
+              "sodium-aware": 0.2828,
             },
           },
         },
@@ -5450,7 +5448,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl(s) = 502g",
+            "servingLabel": "1 bowl (502 g)",
             "energyKcal": {
               "status": "known",
               "value": 718,
@@ -5502,14 +5500,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 1.5,
             "conditionRatings": {
               "high-cholesterol": 1.6,
-              "obesity": 3,
+              "obesity": 1.9,
               "diabetes": 3,
-              "hypertension": 2.8,
+              "hypertension": 2.3,
             },
             "intentFits": {
               "lighter-energy": 0.2626,
               "protein-forward": 0.9293,
-              "fibre-forward": 0.0404,
+              "fibre-forward": 0.0417,
               "sodium-aware": 0.6061,
             },
           },
@@ -5532,7 +5530,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 set(s) = 398g",
+            "servingLabel": "1 set (398 g)",
             "energyKcal": {
               "status": "known",
               "value": 665,
@@ -5582,15 +5580,15 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 2.4,
             "conditionRatings": {
               "high-cholesterol": 3,
-              "obesity": 3.6,
+              "obesity": 2.5,
               "diabetes": 3.1,
-              "hypertension": 2.7,
+              "hypertension": 2.1,
             },
             "intentFits": {
               "lighter-energy": 0.3535,
               "protein-forward": 0.697,
-              "fibre-forward": 0.8081,
-              "sodium-aware": 0.4949,
+              "fibre-forward": 0.8333,
+              "sodium-aware": 0.5152,
             },
           },
         },
@@ -5604,7 +5602,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 411g",
+            "servingLabel": "1 plate (411 g)",
             "energyKcal": {
               "status": "known",
               "value": 689,
@@ -5655,14 +5653,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "healthRating": 3.4,
             "conditionRatings": {
               "high-cholesterol": 3.1,
-              "obesity": 3.5,
-              "diabetes": 2.4,
-              "hypertension": 4.6,
+              "obesity": 2.5,
+              "diabetes": 2.3,
+              "hypertension": 4.5,
             },
             "intentFits": {
               "lighter-energy": 0.303,
               "protein-forward": 0.7273,
-              "fibre-forward": 0.2424,
+              "fibre-forward": 0.2292,
               "sodium-aware": 0.8384,
             },
           },
@@ -5677,7 +5675,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 plate(s) = 256g",
+            "servingLabel": "1 plate (256 g)",
             "energyKcal": {
               "status": "known",
               "value": 415,
@@ -5728,14 +5726,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             "conditionRatings": {
               "high-cholesterol": 4.8,
               "obesity": 4.7,
-              "diabetes": 3.5,
-              "hypertension": 3.9,
+              "diabetes": 3.3,
+              "hypertension": 3.7,
             },
             "intentFits": {
-              "lighter-energy": 0.6667,
-              "protein-forward": 0.101,
-              "fibre-forward": 0.404,
-              "sodium-aware": 0.697,
+              "lighter-energy": 0.6768,
+              "protein-forward": 0.1111,
+              "fibre-forward": 0.4167,
+              "sodium-aware": 0.7071,
             },
           },
         },

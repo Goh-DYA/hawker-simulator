@@ -24,6 +24,11 @@ import {
 } from "./manifest.mjs";
 import { canonicalRowHash, parseCsv, sha256 } from "./csv.mjs";
 import {
+  build_subgroup_fences,
+  find_implausible_values,
+  parse_edible_share,
+} from "./plausibility.mjs";
+import {
   addHealthRatings,
   addIntentFits,
   NEUTRAL_CONDITION_RATINGS,
@@ -43,12 +48,14 @@ export {
  * @import {
  *   NutritionClass,
  *   NutritionIntentId,
+ *   NutritionMetric,
  *   NutritionProfileStatus,
  *   NutritionProvenance,
  *   NutritionUnavailableReason,
  *   NutritionValue,
  * } from "../../src/content/types"
  * @import { CsvRow, ParsedCsv } from "./csv.mjs"
+ * @import { SubgroupFences } from "./plausibility.mjs"
  */
 
 /**
@@ -71,6 +78,8 @@ export {
  * @property {NutritionProvenance["mappingKind"]} mappingKind
  * @property {number} [multiplier] - Scale from the source serving to the game serving.
  * @property {string} [servingLabel] - Serving label to use instead of the source's.
+ * @property {{ foodName: string; multiplier: number }[]} [components] - Source rows summed
+ *   into a composite profile; `foodName` then names the first of them.
  */
 
 /**
@@ -102,6 +111,9 @@ export {
  * @property {NutritionUnavailableReason} [unavailableReason]
  * @property {string} reviewNote
  * @property {string[]} [quarantineReasons]
+ * @property {string[]} [withheldReasons]
+ * @property {{ foodName: string; multiplier: number }[]} [components]
+ * @property {{ edibleAmount: number; standIns?: Partial<Record<NutritionMetric, number>> }} [ratingInputs]
  */
 
 /**
@@ -213,6 +225,33 @@ export const parseNutritionValue = (rawValue, multiplier = 1) => {
 };
 
 /**
+ * Rounds a serving amount to one decimal place, so scaled and composite servings print
+ * cleanly.
+ *
+ * @param {number} amount - The unrounded amount.
+ * @returns {number} The rounded amount.
+ */
+const round_serving_amount = (amount) => Math.round(amount * 10) / 10;
+
+/** A source serving label such as "1 bowl(s) = 811g" or "1 whole = 191g". */
+const SOURCE_SERVING_LABEL_PATTERN = /^(\d+) (.+?)(\(s\))? = ([\d.]+)(g|ml)$/;
+
+/**
+ * Rewrites a source serving label into the game's "<count> <noun> (<amount> <unit>)" form,
+ * pluralising a "(s)" noun when the count is above one; other labels are returned unchanged.
+ *
+ * @param {string} label - The label from the source row or the manifest.
+ * @returns {string} The display label.
+ */
+export const format_serving_label = (label) => {
+  const match = label.trim().match(SOURCE_SERVING_LABEL_PATTERN);
+  if (!match) return label;
+  const [, count, noun, plural_marker, amount, unit] = match;
+  const display_noun = plural_marker !== undefined && Number(count) > 1 ? `${noun}s` : noun;
+  return `${count} ${display_noun} (${amount} ${unit})`;
+};
+
+/**
  * Parses a `Per Serving (<amount> g|ml)` cell.
  *
  * @param {string} rawValue - The raw `Per Serving Size` cell.
@@ -226,11 +265,13 @@ export const parseServing = (rawValue, multiplier = 1, labelOverride) => {
     .trim()
     .match(/^Per Serving\s*\(\s*(\d+(?:\.\d+)?)\s*(g|ml)\s*\)$/i);
   if (!match) return undefined;
-  const amount = round(Number(match[1]) * multiplier);
+  const amount = round_serving_amount(Number(match[1]) * multiplier);
   return {
     amount,
     unit: match[2].toLocaleLowerCase("en"),
-    label: labelOverride ?? `${amount} ${match[2].toLocaleLowerCase("en")}`,
+    label: format_serving_label(
+      labelOverride ?? `${amount} ${match[2].toLocaleLowerCase("en")}`,
+    ),
   };
 };
 
@@ -361,8 +402,56 @@ export const findUniqueFoodRow = (parsedFood, foodName) => {
 };
 
 /**
- * Builds the profile for a mapped food row: released when the row is plausible and
- * quarantined otherwise, with placeholder ratings until the rating passes run.
+ * Reads one source row at a multiplier: its nutrients, its serving and the edible part of
+ * that serving.
+ *
+ * @param {Readonly<Record<string, string>>} values - The row's raw cells.
+ * @param {number} multiplier - Scale from the source serving to the game serving.
+ * @returns {{ nutrients: Record<string, NutritionValue>; serving: Serving; edibleAmount: number } | undefined}
+ *   The reading, or undefined when the serving cell does not parse.
+ */
+const read_source_row = (values, multiplier) => {
+  const nutrients = Object.fromEntries(
+    Object.entries(NUTRIENT_COLUMNS).map(([metric, column]) => [
+      metric,
+      parseNutritionValue(values[column] ?? "", multiplier),
+    ]),
+  );
+  const serving = parseServing(values["Per Serving Size"] ?? "", multiplier);
+  if (!serving) return undefined;
+  return {
+    nutrients,
+    serving,
+    edibleAmount: serving.amount * parse_edible_share(values["Edible Portion"]),
+  };
+};
+
+/**
+ * Merges the nutrient values of a composite's parts: an unavailable part makes the metric
+ * unavailable with that part's reason, all-trace parts stay trace, and otherwise the known
+ * amounts add up with traces counted as zero.
+ *
+ * @param {readonly NutritionValue[]} part_values - One value per part.
+ * @returns {NutritionValue} The composite value.
+ */
+const merge_component_values = (part_values) => {
+  if (part_values.length === 1) return part_values[0];
+  const unavailable = part_values.find((value) => value.status === "unavailable");
+  if (unavailable) return unavailable;
+  if (part_values.every((value) => value.status === "trace")) return { status: "trace" };
+  return {
+    status: "known",
+    value: round(
+      part_values.reduce((sum, value) => sum + (value.status === "known" ? value.value : 0), 0),
+    ),
+  };
+};
+
+/**
+ * Builds the profile for a mapped food row, or for the summed rows of a composite: released
+ * when the rows are plausible and quarantined otherwise, with placeholder ratings until the
+ * rating passes run. Values a plausibility rule withholds are published as unavailable, and
+ * their stand-ins and the serving's edible amount go into the profile's rating inputs.
  *
  * @param {{
  *   mapping: SourceMapping;
@@ -370,6 +459,7 @@ export const findUniqueFoodRow = (parsedFood, foodName) => {
  *   variantId?: string;
  *   parsedFood: ParsedCsv;
  *   foodSnapshot: SourceSnapshot;
+ *   fences: SubgroupFences;
  * }} options
  * @returns {DraftProfile}
  */
@@ -379,24 +469,81 @@ const buildReleasedProfile = ({
   variantId,
   parsedFood,
   foodSnapshot,
+  fences,
 }) => {
-  const source = findUniqueFoodRow(parsedFood, mapping.foodName);
+  const parts = mapping.components ?? [
+    { foodName: mapping.foodName, multiplier: mapping.multiplier ?? 1 },
+  ];
+  const source = findUniqueFoodRow(parsedFood, parts[0].foodName);
   const multiplier = mapping.multiplier ?? 1;
+  /** @param {string} food_name @param {number} part_multiplier */
+  const component_of = (food_name, part_multiplier) => {
+    const reading = read_source_row(
+      findUniqueFoodRow(parsedFood, food_name).values,
+      part_multiplier,
+    );
+    if (!reading) throw new Error(`Component row has no parseable serving: ${food_name}.`);
+    return reading;
+  };
+  /** @type {Partial<Record<NutritionMetric, number>>} */
+  const stand_ins = {};
+  /** @type {string[]} */
+  const withheld_reasons = [];
+  const readings = parts.map((part) => {
+    const row = findUniqueFoodRow(parsedFood, part.foodName);
+    const part_multiplier = part.multiplier ?? 1;
+    const reading = read_source_row(row.values, part_multiplier);
+    if (!reading) return undefined;
+    const withheld = find_implausible_values({
+      food_name: part.foodName,
+      values: row.values,
+      nutrients: reading.nutrients,
+      edible_amount: reading.edibleAmount,
+      multiplier: part_multiplier,
+      component_of,
+      fences,
+    });
+    for (const value of withheld) {
+      const metric = /** @type {NutritionMetric} */ (value.metric);
+      reading.nutrients[metric] = { status: "unavailable", reason: "implausible-source" };
+      if (value.standIn !== undefined) {
+        stand_ins[metric] = (stand_ins[metric] ?? 0) + value.standIn;
+      }
+      withheld_reasons.push(`${part.foodName}: ${value.reason}`);
+    }
+    return reading;
+  });
   const nutrients = Object.fromEntries(
-    Object.entries(NUTRIENT_COLUMNS).map(([metric, column]) => [
+    Object.keys(NUTRIENT_COLUMNS).map((metric) => [
       metric,
-      parseNutritionValue(source.values[column] ?? "", multiplier),
+      merge_component_values(
+        readings.map(
+          (reading) =>
+            reading?.nutrients[metric] ?? { status: "unavailable", reason: "not-reported" },
+        ),
+      ),
     ]),
   );
+  const edible_amount = readings.reduce((sum, reading) => sum + (reading?.edibleAmount ?? 0), 0);
   const defaultServingLabel = source.values["Default Serving Size"]?.trim();
-  const serving = parseServing(
+  const is_composite = parts.length > 1;
+  const source_serving = parseServing(
     source.values["Per Serving Size"] ?? "",
-    multiplier,
+    is_composite ? 1 : (parts[0].multiplier ?? 1),
     mapping.servingLabel ??
-      (multiplier === 1 && defaultServingLabel && defaultServingLabel !== "-"
+      (multiplier === 1 && !is_composite && defaultServingLabel && defaultServingLabel !== "-"
         ? defaultServingLabel
         : undefined),
   );
+  const serving =
+    source_serving && is_composite
+      ? {
+          ...source_serving,
+          amount: round_serving_amount(
+            readings.reduce((sum, reading) => sum + (reading?.serving.amount ?? 0), 0),
+          ),
+        }
+      : source_serving;
   const quarantineReasons = findQuarantineReasons(serving, nutrients);
   const provenance = {
     snapshotId: foodSnapshot.id,
@@ -425,6 +572,12 @@ const buildReleasedProfile = ({
     provenance,
     reviewNote: mapping.reviewNote,
     ...(quarantineReasons.length === 0 ? {} : { quarantineReasons }),
+    ...(withheld_reasons.length === 0 ? {} : { withheldReasons: withheld_reasons }),
+    ...(is_composite ? { components: parts } : {}),
+    ratingInputs: {
+      edibleAmount: round(edible_amount),
+      ...(Object.keys(stand_ins).length === 0 ? {} : { standIns: stand_ins }),
+    },
   };
 };
 
@@ -659,6 +812,9 @@ export const buildNutritionContent = ({
       }
     : structuredClone(/** @type {NonNullable<typeof preservedGuidelines>} */ (preservedGuidelines).snapshot);
 
+  const fences = build_subgroup_fences(parsedFood.rows, (values) =>
+    read_source_row(values, 1),
+  );
   const profiles = PRIMARY_PROFILE_MAPPINGS.map((mapping) =>
     mapping.foodName
       ? buildReleasedProfile({
@@ -666,6 +822,7 @@ export const buildNutritionContent = ({
           profileId: mapping.dishId,
           parsedFood,
           foodSnapshot,
+          fences,
         })
       : buildUnavailableProfile(mapping),
   );
@@ -697,6 +854,7 @@ export const buildNutritionContent = ({
           variantId: mapping.id,
           parsedFood,
           foodSnapshot,
+          fences,
         });
         profiles.push(profile);
       }

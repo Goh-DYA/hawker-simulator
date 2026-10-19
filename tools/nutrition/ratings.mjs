@@ -9,7 +9,7 @@
  * within their class, because an intent models a customer choosing among what is offered.
  */
 // @ts-check
-import { NUTRITION_INTENTS } from "./manifest.mjs";
+import { NUTRITION_INTENTS, SNACK_RATED_DISH_IDS } from "./manifest.mjs";
 
 /**
  * @import {
@@ -50,7 +50,12 @@ import { NUTRITION_INTENTS } from "./manifest.mjs";
  * condition ratings onto.
  *
  * @typedef {ComparableProfile & {
+ *   dishId?: string;
  *   serving?: { readonly amount: number };
+ *   ratingInputs?: {
+ *     readonly edibleAmount: number;
+ *     readonly standIns?: Partial<Readonly<Record<string, number>>>;
+ *   };
  *   healthRating?: number;
  *   conditionRatings?: Record<string, number>;
  * }} RateableProfile
@@ -190,6 +195,13 @@ export const addIntentFits = (profiles) => {
 export const MEAL_SHARE = 1 / 3;
 
 /**
+ * How a snack's energy and sugar allowance compares with a meal's: HPB's 200 kcal snack
+ * ceiling over its 500 kcal lower-calorie meal, so a snack is held to 0.4 of a meal's share
+ * (2/15 of the day). Saturated fat and sodium keep the meal curves.
+ */
+export const SNACK_SHARE_OF_MEAL = 0.4;
+
+/**
  * General adult daily reference values for the limit nutrients.
  *
  * - Energy: 2,000 kcal, the midpoint of HPB's 1,800-2,200 kcal adult averages and the
@@ -211,6 +223,8 @@ export const DAILY_REFERENCE = {
 /**
  * Daily reference values that the condition ratings use in place of the general ones.
  *
+ * - Obesity: 1,500 kcal, the AHA/ACC/TOS 2013 energy-reduced intake (1,200-1,500 kcal for
+ *   women, 1,500-1,800 kcal for men) and HPB's 500 kcal daily deficit from 2,000 kcal.
  * - Hypertension: sodium at most 1,500 mg, the AHA ideal and the DASH-Sodium lower arm.
  * - High cholesterol: saturated plus trans fat under 7% of energy (ESC/EAS 2019, AHA/ACC),
  *   15.6 g on 2,000 kcal.
@@ -219,6 +233,7 @@ export const DAILY_REFERENCE = {
  *   exchanges, as in HealthHub and ADA carbohydrate counting).
  */
 export const CONDITION_REFERENCE = {
+  obesityEnergyKcal: 1_500,
   hypertensionSodiumMg: 1_500,
   cholesterolSaturatedFatG: 15.6,
   diabetesSugarG: 25,
@@ -271,7 +286,14 @@ export const MEAL_RATING_WEIGHTS = {
   overall: { limitNutrient: 1, worstLimitNutrient: 1, fibre: 0.5, protein: 0.25 },
   "high-cholesterol": { saturatedFat: 3, energy: 0.5, sugar: 0.5, fibre: 0.75 },
   obesity: { energy: 2.75, totalFat: 0.5, sugar: 0.75, fibre: 0.5, protein: 0.25 },
-  diabetes: { carbohydrate: 2.5, sugar: 2, energy: 0.5, saturatedFat: 0.5, fibre: 0.75 },
+  diabetes: {
+    carbohydrate: 2.5,
+    carbohydrateQuality: 1,
+    sugar: 2,
+    energy: 0.5,
+    saturatedFat: 0.5,
+    fibre: 0.75,
+  },
   hypertension: { sodium: 4, saturatedFat: 0.5, fibre: 0.5 },
 };
 
@@ -322,10 +344,10 @@ export const read_curve = (x, anchors) => {
  * @param {number} daily_limit - The nutrient's daily reference value.
  * @returns {CurveAnchors} The anchors.
  */
-const build_meal_share_anchors = (daily_limit) => [
-  [(daily_limit * MEAL_SHARE) / 2, 0],
-  [daily_limit * MEAL_SHARE, 0.5],
-  [daily_limit * 2 * MEAL_SHARE, 0.9],
+const build_meal_share_anchors = (daily_limit, share = MEAL_SHARE) => [
+  [(daily_limit * share) / 2, 0],
+  [daily_limit * share, 0.5],
+  [daily_limit * 2 * share, 0.9],
   [daily_limit, 1],
 ];
 
@@ -342,6 +364,25 @@ const ENERGY_SERVING_ANCHORS = [
 ];
 
 /**
+ * The snack energy penalty: the meal curve scaled by {@link SNACK_SHARE_OF_MEAL}, so none up
+ * to HPB's 200 kcal snack, half at 267 kcal and the full penalty at 400 kcal.
+ *
+ * @type {CurveAnchors}
+ */
+const SNACK_ENERGY_ANCHORS = ENERGY_SERVING_ANCHORS.map(([x, y]) => [x * SNACK_SHARE_OF_MEAL, y]);
+
+/**
+ * The obesity energy penalty for a meal: the meal curve on the 1,500 kcal energy-reduced
+ * day, so none up to 375 kcal, half at 500 kcal (a third of the day) and full at 750 kcal.
+ *
+ * @type {CurveAnchors}
+ */
+const OBESITY_ENERGY_ANCHORS = ENERGY_SERVING_ANCHORS.map(([x, y]) => [
+  (x * CONDITION_REFERENCE.obesityEnergyKcal) / DAILY_REFERENCE.energyKcal,
+  y,
+]);
+
+/**
  * The per-100 g penalty curve of a density band: none at its low threshold and 0.75 at
  * its high one, so density alone never takes a nutrient's full penalty.
  *
@@ -355,16 +396,38 @@ const build_density_anchors = (band) => [
 
 /**
  * The hypertension sodium penalty per serving: none at one meal's share of the 1,500 mg
- * ideal, 0.85 when one serving holds the WHO 2,000 mg day, and full at one and a half
- * days.
+ * ideal, 0.4 at two meal shares, 0.7 when one serving holds the whole 1,500 mg day, 0.85 at
+ * the WHO 2,000 mg day, and full at one and a half WHO days.
  *
  * @type {CurveAnchors}
  */
 const HYPERTENSION_SODIUM_ANCHORS = [
   [CONDITION_REFERENCE.hypertensionSodiumMg * MEAL_SHARE, 0],
+  [CONDITION_REFERENCE.hypertensionSodiumMg * 2 * MEAL_SHARE, 0.4],
+  [CONDITION_REFERENCE.hypertensionSodiumMg, 0.7],
   [DAILY_REFERENCE.sodiumMg, 0.85],
   [DAILY_REFERENCE.sodiumMg * 1.5, 1],
 ];
+
+/**
+ * The refined-carbohydrate fraction: none at the AHA 10:1 carbohydrate-to-fibre whole-grain
+ * ratio, full at 20:1 (white bread), scaled by the carbohydrate amount from one 15 g
+ * exchange (none) to the 45 g lower meal budget (full).
+ */
+const CARBOHYDRATE_QUALITY = {
+  ratioAnchors: /** @type {CurveAnchors} */ ([
+    [10, 0],
+    [20, 1],
+  ]),
+  amountAnchors: /** @type {CurveAnchors} */ ([
+    [15, 0],
+    [CONDITION_REFERENCE.diabetesMealCarbohydrateG.lower, 1],
+  ]),
+  // Fibre that is unavailable (unreported or withheld as implausible) stands in, for the
+  // ratio only, at the lower quartile of meal fibre density (g per 100 g edible); it still
+  // earns no fibre credit. A reported trace counts as zero.
+  unavailableFibreGPer100G: 0.81,
+};
 
 /**
  * The diabetes carbohydrate penalty per serving: none within the lower meal budget, a
@@ -393,6 +456,12 @@ const DIABETES_CARBOHYDRATE_ANCHORS = [
  * @property {number} totalSugarG
  * @property {number} dietaryFibreG - Zero when unreported, so it earns no credit.
  * @property {number | undefined} sodiumMg - Undefined only for a drink that reports none.
+ * @property {number} densityAmount - The edible part of the serving, which every per-100 g
+ *   density divides by.
+ * @property {number} qualityFibreG - Fibre for the carbohydrate-quality ratio only: the
+ *   reported fibre, or a stand-in when it is unavailable.
+ * @property {boolean} isSnack - Whether the serving is rated as a snack (see
+ *   `SNACK_RATED_DISH_IDS` in the manifest).
  */
 
 /**
@@ -423,7 +492,8 @@ const resolve_serving = (profile) => {
   const { nutrients } = profile;
   const amount = profile.serving?.amount;
   const energy = read_amount(nutrients, "energyKcal");
-  const saturated_fat = read_amount(nutrients, "saturatedFatG");
+  const stand_ins = profile.ratingInputs?.standIns ?? {};
+  const saturated_fat = read_amount(nutrients, "saturatedFatG") ?? stand_ins.saturatedFatG;
   const carbohydrate = read_amount(nutrients, "carbohydrateG");
   if (
     amount === undefined ||
@@ -434,23 +504,33 @@ const resolve_serving = (profile) => {
   ) {
     return undefined;
   }
+  const density_amount = profile.ratingInputs?.edibleAmount ?? amount;
   const is_drink = profile.nutritionClass === "drink";
   const sugar_share = is_drink
     ? IMPUTATION.drinkSugarShareOfCarbohydrate
     : IMPUTATION.mealSugarShareOfCarbohydrate;
-  const sugar = read_amount(nutrients, "totalSugarG") ?? carbohydrate * sugar_share;
-  const sodium = read_amount(nutrients, "sodiumMg");
+  const sugar =
+    read_amount(nutrients, "totalSugarG") ??
+    stand_ins.totalSugarG ??
+    carbohydrate * sugar_share;
+  const sodium = read_amount(nutrients, "sodiumMg") ?? stand_ins.sodiumMg;
   return {
     amount,
+    densityAmount: density_amount,
     energyKcal: energy,
     proteinG: read_amount(nutrients, "proteinG") ?? 0,
-    totalFatG: read_amount(nutrients, "totalFatG") ?? 0,
+    totalFatG: read_amount(nutrients, "totalFatG") ?? stand_ins.totalFatG ?? 0,
     saturatedFatG: saturated_fat + (read_amount(nutrients, "transFatG") ?? 0),
     carbohydrateG: carbohydrate,
     totalSugarG: Math.min(sugar, carbohydrate),
     dietaryFibreG: read_amount(nutrients, "dietaryFibreG") ?? 0,
+    qualityFibreG:
+      read_amount(nutrients, "dietaryFibreG") ??
+      (CARBOHYDRATE_QUALITY.unavailableFibreGPer100G * density_amount) / 100,
     sodiumMg:
       sodium ?? (is_drink ? undefined : (IMPUTATION.mealSodiumMgPer100G * amount) / 100),
+    isSnack:
+      !is_drink && profile.dishId !== undefined && SNACK_RATED_DISH_IDS.has(profile.dishId),
   };
 };
 
@@ -461,7 +541,7 @@ const resolve_serving = (profile) => {
  * @param {ResolvedServing} serving - The serving.
  * @returns {number} The amount per 100 g or 100 ml.
  */
-const per_100 = (amount, serving) => (amount * 100) / serving.amount;
+const per_100 = (amount, serving) => (amount * 100) / serving.densityAmount;
 
 /**
  * The penalty of a limit nutrient for a meal: the worse of its per-serving dose and its
@@ -488,13 +568,25 @@ const compute_limit_penalty = (amount, serving_anchors, band, serving) =>
 const compute_meal_fractions = (serving) => {
   const sodium = serving.sodiumMg ?? 0;
   const energy = serving.energyKcal;
+  const sugar_share = serving.isSnack ? MEAL_SHARE * SNACK_SHARE_OF_MEAL : MEAL_SHARE;
+  const carbohydrate_to_fibre =
+    serving.qualityFibreG > 0 ? serving.carbohydrateG / serving.qualityFibreG : Infinity;
   return {
     energy: compute_limit_penalty(
       energy,
-      ENERGY_SERVING_ANCHORS,
+      serving.isSnack ? SNACK_ENERGY_ANCHORS : ENERGY_SERVING_ANCHORS,
       DENSITY_BANDS.energyKcal,
       serving,
     ),
+    obesityEnergy: compute_limit_penalty(
+      energy,
+      serving.isSnack ? SNACK_ENERGY_ANCHORS : OBESITY_ENERGY_ANCHORS,
+      DENSITY_BANDS.energyKcal,
+      serving,
+    ),
+    carbohydrateQuality:
+      read_curve(carbohydrate_to_fibre, CARBOHYDRATE_QUALITY.ratioAnchors) *
+      read_curve(serving.carbohydrateG, CARBOHYDRATE_QUALITY.amountAnchors),
     saturatedFat: compute_limit_penalty(
       serving.saturatedFatG,
       build_meal_share_anchors(DAILY_REFERENCE.saturatedFatG),
@@ -528,13 +620,13 @@ const compute_meal_fractions = (serving) => {
     ),
     sugar: compute_limit_penalty(
       serving.totalSugarG,
-      build_meal_share_anchors(DAILY_REFERENCE.totalSugarG),
+      build_meal_share_anchors(DAILY_REFERENCE.totalSugarG, sugar_share),
       DENSITY_BANDS.totalSugarG,
       serving,
     ),
     diabetesSugar: compute_limit_penalty(
       serving.totalSugarG,
-      build_meal_share_anchors(CONDITION_REFERENCE.diabetesSugarG),
+      build_meal_share_anchors(CONDITION_REFERENCE.diabetesSugarG, sugar_share),
       DENSITY_BANDS.totalSugarG,
       serving,
     ),
@@ -615,7 +707,11 @@ const rate_meal = (serving) => {
   const f = compute_meal_fractions(serving);
   const w = MEAL_RATING_WEIGHTS;
   const limit_penalties = [
-    extend_overall_penalty(f.energy, serving.energyKcal, DAILY_REFERENCE.energyKcal / 2),
+    extend_overall_penalty(
+      f.energy,
+      serving.energyKcal,
+      (DAILY_REFERENCE.energyKcal / 2) * (serving.isSnack ? SNACK_SHARE_OF_MEAL : 1),
+    ),
     extend_overall_penalty(f.saturatedFat, serving.saturatedFatG, DAILY_REFERENCE.saturatedFatG),
     extend_overall_penalty(f.sodium, serving.sodiumMg ?? 0, DAILY_REFERENCE.sodiumMg),
     extend_overall_penalty(f.sugar, serving.totalSugarG, DAILY_REFERENCE.totalSugarG),
@@ -639,28 +735,35 @@ const rate_meal = (serving) => {
           cholesterol.saturatedFat * f.cholesterolSaturatedFat -
           cholesterol.energy * f.energy -
           cholesterol.sugar * f.sugar +
-          cholesterol.fibre * f.fibre * (1 - f.cholesterolSaturatedFat),
+          cholesterol.fibre * f.fibre *
+            (1 - Math.max(f.cholesterolSaturatedFat, f.energy, f.sugar)),
       ),
       obesity: finish_rating(
         5 -
-          obesity.energy * f.energy -
+          obesity.energy * f.obesityEnergy -
           obesity.totalFat * f.totalFat -
           obesity.sugar * f.sugar +
-          (obesity.fibre * f.fibre + obesity.protein * f.protein) * (1 - f.energy),
+          (obesity.fibre * f.fibre + obesity.protein * f.protein) *
+            (1 - Math.max(f.obesityEnergy, f.totalFat, f.sugar)),
       ),
       diabetes: finish_rating(
         5 -
           diabetes.carbohydrate * f.diabetesCarbohydrate -
+          diabetes.carbohydrateQuality *
+            f.carbohydrateQuality *
+            (1 - f.diabetesCarbohydrate) -
           diabetes.sugar * f.diabetesSugar -
           diabetes.energy * f.energy -
           diabetes.saturatedFat * f.saturatedFat +
-          diabetes.fibre * f.fibre * (1 - diabetes_key),
+          diabetes.fibre * f.fibre *
+            (1 - Math.max(diabetes_key, f.energy, f.saturatedFat)),
       ),
       hypertension: finish_rating(
         5 -
           hypertension.sodium * f.hypertensionSodium -
           hypertension.saturatedFat * f.saturatedFat +
-          hypertension.fibre * f.fibre * (1 - f.hypertensionSodium),
+          hypertension.fibre * f.fibre *
+            (1 - Math.max(f.hypertensionSodium, f.saturatedFat)),
       ),
     },
   };
