@@ -8,7 +8,7 @@ import { plan_effect } from "./effects";
 import { plan_floor } from "./floor";
 import { plan_dish } from "./food";
 import { plan_placeable } from "./furniture";
-import { plan_customer_sheet, plan_vendor_sheet } from "./people";
+import { plan_crew_sheet, plan_customer_sheet, plan_vendor_sheet } from "./people";
 import type { PaintPlan, PaintSpec } from "./specs";
 import { plan_stall } from "./stalls";
 
@@ -28,6 +28,8 @@ export function plan_texture(spec: PaintSpec): PaintPlan {
       return plan_customer_sheet(spec);
     case "vendor":
       return plan_vendor_sheet(spec);
+    case "crew":
+      return plan_crew_sheet(spec);
     case "dish":
       return plan_dish(spec);
     case "floor":

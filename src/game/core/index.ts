@@ -145,8 +145,8 @@ export {
 /** Rush-hour demand windows and last orders. */
 export { active_rush_window, LAST_ORDERS_MINUTE, RUSH_CORE_SHARE } from "./rush";
 
-/** Table clearing: the cleaning crew size. */
-export { count_cleaning_crew } from "./clearing";
+/** Table clearing: the cleaning crew size and the trays it is working on. */
+export { count_cleaning_crew, get_worked_tray_keys } from "./clearing";
 
 /** Reputation: the steady visit score that holds a reputation level. */
 export { score_for_reputation } from "./visits";

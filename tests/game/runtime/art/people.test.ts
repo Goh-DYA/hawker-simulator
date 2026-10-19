@@ -1,6 +1,6 @@
 /**
- * Draw-output tests for the people painters in `runtime/art/people/`: the customer and vendor
- * sprite sheets, the posed rig behind them and the carried-tray anchor.
+ * Draw-output tests for the people painters in `runtime/art/people/`: the customer, vendor and
+ * table-cleaning crew sprite sheets, the posed rig behind them and the carried-tray anchor.
  *
  * Sheets are painted into recording contexts and digested, so the tests prove that every body,
  * outfit, hair cut and prop combination paints, that the sheet frames follow the person-frame
@@ -14,8 +14,14 @@
 import { describe, expect, it } from "vitest";
 
 import { CUSTOMER_ARCHETYPES, STALLS } from "@/src/content";
-import type { PaintContext } from "@/src/game/runtime/art/canvas";
-import { plan_customer_sheet, plan_vendor_sheet, tray_anchor } from "@/src/game/runtime/art/people";
+import { css, shade, type PaintContext } from "@/src/game/runtime/art/canvas";
+import {
+  plan_crew_sheet,
+  plan_customer_sheet,
+  plan_vendor_sheet,
+  tray_anchor,
+} from "@/src/game/runtime/art/people";
+import { paint_crew_frame } from "@/src/game/runtime/art/people/crew";
 import { customer_hair_style, customer_pose } from "@/src/game/runtime/art/people/customer";
 import {
   CUSTOMER_HAIR_STYLES,
@@ -30,6 +36,7 @@ import {
 } from "@/src/game/runtime/art/people/rig";
 import { vendor_frame, vendor_metrics } from "@/src/game/runtime/art/people/vendor";
 import {
+  CREW_POSES,
   CUSTOMER_POSES,
   FACINGS,
   PERSON_FEET_Y,
@@ -39,10 +46,13 @@ import {
   SHEET_FACINGS,
   TABLE_TOP_LIFT,
   VENDOR_POSES,
+  type CrewPaintSpec,
+  type CrewPose,
   type CustomerPaintSpec,
   type PaintFrame,
   type VendorPaintSpec,
 } from "@/src/game/runtime/art/specs";
+import { CREW_WORKWEAR, crew_figure_for_index } from "@/src/game/runtime/visuals/crew";
 import { LEGWEAR_KINDS, visualRecipeForCustomer } from "@/src/game/runtime/visuals/customer";
 import { visualRecipeForStallVendor } from "@/src/game/runtime/visuals/vendor";
 
@@ -597,5 +607,78 @@ describe("vendor sheets", () => {
 
       expect(new Set(hands).size, stall.id).toBe(4);
     }
+  });
+});
+
+describe("crew sheets", () => {
+  /**
+   * Builds the crew spec of a member.
+   *
+   * @param index - The member's index.
+   * @param frame - The paint frame.
+   * @returns The spec.
+   */
+  function crew(index: number, frame: PaintFrame = FRAMES[0] as PaintFrame): CrewPaintSpec {
+    return { kind: "crew", ...crew_figure_for_index(index), frame };
+  }
+
+  /**
+   * Paints one crew frame into a fresh recording context.
+   *
+   * @param facing - The sheet row.
+   * @param pose - The sheet column.
+   * @returns The digest of the frame's draw calls.
+   */
+  function crew_frame_digest(facing: (typeof SHEET_FACINGS)[number], pose: CrewPose): string {
+    const recording = create_recording_context();
+    paint_crew_frame(recording.ctx, crew(0), facing, pose);
+    return recording.digest();
+  }
+
+  it("paints the crew in every paint frame", () => {
+    for (const frame of FRAMES) {
+      expect(record_paint(crew(0, frame)).log.length).toBeGreaterThan(1000);
+    }
+  });
+
+  it("names and places every frame per the person-frame contract", () => {
+    const plan = plan_crew_sheet(crew(0));
+
+    expect(plan.width).toBe(CREW_POSES.length * PERSON_FRAME_WIDTH);
+    expect(plan.height).toBe(SHEET_FACINGS.length * PERSON_FRAME_HEIGHT);
+    expect(plan.frames?.map((frame) => frame.name)).toEqual(
+      SHEET_FACINGS.flatMap((facing) => CREW_POSES.map((pose) => `${facing}/${pose}`)),
+    );
+  });
+
+  it("paints every pose of every facing differently", () => {
+    for (const facing of SHEET_FACINGS) {
+      const digests = CREW_POSES.map((pose) => crew_frame_digest(facing, pose));
+
+      expect(new Set(digests).size, facing).toBe(CREW_POSES.length);
+    }
+  });
+
+  it("dresses the crew in a uniform no guest wears", () => {
+    const crew_spec = crew(0);
+    const guest = record_paint(
+      customer({
+        skin: crew_spec.skin,
+        hair: crew_spec.hair,
+        hairStyle: crew_spec.hairStyle,
+        stature: crew_spec.stature,
+        build: crew_spec.build,
+      }),
+    ).log.join("\n");
+    const uniform = record_paint(crew_spec).log.join("\n");
+    // The cap's button is painted in a flat shade of the apron colour.
+    const apron = css(shade(CREW_WORKWEAR.apron, 0.2));
+
+    expect([uniform.includes(apron), guest.includes(apron)]).toEqual([true, false]);
+  });
+
+  it("paints the same member identically twice and each member differently", () => {
+    expect(record_paint(crew(1)).digest()).toBe(record_paint(crew(1)).digest());
+    expect(new Set([0, 1, 2, 3].map((index) => record_paint(crew(index)).digest())).size).toBe(4);
   });
 });

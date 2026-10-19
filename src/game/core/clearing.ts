@@ -9,14 +9,22 @@
  * one member plus one per tray-return station, each clearing the oldest waiting tray first, so
  * extra seats without returns only lengthen the backlog.
  *
- * Internal to core; it is not re-exported from the barrel.
+ * Internal to core; only `count_cleaning_crew` and `get_worked_tray_keys` are re-exported from
+ * the barrel.
  */
 import type { Draft } from "./draft";
 import { getSeatLocations } from "./grid";
 import { compareIds } from "./ordering";
 import { compute_fnv1a32 } from "./rng";
 import { getUtilityInfluence } from "./utility";
-import type { Customer, GridPoint, PlacedObject, SimulationCatalog, UnclearedTray } from "./types";
+import type {
+  Customer,
+  GameState,
+  GridPoint,
+  PlacedObject,
+  SimulationCatalog,
+  UnclearedTray,
+} from "./types";
 
 /** Crew time to clear one tray at a seat without any cleaning utility, in simulated ms. */
 export const TRAY_CLEAR_MS = 25_000;
@@ -109,6 +117,43 @@ export function compute_uncleared_neighbour_penalty(draft: Draft, seat_point: Gr
 }
 
 /**
+ * Orders the waiting trays the way the crew takes them: oldest first, then by seat key.
+ *
+ * @param waiting - The waiting trays as seat key and tray pairs; sorted in place.
+ * @returns The same array, sorted.
+ */
+function sort_waiting_trays(
+  waiting: Array<[string, UnclearedTray]>,
+): Array<[string, UnclearedTray]> {
+  return waiting.sort(
+    ([key_a, tray_a], [key_b, tray_b]) =>
+      tray_a.leftAtTick - tray_b.leftAtTick || compareIds(key_a, key_b),
+  );
+}
+
+/**
+ * Names the trays the table-cleaning crew is working on: the oldest waiting trays on seats that
+ * still exist, one per crew member, in the order {@link advance_table_clearing} works them. The
+ * renderer reads it to send a visible crew member to each.
+ *
+ * @param state - The trays, objects and catalog to read.
+ * @returns The seat keys of the trays being cleared.
+ */
+export function get_worked_tray_keys(
+  state: Pick<GameState, "unclearedTrays" | "objects" | "catalog">,
+): string[] {
+  const seat_keys = new Set(getSeatLocations(state.objects, state.catalog).map((seat) => seat.key));
+  const waiting: Array<[string, UnclearedTray]> = [];
+  for (const [key, tray] of Object.entries(state.unclearedTrays)) {
+    if (seat_keys.has(key)) waiting.push([key, tray]);
+  }
+  const crew = count_cleaning_crew(state.objects, state.catalog);
+  return sort_waiting_trays(waiting)
+    .slice(0, crew)
+    .map(([key]) => key);
+}
+
+/**
  * Lets the table-cleaning crew work for one step.
  *
  * Trays on seats that no longer exist are dropped once no undo can restore the seat. The crew
@@ -137,10 +182,7 @@ export function advance_table_clearing(draft: Draft, delta_ms: number): void {
     }
     waiting.push([key, tray]);
   }
-  waiting.sort(
-    ([key_a, tray_a], [key_b, tray_b]) =>
-      tray_a.leftAtTick - tray_b.leftAtTick || compareIds(key_a, key_b),
-  );
+  sort_waiting_trays(waiting);
   const crew = count_cleaning_crew(draft.objects, draft.source.catalog);
   for (const [key, tray] of waiting.slice(0, crew)) {
     const workRemainingMs = tray.workRemainingMs - delta_ms;

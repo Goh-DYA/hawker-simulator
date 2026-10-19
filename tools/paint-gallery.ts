@@ -9,6 +9,7 @@
  *   npx tsx tools/paint-gallery.ts --kind dishes --out scratch/dishes.png
  *   npx tsx tools/paint-gallery.ts --kind customers --out scratch/customers.png
  *   npx tsx tools/paint-gallery.ts --kind vendors --out scratch/vendors.png
+ *   npx tsx tools/paint-gallery.ts --kind crew --out scratch/crew.png
  *   npx tsx tools/paint-gallery.ts --kind floor --out scratch/floor.png
  *   npx tsx tools/paint-gallery.ts --kind effects --out scratch/effects.png
  *
@@ -54,6 +55,7 @@ import {
 import { visualRecipeForDish, visualRecipeForDishVariant } from "@/src/game/runtime/visuals/dish";
 import { colour } from "@/src/game/runtime/visuals/palette";
 import { visualRecipeForPlaceable } from "@/src/game/runtime/visuals/placeable";
+import { crew_figure_for_index } from "@/src/game/runtime/visuals/crew";
 import { visualRecipeForStallVendor } from "@/src/game/runtime/visuals/vendor";
 import { MAP_HEIGHT, MAP_WIDTH, TILE_SIZE } from "@/src/game/runtime/world";
 
@@ -260,6 +262,11 @@ function list_items(options: Options): SheetItem[] {
         label: localize_key(stall.nameKey),
         spec: { kind: "vendor", recipe: visualRecipeForStallVendor(stall), frame },
       }));
+    case "crew":
+      return Array.from({ length: options.count }, (_, index) => ({
+        label: `crew #${index + 1}`,
+        spec: { kind: "crew", ...crew_figure_for_index(index), frame },
+      }));
     case "effects":
       return EFFECT_KINDS.map((effect) => ({
         label: effect,
@@ -318,7 +325,7 @@ function write_sheet(items: readonly SheetItem[], options: Options): void {
   const columns =
     options.kind === "floor" || options.id
       ? 1
-      : Math.min(plans.length, options.kind === "customers" || options.kind === "vendors" ? 2 : 6);
+      : Math.min(plans.length, ["customers", "vendors", "crew"].includes(options.kind) ? 2 : 6);
   const cellWidth = Math.max(...plans.map(({ plan }) => plan.width)) + padding * 2;
   const cellHeight = Math.max(...plans.map(({ plan }) => plan.height)) + padding * 2 + labelHeight;
   const rows = Math.ceil(plans.length / columns);

@@ -1,5 +1,5 @@
 /**
- * Vendor workwear painters: the four apron styles (bib, cross-back, waist and utility) in the
+ * Workwear painters for vendors and the table-cleaning crew: the four apron styles (bib, cross-back, waist and utility) in the
  * apron colour with its trim, and the six kinds of headwear (service cap, visor, headband, hair
  * wrap, chef cap and hairnet), each drawn for the front, back and side views of a posed rig.
  *
@@ -20,6 +20,12 @@ import type { PaintFrame } from "../specs";
 import type { StallVendorRecipe } from "../../visuals/vendor";
 import { fill_lit_path, outline_style, outline_width, polyline } from "./draw";
 import type { Rig } from "./rig";
+
+/**
+ * The workwear a figure wears: the apron colour, trim and style and the headwear. A stall
+ * vendor's recipe is one, and so is the table-cleaning crew's uniform.
+ */
+export type Workwear = Pick<StallVendorRecipe, "apron" | "apronTrim" | "apronStyle" | "headwear">;
 
 /** The white of a chef cap. */
 const CAP_WHITE = 0xf6f1e6;
@@ -79,7 +85,7 @@ function paint_bow(ctx: PaintContext, x: number, y: number, colour: number): voi
 function paint_apron_front(
   ctx: PaintContext,
   rig: Rig,
-  recipe: StallVendorRecipe,
+  recipe: Workwear,
   frame: PaintFrame,
 ): void {
   const m = rig.metrics;
@@ -197,7 +203,7 @@ function paint_apron_front(
  * @param rig - The posed rig.
  * @param recipe - The vendor recipe.
  */
-function paint_apron_back(ctx: PaintContext, rig: Rig, recipe: StallVendorRecipe): void {
+function paint_apron_back(ctx: PaintContext, rig: Rig, recipe: Workwear): void {
   const m = rig.metrics;
   const sx = rig.shoulder.x;
   const waistY = rig.waist.y;
@@ -268,7 +274,7 @@ function paint_apron_back(ctx: PaintContext, rig: Rig, recipe: StallVendorRecipe
 function paint_apron_side(
   ctx: PaintContext,
   rig: Rig,
-  recipe: StallVendorRecipe,
+  recipe: Workwear,
   frame: PaintFrame,
 ): void {
   const m = rig.metrics;
@@ -334,7 +340,7 @@ function paint_apron_side(
 export function paint_apron(
   ctx: PaintContext,
   rig: Rig,
-  recipe: StallVendorRecipe,
+  recipe: Workwear,
   frame: PaintFrame,
 ): void {
   if (rig.facing === "south") paint_apron_front(ctx, rig, recipe, frame);
@@ -353,7 +359,7 @@ export function paint_apron(
 export function paint_headwear(
   ctx: PaintContext,
   rig: Rig,
-  recipe: StallVendorRecipe,
+  recipe: Workwear,
   frame: PaintFrame,
 ): void {
   const x = rig.head.x;
