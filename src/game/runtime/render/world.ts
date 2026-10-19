@@ -2,7 +2,8 @@
  * The world view: the retained sprites of the hall, diffed against each render context. It
  * keeps the floor texture, one sprite per placed object (plus the back and front layers, vendor,
  * counter dishes and steam of each stall, and its Writer's Pick plaque), one sprite per guest (plus
- * their tray, meal and status bubble), the trays guests left on seats, the lamp light pools, the
+ * their tray, meal and status bubble), the table-cleaning crew (moved by {@link CrewMotion}, with
+ * the tray they carry away), the trays guests left on seats, the lamp light pools, the
  * sale sparkles and the time-of-day tint, and destroys whatever the latest snapshot no longer
  * holds.
  *
@@ -36,6 +37,8 @@ import {
   facing_for_direction,
   person_frame,
   rotated_size,
+  type CrewPaintSpec,
+  type CrewPose,
   type CustomerPaintSpec,
   type CustomerPose,
   type DishPaintSpec,
@@ -54,6 +57,7 @@ import {
   customer_figure_for_id,
   visualRecipeForCustomer,
 } from "../visuals/customer";
+import { crew_figure_for_index } from "../visuals/crew";
 import { visualRecipeForDishVariant } from "../visuals/dish";
 import { colour as parse_palette_colour, stableVisualHash } from "../visuals/palette";
 import { visualRecipeForPlaceable } from "../visuals/placeable";
@@ -62,6 +66,7 @@ import { MAP_HEIGHT, MAP_WIDTH, TILE_SIZE } from "../world";
 import { resolve_placeable_style, resolve_stall_art } from "./art";
 import { daylight_tint, lamp_pulse, lamp_strength } from "./atmosphere";
 import type { ObjectVisualBounds, RenderContext } from "./context";
+import { CrewMotion } from "./crew";
 import {
   boundsForObject,
   DEPTH_EFFECTS,
@@ -89,6 +94,13 @@ export interface WorldSceneSurface {
 
 /** Walk frames advance every this many ticks (10 Hz ticks, so five frames a second). */
 const WALK_TICKS_PER_FRAME = 2;
+/** Crew wipe frames alternate every this many ticks. */
+const CREW_WIPE_TICKS = 3;
+/**
+ * How far apart, in world pixels, crew members waiting at the same post stand, so two members
+ * sharing the first tray-return station never overlap.
+ */
+const CREW_POST_SPREAD = 16;
 /** Vendor idle frames alternate every this many ticks. */
 const VENDOR_IDLE_TICKS = 6;
 /** Vendor prepare frames advance every this many ticks. */
@@ -354,6 +366,7 @@ export class WorldView {
   private readonly sheetLastUsed = new Map<string, number>();
   private sparkles: Sparkle[] = [];
   private lastSparkleTick = -1;
+  private readonly crew = new CrewMotion();
 
   /**
    * @param scene - The scene's image and graphics factories.
@@ -387,6 +400,7 @@ export class WorldView {
     this.sync_floor(context, frame);
     this.sync_objects(context, frame);
     this.sync_people(context, frame);
+    this.sync_crew(context, frame);
     this.sync_left_trays(context, frame);
     this.sync_sparkles(context, frame);
     this.sync_tint(context);
@@ -870,6 +884,75 @@ export class WorldView {
     }
     for (const id of [...this.facings.keys()]) {
       if (!seen.has(id)) this.facings.delete(id);
+    }
+  }
+
+  /**
+   * Draws the table-cleaning crew: walking to a tray, wiping beside it while it waits (turned to
+   * the table, as a diner is), carrying it to a tray-return station, or waiting at their post.
+   */
+  private sync_crew(context: RenderContext, frame: PaintFrame): void {
+    const tick = context.snapshot.tick;
+    const reduced = context.frame.isReducedMotion;
+    const waiting = new Map<string, number>();
+    for (const member of this.crew.update(context.state)) {
+      const sheet = this.studio.ensure({
+        kind: "crew",
+        ...crew_figure_for_index(member.index),
+        frame,
+      } satisfies CrewPaintSpec);
+      let x = (member.x + 0.5) * TILE_SIZE;
+      const feetY = (member.y + 0.5) * TILE_SIZE;
+      let facing = member.facing;
+      if (member.activity === "wipe") {
+        const table = nearest_table_meal_anchor(context, x, feetY);
+        const dx = table.faceX - x;
+        const dy = table.faceY - feetY;
+        facing = facing_for_direction(
+          Math.abs(dx) > Math.abs(dy) ? Math.sign(dx) : 0,
+          Math.abs(dx) > Math.abs(dy) ? 0 : Math.sign(dy),
+          facing,
+        );
+      } else if (member.activity === "idle") {
+        const post = `${member.x},${member.y}`;
+        const earlier = waiting.get(post) ?? 0;
+        waiting.set(post, earlier + 1);
+        x += earlier * CREW_POST_SPREAD;
+      }
+      const walkFrame = reduced ? 1 : Math.floor(((tick + member.index * 2) / WALK_TICKS_PER_FRAME) % 3);
+      const wipeFrame = reduced ? 0 : Math.floor(tick / CREW_WIPE_TICKS) % 2;
+      const column: CrewPose =
+        member.activity === "wipe"
+          ? (`wipe${wipeFrame}` as CrewPose)
+          : member.activity === "carry-walk"
+            ? (`carry-walk${walkFrame}` as CrewPose)
+            : member.activity === "walk"
+              ? (`walk${walkFrame}` as CrewPose)
+              : "stand";
+      const sheetFrame = person_frame(facing, column);
+      const depth = person_depth(feetY);
+      this.people.draw(`crew:${member.index}`, {
+        key: sheet.key,
+        frame: sheetFrame.frame,
+        isFlipped: sheetFrame.isFlipped,
+        x,
+        y: feetY,
+        originX: 0.5,
+        originY: PERSON_FEET_Y / PERSON_FRAME_HEIGHT,
+        scale: sheet.scale,
+        depth,
+      });
+      if (member.activity === "carry-walk") {
+        const anchor = tray_anchor(facing);
+        const tray = this.studio.ensure({ kind: "effect", effect: "left-tray", frame });
+        this.people.draw(`crew:${member.index}:tray`, {
+          key: tray.key,
+          x: x + anchor.x,
+          y: feetY + anchor.y,
+          scale: CARRIED_TRAY_SCALE * tray.scale,
+          depth: depth + (anchor.isBehind ? -0.000001 : 0.000001),
+        });
+      }
     }
   }
 

@@ -98,6 +98,24 @@ export const VENDOR_POSES = [
 ] as const;
 export type VendorPose = (typeof VENDOR_POSES)[number];
 
+/**
+ * The table-cleaning crew sheet columns, in column order: the guest's stand, walk and tray
+ * carries, plus two frames of wiping a table top.
+ */
+export const CREW_POSES = [
+  "stand",
+  "walk0",
+  "walk1",
+  "walk2",
+  "carry",
+  "carry-walk0",
+  "carry-walk1",
+  "carry-walk2",
+  "wipe0",
+  "wipe1",
+] as const;
+export type CrewPose = (typeof CREW_POSES)[number];
+
 /** Side length of one effect texture in world pixels. */
 export const EFFECT_SIZE = 64;
 
@@ -237,6 +255,23 @@ export interface VendorPaintSpec {
   readonly frame: PaintFrame;
 }
 
+/**
+ * A table-cleaning crew sprite sheet: one texture per crew figure. Every member wears the same
+ * uniform; only the body, skin and hair vary.
+ */
+export interface CrewPaintSpec {
+  readonly kind: "crew";
+  readonly skin: number;
+  readonly hair: number;
+  /** Hair shape index, 0 to 5. */
+  readonly hairStyle: number;
+  /** Height class: 0 short, 1 average, 2 tall. */
+  readonly stature: 0 | 1 | 2;
+  /** Build class: 0 slim, 1 average, 2 broad. */
+  readonly build: 0 | 1 | 2;
+  readonly frame: PaintFrame;
+}
+
 /** A dish serving: one texture per dish, variant, eaten third and detail frame. */
 export interface DishPaintSpec {
   readonly kind: "dish";
@@ -273,6 +308,7 @@ export type PaintSpec =
   | StallPaintSpec
   | CustomerPaintSpec
   | VendorPaintSpec
+  | CrewPaintSpec
   | DishPaintSpec
   | FloorPaintSpec
   | EffectPaintSpec;
@@ -338,6 +374,15 @@ export function texture_key(spec: PaintSpec): string {
       ].join(":");
     case "vendor":
       return `vendor:${spec.recipe.stallId}:${frame_key(spec.frame)}`;
+    case "crew":
+      return [
+        "crew",
+        spec.skin.toString(16),
+        spec.hair.toString(16),
+        spec.hairStyle,
+        `s${spec.stature}b${spec.build}`,
+        frame_key(spec.frame),
+      ].join(":");
     case "dish":
       return `dish:${spec.dishId}:${spec.recipe.variantVisualKey ?? "base"}:e${spec.eaten}:${frame_key(spec.frame)}`;
     case "floor": {

@@ -67,24 +67,24 @@ const STARTER_TABLE_TILE: GridPoint = { x: 5, y: 8 };
 /** Call count and sha256 of each scenario's draw-call log. */
 const RENDER_DIGESTS = {
   fresh: {
-    calls: 115_947,
-    sha256: "9b2a105797d58093d626ae3c61ee4959cb8d6f21fd77c586c32770c9c4885c43",
+    calls: 154_949,
+    sha256: "c16c44f9d7b4a2b7f2a5f0d3d37babdf57b78d6e5c696fe1ad5046769b585b07",
   },
   busy: {
     calls: 416_425,
-    sha256: "358e6228b1c5736ff61ded4f4e4ba3899ca0a96d4a25a7ef8ff88f2679badb6d",
+    sha256: "274c9aaab4ddd8edb1a82ffd683040a0305779298260a2d56d504738894f19b1",
   },
   highContrast: {
-    calls: 488_658,
-    sha256: "f3585c9bf14db7a40e70cb196f4d6c0efe8ae71f19eaeac60567debb1aa40e78",
+    calls: 527_650,
+    sha256: "7f786a87b3b8d8625b9cf447f8df92646367655346d3ab69740d6e244fb42c8d",
   },
   reducedMotion: {
     calls: 205,
-    sha256: "58c59e51ee2c29fb8462ef1b968f6baaea40fd13bda2b4cceef169c349401cba",
+    sha256: "a06e05c43935620c66f50db0f4c836a609542fc4de26fe5aa004f89baa8fee63",
   },
   lowerEnd: {
-    calls: 307_191,
-    sha256: "754fe4bb53b2b15163c22ccd388a02d03b059dbf67e32f6653967a1ae770baef",
+    calls: 335_585,
+    sha256: "790d5c0429bbcfce207bd181eba44df92e65714185a971dc3bba3e31b89648f1",
   },
   debugOverlay: {
     calls: 372,
@@ -92,11 +92,11 @@ const RENDER_DIGESTS = {
   },
   placeValid: {
     calls: 6,
-    sha256: "2a14f76dd6d5ed262bd7e8f8544bf3cafa43bac859bb64dfcaf384e30042a610",
+    sha256: "79d873aef759da89ac0ca1e01f8d44ebe30f2727f206d076f2f422f593307e0f",
   },
   placeInvalid: {
     calls: 11,
-    sha256: "eafebe14c8bf03db2b609a54dd7aa02a75843b3a086377d7fc15307c2fbe5768",
+    sha256: "a3eb7c3606f73997919795ec58b55bc377a82ed8eb21efabbbe0fb3b9f26b698",
   },
   routeValid: {
     calls: 5,
@@ -107,20 +107,20 @@ const RENDER_DIGESTS = {
     sha256: "918f2bd8a8e7bdd0a3479fc441f66ef3c970dcffd1e8fa5570b9c50bbcba7806",
   },
   gallery: {
-    calls: 690_102,
-    sha256: "5089c89e4725f0d6031243309f5f76c564aa6b89af7a74c1ff1257309e3fd15d",
+    calls: 768_106,
+    sha256: "1caf88d493075bbfac50a626a20551b9948f97a9a853a74000a304a3e767b8de",
   },
   galleryVariants: {
     calls: 62_486,
     sha256: "5b9ad77518aa7b9daef6d9320c56ae373ffba2ec55d1734cc3fe5e1592f1f979",
   },
   multiDayFrame480: {
-    calls: 182,
-    sha256: "32d75b911d8aa2f6b66a480c0235279f07b8a9b85c64965c1d7086071825c01e",
+    calls: 184,
+    sha256: "4c2b59e3fcc101babb0ef97745c24879f122ec4f7a85b641fb791d63ff98b34c",
   },
   multiDayFrame960: {
-    calls: 217,
-    sha256: "e38a3ca9cb7561c84521e70d9288858613b824dc85c88dad0c898e825ce447a6",
+    calls: 220,
+    sha256: "48a935eaf890c522729d628629476ad2ab6fd1e7420cfd3eb44c131605a4b82b",
   },
 } satisfies Record<string, RenderLogDigest>;
 

@@ -294,7 +294,7 @@ export function customer_hair_style(spec: CustomerPaintSpec): HairStyle {
  * @param spec - The customer spec.
  * @returns The figure look.
  */
-function customer_look(spec: CustomerPaintSpec): FigureLook {
+export function customer_look(spec: CustomerPaintSpec): FigureLook {
   const top = {
     silhouette: spec.silhouette,
     colour: spec.clothing,
