@@ -116,7 +116,7 @@ describe("table-cleaning crew", () => {
     expect(after.unclearedTrays["seat-2:0"]?.workRemainingMs).toBe(1_000);
   });
 
-  it("drops a tray when its seat is removed", () => {
+  it("keeps a removed seat's tray while undo can restore the seat, then drops it", () => {
     const state = makeGame();
     const seeded: GameState = {
       ...state,
@@ -124,7 +124,15 @@ describe("table-cleaning crew", () => {
     };
     const removed = dispatchCommand(seeded, { type: "remove-object", objectId: "seat-1" });
     expect(removed.accepted).toBe(true);
-    expect(stepSimulation(removed.state).unclearedTrays["seat-1:0"]).toBeUndefined();
+    const stepped = stepSimulation(removed.state);
+    expect(stepped.unclearedTrays["seat-1:0"]).toEqual({ leftAtTick: 0, workRemainingMs: 10_000 });
+    const undone = dispatchCommand(stepped, { type: "undo" });
+    expect(undone.accepted).toBe(true);
+    expect(stepSimulation(undone.state).unclearedTrays["seat-1:0"]?.workRemainingMs).toBeLessThan(
+      10_000,
+    );
+    const settled = stepSimulation({ ...removed.state, undoStack: [] });
+    expect(settled.unclearedTrays["seat-1:0"]).toBeUndefined();
   });
 
   it("sends guests who never return a tray past the tray return", () => {

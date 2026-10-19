@@ -6,6 +6,8 @@
  */
 import { ECONOMY, PLACEABLES, STALLS } from "@/src/content";
 import {
+  compute_fnv1a32,
+  create_neighbourhood,
   createGridMap,
   createNewGame,
   validatePlacement,
@@ -28,6 +30,11 @@ export const MAP_HEIGHT = 16;
 const ACCESS_ROW = 7;
 /** Seed every new centre's simulation RNG starts from. */
 const LAUNCH_SEED = "neighbourhood-hall-launch";
+/**
+ * World seed of a new centre when the runtime host supplies none, so tests and previews start
+ * from the same neighbourhood. The app supplies a random seed per new centre.
+ */
+export const LAUNCH_WORLD_SEED = compute_fnv1a32(`${LAUNCH_SEED}:world`);
 
 /**
  * Unlocks every buildable whose level, reputation and prerequisite rules are now satisfied.
@@ -52,7 +59,7 @@ export function reconcileRuntimeUnlocks(source: GameState): GameState {
       if (
         unlocked.has(definition.id) ||
         source.progression.level < requirement.level ||
-        source.progression.reputation * REPUTATION_SCALE < requirement.reputation ||
+        source.progression.peakReputation * REPUTATION_SCALE < requirement.reputation ||
         !requirement.prerequisiteIds.every((id) => unlocked.has(id))
       ) {
         continue;
@@ -138,9 +145,10 @@ function starterObjects(
  * Creates a new centre on the launch map with the starter layout and starting economy.
  *
  * @param catalog - Authored catalog used to validate the starter layout and seed the unlocks.
+ * @param world_seed - Seed of the new centre's neighbourhood.
  * @returns The fresh game state, with runtime unlocks already reconciled.
  */
-export function freshState(catalog: SimulationCatalog): GameState {
+export function freshState(catalog: SimulationCatalog, world_seed = LAUNCH_WORLD_SEED): GameState {
   const tiles = Array<"floor" | "wall">(MAP_WIDTH * MAP_HEIGHT).fill("floor");
   for (let x = 0; x < MAP_WIDTH; x += 1) {
     tiles[x] = "wall";
@@ -164,6 +172,7 @@ export function freshState(catalog: SimulationCatalog): GameState {
     exit: { x: MAP_WIDTH - 1, y: ACCESS_ROW },
     catalog,
     seed: LAUNCH_SEED,
+    worldSeed: world_seed,
     startingCurrency: ECONOMY.startingCash,
     initialObjects: starterObjects(catalog, map),
     initiallyUnlockedDefinitionIds: Object.values(catalog.placeables)
@@ -175,6 +184,7 @@ export function freshState(catalog: SimulationCatalog): GameState {
     progression: {
       ...created.progression,
       reputation: ECONOMY.startingReputation / REPUTATION_SCALE,
+      peakReputation: ECONOMY.startingReputation / REPUTATION_SCALE,
     },
   });
 }
@@ -197,9 +207,10 @@ export interface FreshSession {
  * Startup (with no usable save), save recovery and reset all start from this session.
  *
  * @param authored - Authored catalog the menus and variants are layered onto.
+ * @param world_seed - Seed of the new centre's neighbourhood.
  * @returns The fresh state, its layered catalog and the default menus and variants.
  */
-export function create_fresh_session(authored: SimulationCatalog): FreshSession {
+export function create_fresh_session(authored: SimulationCatalog, world_seed = LAUNCH_WORLD_SEED): FreshSession {
   const stallMenus = defaultStallMenusForProgression({
     level: 1,
     reputation: ECONOMY.startingReputation,
@@ -207,7 +218,7 @@ export function create_fresh_session(authored: SimulationCatalog): FreshSession 
   const activeDishVariants = defaultDishVariants();
   const catalog = layer_catalog(authored, activeDishVariants, stallMenus);
   return {
-    state: { ...freshState(authored), catalog },
+    state: { ...freshState(authored, world_seed), catalog },
     catalog,
     stallMenus,
     activeDishVariants,
@@ -232,4 +243,16 @@ export function assertRuntimeMap(state: GameState): GameState {
     );
   }
   return state;
+}
+
+/**
+ * Gives a loaded centre without a neighbourhood (a save from before neighbourhoods) one, seeded
+ * from its saved random state so the same save always gains the same neighbourhood.
+ *
+ * @param state - The loaded game state.
+ * @returns `state` itself when it already has a neighbourhood, otherwise a copy with one.
+ */
+export function ensure_neighbourhood(state: GameState): GameState {
+  if (state.neighbourhood) return state;
+  return { ...state, neighbourhood: create_neighbourhood(state, compute_fnv1a32(`world-seed:${state.rngState}`)) };
 }

@@ -50,7 +50,7 @@ Every required launch stall and catalogue item is earnable by level 20 without p
 
 ## Objectives
 
-Objectives are optional guidance, not blockers. Templates include serve a count, keep wait below a threshold, sustain satisfaction, offer a category mix, improve tray return, maintain clear paths, and complete a reversible build task. Each has seeded test fixtures and avoids requiring a specific cultural dish as a novelty stunt.
+Objectives are optional guidance, not blockers. Day 1 uses fixed templates; from day 2 the seeded neighbourhood picks the service and quality objectives for the day and scales their targets to 95-115% of the previous day's report, never below the fixed floors. Templates include serve a count, keep wait below a threshold, sustain satisfaction, offer a category mix, improve tray return, maintain clear paths, and complete a reversible build task. Each has seeded test fixtures and avoids requiring a specific cultural dish as a novelty stunt.
 
 ## Recovery safeguards
 

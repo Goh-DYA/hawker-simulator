@@ -20,13 +20,8 @@ import {
   record_intent_request,
 } from "./nutrition";
 import { operatingDay, operatingMinuteOfDay } from "./progression";
-import {
-  active_rush_window,
-  compute_time_demand,
-  DEFAULT_RUSH_WINDOWS,
-  is_last_orders,
-  ms_until_day_end,
-} from "./rush";
+import { active_rush_window, compute_time_demand, is_last_orders, ms_until_day_end } from "./rush";
+import { compute_rush_windows, get_archetype_factor, get_today_card } from "./neighbourhood";
 import type { CustomerArchetype, HealthCondition, NutritionIntent } from "./types";
 
 /** Spawn weight of a scheduled persona outside its visit window. */
@@ -83,7 +78,7 @@ function eligibleNutritionIntents(draft: Draft): readonly NutritionIntent[] {
       if (
         !dish ||
         draft.progression.level < (dish.unlockLevel ?? 1) ||
-        draft.progression.reputation < (dish.unlockReputation ?? 0)
+        draft.progression.peakReputation < (dish.unlockReputation ?? 0)
       ) {
         continue;
       }
@@ -116,7 +111,7 @@ function eligibleHealthConditions(draft: Draft): readonly HealthCondition[] {
       if (
         !dish ||
         draft.progression.level < (dish.unlockLevel ?? 1) ||
-        draft.progression.reputation < (dish.unlockReputation ?? 0)
+        draft.progression.peakReputation < (dish.unlockReputation ?? 0)
       ) {
         continue;
       }
@@ -154,7 +149,7 @@ export function recordIntentRequest(draft: Draft, intent: NutritionIntent | unde
  *
  * @param archetype - The candidate archetype.
  * @param level - The centre level.
- * @param reputation - The centre reputation.
+ * @param reputation - The centre's peak reputation, which every unlock gate reads.
  * @param elapsedMs - The simulated time, which sets the hour of the operating day.
  * @param unlockedDefinitionIds - The unlocked placeables the archetype may require.
  * @returns Zero while the archetype is locked, otherwise 1 for an unscheduled archetype or its scheduled or off-schedule weight.
@@ -187,6 +182,20 @@ export function customerArchetypeSpawnWeight(
 }
 
 /**
+ * Applies a neighbourhood day factor to a value, leaving it untouched without one.
+ *
+ * The factor is the last multiplication, and a missing factor skips it, so a day without a card
+ * produces exactly the same floating-point values as a centre without a neighbourhood.
+ *
+ * @param value - The value to scale.
+ * @param factor - Today's factor, if any.
+ * @returns The scaled value.
+ */
+function apply_day_factor(value: number, factor: number | undefined): number {
+  return factor === undefined ? value : value * factor;
+}
+
+/**
  * Spawns one customer at the least crowded entrance, if an archetype can arrive and a stall is open.
  *
  * Consumes the archetype roll, then the health roll, then the nutrition roll, in that order.
@@ -198,12 +207,15 @@ export function spawnCustomer(draft: Draft): void {
   if (archetypes.length === 0 || openStalls(draft).length === 0) return;
   const weightedArchetypes = archetypes.map((archetype) => ({
     archetype,
-    weight: customerArchetypeSpawnWeight(
-      archetype,
-      draft.progression.level,
-      draft.progression.reputation,
-      draft.source.elapsedMs,
-      draft.progression.unlockedDefinitionIds,
+    weight: apply_day_factor(
+      customerArchetypeSpawnWeight(
+        archetype,
+        draft.progression.level,
+        draft.progression.peakReputation,
+        draft.source.elapsedMs,
+        draft.progression.unlockedDefinitionIds,
+      ),
+      get_archetype_factor(draft.source, archetype.id),
     ),
   }));
   const totalWeight = weightedArchetypes.reduce(
@@ -316,7 +328,7 @@ export function compute_next_spawn_interval_ms(draft: Draft): number {
         Math.max(1, stalls.length)),
   );
   const minute = operatingMinuteOfDay(draft.source.elapsedMs);
-  const rush_windows = DEFAULT_RUSH_WINDOWS;
+  const rush_windows = compute_rush_windows(draft.source);
   const timeDemand = compute_time_demand(minute, rush_windows);
   const crowd_share = active_rush_window(minute, rush_windows) ? RUSH_BACKPRESSURE_SHARE : 1;
   const backpressure =
@@ -326,7 +338,8 @@ export function compute_next_spawn_interval_ms(draft: Draft): number {
     draft.source.arrivalPerformancePressure * PERFORMANCE_BACKPRESSURE_WEIGHT;
   const quality = get_quality_settings(state);
   if (quality.maxActiveCustomers !== undefined) return Math.max(MIN_SPAWN_INTERVAL_MS, state.config.spawnIntervalMs);
-  const interval = (state.config.spawnIntervalMs / Math.max(MIN_ARRIVAL_DEMAND, reputationDemand * stallDemand * timeDemand)) * backpressure;
+  const demand = apply_day_factor(reputationDemand * stallDemand * timeDemand, get_today_card(state)?.arrivalFactor);
+  const interval = (state.config.spawnIntervalMs / Math.max(MIN_ARRIVAL_DEMAND, demand)) * backpressure;
   const next_arrival_ms = draft.source.elapsedMs + interval;
   const day_end_ms = draft.source.elapsedMs + ms_until_day_end(draft.source.elapsedMs);
   // An arrival that would land during last orders waits for the next day's opening instead.

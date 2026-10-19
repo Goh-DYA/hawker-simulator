@@ -40,14 +40,18 @@ const HASH_RANGE = 2 ** 32;
  *
  * @param customer - The guest.
  * @param tray_return_chance - The archetype's tray-return share; `undefined` means every guest.
+ * @param world_seed - The neighbourhood's world seed, so each centre's guests have their own
+ *   habits; without it the habit depends on the guest's ID alone.
  * @returns True when the hash of the guest's ID falls inside the share.
  */
 export function is_tray_returner(
   customer: Customer,
   tray_return_chance: number | undefined,
+  world_seed?: number,
 ): boolean {
   if (tray_return_chance === undefined) return true;
-  return compute_fnv1a32(`${customer.id}:tray`) / HASH_RANGE < tray_return_chance;
+  const salt = world_seed === undefined ? "" : `${world_seed}:`;
+  return compute_fnv1a32(`${salt}${customer.id}:tray`) / HASH_RANGE < tray_return_chance;
 }
 
 /**
@@ -107,8 +111,8 @@ export function compute_uncleared_neighbour_penalty(draft: Draft, seat_point: Gr
 /**
  * Lets the table-cleaning crew work for one step.
  *
- * Trays on seats that no longer exist are dropped. The crew then works on the oldest waiting
- * trays, one member per tray, ordered by the tick they were left and then by seat key, and a
+ * Trays on seats that no longer exist are dropped once no undo can restore the seat. The crew
+ * then works on the oldest waiting trays, one member per tray, ordered by the tick they were left and then by seat key, and a
  * tray whose work is done is cleared.
  *
  * @param draft - The draft whose uncleared trays are edited.
@@ -121,10 +125,14 @@ export function advance_table_clearing(draft: Draft, delta_ms: number): void {
     getSeatLocations(draft.objects, draft.source.catalog).map((seat) => seat.key),
   );
   const waiting: Array<[string, UnclearedTray]> = [];
+  const can_undo = draft.source.undoStack.length > 0;
   for (const key of keys) {
     const tray = draft.unclearedTrays[key];
-    if (!tray || !seat_keys.has(key)) {
-      delete draft.unclearedTrays[key];
+    if (!tray) continue;
+    if (!seat_keys.has(key)) {
+      // Keep a removed seat's tray while an undo could bring the seat back, so removing and
+      // undoing cannot clear a table for free; the crew does not work on it meanwhile.
+      if (!can_undo) delete draft.unclearedTrays[key];
       continue;
     }
     waiting.push([key, tray]);

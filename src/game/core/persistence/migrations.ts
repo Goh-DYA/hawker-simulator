@@ -12,6 +12,7 @@ import type {
   PersistentGameStateV2,
   PersistentGameStateV3,
   PersistentGameStateV4,
+  PersistentGameStateV5,
 } from "../types";
 import {
   PersistenceError,
@@ -25,6 +26,7 @@ import {
   parseDailyObjectives,
   parseMap,
   parseMastery,
+  parseNeighbourhood,
   parseNutritionMetrics,
   parseObject,
   parseQuality,
@@ -247,6 +249,36 @@ function upgrade_v3_to_v4(old: PersistentGameStateV3): Record<string, unknown> {
   } satisfies PersistentGameStateV4;
 }
 
+function parseV5(value: Record<string, unknown>): PersistentGameStateV5 {
+  const old = parseV4({ ...value, schemaVersion: 4 });
+  const progression = isRecord(value.progression) ? value.progression : {};
+  const peak = Math.max(0, Math.min(5, finite(progression.peakReputation, "progression.peakReputation", 0)));
+  return {
+    ...old,
+    schemaVersion: 5,
+    progression: { ...old.progression, peakReputation: Math.max(peak, old.progression.reputation) },
+    neighbourhood: parseNeighbourhood(value.neighbourhood),
+  };
+}
+
+/**
+ * Rebuilds a parsed V4 save as an unvalidated V5 save.
+ *
+ * The peak reputation starts at the saved reputation, and the save has no neighbourhood; the
+ * runtime gives a loaded centre without one a neighbourhood seeded from its saved state.
+ *
+ * @param old - The parsed V4 save.
+ * @returns The V5 save, for `parseV5` to validate.
+ */
+function upgrade_v4_to_v5(old: PersistentGameStateV4): Record<string, unknown> {
+  return {
+    ...old,
+    schemaVersion: 5,
+    progression: { ...old.progression, peakReputation: old.progression.reputation },
+    neighbourhood: null,
+  } satisfies PersistentGameStateV5;
+}
+
 /**
  * One-version upgrades keyed by the schema version they start from.
  *
@@ -259,6 +291,7 @@ const UPGRADES: ReadonlyMap<unknown, (value: Record<string, unknown>) => Record<
     [1, (value) => upgrade_v1_to_v2(parseV1(value))],
     [2, (value) => upgrade_v2_to_v3(parseV2(value))],
     [3, (value) => upgrade_v3_to_v4(parseV3(value))],
+    [4, (value) => upgrade_v4_to_v5(parseV4(value))],
   ]);
 
 /**
@@ -271,7 +304,7 @@ const UPGRADES: ReadonlyMap<unknown, (value: Record<string, unknown>) => Record<
  * @returns The save as a current-version persistent state.
  * @throws PersistenceError When the save is not an object, has an unsupported version or is malformed.
  */
-export function migratePersistentState(value: unknown): PersistentGameStateV4 {
+export function migratePersistentState(value: unknown): PersistentGameStateV5 {
   if (!isRecord(value)) throw new PersistenceError("Save data must be an object");
   let current = value;
   while (current.schemaVersion !== PERSISTENT_SCHEMA_VERSION) {
@@ -281,5 +314,5 @@ export function migratePersistentState(value: unknown): PersistentGameStateV4 {
     }
     current = upgrade(current);
   }
-  return parseV4(current);
+  return parseV5(current);
 }

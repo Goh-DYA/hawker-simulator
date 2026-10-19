@@ -37,6 +37,7 @@ import {
   utilitySatisfactionBonus,
 } from "./utility";
 import { completeSale, settleVisitRating } from "./visits";
+import { get_today_card } from "./neighbourhood";
 import {
   compute_uncleared_neighbour_penalty,
   is_tray_returner,
@@ -327,10 +328,16 @@ function handle_eating(draft: Draft, customer: Customer): Customer {
     draft.source.catalog,
     seat.point,
   );
-  const adjustedEatingMs = dish
+  const linger = get_today_card(draft.source)?.eatingTimeFactor;
+  const baseEatingMs = dish
     ? adjustedEatingDurationMs(dish.eatingMs, diningUtility.eatingSpeed)
     : Number.POSITIVE_INFINITY;
-  if (!dish || customer.stateElapsedMs < adjustedEatingMs) return customer;
+  const adjustedEatingMs = linger === undefined ? baseEatingMs : baseEatingMs * linger;
+  if (!dish) {
+    // Without a dish the meal never ends, and eating is exempt from the visit cap.
+    return beginExit(draft, releaseSeat(draft, customer), false);
+  }
+  if (customer.stateElapsedMs < adjustedEatingMs) return customer;
   const uncleared_penalty = compute_uncleared_neighbour_penalty(draft, seat.point);
   const returns_tray = will_return_tray(draft, customer);
   customer = releaseSeat(draft, customer);
@@ -375,7 +382,7 @@ function handle_eating(draft: Draft, customer: Customer): Customer {
  */
 function will_return_tray(draft: Draft, customer: Customer): boolean {
   const archetype = draft.source.catalog.archetypes[customer.archetypeId];
-  if (!is_tray_returner(customer, archetype?.trayReturnChance)) return false;
+  if (!is_tray_returner(customer, archetype?.trayReturnChance, draft.neighbourhood?.worldSeed)) return false;
   const tray_return = findTrayReturn(draft, customer);
   return tray_return !== undefined && tray_return.path.length - 1 <= TRAY_RETURN_MAX_PATH_TILES;
 }

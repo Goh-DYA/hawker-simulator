@@ -18,6 +18,7 @@ import {
 } from "./draft";
 import { nextFloat } from "./rng";
 import { compareIds } from "./ordering";
+import { get_category_appeal, get_writer_pick_bonus } from "./neighbourhood";
 import {
   activeNutritionVariant,
   bestEnabledNutritionIntentFit,
@@ -123,7 +124,8 @@ export function chooseStall(draft: Draft, source: Customer): Customer {
           dishStarRating(dish) * archetype.qualitySensitivity +
           boundedDishDemandAppeal(dish) +
           preferenceMatches * STALL_MENU_PREFERENCE_WEIGHT -
-          dish.price * archetype.priceSensitivity
+          dish.price * archetype.priceSensitivity +
+          get_category_appeal(draft.source, dish.category)
         );
       }),
     );
@@ -143,7 +145,7 @@ export function chooseStall(draft: Draft, source: Customer): Customer {
       menuAppeal +
       nutritionBonus +
       healthBonus +
-      config.popularity * STALL_POPULARITY_WEIGHT +
+      (config.popularity + get_writer_pick_bonus(draft.source, stall.object.definitionId)) * STALL_POPULARITY_WEIGHT +
       config.quality * archetype.qualitySensitivity +
       novelty -
       committedWait * archetype.queueSensitivity * COMMITTED_WAIT_WEIGHT -
@@ -196,6 +198,7 @@ export function chooseDish(draft: Draft, stall: StallRuntime, customer: Customer
       boundedDishDemandAppeal(dish) +
       matches * DISH_PREFERENCE_WEIGHT -
       dish.price * archetype.priceSensitivity +
+      get_category_appeal(draft.source, dish.category) +
       nutritionBonus +
       healthBonus +
       random.value * DISH_CHOICE_JITTER;

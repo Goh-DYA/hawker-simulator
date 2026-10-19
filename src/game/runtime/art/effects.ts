@@ -1,7 +1,8 @@
 /**
  * Effect painters: the small textures the renderer scales, fades and tints at run time (steam
  * puffs, lamp light pools, sale sparkles, the selection ring, queue and reserved-seat markers,
- * the carried tray, the customer status bubbles and the patience arc track).
+ * the carried tray, a tray left on a seat, the Writer's Pick plaque, the customer status
+ * bubbles and the patience arc track).
  *
  * Each effect is centred in an {@link EFFECT_SIZE} square. Steam, the light pool, the sparkle and
  * the selection ring are painted white so the renderer can tint them; the markers are white tape
@@ -12,6 +13,7 @@ import {
   css,
   fill_circle,
   fill_ellipse,
+  fill_polygon,
   fill_rounded_rect,
   line,
   linear_gradient,
@@ -403,6 +405,71 @@ function indicator(kind: IndicatorKind): EffectPainter {
   return (ctx, frame) => paint_indicator(ctx, kind, frame);
 }
 
+/** The ceramic of an empty bowl left on a tray. */
+const BOWL_CERAMIC = 0xf3efe6;
+/** The paper of a used tissue left on a tray. */
+const TISSUE_PAPER = 0xfbfaf6;
+/** The brass of a Writer's Pick plaque. */
+const PLAQUE_BRASS = 0xc9a24a;
+/** The ink of the star on a Writer's Pick plaque. */
+const PLAQUE_INK = 0x5a3e12;
+
+/**
+ * Paints a tray a guest left on their seat: the food tray with an empty bowl, a resting pair of
+ * chopsticks and a crumpled tissue, so it reads as waiting for the table-cleaning crew.
+ *
+ * @param ctx - The paint context.
+ * @param frame - The paint frame.
+ */
+function paint_left_tray(ctx: PaintContext, frame: PaintFrame): void {
+  paint_tray(ctx, frame);
+  const bowl_x = CENTRE - 4;
+  const bowl_y = CENTRE - 2;
+  fill_ellipse(ctx, bowl_x, bowl_y + 1.5, 9, 5.5, css(shade(BOWL_CERAMIC, 0.25)));
+  fill_ellipse(ctx, bowl_x, bowl_y, 9, 5.5, css(BOWL_CERAMIC));
+  fill_ellipse(ctx, bowl_x, bowl_y + 0.5, 6.5, 3.6, css(shade(BOWL_CERAMIC, 0.12)));
+  stroke_ellipse(ctx, bowl_x, bowl_y, 9, 5.5, css(SHADOW, frame.isHighContrast ? 0.9 : 0.3), frame.isHighContrast ? 1.2 : 0.8);
+  line(ctx, CENTRE + 5, CENTRE - 7, CENTRE + 14, CENTRE + 3, css(shade(TRAY_LINER, 0.45)), 1.4);
+  line(ctx, CENTRE + 7, CENTRE - 7, CENTRE + 16, CENTRE + 2, css(shade(TRAY_LINER, 0.45)), 1.4);
+  fill_circle(ctx, CENTRE + 9, CENTRE + 5, 3, css(TISSUE_PAPER));
+  fill_circle(ctx, CENTRE + 11.5, CENTRE + 4, 2.2, css(shade(TISSUE_PAPER, 0.08)));
+}
+
+/**
+ * Paints a Writer's Pick plaque: a small brass plate with a bevelled rim and a five-point star,
+ * hung on a stall that earned the food writer's recommendation.
+ *
+ * @param ctx - The paint context.
+ * @param frame - The paint frame.
+ */
+function paint_writer_plaque(ctx: PaintContext, frame: PaintFrame): void {
+  const width = 26;
+  const height = 20;
+  const x = CENTRE - width / 2;
+  const y = CENTRE - height / 2;
+  if (!frame.isLowDetail) fill_rounded_rect(ctx, x + 1, y + 2, width, height, 4, css(SHADOW, 0.3));
+  fill_rounded_rect(
+    ctx,
+    x,
+    y,
+    width,
+    height,
+    4,
+    linear_gradient(ctx, x, y, x + width, y + height, [
+      [0, tint(PLAQUE_BRASS, 0.35)],
+      [1, shade(PLAQUE_BRASS, 0.2)],
+    ]),
+  );
+  stroke_rounded_rect(ctx, x + 2, y + 2, width - 4, height - 4, 3, css(shade(PLAQUE_BRASS, 0.35)), 1);
+  const points: [number, number][] = [];
+  for (let index = 0; index < 10; index += 1) {
+    const angle = -Math.PI / 2 + (index * Math.PI) / 5;
+    const radius = index % 2 === 0 ? 6.5 : 2.8;
+    points.push([CENTRE + Math.cos(angle) * radius, CENTRE + 0.5 + Math.sin(angle) * radius]);
+  }
+  fill_polygon(ctx, points, css(frame.isHighContrast ? 0x000000 : PLAQUE_INK));
+}
+
 const EFFECT_PAINTERS: Readonly<Record<EffectKind, EffectPainter>> = {
   steam: paint_steam,
   "light-pool": paint_light_pool,
@@ -421,6 +488,8 @@ const EFFECT_PAINTERS: Readonly<Record<EffectKind, EffectPainter>> = {
   "indicator-return": indicator("return"),
   "indicator-exit": indicator("exit"),
   "patience-arc": paint_patience_arc,
+  "left-tray": paint_left_tray,
+  "writer-plaque": paint_writer_plaque,
 };
 
 /**

@@ -1,6 +1,6 @@
 # Decision Log
 
-Status: Active; architecture decisions have detailed ADRs in this folder: [0001](0001-browser-game-stack.md), [0002](0002-art-style-and-perspective.md), [0003](0003-local-first-persistence-and-offline.md), [0004](0004-simulation-and-ui-boundaries.md) and [0005](0005-painted-sprite-rendering.md)
+Status: Active; architecture decisions have detailed ADRs in this folder: [0001](0001-browser-game-stack.md), [0002](0002-art-style-and-perspective.md), [0003](0003-local-first-persistence-and-offline.md), [0004](0004-simulation-and-ui-boundaries.md), [0005](0005-painted-sprite-rendering.md) and [0006](0006-seeded-neighbourhood-and-save-v5.md)
 
 | ID | Decision | Rationale | Status |
 |---|---|---|---|
@@ -24,6 +24,7 @@ Status: Active; architecture decisions have detailed ADRs in this folder: [0001]
 | D-018 | Rebrand as Hawker Balance and add nutrition as a parallel educational system | Teach serving-level trade-offs through reviewed data, variants, fictional visit intents, objectives, and analytics without altering the established economy or assigning health traits to personas | Accepted; source and human review pending |
 | D-019 | Expand content `1.3.0` to 14 stalls / 54 dishes / 104 released nutrition profiles / 14 variant families, with separate Health and Star ratings and condition-aware visits | Use the supplied Singapore food dataset for every dish, broaden dataset-backed hawker variety, and make health-related preferences visible while keeping conditions independent of persona/demographics and avoiding medical claims | Accepted; automated source review passed, human review pending |
 | D-020 | Paint the recipes once into textures with pure Canvas 2D painters and draw retained Phaser sprites, shown in a 3/4 oblique view over the same grid, with per-rotation textures, layered stalls and people with legs, faces and varied builds ([ADR 0005](0005-painted-sprite-rendering.md)) | Illustrated fidelity (materials, shading, legible food, baked signs) and a per-tick cost independent of the art, while keeping footprints, hit testing and saves unchanged | Accepted; human visual and cultural review pending |
+| D-021 | Add a seeded neighbourhood (day cards from an adaptive shuffle bag, a director, the food writer and the daily Service Review) drawn from streams derived from a per-centre world seed and the day, and bump the core save to schema V5 with a monotone peak reputation for unlock gates ([ADR 0006](0006-seeded-neighbourhood-and-save-v5.md)) | Give each day a telegraphed identity and a reviewable end without gambling-like mechanics, timed exclusivity or extra draws on the simulation's random stream | Accepted; human playtest and cultural review of the cards pending |
 
 ## Decision changes
 

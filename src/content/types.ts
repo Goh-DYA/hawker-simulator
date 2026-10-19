@@ -9,6 +9,7 @@ import type { z } from "zod";
 
 import type {
   audioReferenceSchema,
+  calendarCardSchema,
   cardinalDirectionSchema,
   customerArchetypeSchema,
   dietaryTagSchema,
@@ -73,6 +74,8 @@ export type StallUpgradeLevel = ReadonlyDeep<z.output<typeof stallUpgradeSchema>
 export type StallDefinition = ReadonlyDeep<z.output<typeof stallSchema>>;
 
 export type DishCategory = ReadonlyDeep<z.output<typeof dishCategorySchema>>;
+
+export type CalendarCardContent = ReadonlyDeep<z.output<typeof calendarCardSchema>>;
 
 export type DietaryTag = ReadonlyDeep<z.output<typeof dietaryTagSchema>>;
 

@@ -63,6 +63,18 @@ export interface Toast extends RuntimeEvent {
 }
 
 /**
+ * Draws a random world seed for a new centre, so each new centre gets its own neighbourhood
+ * calendar. The seed is saved with the centre, so a reload or an import keeps the same days.
+ *
+ * @returns A non-zero unsigned 32-bit seed.
+ */
+function create_random_world_seed(): number {
+  const values = new Uint32Array(1);
+  crypto.getRandomValues(values);
+  return values[0] || 1;
+}
+
+/**
  * Log a failure that the screen handles without rethrowing.
  *
  * @param context - What failed, such as `"preferences load failed"`.
@@ -302,6 +314,7 @@ export function useHawkerRuntime(options: HawkerRuntimeOptions): HawkerRuntime {
           parent: hostRef.current,
           settings: preferences.values.settings,
           initialStates,
+          createWorldSeed: create_random_world_seed,
           onSnapshot(nextSnapshot) {
             optionsRef.current.onSnapshot(nextSnapshot);
             audioRef.current?.setGameplayState(

@@ -120,6 +120,8 @@ export const EFFECT_KINDS = [
   "indicator-return",
   "indicator-exit",
   "patience-arc",
+  "left-tray",
+  "writer-plaque",
 ] as const;
 export type EffectKind = (typeof EFFECT_KINDS)[number];
 

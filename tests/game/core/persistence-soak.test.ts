@@ -18,7 +18,7 @@ describe("versioned persistence", () => {
     expect(Object.keys(active.customers).length).toBeGreaterThan(0);
     const serialized = serializeGameState(active);
     const loaded = deserializeGameState(serialized, TEST_CATALOG, { config: active.config });
-    expect(loaded.schemaVersion).toBe(4);
+    expect(loaded.schemaVersion).toBe(5);
     expect(loaded.economy).toEqual(active.economy);
     expect(loaded.progression).toEqual(active.progression);
     expect(loaded.objects).toEqual(active.objects);
@@ -39,7 +39,7 @@ describe("versioned persistence", () => {
       reputation: 4,
       seed: 123,
     });
-    expect(migrated.schemaVersion).toBe(4);
+    expect(migrated.schemaVersion).toBe(5);
     expect(migrated.economy.currency).toBe(321);
     expect(migrated.progression).toMatchObject({ xp: 450, level: 3, reputation: 4 });
   });

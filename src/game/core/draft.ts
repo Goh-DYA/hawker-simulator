@@ -18,6 +18,7 @@ import type {
   CustomerStatus,
   GameState,
   GridPoint,
+  NeighbourhoodState,
   PlaceableDefinition,
   PlacedObject,
   SimulationEvent,
@@ -35,6 +36,8 @@ export interface Draft {
   readonly preferredRouteKeys: ReadonlySet<string>;
   seatReservations: Record<string, string>;
   unclearedTrays: Record<string, UnclearedTray>;
+  /** The neighbourhood, replaced whenever a settled visit is recorded in its ledger. */
+  neighbourhood: NeighbourhoodState | undefined;
   economy: GameState["economy"];
   progression: GameState["progression"];
   rngState: number;
@@ -85,6 +88,7 @@ export function createDraft(state: GameState, tick: number): Draft {
     preferredRouteKeys: new Set(state.routeGuidePoints.map(pointKey)),
     seatReservations: { ...state.seatReservations },
     unclearedTrays: { ...state.unclearedTrays },
+    neighbourhood: state.neighbourhood,
     economy: { ...state.economy },
     progression: clone_progression(state.progression),
     rngState: state.rngState,

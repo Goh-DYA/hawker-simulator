@@ -6,6 +6,7 @@
  * module is free of Phaser so the projection can be tested on its own.
  */
 import {
+  CALENDAR_CARDS,
   CUSTOMER_ARCHETYPES,
   DISHES,
   PLACEABLES,
@@ -128,6 +129,7 @@ export function buildCatalog(): {
         starRating: dish.starRating,
         baseDemand: dish.baseDemand,
         preferenceTags: dish.preferenceTags,
+        category: dish.category,
         unlockLevel: dish.unlockRequirement.level,
         unlockReputation: dish.unlockRequirement.reputation / REPUTATION_SCALE,
         nutritionVariants,
@@ -229,7 +231,19 @@ export function buildCatalog(): {
     ]),
   );
 
-  return { catalog: { placeables, dishes, archetypes }, visuals };
+  const calendarCards: SimulationCatalog["calendarCards"] = CALENDAR_CARDS.map((card) => ({
+    id: card.id,
+    isOpeningDay: card.isOpeningDay,
+    intensity: card.intensity,
+    arrivalFactor: card.arrivalFactor,
+    lunchPeakFactor: card.lunchPeakFactor,
+    dinnerPeakFactor: card.dinnerPeakFactor,
+    eatingTimeFactor: card.eatingTimeFactor,
+    archetypeFactors: card.archetypeFactors.map((entry) => ({ ...entry })),
+    categoryAppeal: card.categoryAppeal.map((entry) => ({ ...entry })),
+  }));
+
+  return { catalog: { placeables, dishes, archetypes, calendarCards }, visuals };
 }
 
 /**

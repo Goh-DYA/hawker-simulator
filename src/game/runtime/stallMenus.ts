@@ -140,16 +140,17 @@ export function isDishIdUnlockedForMenu(
 /**
  * Reads the menu-unlock progression from a game state.
  *
+ * Unlocks read the peak reputation, so a dish never leaves the menu choices after a poor day.
  * Core stores reputation divided by `REPUTATION_SCALE`, while dish unlock requirements use the
  * content's displayed reputation points, so the core value is scaled up here.
  *
- * @param state - The game state to read the level and reputation from.
- * @returns The level and content-scale reputation that gate dish unlocks.
+ * @param state - The game state to read the level and peak reputation from.
+ * @returns The level and content-scale peak reputation that gate dish unlocks.
  */
 export function stallMenuProgression(state: GameState) {
   return {
     level: state.progression.level,
-    reputation: state.progression.reputation * REPUTATION_SCALE,
+    reputation: state.progression.peakReputation * REPUTATION_SCALE,
   };
 }
 

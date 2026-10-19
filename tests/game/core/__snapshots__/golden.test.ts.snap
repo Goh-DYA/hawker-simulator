@@ -15,6 +15,7 @@ exports[`core simulation golden master > (a) runs seed soak-2026 for 600 steps o
     "xp": 1406,
     "level": 4,
     "reputation": 3.382519864895492,
+    "peakReputation": 3.431711212071928,
     "unlockedDefinitionIds": [
       "seat",
       "stall",
@@ -1485,6 +1486,7 @@ exports[`core simulation golden master > (a) runs seed soak-2026 for 600 steps o
       },
     },
   },
+  "unclearedTrays": {},
 }
 `;
 
@@ -1503,6 +1505,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
     "xp": 80,
     "level": 1,
     "reputation": 0.7869371927010003,
+    "peakReputation": 2.5,
     "unlockedDefinitionIds": [
       "seat",
       "stall",
@@ -2655,6 +2658,7 @@ exports[`core simulation golden master > (b) runs the 80-agent benchmark start s
       },
     },
   },
+  "unclearedTrays": {},
 }
 `;
 
@@ -2673,6 +2677,7 @@ exports[`core simulation golden master > (c) advances lower-end mode with frames
     "xp": 1458,
     "level": 4,
     "reputation": 3.343715676671772,
+    "peakReputation": 3.3521461391083114,
     "unlockedDefinitionIds": [
       "seat",
       "stall",
@@ -4183,6 +4188,7 @@ exports[`core simulation golden master > (c) advances lower-end mode with frames
       },
     },
   },
+  "unclearedTrays": {},
 }
 `;
 
@@ -4201,6 +4207,7 @@ exports[`core simulation golden master > (d) runs the nutrition catalog at level
     "xp": 1770,
     "level": 5,
     "reputation": 3.303543549588014,
+    "peakReputation": 3.303543549588014,
     "unlockedDefinitionIds": [
       "seat",
       "stall",
@@ -9337,6 +9344,7 @@ exports[`core simulation golden master > (d) runs the nutrition catalog at level
       },
     },
   },
+  "unclearedTrays": {},
 }
 `;
 
@@ -9355,6 +9363,7 @@ exports[`core simulation golden master > (e) applies a fixed build-command scrip
     "xp": 810,
     "level": 3,
     "reputation": 3.046624374164913,
+    "peakReputation": 3.046624374164913,
     "unlockedDefinitionIds": [
       "seat",
       "stall",
@@ -10768,6 +10777,7 @@ exports[`core simulation golden master > (e) applies a fixed build-command scrip
       },
     },
   },
+  "unclearedTrays": {},
 }
 `;
 
@@ -10786,6 +10796,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
     "xp": 9400,
     "level": 10,
     "reputation": 3.3749999393981582,
+    "peakReputation": 3.3749999393981582,
     "unlockedDefinitionIds": [
       "seat",
       "stall",
@@ -15902,5 +15913,6 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
       },
     },
   },
+  "unclearedTrays": {},
 }
 `;

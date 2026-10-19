@@ -1,10 +1,11 @@
 /**
  * Parsers for the compound sections of a persisted save.
  *
- * Each parser validates one section (map, objects, objectives, mastery, visit ratings or
- * nutrition metrics) and is shared by the per-version parsers in `migrations.ts`.
+ * Each parser validates one section (map, objects, objectives, mastery, visit ratings,
+ * nutrition metrics or the neighbourhood) and is shared by the per-version parsers in `migrations.ts`.
  */
 import {
+  DEPARTURE_REASONS,
   NUTRITION_OBJECTIVE_CRITERIA,
   NUTRITION_UNAVAILABLE_REASONS,
   OBJECTIVE_KINDS,
@@ -36,6 +37,12 @@ import type {
   NutritionRequestResult,
   NutritionValue,
   HealthCondition,
+  DayReport,
+  DepartureCounts,
+  DepartureReason,
+  NeighbourhoodState,
+  VisitRatingComponents,
+  WriterVisit,
 } from "../types";
 import {
   PersistenceError,
@@ -490,4 +497,138 @@ export function parseVisitRatings(value: unknown): readonly VisitRating[] {
       day: safeInteger(entry.day, `metrics.visitRatings[${index}].day`, 1),
     };
   });
+}
+
+const WRITER_OUTCOMES = ["pending", "plaque", "no-plaque", "too-few-visits"] as const;
+const WRITER_REPORT_OUTCOMES = ["plaque", "no-plaque", "too-few-visits"] as const;
+/** Most card or stall IDs a saved neighbourhood list may hold. */
+const MAX_NEIGHBOURHOOD_IDS = 256;
+
+function parse_record(value: unknown, path: string): Record<string, unknown> {
+  if (!isRecord(value)) throw new PersistenceError(`${path} must be an object`);
+  return value;
+}
+
+function parse_id_list(value: unknown, path: string): readonly string[] {
+  if (!Array.isArray(value) || value.length > MAX_NEIGHBOURHOOD_IDS) {
+    throw new PersistenceError(`${path} must be a string array of at most ${MAX_NEIGHBOURHOOD_IDS} entries`);
+  }
+  return value.map((entry, index) => stringValue(entry, `${path}[${index}]`));
+}
+
+function parse_components(value: unknown, path: string, maximum: number): VisitRatingComponents {
+  const record = parse_record(value, path);
+  return Object.fromEntries(
+    VISIT_RATING_COMPONENT_KEYS.map((key) => {
+      const parsed = finite(record[key], `${path}.${key}`, 0);
+      if (parsed > maximum) throw new PersistenceError(`${path}.${key} is out of range`);
+      return [key, parsed];
+    }),
+  ) as unknown as VisitRatingComponents;
+}
+
+function parse_departure_counts(value: unknown, path: string): DepartureCounts {
+  const record = parse_record(value, path);
+  return Object.fromEntries(
+    DEPARTURE_REASONS.map((reason) => [reason, safeInteger(record[reason], `${path}.${reason}`, 0)]),
+  ) as Record<DepartureReason, number>;
+}
+
+function parse_writer_visit(value: unknown, path: string): WriterVisit | null {
+  if (value === null) return null;
+  const record = parse_record(value, path);
+  return {
+    stallDefinitionId: stringValue(record.stallDefinitionId, `${path}.stallDefinitionId`),
+    threshold: boundedPercentage(record.threshold, `${path}.threshold`),
+    scoreTotal: safeInteger(record.scoreTotal, `${path}.scoreTotal`, 0),
+    visitCount: safeInteger(record.visitCount, `${path}.visitCount`, 0),
+    outcome: assert_one_of(record.outcome, WRITER_OUTCOMES, `${path}.outcome is invalid`),
+  };
+}
+
+function parse_day_report(value: unknown, path: string): DayReport | null {
+  if (value === null) return null;
+  const record = parse_record(value, path);
+  const writer = record.writer === null ? null : parse_record(record.writer, `${path}.writer`);
+  if (typeof record.cardId !== "string") throw new PersistenceError(`${path}.cardId must be a string`);
+  return {
+    day: safeInteger(record.day, `${path}.day`, 1),
+    cardId: record.cardId,
+    served: safeInteger(record.served, `${path}.served`, 0),
+    leftEarly: safeInteger(record.leftEarly, `${path}.leftEarly`, 0),
+    revenue: finite(record.revenue, `${path}.revenue`, 0),
+    ratedVisits: safeInteger(record.ratedVisits, `${path}.ratedVisits`, 0),
+    averageScore: boundedPercentage(record.averageScore, `${path}.averageScore`),
+    componentAverages: parse_components(record.componentAverages, `${path}.componentAverages`, 100),
+    departureCounts: parse_departure_counts(record.departureCounts, `${path}.departureCounts`),
+    trayReturns: safeInteger(record.trayReturns, `${path}.trayReturns`, 0),
+    servedStallCount: safeInteger(record.servedStallCount, `${path}.servedStallCount`, 0),
+    objectivesCompleted: safeInteger(record.objectivesCompleted, `${path}.objectivesCompleted`, 0),
+    objectivesTotal: safeInteger(record.objectivesTotal, `${path}.objectivesTotal`, 0),
+    unlockedCount: safeInteger(record.unlockedCount, `${path}.unlockedCount`, 0),
+    writer: writer === null
+      ? null
+      : {
+          stallDefinitionId: stringValue(writer.stallDefinitionId, `${path}.writer.stallDefinitionId`),
+          threshold: boundedPercentage(writer.threshold, `${path}.writer.threshold`),
+          averageScore: boundedPercentage(writer.averageScore, `${path}.writer.averageScore`),
+          visitCount: safeInteger(writer.visitCount, `${path}.writer.visitCount`, 0),
+          outcome: assert_one_of(writer.outcome, WRITER_REPORT_OUTCOMES, `${path}.writer.outcome is invalid`),
+        },
+  };
+}
+
+/**
+ * Reads the saved neighbourhood.
+ *
+ * @param value - The untrusted value read from the save; `null` is a centre without one.
+ * @returns The neighbourhood, or `null`.
+ * @throws PersistenceError When a field is missing or out of range.
+ */
+export function parseNeighbourhood(value: unknown): NeighbourhoodState | null {
+  if (value === null || value === undefined) return null;
+  const record = parse_record(value, "neighbourhood");
+  const calendar = parse_record(record.calendar, "neighbourhood.calendar");
+  const ledger = parse_record(record.ledger, "neighbourhood.ledger");
+  const tension = finite(record.tension, "neighbourhood.tension", 0);
+  if (tension > 1) throw new PersistenceError("neighbourhood.tension must be at most 1");
+  if (typeof calendar.isWriterTomorrow !== "boolean") {
+    throw new PersistenceError("neighbourhood.calendar.isWriterTomorrow must be boolean");
+  }
+  const cardId = (entry: unknown, path: string): string => {
+    if (typeof entry !== "string") throw new PersistenceError(`${path} must be a string`);
+    return entry;
+  };
+  return {
+    worldSeed: safeInteger(record.worldSeed, "neighbourhood.worldSeed", 1, 0xffff_ffff),
+    calendar: {
+      day: safeInteger(calendar.day, "neighbourhood.calendar.day", 1),
+      todayCardId: cardId(calendar.todayCardId, "neighbourhood.calendar.todayCardId"),
+      tomorrowCardId: cardId(calendar.tomorrowCardId, "neighbourhood.calendar.tomorrowCardId"),
+      bagCardIds: parse_id_list(calendar.bagCardIds, "neighbourhood.calendar.bagCardIds"),
+      writer: parse_writer_visit(calendar.writer, "neighbourhood.calendar.writer"),
+      isWriterTomorrow: calendar.isWriterTomorrow,
+      lastWriterDay: safeInteger(calendar.lastWriterDay, "neighbourhood.calendar.lastWriterDay", 0),
+    },
+    tension,
+    ledger: {
+      day: safeInteger(ledger.day, "neighbourhood.ledger.day", 1),
+      startCompletedVisits: safeInteger(ledger.startCompletedVisits, "neighbourhood.ledger.startCompletedVisits", 0),
+      startLifetimeRevenue: finite(ledger.startLifetimeRevenue, "neighbourhood.ledger.startLifetimeRevenue", 0),
+      startTrayReturns: safeInteger(ledger.startTrayReturns, "neighbourhood.ledger.startTrayReturns", 0),
+      startUnlockedCount: safeInteger(ledger.startUnlockedCount, "neighbourhood.ledger.startUnlockedCount", 0),
+      ratedVisits: safeInteger(ledger.ratedVisits, "neighbourhood.ledger.ratedVisits", 0),
+      unservedDepartures: safeInteger(
+        ledger.unservedDepartures,
+        "neighbourhood.ledger.unservedDepartures",
+        0,
+      ),
+      ratingScoreTotal: safeInteger(ledger.ratingScoreTotal, "neighbourhood.ledger.ratingScoreTotal", 0),
+      componentTotals: parse_components(ledger.componentTotals, "neighbourhood.ledger.componentTotals", Number.MAX_SAFE_INTEGER),
+      departureCounts: parse_departure_counts(ledger.departureCounts, "neighbourhood.ledger.departureCounts"),
+      servedStallIds: parse_id_list(ledger.servedStallIds, "neighbourhood.ledger.servedStallIds"),
+    },
+    lastReport: parse_day_report(record.lastReport ?? null, "neighbourhood.lastReport"),
+    writerPickStallIds: parse_id_list(record.writerPickStallIds, "neighbourhood.writerPickStallIds"),
+  };
 }

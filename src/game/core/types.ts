@@ -79,6 +79,8 @@ export interface DishDefinition {
   /** Authored relative appeal in the inclusive 0-1 range. */
   readonly baseDemand?: number;
   readonly preferenceTags?: readonly string[];
+  /** Authored menu category, such as `drink` or `noodles`, which neighbourhood days can favour. */
+  readonly category?: string;
   /** Optional progression gates used when evaluating nutrition-intent availability. */
   readonly unlockLevel?: number;
   readonly unlockReputation?: number;
@@ -193,11 +195,45 @@ export interface CustomerArchetype {
   };
 }
 
+/** How one neighbourhood day card changes a customer archetype's arrival weight. */
+export interface CalendarArchetypeFactor {
+  readonly archetypeId: string;
+  readonly factor: number;
+}
+
+/** How one neighbourhood day card changes the appeal of a dish category. */
+export interface CalendarCategoryAppeal {
+  readonly category: string;
+  /** Added to a matching dish's menu appeal when guests choose a stall and a dish. */
+  readonly bonus: number;
+}
+
+/**
+ * A neighbourhood day card: a fictional local happening that shapes one operating day.
+ *
+ * Every factor is a multiplier where 1 changes nothing.
+ */
+export interface CalendarCardDefinition {
+  readonly id: string;
+  /** The fixed card of day 1, which is never drawn from the bag. */
+  readonly isOpeningDay: boolean;
+  /** How demanding the day is, from 0 (calm) to 1 (busy); the director weighs cards by it. */
+  readonly intensity: number;
+  readonly arrivalFactor: number;
+  readonly lunchPeakFactor: number;
+  readonly dinnerPeakFactor: number;
+  readonly eatingTimeFactor: number;
+  readonly archetypeFactors: readonly CalendarArchetypeFactor[];
+  readonly categoryAppeal: readonly CalendarCategoryAppeal[];
+}
+
 /** The definitions the simulation runs on, keyed by ID. */
 export interface SimulationCatalog {
   readonly placeables: Readonly<Record<string, PlaceableDefinition>>;
   readonly dishes: Readonly<Record<string, DishDefinition>>;
   readonly archetypes: Readonly<Record<string, CustomerArchetype>>;
+  /** Neighbourhood day cards in authored order; without them every day is ordinary. */
+  readonly calendarCards?: readonly CalendarCardDefinition[];
 }
 
 /** A placeable instance on the map, with its stall state and queue settings. */
@@ -274,6 +310,8 @@ export interface Customer {
   readonly hasTray: boolean;
   /** Why the guest is leaving, once a specific reason is known; settles the visit rating. */
   readonly departureReason?: DepartureReason;
+  /** Set when the guest's sale counts towards today's food-writer review. */
+  readonly isWriterSample?: boolean;
   /** True once the order has been handed over, including a zero-price dish. */
   readonly served: boolean;
   readonly spent: number;
@@ -309,6 +347,103 @@ export type ObjectiveKind = (typeof OBJECTIVE_KINDS)[number];
 
 /** Why a guest left, recorded on the visit rating. */
 export type DepartureReason = (typeof DEPARTURE_REASONS)[number];
+
+/** A count for every departure reason, in `DEPARTURE_REASONS` order. */
+export type DepartureCounts = Readonly<Record<DepartureReason, number>>;
+
+/** Today's food-writer visit: the stall under review and the visits counted so far. */
+export interface WriterVisit {
+  readonly stallDefinitionId: string;
+  /** Average visit score the stall needs for a Writer's Pick plaque. */
+  readonly threshold: number;
+  /** Sum of the counted visit scores, which are whole numbers. */
+  readonly scoreTotal: number;
+  readonly visitCount: number;
+  /** `pending` until the review window closes. */
+  readonly outcome: "pending" | "plaque" | "no-plaque" | "too-few-visits";
+}
+
+/** The neighbourhood calendar: today's and tomorrow's cards, the bag and the writer schedule. */
+export interface CalendarState {
+  /** The operating day `todayCardId` applies to. */
+  readonly day: number;
+  readonly todayCardId: string;
+  readonly tomorrowCardId: string;
+  /** Cards still in the shuffle bag, in authored order. */
+  readonly bagCardIds: readonly string[];
+  /** Today's food-writer visit, or `null` on a day without one. */
+  readonly writer: WriterVisit | null;
+  readonly isWriterTomorrow: boolean;
+  /** The last day a food writer was scheduled, or 0. */
+  readonly lastWriterDay: number;
+}
+
+/** Running totals for the operating day, which become its report at the day's end. */
+export interface DayLedger {
+  readonly day: number;
+  readonly startCompletedVisits: number;
+  readonly startLifetimeRevenue: number;
+  readonly startTrayReturns: number;
+  readonly startUnlockedCount: number;
+  readonly ratedVisits: number;
+  /** Rated guests who left without being served. */
+  readonly unservedDepartures: number;
+  /** Sum of the day's visit scores, which are whole numbers. */
+  readonly ratingScoreTotal: number;
+  readonly componentTotals: VisitRatingComponents;
+  readonly departureCounts: DepartureCounts;
+  /** Stall definitions that made a sale today, sorted. */
+  readonly servedStallIds: readonly string[];
+}
+
+/** The food writer's verdict in a day report. */
+export interface WriterReport {
+  readonly stallDefinitionId: string;
+  readonly threshold: number;
+  readonly averageScore: number;
+  readonly visitCount: number;
+  readonly outcome: "plaque" | "no-plaque" | "too-few-visits";
+}
+
+/** The Service Review of a finished operating day. */
+export interface DayReport {
+  readonly day: number;
+  readonly cardId: string;
+  /** Sales made during the day. */
+  readonly served: number;
+  /** Guests who left without being served; served guests who found no seat are in `departureCounts`. */
+  readonly leftEarly: number;
+  readonly revenue: number;
+  readonly ratedVisits: number;
+  /** Average visit score, or 0 when no visit was rated. */
+  readonly averageScore: number;
+  readonly componentAverages: VisitRatingComponents;
+  readonly departureCounts: DepartureCounts;
+  readonly trayReturns: number;
+  readonly servedStallCount: number;
+  readonly objectivesCompleted: number;
+  readonly objectivesTotal: number;
+  readonly unlockedCount: number;
+  readonly writer: WriterReport | null;
+}
+
+/**
+ * The seeded neighbourhood: the per-centre world seed, the calendar, the director's tension, the
+ * day ledger, the last day's report and the Writer's Pick plaques.
+ *
+ * Everything random here is drawn from streams derived from `worldSeed` and the day, never from
+ * the simulation's `rngState`.
+ */
+export interface NeighbourhoodState {
+  readonly worldSeed: number;
+  readonly calendar: CalendarState;
+  /** Director tension from 0 (recent days were rough) to 1 (recent days went well). */
+  readonly tension: number;
+  readonly ledger: DayLedger;
+  readonly lastReport: DayReport | null;
+  /** Stall definitions holding a Writer's Pick plaque, sorted. */
+  readonly writerPickStallIds: readonly string[];
+}
 
 /**
  * A tray a guest left on their seat. The seat cannot be used until the table-cleaning crew has
@@ -477,7 +612,13 @@ export interface EconomyState {
 export interface ProgressionState {
   readonly xp: number;
   readonly level: number;
+  /** Live reputation on the zero-to-five scale, an average of recent visits; drives demand. */
   readonly reputation: number;
+  /**
+   * Highest live reputation reached. Every reputation unlock gate reads it, so content never
+   * locks again after a poor day.
+   */
+  readonly peakReputation: number;
   readonly unlockedDefinitionIds: readonly string[];
   readonly expansionCount: number;
   readonly focusDay: number;
@@ -547,6 +688,10 @@ export interface SimulationEvent {
     | "target-recovered"
     | "objective-completed"
     | "milestone-completed"
+    /** A neighbourhood day ended; `amount` is the finished day and its report is in `neighbourhood.lastReport`. */
+    | "day-ended"
+    /** The food writer settled a review; `entityId` is the stall, `message` the outcome, `amount` the average score. */
+    | "writer-reviewed"
     /** Never emitted: stall upgrades currently report through `command-applied`. */
     | "stall-upgraded";
   readonly tick: number;
@@ -600,6 +745,8 @@ export interface GameState {
   readonly economy: EconomyState;
   readonly progression: ProgressionState;
   readonly rngState: number;
+  /** The seeded neighbourhood, or `undefined` when the centre runs without one (core tests). */
+  readonly neighbourhood?: NeighbourhoodState;
   readonly nextCustomerSequence: number;
   readonly spawnCountdownMs: number;
   readonly accumulatorMs: number;
@@ -625,6 +772,8 @@ export interface NewGameOptions {
   readonly config?: SimulationConfigOverrides;
   readonly initialObjects?: readonly PlacedObject[];
   readonly initiallyUnlockedDefinitionIds?: readonly string[];
+  /** Seeds a neighbourhood for the new centre; without it the centre has none. */
+  readonly worldSeed?: number;
 }
 
 /** Places a new object. */
@@ -769,6 +918,7 @@ export interface GameSnapshot {
   readonly customers: readonly Customer[];
   readonly queues: Readonly<Record<string, readonly string[]>>;
   readonly seatReservations: Readonly<Record<string, string>>;
+  readonly neighbourhood?: NeighbourhoodState;
   readonly unclearedTrays: Readonly<Record<string, UnclearedTray>>;
   readonly economy: EconomyState;
   readonly progression: ProgressionState;
@@ -787,7 +937,7 @@ export interface PersistentGameStateV2 {
   readonly qualityMode: QualityMode;
   readonly objects: readonly PlacedObject[];
   readonly economy: EconomyState;
-  readonly progression: ProgressionState;
+  readonly progression: Omit<ProgressionState, "peakReputation">;
   readonly rngState: number;
   readonly nextCustomerSequence: number;
   readonly elapsedMs: number;
@@ -803,7 +953,7 @@ export interface PersistentGameStateV3 {
   readonly qualityMode: QualityMode;
   readonly objects: readonly PlacedObject[];
   readonly economy: EconomyState;
-  readonly progression: ProgressionState;
+  readonly progression: Omit<ProgressionState, "peakReputation">;
   readonly metrics: Pick<SimulationMetrics, "trayReturns" | "visitRatings">;
   readonly rngState: number;
   readonly nextCustomerSequence: number;
@@ -811,6 +961,25 @@ export interface PersistentGameStateV3 {
 }
 
 /** Save V4, the current core save shape: adds the saved nutrition metrics. */
+export interface PersistentGameStateV5 {
+  readonly schemaVersion: 5;
+  readonly savedAtTick: number;
+  readonly map: GridMap;
+  readonly accessPoints: readonly AccessPoint[];
+  readonly routeGuidePoints: readonly GridPoint[];
+  readonly qualityMode: QualityMode;
+  readonly objects: readonly PlacedObject[];
+  readonly economy: EconomyState;
+  readonly progression: ProgressionState;
+  readonly metrics: Pick<SimulationMetrics, "trayReturns" | "visitRatings" | "nutrition">;
+  readonly rngState: number;
+  /** The seeded neighbourhood, or `null` for a centre without one. */
+  readonly neighbourhood: NeighbourhoodState | null;
+  readonly nextCustomerSequence: number;
+  readonly elapsedMs: number;
+}
+
+/** Save V4, which added nutrition metrics; reputation had no peak yet. */
 export interface PersistentGameStateV4 {
   readonly schemaVersion: 4;
   readonly savedAtTick: number;
@@ -820,7 +989,7 @@ export interface PersistentGameStateV4 {
   readonly qualityMode: QualityMode;
   readonly objects: readonly PlacedObject[];
   readonly economy: EconomyState;
-  readonly progression: ProgressionState;
+  readonly progression: Omit<ProgressionState, "peakReputation">;
   readonly metrics: Pick<SimulationMetrics, "trayReturns" | "visitRatings" | "nutrition">;
   readonly rngState: number;
   readonly nextCustomerSequence: number;
@@ -845,4 +1014,5 @@ export type AnyPersistentGameState =
   | PersistentGameStateV1
   | PersistentGameStateV2
   | PersistentGameStateV3
-  | PersistentGameStateV4;
+  | PersistentGameStateV4
+  | PersistentGameStateV5;

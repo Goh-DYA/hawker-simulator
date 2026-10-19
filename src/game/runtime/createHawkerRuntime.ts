@@ -112,14 +112,14 @@ export async function createHawkerRuntime(
       }
     }
     if (!loaded && candidates.length > 0) throw lastLoadError;
-    initial_session = loaded ?? create_fresh_session(authoredCatalog);
+    initial_session = loaded ?? create_fresh_session(authoredCatalog, options.createWorldSeed?.());
   } catch (error) {
     console.warn("[runtime] save recovered as new centre", error);
     options.onEvent({
       kind: "warning",
       message: `The previous save was recovered as a new centre: ${error instanceof Error ? error.message : "unknown save error"}`,
     });
-    initial_session = create_fresh_session(authoredCatalog);
+    initial_session = create_fresh_session(authoredCatalog, options.createWorldSeed?.());
   }
   // Created once and never replaced: the session functions mutate its fields in place.
   const session = create_runtime_session(authoredCatalog, visuals, initial_session);
@@ -143,6 +143,7 @@ export async function createHawkerRuntime(
         xp: xpRequiredForLevel(12),
         level: 12,
         reputation: 5,
+        peakReputation: 5,
         unlockedDefinitionIds: Object.keys(session.catalog.placeables).sort(),
       },
     };
@@ -447,7 +448,7 @@ export async function createHawkerRuntime(
       emitHud(true);
     },
     reset() {
-      adopt_session(session, create_fresh_session(session.authoredCatalog));
+      adopt_session(session, create_fresh_session(session.authoredCatalog, options.createWorldSeed?.()));
       recomputeObjectSequence(session.state, interaction);
       interaction.selectedBuildId = undefined;
       interaction.selectedObjectId = undefined;

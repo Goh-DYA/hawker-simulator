@@ -23,6 +23,7 @@ function progressionWithRanks(
       xp: 0,
       level: 12,
       reputation: 5,
+      peakReputation: 5,
       unlockedDefinitionIds: [],
       expansionCount: 0,
       focusDay: 1,

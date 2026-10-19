@@ -1,11 +1,11 @@
 /**
  * Golden master for save migration and the save/load round trip.
  *
- * The four fixtures are saves frozen from the unrefactored source, one per schema
- * version, all taken from the seed `soak-2026` run over the golden fixture inputs:
+ * The fixtures are saves frozen one per schema version, all taken from the seed `soak-2026`
+ * run over the golden fixture inputs (V1 to V4 from the unrefactored source):
  *
  * - `save-v1.json`: map, access points and objects at step 600, plus money, xp and seed
- *   only. It has no level and no reputation, so it runs the whole V1 to V2 to V4 chain.
+ *   only. It has no level and no reputation, so it runs the whole V1 to V2 to V5 chain.
  * - `save-v2.json`: step 300 in the V2 shape, with entrance/exit and the five V2
  *   progression fields.
  * - `save-v3.json`: step 450 in the first V3 shape, without route guide points, nutrition
@@ -13,9 +13,14 @@
  * - `save-v4.json`: `persistentStateFromGame` at step 600, except that `recentOutcomes`
  *   holds every outcome the run recorded (more than 50), so the trim to the newest 50 on
  *   load is pinned too.
+ * - `save-v5.json`: `persistentStateFromGame` at step 5,400 of the adaptive run with world
+ *   seed 2026 and four synthetic calendar cards, so it holds a neighbourhood on day 2 with a
+ *   finished day-1 report, a peak reputation and a scheduled food writer.
  *
- * Each fixture is checked three ways: the migrated V4 save, the `stateDigest` of the
- * loaded game, and the save string written back from it. The assertions hash raw
+ * Each fixture is checked three ways: the migrated V5 save, the `stateDigest` of the
+ * loaded game, and the save string written back from it. The V1 to V4 digests moved once
+ * when V5 was added, because the current save and snapshot carry the new fields; the
+ * fixtures themselves are unchanged. The assertions hash raw
  * strings, so field order is pinned as well as values. If a refactor makes one fail, the
  * refactor changed save handling: fix the code, never the literal or the fixture.
  */
@@ -48,27 +53,33 @@ interface SaveFixtureHashes {
 const SAVE_FIXTURE_HASHES: readonly SaveFixtureHashes[] = [
   {
     fileName: "save-v1.json",
-    migratedSaveSha256: "e3c5839b5ac3cc0be1856d62af68dc3102f6e4dff1be3c2642b4ac8011a8788c",
-    stateDigestSha256: "4ef0c0679ff3e389e5b3350db97abc18b5325c18e74508d95c55206563f675a3",
-    serializedSaveSha256: "04a8849712bbf8d385d24eec5d9ae3eb1cebd1f746df5580a3bbab58ec606a9c",
+    migratedSaveSha256: "4527c2d5273293d47ae399f05c101a4964d8c5bd0eee2747cbf421e3d81d2416",
+    stateDigestSha256: "e15efa271e5db406aebe5419504419674264a5e5f4ab2d01168b2507130dc24a",
+    serializedSaveSha256: "1a4dcd9048d98675dab8bd2cab85f498a1aed103187a6aa2eda27ed372ee2dde",
   },
   {
     fileName: "save-v2.json",
-    migratedSaveSha256: "6b77e90978e70d34d5ea64bddb3f10d94a82042e7cc0b2d325d28b319cfc15ea",
-    stateDigestSha256: "baad3ba36c3fe07b2cf4d79b49979f74311639f279c85ac902b5761a4b27b60e",
-    serializedSaveSha256: "116f37fa577b17fd4f9bc14e7c61aaf33f76712fde8ef83cd836c336205c0d87",
+    migratedSaveSha256: "2a358048b3166a30610306f4f358531950102d917e5257817abfd74360efb8fc",
+    stateDigestSha256: "a51d8e426aec96c2ae570b95d1410aa83d36962572fcc970fbbbbd1397d7f6df",
+    serializedSaveSha256: "3a93257b79b509841012980b024400955ccc7650a400b1bfb52c3da70ae8f8ee",
   },
   {
     fileName: "save-v3.json",
-    migratedSaveSha256: "9b5e02e400c6d1db8137b1b8f0c21060ff30c3c3957aee5926092039a62bff7c",
-    stateDigestSha256: "0dda2fa829ff7005615ce36ee8e694800cb01786d66628b52673f5d0f5c82d7c",
-    serializedSaveSha256: "301beac9702f9eb75602621236fe74bfb2d80954541b41ac387c2e6407fa1a01",
+    migratedSaveSha256: "ba12f8341105da4f385319f9123ca15fa8fad90e55dea63f562895a704ba842c",
+    stateDigestSha256: "d3f9dd8bc5169a2dcd3561f3529bc880200e5289cbae41a9ad4c9ba0430ec843",
+    serializedSaveSha256: "e35e5d28717f88b91266b5f2de9b3b98617f94232397b3f2f3979cbce6e9bda5",
   },
   {
     fileName: "save-v4.json",
-    migratedSaveSha256: "7aaefd580d140377cafe1952f58839c7773132847b3f28678b8a34d22d3c533e",
-    stateDigestSha256: "02744ef63b8764bb0a47943b5791e798b7ef14d281a24ff2e887c7a8e4109239",
-    serializedSaveSha256: "5a3fca1f0a003dadf8733198e93a552e10bc4f92fdc1d86c37baf12605fb2e53",
+    migratedSaveSha256: "1a94014c72c2f7cc526bf5524e523c67d7264165d50f34afd87254587d08194f",
+    stateDigestSha256: "3cb47752df4110e8cdcd3273cc4933e7299957ada3d6357ef0e5a110fc76bded",
+    serializedSaveSha256: "4816edea55303a849151b2c891c6396901f9c5d7c36d68eadf786dc9d3e16745",
+  },
+  {
+    fileName: "save-v5.json",
+    migratedSaveSha256: "a3a2fae71a499a05ab4c17a23bf394935ba4fd5dceaf1778b8e3e49fdb3ea29d",
+    stateDigestSha256: "0f77b0361f302ee3c1c3cfffcff3edbfb3ae965217c95bb0639137e88652db38",
+    serializedSaveSha256: "536bc2c48c4b064cdf533eed384fe8b9cefd4ae695b9e838de24a9f83f507b38",
   },
 ];
 
@@ -104,8 +115,32 @@ describe("frozen save fixtures", () => {
   });
 });
 
+describe("schema V5", () => {
+  it("starts a migrated V4 save at its reputation peak and without a neighbourhood", () => {
+    const v4 = load_save_fixture("save-v4.json") as { readonly progression: { readonly reputation: number } };
+    const migrated = migratePersistentState(load_save_fixture("save-v4.json"));
+    expect(migrated.schemaVersion).toBe(5);
+    expect(migrated.progression.peakReputation).toBe(v4.progression.reputation);
+    expect(migrated.neighbourhood).toBeNull();
+  });
+
+  it("keeps the V5 fixture's neighbourhood through a load and a save", () => {
+    const fixture = load_save_fixture("save-v5.json") as { readonly neighbourhood: unknown };
+    const loaded = deserializeGameState(load_save_fixture("save-v5.json"), TEST_CATALOG);
+    expect(loaded.neighbourhood?.lastReport?.day).toBe(1);
+    expect(loaded.neighbourhood?.calendar.day).toBe(2);
+    expect(JSON.parse(JSON.stringify(loaded.neighbourhood))).toEqual(fixture.neighbourhood);
+  });
+
+  it("rejects a neighbourhood with an out-of-range tension", () => {
+    const fixture = load_save_fixture("save-v5.json") as { neighbourhood: { tension: number } };
+    fixture.neighbourhood.tension = 2;
+    expect(() => migratePersistentState(fixture)).toThrow("neighbourhood.tension must be at most 1");
+  });
+});
+
 describe.each(SAVE_FIXTURE_HASHES)("$fileName", (expected) => {
-  it("migrates to the pinned V4 save", () => {
+  it("migrates to the pinned V5 save", () => {
     const migrated = migratePersistentState(load_save_fixture(expected.fileName));
     expect(hash_sha256(JSON.stringify(migrated))).toBe(expected.migratedSaveSha256);
   });

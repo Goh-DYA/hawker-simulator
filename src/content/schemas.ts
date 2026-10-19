@@ -496,3 +496,37 @@ export const launchContentSchema = z.object({
   nutrition: nutritionContentSchema,
   localization: z.record(z.string(), z.string().min(1)),
 });
+
+/** A neighbourhood day-card ID, such as `calendar.monsoon-shower`. */
+export const calendarCardIdSchema = z.string().regex(/^calendar\.[a-z0-9]+(?:-[a-z0-9]+)*$/);
+
+/** A multiplier a day card applies, where 1 changes nothing. */
+const calendarFactorSchema = z.number().min(0.25).max(3);
+
+export const calendarCardSchema = z.object({
+  id: calendarCardIdSchema,
+  /** The fixed card of day 1; exactly one card is the opening day, and it is never drawn. */
+  isOpeningDay: z.boolean(),
+  /** How demanding the day is, from 0 (calm) to 1 (busy); the director weighs cards by it. */
+  intensity: z.number().min(0).max(1),
+  /** Multiplies the whole day's arrival demand. */
+  arrivalFactor: calendarFactorSchema,
+  /** Multiplies the lunch crowd's peak. */
+  lunchPeakFactor: calendarFactorSchema,
+  /** Multiplies the dinner crowd's peak. */
+  dinnerPeakFactor: calendarFactorSchema,
+  /** Multiplies how long guests take to eat, so values above 1 mean guests linger. */
+  eatingTimeFactor: calendarFactorSchema,
+  /** Arrival-weight multipliers for named customer archetypes. */
+  archetypeFactors: z.array(z.object({ archetypeId: contentIdSchema, factor: calendarFactorSchema })),
+  /** Appeal added to dishes of a category when guests choose a stall and a dish. */
+  categoryAppeal: z.array(z.object({ category: dishCategorySchema, bonus: z.number().min(-2).max(2) })),
+  /** The card's English copy, shown in the HUD and the Service Review. */
+  copy: z.object({
+    name: z.string().min(3),
+    /** One short line naming the day's effect, for the Today strip. */
+    summary: z.string().min(10).max(90),
+    /** The forecast line shown the day before. */
+    forecast: z.string().min(20).max(160),
+  }),
+});
