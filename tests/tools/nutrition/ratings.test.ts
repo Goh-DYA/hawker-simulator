@@ -1,10 +1,10 @@
 /**
  * Goldens for the nutrition importer's rating passes and its serialised output.
  *
- * The re-rating suite clears every derived rating and intent fit from the checked-in
- * `src/content/nutrition.generated.json`, reruns `addIntentFits` and `addHealthRatings`
- * on the real profiles, and expects the checked-in values back exactly. That pins the
- * rating maths against real data, including trace and unreported nutrients.
+ * The re-rating suite clears every derived rating, rating part and intent fit from the
+ * checked-in `src/content/nutrition.generated.json`, reruns `addIntentFits` and
+ * `addHealthRatings` on the real profiles, and expects the checked-in values back exactly.
+ * That pins the rating maths against real data, including trace and unreported nutrients.
  *
  * The output suite runs `buildNutritionContent` end to end on `fixtures/varied.csv` and
  * pins the sha256 of the exact text the CLI writes. The fixture has one row per mapped
@@ -44,7 +44,7 @@ import {
 } from "@/tools/nutrition/importer.mjs";
 
 /** sha256 of `${JSON.stringify(content, null, 2)}\n` for the varied fixture. */
-const VARIED_OUTPUT_SHA256 = "8f84444ad182cb18764ebda77b9005d5536ae6c0ec753e24473d7df70cb0f05b";
+const VARIED_OUTPUT_SHA256 = "6c9f7485e21023b37c2151a669f6d3be070a631a39362f7a3fe610488b4d90f7";
 
 /** Guideline rows for the 11 nutrients the importer recognises, in source order. */
 const GUIDELINE_ROWS = [
@@ -190,6 +190,8 @@ function strip_derived_ratings(profiles: readonly RatedProfile[]): RatedProfile[
   for (const profile of stripped) {
     delete profile.healthRating;
     delete profile.conditionRatings;
+    // The meal rating parts are derived too; the importer types them, this test does not.
+    Reflect.deleteProperty(profile, "healthParts");
     profile.intentFits = {};
   }
   return stripped;

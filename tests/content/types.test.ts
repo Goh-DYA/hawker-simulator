@@ -30,10 +30,16 @@ import type {
   InteractionPoint,
   launchContentSchema,
   LaunchContent,
+  limitNutrientSchema,
+  LimitNutrient,
   nutritionContentSchema,
   NutritionContent,
+  nutritionDailyReferenceSchema,
+  NutritionDailyReference,
   nutritionGuidelineSchema,
   NutritionGuideline,
+  nutritionHealthPartsSchema,
+  NutritionHealthParts,
   nutritionIntentIdSchema,
   NutritionIntentId,
   nutritionIntentSchema,
@@ -109,6 +115,10 @@ describe("content types", () => {
     expectTypeOf<Parsed<typeof nutritionProvenanceSchema>>().toEqualTypeOf<NutritionProvenance>();
     expectTypeOf<Parsed<typeof nutritionValueSchema>>().toEqualTypeOf<NutritionValue>();
     expectTypeOf<Parsed<typeof nutritionNutrientsSchema>>().toEqualTypeOf<NutritionNutrients>();
+    expectTypeOf<Parsed<typeof nutritionHealthPartsSchema>>().toEqualTypeOf<NutritionHealthParts>();
+    expectTypeOf<
+      Parsed<typeof nutritionDailyReferenceSchema>
+    >().toEqualTypeOf<NutritionDailyReference>();
   });
 
   it("match the shared part schemas", () => {
@@ -129,5 +139,6 @@ describe("content types", () => {
     expectTypeOf<Parsed<typeof nutritionMetricSchema>>().toEqualTypeOf<NutritionMetric>();
     expectTypeOf<Parsed<typeof nutritionIntentIdSchema>>().toEqualTypeOf<NutritionIntentId>();
     expectTypeOf<Parsed<typeof healthConditionSchema>>().toEqualTypeOf<HealthCondition>();
+    expectTypeOf<Parsed<typeof limitNutrientSchema>>().toEqualTypeOf<LimitNutrient>();
   });
 });

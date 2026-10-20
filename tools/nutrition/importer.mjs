@@ -32,6 +32,7 @@ import {
 import {
   addHealthRatings,
   addIntentFits,
+  DAILY_REFERENCE,
   NEUTRAL_CONDITION_RATINGS,
   round,
 } from "./ratings.mjs";
@@ -913,6 +914,14 @@ export const buildNutritionContent = ({
     guidelines: parsedGuidelines
       ? buildGuidelines(parsedGuidelines)
       : structuredClone(/** @type {NonNullable<typeof preservedGuidelines>} */ (preservedGuidelines).guidelines),
+    // The daily amounts the meal card's percentages and excess line name, so the ratings
+    // module stays their single owner.
+    dailyReference: {
+      energyKcal: DAILY_REFERENCE.energyKcal,
+      saturatedFatG: DAILY_REFERENCE.saturatedFatG,
+      sodiumMg: DAILY_REFERENCE.sodiumMg,
+      totalSugarG: DAILY_REFERENCE.totalSugarG,
+    },
     disclosure: NUTRITION_DISCLOSURE,
   };
 };

@@ -75,7 +75,7 @@ describe("nutrition content", () => {
     );
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
-      "4cd112ca19a3688564d7ae7aa7493338f12f77fdabf7bccf1471eba2ca7fad8a",
+      "c4dce8eb58dbae5d02aa70ee28a2504ff13ae1c34326b421b0fcbcb3ad963f4e",
     );
   });
 
@@ -613,6 +613,42 @@ describe("overall meal Health rating", () => {
     const [dish_id, variant_id] = profile_id.split(":");
     return profile_of(dish_id, variant_id);
   };
+
+  it("explains each meal's rating with parts built from the same values", () => {
+    const limit_metric_of = {
+      energy: "energyKcal",
+      "saturated-fat": "saturatedFatG",
+      sodium: "sodiumMg",
+      sugar: "totalSugarG",
+    } as const;
+    for (const profile of NUTRITION_CONTENT.profiles) {
+      const parts = profile.healthParts;
+      if (profile.nutritionClass === "drink") {
+        assert.equal(parts, undefined, profile.id);
+        continue;
+      }
+      assert.ok(parts, profile.id);
+      const blend = 0.5 * parts.nutrients + 0.5 * parts.conditions - parts.excess;
+      const expected = Math.min(5, Math.max(1, blend));
+      assert.ok(Math.abs(profile.healthRating - expected) <= 0.15 + 1e-9, profile.id);
+      assert.equal(parts.excessNutrient === undefined, parts.excessDayShare === undefined);
+      if (parts.excessNutrient === undefined || parts.excessDayShare === undefined) {
+        assert.equal(parts.excess, 0, profile.id);
+        continue;
+      }
+      assert.ok(Math.abs(parts.excess - (parts.excessDayShare - 1)) <= 0.06, profile.id);
+      // An excess line quotes a precise share of a day, so the amount driving it must be
+      // reported, not imputed; a future exception needs the card's "estimated" wording.
+      const driving = profile.nutrients[limit_metric_of[parts.excessNutrient]];
+      assert.equal(driving.status, "known", `${profile.id} ${parts.excessNutrient}`);
+    }
+    assert.deepEqual(NUTRITION_CONTENT.dailyReference, {
+      energyKcal: 2_000,
+      saturatedFatG: 22,
+      sodiumMg: 2_000,
+      totalSugarG: 50,
+    });
+  });
 
   it("keeps thirty local swap orderings", () => {
     assert.equal(LOCAL_SWAPS.length, 30);
