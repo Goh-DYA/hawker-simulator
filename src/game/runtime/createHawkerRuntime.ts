@@ -560,7 +560,10 @@ export async function createHawkerRuntime(
     setDishEnabled(stallId, dishId, enabled) {
       const definition = STALLS.find((stall) => stall.id === stallId);
       if (!definition || !definition.dishIds.includes(dishId)) return false;
-      if (enabled && !isDishIdUnlockedForMenu(dishId, stallMenuProgression(session.state))) {
+      if (
+        enabled &&
+        !isDishIdUnlockedForMenu(dishId, stallMenuProgression(session.state), definition)
+      ) {
         options.onEvent({
           kind: "warning",
           message: "That dish has not been unlocked yet.",

@@ -274,14 +274,16 @@ export interface FreshSession {
  * @returns The fresh state, its layered catalog and the default menus and variants.
  */
 export function create_fresh_session(authored: SimulationCatalog, world_seed = LAUNCH_WORLD_SEED): FreshSession {
+  const fresh_state = freshState(authored, world_seed);
   const stallMenus = defaultStallMenusForProgression({
     level: 1,
     reputation: ECONOMY.startingReputation,
+    unlockedDefinitionIds: fresh_state.progression.unlockedDefinitionIds,
   });
   const activeDishVariants = defaultDishVariants();
   const catalog = layer_catalog(authored, activeDishVariants, stallMenus);
   return {
-    state: { ...freshState(authored, world_seed), catalog },
+    state: { ...fresh_state, catalog },
     catalog,
     stallMenus,
     activeDishVariants,

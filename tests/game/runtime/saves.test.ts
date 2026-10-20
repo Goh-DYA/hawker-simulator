@@ -5,8 +5,9 @@
  * envelope that differs from a fresh centre only in cash, the same envelope with a truncated
  * core, a runtime V1 envelope, a V2 envelope without its nutrition fields, a V2 envelope with an
  * outdated nutrition data version, and a bare core save. The expanded gallery save from
- * `fixtures/gallery-save.json` checks a save with every placeable. Each save goes through JSON
- * first, as storage would hand it back.
+ * `fixtures/gallery-save.json` checks a save with every placeable, and a level 1 save that
+ * already owns a late stall checks that the stall keeps its opening dishes. Each save goes
+ * through JSON first, as storage would hand it back.
  */
 import { readFileSync } from "node:fs";
 
@@ -26,6 +27,12 @@ import { create_fresh_session } from "@/src/game/runtime/world";
 const VALID_SAVE_CASH_BONUS = 250;
 /** Length of the truncated JSON string that stands in for a damaged core save. */
 const DAMAGED_CORE_LENGTH = 64;
+/** A late stall whose dishes are all gated above a level 1 centre. */
+const LATE_STALL_ID = "stall.herbal-cauldron";
+/** The late stall's opening dish, gated at the stall's own level and reputation. */
+const LATE_OPENING_DISH_ID = "dish.bak-kut-teh";
+/** One of the late stall's dishes gated above the stall itself. */
+const LATE_LATER_DISH_ID = "dish.duck-rice";
 
 const AUTHORED_CATALOG = buildCatalog().catalog;
 
@@ -45,6 +52,33 @@ function create_valid_save(): RuntimePersistentState {
     runtimeSchemaVersion: RUNTIME_SCHEMA_VERSION,
     core: persistentStateFromGame(state),
     stallMenus: session.stallMenus,
+    nutritionDataVersion: NUTRITION_CONTENT.dataVersion,
+    activeDishVariants: session.activeDishVariants,
+  };
+  return JSON.parse(JSON.stringify(payload)) as RuntimePersistentState;
+}
+
+/**
+ * @returns A stored runtime V2 envelope of a level 1 centre that already owns the late stall,
+ *   as an older save may after content moves the stall's gates later, with the stall's
+ *   opening and later dishes on its saved menu.
+ */
+function create_owned_late_stall_save(): RuntimePersistentState {
+  const session = create_fresh_session(AUTHORED_CATALOG);
+  const state = {
+    ...session.state,
+    progression: {
+      ...session.state.progression,
+      unlockedDefinitionIds: [...session.state.progression.unlockedDefinitionIds, LATE_STALL_ID],
+    },
+  };
+  const payload: RuntimePersistentState = {
+    runtimeSchemaVersion: RUNTIME_SCHEMA_VERSION,
+    core: persistentStateFromGame(state),
+    stallMenus: {
+      ...session.stallMenus,
+      [LATE_STALL_ID]: [LATE_OPENING_DISH_ID, LATE_LATER_DISH_ID],
+    },
     nutritionDataVersion: NUTRITION_CONTENT.dataVersion,
     activeDishVariants: session.activeDishVariants,
   };
@@ -126,6 +160,17 @@ describe("load_runtime_save", () => {
 
     expect(loaded.isRecovered).toBe(false);
     expect(loaded.activeDishVariants).toEqual(save.activeDishVariants);
+  });
+
+  it("keeps an owned stall's opening dishes on its menu below their own gates", () => {
+    const loaded = load_runtime_save(create_owned_late_stall_save(), AUTHORED_CATALOG);
+
+    expect([
+      loaded.state.progression.level,
+      loaded.state.progression.unlockedDefinitionIds.includes(LATE_STALL_ID),
+      loaded.stallMenus[LATE_STALL_ID],
+      loaded.catalog.placeables[LATE_STALL_ID]?.stall?.dishIds,
+    ]).toEqual([1, true, [LATE_OPENING_DISH_ID], [LATE_OPENING_DISH_ID]]);
   });
 
   it("loads the expanded gallery save at its saved map size", () => {

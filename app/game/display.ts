@@ -7,7 +7,8 @@
  * It also holds the small formatters and predicates more than one surface shares (progress
  * bar widths, hex colours, readable IDs, unlock checks, in-game clock times, the food writer's
  * verdict and event glyphs), so each has one definition. Unlock checks read the peak
- * reputation, as the runtime's unlocks do. They hold no React state, so they are tested directly in Node.
+ * reputation, as the runtime's unlocks do, and keep an unlocked stall's opening dishes available,
+ * as the runtime's menus do. They hold no React state, so they are tested directly in Node.
  */
 import type { CSSProperties } from "react";
 import {
@@ -22,6 +23,7 @@ import {
   type StallDefinition,
 } from "@/src/content";
 import { utilityEffectsForPlaceable } from "@/src/game/runtime/contentUtility";
+import { is_opening_dish_available } from "@/src/game/runtime/stallMenus";
 import { coreNutritionProfile, runtimeNutritionProfile } from "@/src/game/runtime/nutrition";
 import { visualRecipeForDish } from "@/src/game/runtime/visuals/dish";
 import { visualRecipeForPlaceable } from "@/src/game/runtime/visuals/placeable";
@@ -129,19 +131,28 @@ export function get_unlock_reputation(snapshot: UnlockReputation) {
 /**
  * Check whether the centre meets a content unlock requirement.
  *
+ * For a dish, pass its stall: a dish gated no later than its stall (one of the stall's opening
+ * dishes) is available whenever the stall is unlocked, the same rule the runtime's menus apply.
+ *
  * @param requirement - The level, reputation and prerequisite content needed.
  * @param snapshot - The centre's level, reputation (live and peak) and unlocked content.
- * @returns Whether every part of the requirement is met; reputation is checked against
- *   {@link get_unlock_reputation}.
+ * @param stall - For a dish requirement, the dish's stall; omitted for any other content.
+ * @returns Whether every part of the requirement is met, reputation checked against
+ *   {@link get_unlock_reputation}, or the requirement is an unlocked stall's opening dish's.
  */
 export function is_requirement_met(
   requirement: UnlockRequirement,
   snapshot: Pick<RuntimeSnapshot, "level" | "unlockedContentIds"> & UnlockReputation,
+  stall?: Pick<StallDefinition, "id" | "unlockRequirement">,
 ) {
-  return (
+  const is_own_requirement_met =
     requirement.level <= snapshot.level &&
     requirement.reputation <= get_unlock_reputation(snapshot) &&
-    requirement.prerequisiteIds.every((id) => snapshot.unlockedContentIds.includes(id))
+    requirement.prerequisiteIds.every((id) => snapshot.unlockedContentIds.includes(id));
+  return (
+    is_own_requirement_met ||
+    (stall !== undefined &&
+      is_opening_dish_available(requirement, stall, snapshot.unlockedContentIds))
   );
 }
 

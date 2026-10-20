@@ -320,6 +320,30 @@ describe("is_requirement_met", () => {
   });
 });
 
+describe("is_requirement_met for an owned stall's dishes", () => {
+  const stall = {
+    id: "stall.a",
+    unlockRequirement: { level: 5, reputation: 25, prerequisiteIds: [] },
+  };
+  const owned = { level: 1, reputation: 8, unlockedContentIds: ["stall.a"] };
+
+  it("meets a dish gated no later than its unlocked stall below the dish's own gates", () => {
+    expect(
+      is_requirement_met({ level: 5, reputation: 25, prerequisiteIds: ["stall.a"] }, owned, stall),
+    ).toBe(true);
+  });
+
+  it("keeps a dish gated above its stall, or of a locked stall, unmet", () => {
+    const opening = { level: 5, reputation: 25, prerequisiteIds: ["stall.a"] };
+    expect([
+      is_requirement_met({ ...opening, level: 6 }, owned, stall),
+      is_requirement_met({ ...opening, reputation: 26 }, owned, stall),
+      is_requirement_met(opening, { ...owned, unlockedContentIds: [] }, stall),
+      is_requirement_met(opening, owned),
+    ]).toEqual([false, false, false, false]);
+  });
+});
+
 describe("get_unlock_reputation", () => {
   it("reads the best reputation reached, falling back to the live one", () => {
     expect([

@@ -3,7 +3,10 @@
  *
  * Normalises saved menu selections, resolves each stall's menu against the dishes the player
  * has unlocked and the stall's slot capacity, and derives the menu progression and slot
- * bonuses from a game state.
+ * bonuses from a game state. A dish unlocks by its own level and reputation, or, when it is one
+ * of its stall's opening dishes (gated no later than the stall itself), whenever the stall is
+ * unlocked, so a stall an older save already owns never loses its whole menu when content
+ * moves its dishes' gates later.
  */
 import type { GameState } from "@/src/game/core";
 import {
@@ -19,6 +22,35 @@ export interface StallMenuProgression {
   readonly level: number;
   /** Content reputation points, as displayed in the UI. */
   readonly reputation: number;
+  /** The unlocked definition IDs; a stall among them keeps its opening dishes available. */
+  readonly unlockedDefinitionIds: readonly string[];
+}
+
+/** The level and content-scale reputation an unlock requirement asks for. */
+type LevelAndReputation = Pick<DishDefinition["unlockRequirement"], "level" | "reputation">;
+
+/**
+ * Tests whether a dish requirement is one of a stall's opening requirements and that stall is
+ * unlocked: the requirement's level and reputation are at most the stall's own.
+ *
+ * The runtime's menus and the Dishes panel share this rule, so an owned stall's opening dishes
+ * are offered whatever the player's level and reputation are.
+ *
+ * @param requirement - The dish's level and content-scale reputation requirement.
+ * @param stall - The stall the dish belongs to.
+ * @param unlocked_definition_ids - The unlocked definition IDs.
+ * @returns True when the stall is unlocked and the dish is gated no later than the stall.
+ */
+export function is_opening_dish_available(
+  requirement: LevelAndReputation,
+  stall: Pick<StallDefinition, "id" | "unlockRequirement">,
+  unlocked_definition_ids: readonly string[],
+) {
+  return (
+    unlocked_definition_ids.includes(stall.id) &&
+    requirement.level <= stall.unlockRequirement.level &&
+    requirement.reputation <= stall.unlockRequirement.reputation
+  );
 }
 
 /** The menu progression plus extra menu slots per stall, such as those from mastery upgrades. */
@@ -27,19 +59,24 @@ export interface ResolveStallMenusOptions extends StallMenuProgression {
 }
 
 /**
- * Tests whether a dish's level and reputation requirements are met.
+ * Tests whether a dish may appear on a stall's menu: its level and reputation requirements are
+ * met, or it is one of the stall's opening dishes and the stall is unlocked.
  *
  * @param dish - The dish.
- * @param progression - The level and content-scale reputation.
- * @returns True when the dish can appear on a menu.
+ * @param progression - The level, content-scale reputation and unlocked definition IDs.
+ * @param stall - The stall whose menu the dish would join.
+ * @returns True when the dish can appear on the stall's menu.
  */
 export function isDishUnlockedForMenu(
   dish: DishDefinition,
   progression: StallMenuProgression,
+  stall: StallDefinition,
 ) {
   return (
-    dish.unlockRequirement.level <= progression.level &&
-    dish.unlockRequirement.reputation <= progression.reputation
+    (dish.unlockRequirement.level <= progression.level &&
+      dish.unlockRequirement.reputation <= progression.reputation) ||
+    (dish.stallIds.includes(stall.id) &&
+      is_opening_dish_available(dish.unlockRequirement, stall, progression.unlockedDefinitionIds))
   );
 }
 
@@ -80,7 +117,7 @@ export function normalizeStallMenuSelection(
  * or, when none remain, the first unlocked dishes up to capacity.
  *
  * @param value - The saved selection, which may be malformed.
- * @param options - The progression and extra slots per stall.
+ * @param options - The progression, unlocked definition IDs and extra slots per stall.
  * @returns The operating menu of every launch stall, keyed by stall ID.
  */
 export function resolveStallMenus(
@@ -92,7 +129,7 @@ export function resolveStallMenus(
     STALLS.map((stall) => {
       const unlocked = stall.dishIds.filter((dishId) => {
         const dish = DISH_BY_ID.get(dishId);
-        return dish ? isDishUnlockedForMenu(dish, options) : false;
+        return dish ? isDishUnlockedForMenu(dish, options, stall) : false;
       });
       const capacity = Math.max(
         1,
@@ -113,7 +150,7 @@ export function resolveStallMenus(
 /**
  * Resolves the menus a new selection would get: the first unlocked dishes of each stall.
  *
- * @param progression - The level and content-scale reputation.
+ * @param progression - The level, content-scale reputation and unlocked definition IDs.
  * @returns The default menu of every launch stall, keyed by stall ID.
  */
 export function defaultStallMenusForProgression(
@@ -123,18 +160,20 @@ export function defaultStallMenusForProgression(
 }
 
 /**
- * Tests whether a dish, looked up by ID, is unlocked for menus.
+ * Tests whether a dish, looked up by ID, is unlocked for a stall's menu.
  *
  * @param dishId - The dish ID.
- * @param progression - The level and content-scale reputation.
- * @returns True when the dish exists and is unlocked.
+ * @param progression - The level, content-scale reputation and unlocked definition IDs.
+ * @param stall - The stall whose menu the dish would join.
+ * @returns True when the dish exists and is unlocked for the stall's menu.
  */
 export function isDishIdUnlockedForMenu(
   dishId: string,
   progression: StallMenuProgression,
+  stall: StallDefinition,
 ) {
   const dish = DISH_BY_ID.get(dishId);
-  return dish ? isDishUnlockedForMenu(dish, progression) : false;
+  return dish ? isDishUnlockedForMenu(dish, progression, stall) : false;
 }
 
 /**
@@ -142,15 +181,18 @@ export function isDishIdUnlockedForMenu(
  *
  * Unlocks read the peak reputation, so a dish never leaves the menu choices after a poor day.
  * Core stores reputation divided by `REPUTATION_SCALE`, while dish unlock requirements use the
- * content's displayed reputation points, so the core value is scaled up here.
+ * content's displayed reputation points, so the core value is scaled up here. The unlocked
+ * definition IDs let each unlocked stall keep its opening dishes.
  *
- * @param state - The game state to read the level and peak reputation from.
- * @returns The level and content-scale peak reputation that gate dish unlocks.
+ * @param state - The game state to read the level, peak reputation and unlocks from.
+ * @returns The level, content-scale peak reputation and unlocked definition IDs that gate dish
+ *   unlocks.
  */
-export function stallMenuProgression(state: GameState) {
+export function stallMenuProgression(state: GameState): StallMenuProgression {
   return {
     level: state.progression.level,
     reputation: state.progression.peakReputation * REPUTATION_SCALE,
+    unlockedDefinitionIds: state.progression.unlockedDefinitionIds,
   };
 }
 
