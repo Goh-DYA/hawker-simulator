@@ -17,8 +17,8 @@ Gate results on the landed source:
 | Date and Node.js version | 2026-10-20, Node.js `v22.22.0` (Linux) |
 | `CI=true npm run test:release`: typecheck, lint with no warnings, Vitest files / tests, Vinext build, rendered-output/offline-shell assertions | **Pass**: typecheck, lint with no warnings, 107 Vitest files / 1,304 tests (1 skipped: the gallery-fixture generator, which runs only with `GALLERY_REGENERATE=1`), the Vinext build, and 2/2 rendered-output/offline-shell assertions |
 | `npm run build:vercel` (native Next.js Vercel build) | **Pass** |
-| Service-worker build ID (Linux build) | `846bf8405a46` |
-| `benchmark-80-agents` mean and p95 per fixed step | 0.101 ms and 0.112 ms |
+| Service-worker build ID (Linux build) | `21d2a5947bb9` (after the alternate-level respacing; `846bf8405a46` before it) |
+| `benchmark-80-agents` mean and p95 per fixed step | 0.095 ms and 0.082 ms (0.101 ms and 0.112 ms before the respacing) |
 | Landed `src/content/nutrition.generated.json` byte-identical to the panel chair's reference (sha256 `b0cd79d05beb67303add9b0f9bc8a28b63b756305203d0470a12737ef7016b9b`) | **Byte-identical** |
 | Re-pinned in the commit that moved each one, with the reason in its message: the fried-fish keys and art; the content, nutrition and importer pins; the runtime export, core and input hashes (data version, defaults and the intent-fit re-rank); the runtime and app snapshots; the gallery, gallery-variants and day-2 render digests; and the content version |
 
@@ -46,7 +46,7 @@ Verified by the panel chair on the reference worktree:
 
 From the economist's integrated career runs, accepted by the chair but not re-run by it:
 
-- **Unlock reach**: greedy and moderate builders unlock and buy every tendered stall on its tender day. The late level gates are reached around level 14 on days 11-12, level 16 on days 14-15, level 18 on days 17-18, level 20 on days 20-21, level 22 on days 22-24, level 24 on days 25-27 and level 26 on days 29-30, so the tender, not the level, sets when an engaged builder's late stalls arrive.
+- **Unlock reach**: greedy and moderate builders unlock and buy every tendered stall on its tender day. The late level gates are reached around level 14 on days 11-12, level 16 on days 14-15, level 18 on days 17-18, level 20 on days 20-21, level 22 on days 22-24, level 24 on days 25-27 and level 26 on days 29-30, so the tender, not the level, set when an engaged builder's late stalls arrived on the panel's schedule. That schedule was later respaced so that every stall after the first five unlocks on alternate levels (6 to 30, level cap 32); these career runs were not repeated on it ([KNOWN_ISSUES.md](KNOWN_ISSUES.md#open-gameplay-balance-issues)).
 - **Light builder** (about two seats per stall): the Straits Hearth chain may wait on reputation, and Harbour Ember was not reached by day 40 on three seeds; [KNOWN_ISSUES.md](KNOWN_ISSUES.md#open-gameplay-balance-issues) records it.
 
 ## Content `1.5.0` working-source validation
