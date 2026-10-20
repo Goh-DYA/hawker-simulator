@@ -14,6 +14,7 @@ import {
   getNutritionVariantFamily,
   validateContent,
 } from "@/src/content/index";
+import { HEALTH_MATCH_THRESHOLD } from "@/src/game/core/nutrition";
 import { BORROWED_COMPONENT_ALLOWLIST, SNACK_RATED_DISH_IDS } from "@/tools/nutrition/manifest.mjs";
 
 const VARIANT_FAMILY_DISHES = [
@@ -75,7 +76,7 @@ describe("nutrition content", () => {
     );
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
-      "b0cd79d05beb67303add9b0f9bc8a28b63b756305203d0470a12737ef7016b9b",
+      "797177064cf3edcf8c3a5849b9bd359fdef3b6167da2fa9f8399962644353366",
     );
   });
 
@@ -90,7 +91,7 @@ describe("nutrition content", () => {
       report.counts.nutritionVariantFamilies,
       LAUNCH_ROSTER.nutritionVariantFamilies,
     );
-    assert.equal(NUTRITION_CONTENT.dataVersion, "sg-1bc212db6eda-c87987b4281c-r4");
+    assert.equal(NUTRITION_CONTENT.dataVersion, "sg-1bc212db6eda-c87987b4281c-r5");
     assert.deepEqual(
       NUTRITION_CONTENT.sourceSnapshots.map((snapshot) => snapshot.rowCount),
       [2_689, 11],
@@ -426,25 +427,66 @@ describe("nutrition content", () => {
   });
 });
 
+/**
+ * Variant families whose default may rate at or above every other option overall, each with
+ * its recorded reason (ADR 0009; the near-tie table in docs/design/NUTRITION_DATA.md). The
+ * list is closed: adding a family needs a recorded reason there and a CHANGELOG line, and an
+ * entry must be removed once its family passes again.
+ */
+const C4_EXCEPTIONS: Readonly<Record<string, string>> = {
+  "dish.masala-thosai":
+    "Plain thosai is lower than masala on all four limit nutrients per serving (402 against 439 kcal, 4.4 against 6.2 g saturated fat, 501 against 1,070 mg sodium, 1.1 against 1.2 g sugar). Masala rates higher overall (3.794 against 3.711 unrounded) through its sambar fibre (8.1 against 4.9 g) and its lower energy density (162 against 258 kcal per 100 g). The tuning lever is the condition ratings: plain thosai lifts hypertension from 3.2 to 4.0 and cholesterol from 3.4 to 3.8. It is a trade, not a dominance: plain thosai lowers obesity from 4.5 to 3.2 and diabetes from 4.3 to 3.6, because its serving is denser (258 against 162 kcal per 100 g) and lower in fibre.",
+};
+
+/** Mastery rank by which a recorded exception's condition lever must be unlocked. */
+const C4_EXCEPTION_LEVER_RANK = 2;
+
+/** Largest drop in displayed overall rating, in tenths, that an exception's lever may cost. */
+const C4_EXCEPTION_MAX_COST_TENTHS = 1;
+
 describe("variant family defaults", () => {
   const profile_of = (profile_id: string) => {
     const profile = NUTRITION_CONTENT.profiles.find((candidate) => candidate.id === profile_id);
     assert.ok(profile, `missing profile ${profile_id}`);
     return profile;
   };
+  const to_tenths = (rating: number) => Math.round(rating * 10);
 
   it.each(NUTRITION_CONTENT.variantFamilies.map((family) => [family.dishId, family] as const))(
     "%s: the default rates strictly below another option and leaves a real tuning move",
-    (_dish_id, family) => {
+    (dish_id, family) => {
       const default_variant = family.variants.find(
         (variant) => variant.id === family.defaultVariantId,
       );
       assert.ok(default_variant);
       const default_profile = profile_of(default_variant.profileId);
-      const others = family.variants
-        .filter((variant) => variant.id !== family.defaultVariantId)
-        .map((variant) => profile_of(variant.profileId));
+      const other_variants = family.variants.filter(
+        (variant) => variant.id !== family.defaultVariantId,
+      );
+      const others = other_variants.map((variant) => profile_of(variant.profileId));
       const best_other = Math.max(...others.map((profile) => profile.healthRating));
+      if (Object.hasOwn(C4_EXCEPTIONS, dish_id)) {
+        assert.ok(
+          default_profile.healthRating >= best_other,
+          "the family passes again: remove its C4_EXCEPTIONS entry",
+        );
+        const has_condition_lever = other_variants.some((variant) => {
+          if (variant.unlockRank > C4_EXCEPTION_LEVER_RANK) return false;
+          const profile = profile_of(variant.profileId);
+          const cost_tenths =
+            to_tenths(default_profile.healthRating) - to_tenths(profile.healthRating);
+          if (cost_tenths > C4_EXCEPTION_MAX_COST_TENTHS) return false;
+          return Object.entries(profile.conditionRatings).some(
+            ([condition, rating]) =>
+              rating >= HEALTH_MATCH_THRESHOLD &&
+              default_profile.conditionRatings[
+                condition as keyof typeof default_profile.conditionRatings
+              ] < HEALTH_MATCH_THRESHOLD,
+          );
+        });
+        assert.ok(has_condition_lever, "no early option lifts a condition to a match at a 0.1 cost");
+        return;
+      }
       assert.ok(default_profile.healthRating < best_other, "default ties or tops its family");
       const has_tuning_move = others.some((profile) => {
         if (profile.healthRating - default_profile.healthRating >= 0.3 - 1e-9) return true;
@@ -510,5 +552,114 @@ describe("variant family defaults", () => {
       }
     }
     assert.deepEqual([...BORROWED_COMPONENT_ALLOWLIST], ["Cooked white rice"]);
+  });
+});
+
+/**
+ * The orderings and bounds the overall meal rating must keep (ADR 0009). They fix orderings
+ * and bounds on displayed ratings, not the model's constants.
+ */
+describe("overall meal Health rating", () => {
+  const profile_of = (dish_id: string, variant_id?: string) => {
+    const profile = getNutritionProfile(dish_id, variant_id);
+    assert.ok(profile, `${dish_id} ${variant_id ?? ""} must have a profile`);
+    return profile;
+  };
+  const meals = NUTRITION_CONTENT.profiles.filter((profile) => profile.nutritionClass === "meal");
+  type LimitMetric = "energyKcal" | "saturatedFatG" | "transFatG" | "sodiumMg" | "totalSugarG";
+  const known_amount = (profile: (typeof meals)[number], metric: LimitMetric) => {
+    const value = profile.nutrients[metric];
+    if (value.status === "known") return value.value;
+    return value.status === "trace" ? 0 : undefined;
+  };
+  const congee = profile_of("dish.chicken-congee");
+
+  it("rates the owner's congee and char siew rice pair close together, both at 3.5 or above", () => {
+    const char_siew_rice = profile_of("dish.char-siew-rice");
+    assert.ok(congee.healthRating >= 3.5);
+    assert.ok(char_siew_rice.healthRating >= 3.5);
+    assert.ok(Math.abs(congee.healthRating - char_siew_rice.healthRating) <= 0.3 + 1e-9);
+  });
+
+  it("rates no meal holding a day's sodium above congee, and one holding 2,500 mg below it", () => {
+    for (const profile of meals) {
+      const sodium = known_amount(profile, "sodiumMg") ?? 0;
+      if (sodium >= 2_000) assert.ok(profile.healthRating <= congee.healthRating, profile.id);
+      if (sodium >= 2_500) assert.ok(profile.healthRating < congee.healthRating, profile.id);
+    }
+  });
+
+  it("rates a meal holding two limit nutrients at two thirds of a day or more at 2.5 or below", () => {
+    for (const profile of meals) {
+      const shares = [
+        (known_amount(profile, "energyKcal") ?? 0) / 2_000,
+        ((known_amount(profile, "saturatedFatG") ?? 0) +
+          (known_amount(profile, "transFatG") ?? 0)) /
+          22,
+        (known_amount(profile, "sodiumMg") ?? 0) / 2_000,
+        (known_amount(profile, "totalSugarG") ?? 0) / 50,
+      ];
+      if (shares.filter((share) => share >= 2 / 3).length >= 2) {
+        assert.ok(profile.healthRating <= 2.5, profile.id);
+      }
+    }
+  });
+
+  it("rates every meal at or above its lowest condition and at most 2.5 above it", () => {
+    for (const profile of meals) {
+      const lowest = Math.min(...Object.values(profile.conditionRatings));
+      assert.ok(profile.healthRating >= lowest, profile.id);
+      assert.ok(profile.healthRating <= lowest + 2.5, profile.id);
+    }
+  });
+
+  // Swaps from "Healthy hawker eats" (OneHealth, JurongHealth, hosted by HealthHub): local
+  // precedent, not an HPB guideline. The dessert pairs are the panel's inference (the source
+  // names cheng tng and soya bean curd "with less sugar syrup" and no comparator), and the
+  // last two pairs rest on profile data: the first option is lower on all four limit nutrients.
+  const FRIED_NOODLES = [
+    "dish.char-kway-teow",
+    "dish.hokkien-prawn-mee",
+    "dish.mee-goreng-mamak",
+    "dish.beef-hor-fun",
+  ];
+  const SYRUP_DESSERTS = [
+    "dish.ice-kacang",
+    "dish.chendol",
+    "dish.orh-nee",
+    "dish.pulut-hitam",
+    "dish.tau-suan",
+    "dish.black-sesame-paste",
+    "dish.green-bean-soup",
+  ];
+  const LOCAL_SWAPS: ReadonlyArray<readonly [string, string]> = [
+    ["dish.mee-soto", "dish.mee-rebus"],
+    ["dish.mee-soto", "dish.mee-goreng-mamak"],
+    ...FRIED_NOODLES.map((dish_id) => ["dish.chicken-congee", dish_id] as const),
+    ["dish.masala-thosai", "dish.roti-prata"],
+    ["dish.masala-thosai:thosai-plain", "dish.roti-prata"],
+    ["dish.yong-tau-foo:ytf-clear-mixed", "dish.yong-tau-foo:ytf-clear-fried"],
+    ["dish.yong-tau-foo:ytf-clear-mixed", "dish.yong-tau-foo:ytf-laksa-mixed"],
+    ...["dish.char-kway-teow", "dish.hokkien-prawn-mee", "dish.lor-mee", "dish.nyonya-laksa"].map(
+      (dish_id) => ["dish.sliced-fish-soup:fish-soup-beehoon-no-milk", dish_id] as const,
+    ),
+    ...SYRUP_DESSERTS.flatMap((dish_id) => [
+      ["dish.tau-huay", dish_id] as const,
+      ["dish.cheng-tng", dish_id] as const,
+    ]),
+    ["dish.fish-porridge:fish-porridge-sliced", "dish.fish-porridge"],
+    ["dish.fried-carrot-cake:carrot-cake-white", "dish.fried-carrot-cake"],
+  ];
+  const by_profile_id = (profile_id: string) => {
+    const [dish_id, variant_id] = profile_id.split(":");
+    return profile_of(dish_id, variant_id);
+  };
+
+  it("keeps thirty local swap orderings", () => {
+    assert.equal(LOCAL_SWAPS.length, 30);
+  });
+
+  it.each(LOCAL_SWAPS)("rates %s above %s", (lighter_id, heavier_id) => {
+    assert.ok(by_profile_id(lighter_id).healthRating > by_profile_id(heavier_id).healthRating);
   });
 });

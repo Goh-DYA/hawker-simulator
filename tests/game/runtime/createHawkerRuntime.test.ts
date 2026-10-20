@@ -33,7 +33,7 @@ vi.mock("phaser", async () => (await import("./fixtures")).PHASER_STUB_MODULE);
 const FRAME_MS = 100;
 
 /** sha256 of `JSON.stringify(exportState())` for a fresh centre. */
-const FRESH_EXPORT_SHA256 = "ff7c3befe054b78b0e8d887e1662ba379afb96c136e41401263d94425ce97668";
+const FRESH_EXPORT_SHA256 = "e02f7155ccbc48488dd2df58d5614287866fa07467269490f0d46abfddb0201c";
 /**
  * sha256 of `JSON.stringify(exportState())` after importing the fresh centre's save. It
  * differs from {@link FRESH_EXPORT_SHA256} only in key order: loading a save rebuilds each
@@ -41,14 +41,14 @@ const FRESH_EXPORT_SHA256 = "ff7c3befe054b78b0e8d887e1662ba379afb96c136e41401263
  * later positions.
  */
 const REIMPORTED_FRESH_EXPORT_SHA256 =
-  "d6a1f36d3aa712635c433c40fe0b22a2e3e07607243a5f16ba6f7b605de79ee8";
+  "d3b7d75bb2e02563d4f3e2f24db0aaa6263430d85f12a434ee31e1c4e462e265";
 
 const OPEN_RUN_FRAMES = 600;
 /** sha256 of `JSON.stringify(exportState().core)` after each frame count, at speed 1. */
 const OPEN_RUN_CORE_SHA256: Readonly<Record<number, string>> = {
   100: "36e84c1fcb4c52c050196755d913f54cf6e198a37fdd2d019b96af0515331c9e",
   300: "e7b6b56a699f566e79d594b55fbcca960838b48bec7a865c06f6377373409ee0",
-  600: "430393b1c746c6cdfaf841942bb127fb3201546a3874032575e8e9070004156d",
+  600: "5f4c6086db1fc9c09af25fdac554a0097cb8086f113909df0b249ce388da4010",
 };
 
 /** Speed 10 turns each 100 ms frame into one simulated second, so a day is 480 frames. */
@@ -61,10 +61,10 @@ const MULTI_DAY_FRAMES = 1_100;
 const MULTI_DAY_TIMEOUT_MS = 60_000;
 /** Checkpoints around the end of the first and second operating days. */
 const MULTI_DAY_CORE_SHA256: Readonly<Record<number, string>> = {
-  480: "497769795b4cecaf1f5e5afe6f01224150da306a77d31309983422bb05785caa",
-  500: "416d93faaac1d1b540138bbf4f297cbbe463f3ea2c937f9a2ef0ccc33c3b077c",
-  960: "eeb6c05ba44de5eff80ec2df3f0de17d3964d671076db409e6bc37bb315fe3c4",
-  1_000: "e9a5c34c59b04c8f15ae90629f4ed18e7267dba6617b5b1d0ba0f2fbc689bdfd",
+  480: "402ce6e500b6690dd5123656e2d323d65f12625267b0be4cdd501e5bfaf3eb89",
+  500: "6fccc979a7b678da492f5b19c017c62dcf032dd56fc99b4cde07148d3651608a",
+  960: "598a3ce614d7eece7140a36aa38d5a5a4990838adb0cfafd16413c47aa1bbd8f",
+  1_000: "bf3739363f900005f6b16d5ca4dfee2a6814353a5eb33812aaa311a688a9b991",
 };
 
 /**
@@ -83,7 +83,7 @@ const MULTI_DAY_CORE_SHA256: Readonly<Record<number, string>> = {
 const PRESSURE_SIMULATION_SPAN_MS = 12;
 const PRESSURE_CALL_OFFSETS_MS: readonly number[] = [0, 0, PRESSURE_SIMULATION_SPAN_MS];
 /** sha256 of `JSON.stringify(exportState().core)` after the pressure run. */
-const PRESSURE_RUN_CORE_SHA256 = "08d7cbd0f224a225d8d993a5d59ae9a85700e5208e37e64b3fc3886070e9502f";
+const PRESSURE_RUN_CORE_SHA256 = "b5360e0c5f569ee16b9d064b2a2fe3aec728941bd98cf439c3ea9ad9d82340eb";
 
 const IMPORT_RUN_FRAMES = 300;
 const RESET_RUN_FRAMES = 50;
