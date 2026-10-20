@@ -23,7 +23,7 @@ This document owns the launch content counts. Other documents link here, except 
 
 ## Nutrition coverage
 
-Content `1.6.0` provides a released source profile for every one of the 91 dishes. Twenty-three dish families add reviewed, rank-gated preparations for comparison: kopi, teh tarik, nasi lemak, fried carrot cake, roti prata, fish bee hoon soup, bak chor mee, chicken murtabak, chicken nasi briyani, masala thosai, yong tau foo, ban mian, bak kut teh, duck rice, prawn noodle soup, economic rice, nasi padang, mee siam, wanton mee, soya bean milk, chicken chop, fish and chips, and fish porridge. Together, the 91 base profiles and 80 additional preparation profiles produce 171 released nutrition profiles; the 23 families expose 103 selectable variants when their default preparations are included. In every family the default rates below at least one option the player can unlock, and seven profiles (vegetarian chicken rice, the roti prata set, laksa and the four bak kut teh bowls) are documented composites of exact source rows; see [NUTRITION_DATA.md](NUTRITION_DATA.md#recipe-variants-and-defaults).
+Content `1.6.0` provides a released source profile for every one of the 91 dishes. Twenty-three dish families add reviewed, rank-gated preparations for comparison: kopi, teh tarik, nasi lemak, fried carrot cake, roti prata, fish bee hoon soup, bak chor mee, chicken murtabak, chicken nasi briyani, thosai, yong tau foo, ban mian, bak kut teh, duck rice, prawn noodle soup, economic rice, nasi padang, mee siam, wanton mee, soya bean milk, chicken chop, fish and chips, and fish porridge. Together, the 91 base profiles and 80 additional preparation profiles produce 171 released nutrition profiles; the 23 families expose 103 selectable variants when their default preparations are included. In every family the default rates below at least one option the player can unlock, and seven profiles (vegetarian chicken rice, the roti prata set, laksa and the four bak kut teh bowls) are documented composites of exact source rows; see [NUTRITION_DATA.md](NUTRITION_DATA.md#recipe-variants-and-defaults).
 
 Every profile has a 1-to-5 Health rating that compares its serving with a meal's share (for a dessert, a snack's share) of general daily guidance (or, for a drink, Singapore's Nutri-Grade bands), plus condition-specific ratings for high cholesterol, obesity, diabetes, and hypertension. Every dish separately has a 1-to-5 Star rating derived from its authored quality and demand, representing taste and popularity rather than nutritional suitability. Nutrition values and recipe selection do not rewrite a dish family's price, Star rating, preparation time, serving time, or eating time. Customers with a visit-specific health condition use the applicable condition rating when choosing a stall and dish; the ordered meal applies a bounded satisfaction change from -0.2 to +0.2. Conditions are assigned independently of customer archetype and are simplified game traits, not diagnoses or medical advice. See [NUTRITION_DATA.md](NUTRITION_DATA.md) for source, validation, scoring, and disclosure boundaries.
 
@@ -43,7 +43,7 @@ All stall identities are original. Real dish names are descriptive cultural refe
 | 8 | Satay Meridian | Malay-inspired charcoal grill for skewers, chicken, and seafood | Chicken satay (10 sticks); barbecued chicken wings; beef satay (10 sticks); sotong panggang; mutton satay (10 sticks) | Level 10 |
 | 9 | Pick & Mix | Customisable noodle, soup, and vegetable-forward counter | Yong tau foo; ban mian; thunder tea rice; popiah; economic rice | Level 12 |
 | 10 | Jade Ladle | Cantonese porridge counter with steamed rice rolls and fried dough sticks | Century egg pork porridge; fish porridge; minced pork porridge; chee cheong fun; you tiao | Level 14 |
-| 11 | Tamarind Leaf | South Indian vegetable-forward griddle and tiffin counter | Masala thosai; idli sambar; vadai duo; lemon rice; appam | Level 16 |
+| 11 | Tamarind Leaf | South Indian vegetable-forward griddle and tiffin counter | Thosai; idli sambar; vadai duo; lemon rice; appam | Level 16 |
 | 12 | Bamboo Basket | Cantonese dim sum, steamed small-plate and noodle counter | Prawn dumpling soup; siew mai; char siew bao; lotus leaf rice; wanton mee | Level 18 |
 | 13 | Longan Moon | Compact Teochew-Cantonese tong sui counter ladling sweet soups and pastes | Cheng tng; orh nee; tau suan; green bean soup; black sesame paste | Level 20 |
 | 14 | Lesung Corner | Malay-Indonesian warung for smashed and grilled chicken, fried rice, soto, and salads | Ayam penyet; nasi goreng; mee soto; gado-gado; ayam panggang | Level 22 |
@@ -95,7 +95,7 @@ Dish count is 91: seventeen five-dish stalls and one six-dish stall. Content `1.
 | Ban mian | 5 | hand-torn noodles and contrasting toppings in soup, bowl |
 | Thunder tea rice | 6 | rice, chopped vegetables, tofu, peanuts, and green herb broth, bowl |
 | Popiah | 3 | sliced soft rolls with visible vegetable filling, plate |
-| Masala thosai | 4 | rolled crisp crepe and metal cups |
+| Thosai | 3 | rolled plain crepe with chutney and sambar cups, steel plate with banana leaf |
 | Idli sambar | 3 | idli rounds, sambar, metal plate |
 | Vadai duo | 2 | two savoury fritters and chutney/sambar cup |
 | Lemon rice | 3 | yellow rice, accompaniments, plate |

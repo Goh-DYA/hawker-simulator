@@ -82,7 +82,7 @@ The 18 stalls are authored in `src/content/stalls.ts` in this order, which is th
 | 8 | Satay Meridian | 10 | 30 | Coconut & Lime | 12 | 2,850 | Chicken satay $7, barbecued chicken wings $5 |
 | 9 | Pick & Mix | 12 | 33 | Mee Pok Junction | 14 | 2,900 | Yong tau foo $6, ban mian $5 |
 | 10 | Jade Ladle | 14 | 36 | Sunrise Roost | 16 | 2,950 | Century egg pork porridge $4, fish porridge $6 |
-| 11 | Tamarind Leaf | 16 | 40 | Tiffin Lantern | 18 | 3,100 | Masala thosai $4, idli sambar $3 |
+| 11 | Tamarind Leaf | 16 | 40 | Tiffin Lantern | 18 | 3,100 | Thosai $3, idli sambar $3 |
 | 12 | Bamboo Basket | 18 | 43 | Jade Ladle | 20 | 3,350 | Prawn dumpling soup $4, siew mai $4 |
 | 13 | Longan Moon | 20 | 46 | Sweet Monsoon | 23 | 3,050 | Cheng tng $2, orh nee $3 |
 | 14 | Lesung Corner | 22 | 49 | Satay Meridian | 26 | 3,550 | Ayam penyet $7, nasi goreng $6 |

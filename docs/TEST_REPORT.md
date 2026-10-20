@@ -1,12 +1,88 @@
 # Test Report
 
 Report date: 2026-10-20
-Build/commit: Content `1.6.0` working source; working source validated with Node.js `v22.22.0`; commit/publication record pending
+Build/commit: Content `1.7.0` working source; working source validated with Node.js TODO-GATE; commit/publication record pending
 Release verdict: **NO-GO pending exact-production browser/offline QA and required human reviews**
 
 This document owns the dated test and gate evidence; other documents link here instead of restating results (see the [documentation index](README.md)). Release blockers are listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md), and content counts in [CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md#roster-counts).
 
-Scope note: this report records the content `1.6.0` working-source gate, retains the content `1.5.0`, `1.4.0` and `1.3.0` gates as previous records, and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
+Scope note: this report records the content `1.7.0` working-source gate, retains the content `1.6.0`, `1.5.0`, `1.4.0` and `1.3.0` gates as previous records, and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
+
+## Content `1.7.0` working-source validation
+
+Content `1.7.0` re-weights the meal Health ratings ([ADR 0009](decisions/0009-whole-profile-overall-health-rating.md)) and makes plain thosai the thosai family's default.
+
+Gate results on the landed source:
+
+| Check | Result |
+|---|---|
+| Date and Node.js version | TODO-GATE |
+| `CI=true npm run test:release`: typecheck, lint with no warnings, Vitest files / tests, Vinext build, rendered-output/offline-shell assertions | TODO-GATE |
+| `npm run build:vercel` (native Next.js Vercel build) | TODO-GATE |
+| Service-worker build ID (Linux build) | TODO-GATE |
+| `benchmark-80-agents` mean and p95 per fixed step | TODO-GATE |
+
+The generated nutrition snapshot is review revision 5, `dataVersion` `sg-1bc212db6eda-c87987b4281c-r5` (sha256 `c4dce8eb58dbae5d02aa70ee28a2504ff13ae1c34326b421b0fcbcb3ad963f4e`): 171 released profiles (0 quarantined) across 23 variant families for 91 dishes, with `healthParts` on all 147 meal profiles and a top-level `dailyReference`. It differs from the round-3 panel chair's reference output (sha256 `87a66486f93bf47d22ba3ffc49d898ac351f4e90890f2fb25d75bf4e7fd63d5d`) only in the thosai family: the plain and masala thosai profiles exchange their profile IDs, variant IDs and review notes, and every rating, part and other profile is identical. The goldens moved intentionally, each in the commit that moved it, with the reason in its message: the generated nutrition sha, the content goldens, the importer's varied-fixture sha, the runtime fresh-export, re-import, open-run, multi-day and pressure core hashes and the input test's core hash (guests' outcome snapshots copy `healthRating`), the runtime and Dishes-panel snapshots, the gallery save's data version and stored thosai default, the gallery-variants render digest (the plain thosai painting) and the content version.
+
+**Plain thosai is the default (owner decision).** Under the new rating, masala thosai, then the default, rated 3.8 (3.794 unrounded) against plain thosai's 3.7 (3.711), so its family broke the rule that a default rates strictly below another option. The panel proposed a closed test exception; the owner instead made plain thosai the default: the dish keeps `dish.masala-thosai` but is named Thosai, maps to the plain 'Thosai' row (Lab, 1 piece, 156 g), lists masala thosai as the rank-2 option and costs $3 (plain thosai $2.50 at Rajarani, Daniel Food Diary, April 2026; [DISH_PRICE_SOURCES.csv](design/DISH_PRICE_SOURCES.csv)). The test has no exception mechanism, and all 23 families pass it.
+
+### Review panel verification
+
+The results below come from the round-3 review panel: five AI agents (a clinical dietitian, a nutrient-profiling methodologist, a Singapore food culture and consumer reviewer, a public-health evidence reviewer, and a game economist and player-experience lead) whose 76 proposals a chair agent ruled on. They are internal checks on the chair's reference worktree, made before the plain-thosai decision, not the landed-source gate above, and not a qualified nutrition review or a human Singapore cultural review, both of which remain release gates. No browser pass was run for this change.
+
+Verified by the panel chair on the reference worktree:
+
+- The full Vitest suite in CI mode passed (108 files, 1,352 tests passed, 1 skipped), including the 80-agent benchmark; `npm run typecheck` and `npm run lint` were clean and `npm run validate:content` passed.
+- All 147 meal ratings matched an independent recomputation of the model, with no mismatch. All 24 drink profiles, every condition rating and every intent fit were unchanged.
+- **No guest behaviour moves.** Some runtime core hashes move only because guests' outcome snapshots copy `healthRating` into the state. With every `healthRating` key stripped, the open run, the two-day run at speed 10 and input tests (11) and (14) produced 14 checkpoint hashes identical to those under the previous ratings. The core goldens did not move.
+- **The owner's pair**: chicken congee 3.9 (3.871; previously 3.3) and char siew rice 3.8 (3.758; previously 3.7).
+- **Locked orderings**: no meal holding 2,000 mg of sodium or more rates above congee (the highest is Teochew fish dumpling soup, 3.831 at 2,029 mg); the 23 meals holding two limit nutrients at two thirds of a day or more rate at most 2.2; every meal rates at or above its lowest condition and at most 2.2 above it on displayed values; the 30 local swaps hold (thinnest: cheng tng above green bean soup by 0.349); and tau huay > ice kacang > chendol, poached ≥ roast chicken rice, clear above milky fish bee hoon and chap chye above babi pongteh still hold.
+- **Synthetic anchors**: the lean serving 4.6 (4.5887), the on-budget serving 2.6 (2.5719), the lean serving with ⅔, 1, 1.5, 2 and 3 days of sodium 3.8, 3.5, 2.7, 2.2 and 1.2, and the on-budget serving with 2 days of sodium 1.0 against 2.2 for the lean one. Raising any limit nutrient of a released meal by ×1.05 to ×3 never raised its rating, and raising fibre or protein by ×1.2 to ×4 never lowered it.
+
+Re-computed on the working source after the plain-thosai decision, with the importer's own rating module (by the implementing agent, not the panel):
+
+- Every meal rating, condition rating and the distribution below are unchanged by the decision, which moves no profile's values.
+- **Defaults**: 23 of 23 families pass both parts of the default rule. Thosai's margin (masala thosai 3.794 against plain thosai 3.711, 0.083 unrounded) is now the thinnest, ahead of chicken chop (0.089), ban mian (0.110) and bak chor mee (0.152). The weight grid in [ADR 0009](decisions/0009-whole-profile-overall-health-rating.md#documented-properties) was re-run with plain thosai as the default.
+- **Price-health**, across the 91 dish defaults: the Spearman correlation between price and Health rating is −0.366 (−0.421 under content `1.6.0`; the check requires at most zero). 29 dishes rate 3.5 or above, and 26 of them cost no more than the Student Saver's $6.50 mid budget; the three above it are protein-led seafood plates with little sugar: sambal grilled squid $10 (4.2), black pepper crab $20 (3.6) and sambal stingray $12 (3.5).
+
+Distribution of the 147 meal ratings, before (content `1.6.0`) and after:
+
+| | Before | After |
+|---|---|---|
+| Mean / standard deviation | 2.32 / 0.89 | 2.74 / 0.93 |
+| Range | 1.0-4.5 | 1.0-4.8 |
+| At 4.5 or above / 3.5 or above / below 3.0 / 1.5 or below / at 1.0 | 1 / 17 / 107 / 34 / 17 | 3 / 36 / 88 / 19 / 9 |
+| Moves | – | 43 rise by more than 0.5 (the largest by 0.8), 90 by 0.1-0.5, 11 unchanged, 3 fall (mee soto −0.4, prawn noodle soup −0.1, seafood tom yum ban mian −0.6) |
+| Kendall τ against before | 1.00 | 0.90 |
+
+Calibration against front-of-pack systems, Spearman over the 147 meals (the panel's figures; reported, not tuned to, and not a validation claim):
+
+| Comparator | Before | After |
+|---|---|---|
+| FSA traffic lights (per 100 g; portion criteria only above 100 g) | 0.783 | 0.728 |
+| FSA per-portion reds | 0.788 | 0.752 |
+| Nutri-Score 2023 points (per 100 g; fruit, vegetable and legume share unknown, so 0 points) | 0.341 | 0.291 |
+| LIM per serving (saturated fat/22 + sugar/50 + sodium/2,000, uncapped) | 0.832 | 0.877 |
+| LIM plus energy/2,000 | 0.855 | 0.899 |
+| Mean of the condition ratings | 0.958 | 0.964 |
+
+The mean rating falls monotonically across the Nutri-Score grades (A 4.10 → 4.30, B 2.90 → 3.32, C 2.26 → 2.64, D 1.95 → 2.52, E 1.75 → 2.17) and the FSA per-portion red counts (none 3.29 → 3.71, one 3.03 → 3.40, two 2.42 → 2.89, three 1.61 → 2.04).
+
+Tracked player metrics (reported, not locked):
+
+| Metric | Before | After |
+|---|---|---|
+| Meals rated above all four of their condition ratings / below all four | 0 / 16 | 6 / 0 |
+| Condition-dominance inversions (panel figure) | 17 | 9 |
+| Rated 3.5 or above with a condition rating below 2 | 0 | 6: soto ayam, black pepper crab, Teochew fish dumpling soup, bak chor mee soup, sui kow mee soup, sliced fish porridge |
+| Match rate for a condition guest at a dish rated 3.5 or above (panel figure; n) | 0.81 (17) | 0.71 (36) |
+| Rated 3.5 or above while holding at least a full day of a limit nutrient | 0 | 3: soto ayam 3.6, Teochew fish dumpling soup 3.8, bak chor mee soup 3.5 |
+| Per-serving dominance inversions (panel figure) | 76 | 68 |
+| Meals at 1.0; families with two or more options at 1.0 | 17; – | 9; 1 (yong tau foo, 5 of 7) |
+| Stalls with a default dish rated 3.5 or above / with any option at 3.5 or above | 12 / 14 | 14 / 15 |
+| Families keeping a previous top option among their top options | – | 22 of 23; only thosai's top option changes, from plain thosai (now the default) to masala thosai (rank 2) |
+
+The match-rate fall is mitigated by the card's "lowest" line ([NUTRITION_DATA.md](design/NUTRITION_DATA.md#how-the-card-explains-the-rating)).
 
 ## Content `1.6.0` working-source validation
 

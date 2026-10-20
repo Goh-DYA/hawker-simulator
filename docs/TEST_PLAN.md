@@ -53,7 +53,7 @@ Before the structural refactor, the following suites were written to pin the beh
 | `tests/app/game/HawkerSimulator.ssr.test.ts` | Byte-exact server-rendered markup of the game component. |
 | `tests/app/game/HawkerSimulator.test.ts` | A jsdom interaction suite: panels, autosave debounce, failures, import, reset, settings clamping, and focus and Escape order. |
 | `tests/content/golden.test.ts`, `tests/content/validate.test.ts` | Derived content data, localisation order and validator issues. |
-| `tests/tools/nutrition/ratings.test.ts` | Nutrition importer ratings and serialised output from a varied fixture CSV. |
+| `tests/tools/nutrition/ratings.test.ts` | Nutrition importer ratings and serialised output from a varied fixture CSV; pins the anchor ratings of the synthetic servings rated through `addHealthRatings` ([ADR 0009](decisions/0009-whole-profile-overall-health-rating.md#documented-properties)). |
 
 The day-rhythm systems have their own suites:
 
@@ -125,7 +125,9 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 - Exact 171 released nutrition profiles, 23 reviewed variant families with 103 selectable variants (80 beyond the defaults), and one released base profile plus Star rating for all 91 dishes.
 - In every variant family the default rates strictly below another option, and some option is at least 0.3 higher overall or no lower overall and at least 0.5 higher on one condition, on displayed ratings; no two profiles share a source row, multiplier and component list; no Borrowed source row is a primary, a single-row variant or a composite's first component, and only `BORROWED_COMPONENT_ALLOWLIST` rows are accepted as later components; no limit nutrient is withheld by the outlier fence.
 - Overall Health and all four condition ratings are finite and bounded from 1 to 5; high-cholesterol, obesity, diabetes, and hypertension schemes use their documented nutrient families and remain distinct from Star ratings.
-- Deterministic CSV generation, source and row hash drift, serving scaling, malformed booleans, `Trace`, unavailable values, quarantine rules, intent-fit percentile ties, the guideline-anchored rating curves and missing-value rules, and incompatible daily-guideline comparisons.
+- The overall meal Health rating keeps its locked checks ([ADR 0009](decisions/0009-whole-profile-overall-health-rating.md)): chicken congee and char siew rice both rate 3.5 or above and within 0.3 of each other; no meal holding 2,000 mg of sodium or more rates above congee, and every meal holding 2,500 mg or more rates below it; a meal holding two limit nutrients at two thirds of a day or more rates 2.5 or below; every meal rates at or above its lowest condition rating and at most 2.5 above it; and the 30 local swap orderings from "Healthy hawker eats" hold.
+- Every meal profile carries `healthParts` and no drink does; the parts rebuild the meal's rating within 0.15, carry an excess nutrient exactly when they carry a day share, and rest every excess line on a reported (`known`) amount; `dailyReference` holds the four daily amounts.
+- Deterministic CSV generation, source and row hash drift, serving scaling, malformed booleans, `Trace`, unavailable values, quarantine rules, intent-fit percentile ties, the guideline-anchored rating curves and missing-value rules, the overall meal rating anchors (lean and on-budget servings, sodium falling with no plateau, saturated fat by the day) and its monotonicity over every released meal (more of a limit nutrient never raises it; more fibre or protein never lowers it), and incompatible daily-guideline comparisons.
 
 ### Stall graphics and animation
 
