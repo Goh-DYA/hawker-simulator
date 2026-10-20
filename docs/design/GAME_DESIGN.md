@@ -55,7 +55,7 @@ The release must pass the acceptance checklist in [RELEASE_CHECKLIST.md](../rele
 - Current stable desktop Chrome is tested and its exact version recorded.
 - Human Singapore cultural review, qualified legal/privacy review, and independent security review are complete or explicitly waived by the accountable human owner.
 
-The content `1.6.0` source contract is recorded; its complete automated working-source gate and both local production builds pass. Exact-production browser/offline validation, publication evidence, and all external review gates remain incomplete as of this document date.
+The content `1.7.0` source contract is recorded; its complete automated working-source gate and both local production builds pass. Exact-production browser/offline validation, publication evidence, and all external review gates remain incomplete as of this document date.
 
 ### Product assumptions
 

@@ -143,7 +143,7 @@ Customer nutrition intents still rank servings relative to the other released se
 
 ## Recipe variants and defaults
 
-Content `1.6.0` has 23 reviewed variant families: kopi, teh tarik, nasi lemak, fried carrot cake, roti prata, fish bee hoon soup (`dish.sliced-fish-soup`), bak chor mee, chicken murtabak, chicken nasi briyani, thosai (`dish.masala-thosai`), yong tau foo, ban mian, bak kut teh, duck rice, prawn noodle soup, economic rice, nasi padang, mee siam, wanton mee, soya bean milk, chicken chop, fish and chips and fish porridge. Each option maps to its own source row (or, for bak kut teh, its own composite), and each is an order hawker diners actually place.
+Content `1.7.0` has 23 reviewed variant families: kopi, teh tarik, nasi lemak, fried carrot cake, roti prata, fish bee hoon soup (`dish.sliced-fish-soup`), bak chor mee, chicken murtabak, chicken nasi briyani, thosai (`dish.masala-thosai`), yong tau foo, ban mian, bak kut teh, duck rice, prawn noodle soup, economic rice, nasi padang, mee siam, wanton mee, soya bean milk, chicken chop, fish and chips and fish porridge. Each option maps to its own source row (or, for bak kut teh, its own composite), and each is an order hawker diners actually place.
 
 **Ranks are positional.** A variant unlocks at the stall-mastery rank given by its position in the family (`VARIANT_UNLOCK_RANKS` in `src/content/roster.ts`): the default (first) at rank 1, the second option at rank 2, the third at rank 4, and the fourth and later at rank 7. Adding or reordering an option therefore moves the ranks of the options after it.
 
