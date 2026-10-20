@@ -82,7 +82,7 @@ describe("nutrition content", () => {
   it("mounts deterministic schema-v2 nutrition content", () => {
     const report = validateContent();
 
-    assert.equal(LAUNCH_CONTENT.version, "1.5.0");
+    assert.equal(LAUNCH_CONTENT.version, "1.6.0");
     assert.equal(LAUNCH_CONTENT.nutrition, NUTRITION_CONTENT);
     assert.equal(NUTRITION_CONTENT.schemaVersion, 2);
     assert.equal(report.counts.nutritionProfiles, 171);

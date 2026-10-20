@@ -1,6 +1,6 @@
 # Nutrition data and educational-use policy
 
-Status: Implemented schema-v2 content contract with guideline-anchored ratings (review revision 3); source, clinical, and cultural review remain required before release
+Status: Implemented schema-v2 content contract with guideline-anchored ratings (review revision 4); source, clinical, and cultural review remain required before release
 
 ## Purpose
 
@@ -13,7 +13,7 @@ The condition ratings let fictional customers with high cholesterol, obesity, di
 
 ## Supplied source snapshot
 
-Food profiles come from `food_nutrition_sgfoodid_combined_nutrition_subset.csv` (2,689 rows, SHA-256 `1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e`). The launch snapshot contains 67 released primary dish profiles and 14 reviewed variant families, for 116 released profiles in total.
+Food profiles come from `food_nutrition_sgfoodid_combined_nutrition_subset.csv` (2,689 rows, SHA-256 `1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e`). The launch snapshot contains 91 released primary dish profiles and 23 reviewed variant families with 80 non-default variants, for 171 released profiles in total. Of the 171 primary source rows, 124 are Lab and 47 Derived. Counting every row a profile uses, composite parts included, the profiles use 128 Lab, 48 Derived and 4 Borrowed rows; the four Borrowed uses are the same plain rice (see the composites below).
 
 Raw CSV files and machine-specific paths are not committed. Generated provenance stores only the source filename, file hash, row number and name, canonical row hash, mapping method, serving multiplier, source type, and review note. Mappings are exact and authored; runtime fuzzy matching is prohibited.
 
@@ -39,19 +39,22 @@ The importer rejects or quarantines invalid servings, non-finite or negative val
 
 ## Servings
 
-A serving is what a customer buys at a hawker stall. A mapping that starts from a per-piece or serving-spoon row scales it with an explicit multiplier and serving label: four siew mai, five chwee kueh or kueh pie tee, ten satay sticks, three chicken wing pieces, a 200 g plate for the Peranakan braises, chap chye and oyster omelette, a quarter crab (the source's alternative serving), half of the sharing-size chicken, mushroom and cheese murtabak, and teh tarik scaled from its 150 ml small cup to the 250 ml cup of every other teh and kopi serving. A row that is internally implausible is not used: the fishball soup row (44 kcal and trace carbohydrate for seven fishballs) gives way to the complete fishball tang hoon bowl, the sliced fish soup row without milk (84 kcal against about 154 kcal from its own macronutrients) to the fried fish soup bowl, and the boiled clear-soup yong tau foo row (82 kcal and 5.7 g protein for seven stuffed pieces) is dropped, so mixed pieces are that family's default.
+A serving is what a customer buys at a hawker stall. A mapping that starts from a per-piece or serving-spoon row scales it with an explicit multiplier and serving label: four siew mai, five chwee kueh or kueh pie tee, ten satay sticks, three chicken wing pieces, a 200 g plate for the Peranakan braises, chap chye and oyster omelette, a quarter crab for black pepper crab and chilli crab (the source's alternative serving; chilli crab is scaled from its 177 g row to the CSV's own 384 g quarter), half of the sharing-size chicken, mushroom and cheese murtabak, half a chicken murtabak for the shared option (×0.5, 165 g), two appam (×2), ten mutton satay sticks (×10), and teh tarik scaled from its 150 ml small cup to the 250 ml cup of every other teh and kopi serving. A row that is internally implausible is not used: the fishball soup row (44 kcal and trace carbohydrate for seven fishballs) gives way to the complete fishball tang hoon bowl, the sliced fish soup row without milk (84 kcal against about 154 kcal from its own macronutrients) to the fried fish soup bowl, and the boiled clear-soup yong tau foo row (82 kcal and 5.7 g protein for seven stuffed pieces) is dropped. The appam, mutton satay and half-murtabak multipliers have no alternative serving in the CSV, so each mapping note gives the dated menu or plating evidence for its count.
 
-Three profiles are documented **composites**, the sum of exact rows with explicit multipliers, recorded in the profile's `components`:
+Seven profiles are documented **composites**, the sum of exact rows with explicit multipliers, recorded in the profile's `components`:
 
 - vegetarian chicken rice: the Lab flavoured chicken-rice rice (220 g) plus 70 g of the Lab mock chicken, because the Derived 'Vegetarian chicken rice' row reports 11 g of water in 290 g and fails mass balance;
 - the roti prata set: two plain prata scaled to the dough of the Lab egg prata (39.87 g carbohydrate each) plus the Lab curry served with the source's two-piece set, 406 g; the single plain prata variant is scaled the same way to one egg-prata-sized piece (77 g), so one plain prata no longer outweighs one egg prata;
-- laksa: the source's 'Laksa gravy' (361 g), the Derived thick beehoon bowl and one Lab fishcake (611 g), because the Lab 'Laksa' bowl held less than half the saturated fat of its own gravy.
+- laksa: the source's 'Laksa gravy' (361 g), the Derived thick beehoon bowl and one Lab fishcake (611 g), because the Lab 'Laksa' bowl held less than half the saturated fat of its own gravy;
+- the four bak kut teh bowls, each served with rice as the usual hawker meal: the default is the Lab peppery 'Bak kut teh (soup)' bowl (row 1765, 574 g) plus 'Cooked white rice' (row 1422, Borrowed, the CSV's own 200 g bowl, no multiplier) plus half of the Lab 117 g 'You tiao' stick (833 g); "with rice, no you tiao" drops the you tiao (774 g; it keeps the old `bak-kut-teh-soup` variant ID, which now means soup with rice); and the herbal (row 1780) and dry (row 1764) bowls each add the same rice (702 g and 482 g).
+
+**Borrowed rows.** No Borrowed row is used as a primary, as a single-row variant or as the main (first) component of a composite. A Borrowed single-ingredient component is allowed only when the CSV has no Lab, NIP or Derived row for that ingredient, the mapping note names it with its row, and [KNOWN_ISSUES.md](../KNOWN_ISSUES.md#data-limitations-kept-by-decision) lists it with its values (entry (q)). Plain cooked rice is the only such ingredient: row 1422 is the CSV's only plain cooked rice. The importer enforces the rule: `assert_borrowed_parts_allowed` in `tools/nutrition/importer.mjs` rejects a Borrowed row that is a profile's only part, its first part, or not in `BORROWED_COMPONENT_ALLOWLIST` in `tools/nutrition/manifest.mjs`, and `tests/content/nutrition-content.test.ts` checks that no released profile's primary row is Borrowed and that an allowlisted component is never first.
 
 The milky fish-soup variants use the fried-fish Lab pair ('Fried fish beehoon soup (with milk)', 'Fried fish soup (with milk)'), so each milky bowl has a like-for-like clear partner.
 
 Serving labels read "<count> <noun> (<amount> <unit>)", such as "1 bowl (811 g)"; source labels like "1 bowl(s) = 811g" are rewritten, curated labels are kept, and every amount is rounded to one decimal place. A content test checks that each label states the rated amount.
 
-`NUTRITION_REVIEW_REVISION` in `tools/nutrition/manifest.mjs` is part of the generated `dataVersion` (`sg-<food>-<guidelines>-r3`). Raising it when the mappings or the rating model change resets saved recipe-variant choices to the reviewed defaults through the runtime's `nutritionDataVersion` check.
+`NUTRITION_REVIEW_REVISION` in `tools/nutrition/manifest.mjs` is part of the generated `dataVersion` (`sg-<food>-<guidelines>-r<revision>`). It is 4 in content `1.6.0`, so `dataVersion` is `sg-1bc212db6eda-c87987b4281c-r4`. Raising it when the mappings or the rating model change resets saved recipe-variant choices to the reviewed defaults through the runtime's `nutritionDataVersion` check.
 
 ## Rating methodology
 
@@ -70,7 +73,7 @@ Each limit nutrient gets a penalty from 0 to 1: the worse of its per-serving dos
 
 The **overall Health rating** starts at five stars and takes off one star per limit nutrient (energy, saturated plus trans fat, sodium, sugar) at its full penalty, plus the worst of the four once more, so a single nutrient at a full day's limit costs two stars instead of being averaged away. In the overall rating only, a penalty keeps rising past the full penalty, to 1.25 at one and a half times that amount. Fibre and protein add credits: fibre up to half a star (full credit at the EU "high fibre" 6 g per 100 g or 3 g per 100 kcal), and protein up to a quarter star (none at 10% of energy, full at the EU "high protein" 20%). The credits are per 100 g or per unit of energy, so a larger serving can never rate higher, and they shrink as the penalties grow.
 
-**Desserts are rated as snacks.** Ice kacang, chendol, tau huay and pulut hitam (`SNACK_RATED_DISH_IDS` in the manifest, which a test ties to the dishes in the `dessert` category) are an extra eating occasion, so their energy and sugar are held to 0.4 of a meal's share, HPB's 200 kcal snack against its 500 kcal meal: no energy penalty up to 200 kcal, half at 267 kcal and full at 400 kcal. Saturated fat, sodium, total fat and carbohydrate keep the meal curves.
+**Desserts are rated as snacks.** Ice kacang, chendol, tau huay and pulut hitam, and the five tong sui desserts (cheng tng, orh nee, tau suan, green bean soup and black sesame paste) (`SNACK_RATED_DISH_IDS` in the manifest, which a test ties to the dishes in the `dessert` category) are an extra eating occasion, so their energy and sugar are held to 0.4 of a meal's share, HPB's 200 kcal snack against its 500 kcal meal: no energy penalty up to 200 kcal, half at 267 kcal and full at 400 kcal. Saturated fat, sodium, total fat and carbohydrate keep the meal curves.
 
 Each **condition rating** swaps in the stricter references that clinical guidance sets for its key nutrients:
 
@@ -115,7 +118,33 @@ These weights and thresholds are an in-game educational model, not an HPB formul
 
 ### Customer intents
 
-Customer nutrition intents still rank servings relative to the other released servings of their class, because an intent models a guest choosing among what is offered. Intent fits are a game mechanic and are never shown as a rating.
+Customer nutrition intents still rank servings relative to the other released servings of their class, because an intent models a guest choosing among what is offered. Intent fits are a game mechanic and are never shown as a rating. Because they are relative, adding profiles re-ranks them: the 55 profiles added in content `1.6.0` re-ranked the intent fits of the existing profiles without changing a Health or condition rating, and the seeded starter probe's XP moved by −0.9% to +2.2% (still level 7 on day 5 and level 8 on day 7).
+
+## Recipe variants and defaults
+
+Content `1.6.0` has 23 reviewed variant families: kopi, teh tarik, nasi lemak, fried carrot cake, roti prata, fish bee hoon soup (`dish.sliced-fish-soup`), bak chor mee, chicken murtabak, chicken nasi briyani, masala thosai, yong tau foo, ban mian, bak kut teh, duck rice, prawn noodle soup, economic rice, nasi padang, mee siam, wanton mee, soya bean milk, chicken chop, fish and chips and fish porridge. Each option maps to its own source row (or, for bak kut teh, its own composite), and each is an order hawker diners actually place.
+
+**Ranks are positional.** A variant unlocks at the stall-mastery rank given by its position in the family (`VARIANT_UNLOCK_RANKS` in `src/content/roster.ts`): the default (first) at rank 1, the second option at rank 2, the third at rank 4, and the fourth and later at rank 7. Adding or reordering an option therefore moves the ranks of the options after it.
+
+**Star cannot separate variants, so "best" is the Health rating.** Every variant inherits its dish's quality, demand, price, preparation time and XP, so all options of a family share one Star rating and one price. A family's best option is the one with the highest overall Health rating.
+
+**Every default can be tuned.** The default is the usual order, and in every family it rates strictly below another option, so a player always has a healthier choice to unlock. `tests/content/nutrition-content.test.ts` checks two parts on the displayed (rounded) ratings for every generated family:
+
+1. The default's overall Health rating is strictly below some other option's.
+2. Some option either rates at least 0.3 higher overall, or rates no lower overall and at least 0.5 higher on one condition rating.
+
+All 23 families pass both parts. Four defaults moved to the usual order in content `1.6.0`: black carrot cake (1.7; white carrot cake 2.6), fried fish bee hoon in clear soup (2.4; sliced fish bee hoon in clear soup 3.1), yong tau foo in clear soup with bee hoon or rice (1.1; pieces only 1.7) and bak kut teh with rice and half a you tiao (1.7; with rice and no you tiao 3.0). A default may also tie an option that is not the best one (teh tarik, fish bee hoon soup, chicken murtabak, chicken nasi briyani and economic rice do).
+
+Four families pass on a small overall margin. They are kept, because each is a real order and the dataset has no third row that separates them more clearly, but no copy or document may present their overall difference as meaningful; the difference by condition is:
+
+| Family | Default | Best other option | Raw overall margin | Condition differences (displayed) |
+|---|---|---|---:|---|
+| Bak chor mee | Dry, 3.0 | Soup, 3.1 | 0.174 | Soup: high cholesterol +1.4, diabetes +0.7. Dry: hypertension +0.4. A 10% change in one nutrient reverses the overall order. |
+| Masala thosai | Masala, 3.2 | Plain, 3.3 | 0.075 | Plain: hypertension +0.8, high cholesterol +0.4. Masala: obesity +1.3, diabetes +0.7. |
+| Ban mian | Soup, 2.4 | Vegetable, 2.7 | 0.240 | Vegetable: obesity +0.6. Soup: diabetes +0.3. |
+| Economic rice | 1 veg, 1 meat, 2.2 | 1 veg, 1 fish, 2.5 | 0.366 | 1 veg, 1 fish: obesity +0.6, diabetes +0.6, hypertension +0.4, high cholesterol +0.3. Portion-sensitive: the margin falls to 0.15 at ±10%. |
+
+**No rounding-edge picks.** A displayed rating is rounded to one decimal place, so a dish shown at 3.5 may sit just below it. Cheng tng shows 3.5 from a raw 3.463 and must not be cited as a 3.5 pick in copy, objectives or documentation.
 
 ## Guideline boundaries
 
@@ -131,5 +160,7 @@ The adult daily guideline block remains contextual in the interface: it is shown
 > Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed source serving; recipes and portions vary. Its 1-5 health and condition ratings compare each serving with a meal's share (for a dessert, a snack's share) of general daily guidance from Singapore's Health Promotion Board and the World Health Organization, and with stricter guidance for each condition: they are not diagnoses, treatment advice, Health Promotion Board certifications, or universal judgements. Daily reference ranges are general guidance for Singaporean adults and do not represent individual needs. Total sugar is not the same as added sugar.
 
 ## Review requirements
+
+For content `1.6.0`, a five-member review panel of AI agents (a clinical dietitian, a methodologist and data auditor, a Singapore food culture reviewer, a game economist and an art and integration lead) re-scrutinised every new and changed mapping, serving, variant option and default, and a chair ruled on 140 proposals. Like the earlier panel, it is internal review by AI agents, not a qualified dietitian's or a Singapore cultural reviewer's sign-off.
 
 Before release, a qualified reviewer must verify source permissions, mappings, serving multipliers, variant names, nutrient units, rating weights and thresholds (including the transcription of the Nutri-Grade bands and the clinical references above), and the contextual guideline transcription. The data limitations that [KNOWN_ISSUES.md](../KNOWN_ISSUES.md#open-nutrition-data-and-rating-issues) keeps by decision need a corrected source or a reviewed replacement. Singapore cultural review must also check that recipe variants and visuals are recognisable without implying halal, vegetarian, allergy-safe, or other certification claims.
