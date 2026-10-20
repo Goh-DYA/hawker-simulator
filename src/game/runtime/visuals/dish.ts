@@ -166,7 +166,7 @@ const DISH_PRESENTATIONS: Readonly<Record<string, DishPresentationSeed>> = {
   "mee-goreng-mamak": dishProfile("red-wok-noodles-with-egg-and-tofu", "noodle-tangle", ["yellow-noodles", "egg", "tofu"], ["chilli-tomato-sauce", "lime"]),
   "chicken-murtabak": dishProfile("stuffed-murtabak-cut-into-squares", "flatbread", ["stuffed-flatbread", "minced-chicken", "onion"], ["cut-squares", "curry-cup"]),
   "nasi-briyani": dishProfile("spiced-rice-with-large-chicken-piece", "rice-mound", ["briyani-rice", "chicken", "cucumber"], ["fried-onion", "curry-gravy"]),
-  "masala-thosai": dishProfile("rolled-thosai-with-potato-filling", "flatbread", ["thosai", "masala-potato", "sambar"], ["rolled-crepe", "chutney-cups"]),
+  "masala-thosai": dishProfile("rolled-plain-thosai-with-sambar", "flatbread", ["thosai", "sambar", "coconut-chutney"], ["rolled-crepe", "chutney-cups"]),
   "idli-sambar": dishProfile("three-idli-cakes-in-sambar", "dumplings", ["idli", "sambar", "coconut-chutney"], ["three-white-cakes", "curry-leaf"]),
   "vadai-set": dishProfile("two-crisp-vadai-rings-with-dips", "fritters", ["two-lentil-vadai", "sambar", "coconut-chutney"], ["ring-shape", "curry-leaf"]),
   "lemon-rice": dishProfile("yellow-lemon-rice-with-peanuts", "rice-mound", ["lemon-rice", "peanut", "mustard-seed"], ["curry-leaf", "lemon-wedge"]),
