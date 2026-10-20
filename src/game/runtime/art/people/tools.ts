@@ -1,12 +1,12 @@
 /**
- * Vendor tool painters: the fourteen hand tools a stall vendor works with (cleaver, ladles, a
- * long-spout kettle, spatulas, a noodle basket, cups, tongs and a bamboo steamer held in a cloth),
- * drawn in the working hand along a direction given in body space.
+ * Vendor tool painters: the eighteen hand tools a stall vendor works with (cleaver, ladles, a
+ * long-spout kettle, spatulas, a noodle basket, cups, tongs, a granite pestle and a bamboo steamer
+ * held in a cloth), drawn in the working hand along a direction given in body space.
  *
  * A tool is drawn in its own frame: the hand at the origin and the handle running along +x, so
  * one shape serves every facing; the direction is projected for the facing, which foreshortens a
- * tool that points at or away from the camera. Materials are stainless steel, timber, bamboo and
- * enamel; nothing carries a brand.
+ * tool that points at or away from the camera. Materials are stainless steel, timber, bamboo,
+ * granite and enamel; nothing carries a brand.
  */
 import {
   css,
@@ -33,6 +33,27 @@ const WOOD = 0x8a5a33;
 const BAMBOO = 0xc9a05a;
 /** Kopi poured from the kettle. */
 const KOPI = 0x8a5a33;
+/** Grey granite for the pestle. */
+const GRANITE = 0x8d8b85;
+/** Sambal on the pestle's head. */
+const SAMBAL = 0xb5342a;
+
+/** What each ladle-shaped tool holds in its bowl. */
+const LADLE_BROTH = {
+  ladle: 0xd9a441,
+  "braising-ladle": 0xa0612a,
+  "claypot-ladle": 0x7a3b24,
+  "congee-paddle": 0xf1e9d6,
+  "dessert-ladle": 0x8e6a9b,
+} as const satisfies Partial<Record<StallVendorTool, number>>;
+
+/** The blade width of each spatula-shaped tool. */
+const SPATULA_WIDTH = {
+  "wok-spatula": 4.4,
+  "griddle-spatula": 6,
+  "fish-turner": 4.6,
+  "hot-plate-spatula": 5.2,
+} as const satisfies Partial<Record<StallVendorTool, number>>;
 
 /**
  * Fills the current path and strokes a thin outline in the material's shade.
@@ -151,13 +172,14 @@ function paint_tool_shape(ctx: PaintContext, tool: StallVendorTool, frame: Paint
       break;
     case "ladle":
     case "braising-ladle":
-    case "claypot-ladle": {
-      handle(ctx, 11.5, 1.2, DARK_STEEL, frame);
+    case "claypot-ladle":
+    case "congee-paddle":
+    case "dessert-ladle": {
+      handle(ctx, 11.5, 1.2, tool === "congee-paddle" ? WOOD : DARK_STEEL, frame);
       ctx.beginPath();
       ctx.ellipse(13.4, 0.6, 3.2, 2.6, 0, 0, Math.PI * 2);
       fill_part(ctx, STEEL, frame);
-      const broth =
-        tool === "claypot-ladle" ? 0x7a3b24 : tool === "braising-ladle" ? 0xa0612a : 0xd9a441;
+      const broth = LADLE_BROTH[tool];
       fill_ellipse(ctx, 13.4, 0.2, 2.3, 1.5, css(broth));
       fill_ellipse(ctx, 12.8, -0.3, 0.9, 0.4, css(0xffffff, 0.45));
       break;
@@ -200,12 +222,14 @@ function paint_tool_shape(ctx: PaintContext, tool: StallVendorTool, frame: Paint
       break;
     case "wok-spatula":
     case "griddle-spatula":
-    case "fish-turner": {
+    case "fish-turner":
+    case "hot-plate-spatula": {
       handle(ctx, 9, 1.6, WOOD, frame);
-      const width = tool === "griddle-spatula" ? 6 : tool === "fish-turner" ? 4.6 : 4.4;
+      const width = SPATULA_WIDTH[tool];
       trace_box(ctx, 8.6, -width / 2, tool === "fish-turner" ? 7 : 5.4, width, 1.2);
       fill_part(ctx, STEEL, frame);
-      if (tool !== "wok-spatula" && !frame.isLowDetail) {
+      const is_slotted = tool === "griddle-spatula" || tool === "fish-turner";
+      if (is_slotted && !frame.isLowDetail) {
         for (const offset of [-1, 0, 1]) {
           polyline(
             ctx,
@@ -286,6 +310,19 @@ function paint_tool_shape(ctx: PaintContext, tool: StallVendorTool, frame: Paint
       if (tool === "ingredient-tongs") fill_circle(ctx, 13.4, 0, 1.4, css(0xd9a441));
       break;
     }
+    case "pestle":
+      // A granite pestle held by its narrow end, the broad head red with sambal.
+      ctx.beginPath();
+      ctx.moveTo(-1.5, -1.1);
+      ctx.lineTo(7, -2.2);
+      ctx.quadraticCurveTo(11.6, -2.6, 11.6, 0);
+      ctx.quadraticCurveTo(11.6, 2.6, 7, 2.2);
+      ctx.lineTo(-1.5, 1.1);
+      ctx.closePath();
+      fill_part(ctx, GRANITE, frame);
+      fill_ellipse(ctx, 10.4, 0, 1.2, 1.9, css(SAMBAL));
+      if (!frame.isLowDetail) fill_ellipse(ctx, 5, -1, 2.4, 0.4, css(0xffffff, 0.3));
+      break;
     case "steamer-cloth":
       // A bamboo steamer basket lifted with a cloth.
       fill_rounded_rect(ctx, -2, -2.2, 4.4, 4.4, 1.6, css(0xf1e6d2));

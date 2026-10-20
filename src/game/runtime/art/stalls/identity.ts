@@ -32,7 +32,11 @@ export type HangingWares =
   | "tools"
   | "bunting"
   | "fretwork"
-  | "net";
+  | "net"
+  | "ladles"
+  | "menu-tags"
+  | "chillies"
+  | "skillets";
 
 /** What stands on the back shelf (and on the inner shelves of a counter seen from behind). */
 export type ShelfGoods =
@@ -48,7 +52,8 @@ export type ShelfGoods =
   | "teapots"
   | "claypots"
   | "herb-jars"
-  | "limes";
+  | "limes"
+  | "cracker-jars";
 
 /** The cooking station on the work bench. */
 export type Station =
@@ -65,7 +70,11 @@ export type Station =
   | "steamer-tower"
   | "claypot-hearth"
   | "cauldron"
-  | "fish-grill";
+  | "fish-grill"
+  | "congee-pot"
+  | "dessert-pots"
+  | "sambal-mortar"
+  | "hot-plate";
 
 /** The second piece on the work bench, beside the station. */
 export type SidePiece =
@@ -80,7 +89,9 @@ export type SidePiece =
   | "syrups"
   | "claypot"
   | "peanut-pot"
-  | "steamers";
+  | "steamers"
+  | "dough-sticks"
+  | "fryer";
 
 /** A tall cabinet or low clutter standing in the interior. */
 export type InteriorExtra = "fridge" | "drawers" | "gas" | "sacks" | "icebox" | "none";
@@ -295,6 +306,58 @@ const DRESSING_BY_ID: Readonly<Record<string, StallDressing>> = {
     valance: "round",
     hasHood: true,
     isMirrored: true,
+  },
+  "stall.jade-ladle": {
+    wall: "tile",
+    floor: "checker",
+    hanging: "ladles",
+    shelf: "bowls",
+    station: "congee-pot",
+    side: "dough-sticks",
+    extra: "none",
+    cabinet: "laminate",
+    valance: "round",
+    hasHood: false,
+    isMirrored: true,
+  },
+  "stall.longan-moon": {
+    wall: "subway",
+    floor: "quarry",
+    hanging: "menu-tags",
+    shelf: "dessert-jars",
+    station: "dessert-pots",
+    side: "bowls",
+    extra: "icebox",
+    cabinet: "laminate",
+    valance: "round",
+    hasHood: false,
+    isMirrored: false,
+  },
+  "stall.lesung-corner": {
+    wall: "timber",
+    floor: "rubber",
+    hanging: "chillies",
+    shelf: "cracker-jars",
+    station: "sambal-mortar",
+    side: "peanut-pot",
+    extra: "gas",
+    cabinet: "timber",
+    valance: "point",
+    hasHood: true,
+    isMirrored: false,
+  },
+  "stall.peppercorn-plate": {
+    wall: "subway",
+    floor: "checker",
+    hanging: "skillets",
+    shelf: "sauces",
+    station: "hot-plate",
+    side: "fryer",
+    extra: "fridge",
+    cabinet: "steel",
+    valance: "straight",
+    hasHood: true,
+    isMirrored: false,
   },
 };
 

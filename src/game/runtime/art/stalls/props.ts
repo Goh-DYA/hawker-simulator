@@ -1,9 +1,10 @@
 /**
  * The small props that dress a stall's walls and interior: the wares hanging from the rail
  * (poached and roast chickens behind glass, roast ducks, kopi socks, noodle strainers, lanterns,
- * ketupat, woks, coconuts, steamer cloths, ladles, bunting, timber fretwork and a fishing net),
- * the goods on the shelf (plates, leaf parcels, cups, sauces, tiffin carriers, dessert jars,
- * satay pots, bowls, spice tins, teapots, claypots, herb jars and limes), the lit menu board, the
+ * ketupat, woks, coconuts, steamer cloths, ladles, bunting, timber fretwork, a fishing net,
+ * porridge ladles, dessert menu tags, strings of dried chillies and cast-iron skillets), the goods on
+ * the shelf (plates, leaf parcels, cups, sauces, tiffin carriers, dessert jars, satay pots, bowls,
+ * spice tins, teapots, claypots, herb jars, limes and jars of crackers), the lit menu board, the
  * fluorescent tube and the stainless extractor hood on the back or side wall, and what stands in the
  * interior: a glass-door drinks fridge, a herbal drawer cabinet, a gas cylinder, sacks of rice
  * or charcoal and an ice box.
@@ -438,6 +439,34 @@ function paint_net(scene: StallScene, from: number, to: number, y: number): void
   fill_ellipse(ctx, from + width * 0.7, y + 11, 3.2, 2.2, css(0xd9b36a));
 }
 
+/** The coloured bar on each of the dessert stall's menu tags, west to east. */
+const MENU_TAG_BARS = [0x7e57c2, 0xd9a441, 0x6f9a4a, 0x8a5a3a, 0xf3efe6] as const;
+
+/**
+ * Paints five dessert menu tags hanging from the rail on strings of alternating drop: cream
+ * cards, each with one coloured bar and a grey rule standing in for the dessert's name (painters
+ * never measure text).
+ *
+ * @param scene - The stall scene.
+ * @param from - Left end of the span.
+ * @param to - Right end of the span.
+ * @param railY - The rail y.
+ */
+function paint_menu_tags(scene: StallScene, from: number, to: number, railY: number): void {
+  const { ctx } = scene;
+  const width = to - from;
+  const count = Math.max(1, Math.min(MENU_TAG_BARS.length, Math.floor(width / 9)));
+  for (let index = 0; index < count; index += 1) {
+    const x = from + ((index + 0.5) * width) / count;
+    const top = railY + 3 + (index % 2) * 1.5;
+    line(ctx, x, railY, x, top, css(0x6b4a26), 0.6);
+    fill_rounded_rect(ctx, x - 2.1, top + 0.6, 5.2, 7, 0.6, css(0x2a1c12, 0.22));
+    fill_rounded_rect(ctx, x - 2.6, top, 5.2, 7, 0.6, css(0xf6ebd9));
+    fill_rounded_rect(ctx, x - 1.9, top + 1.6, 3.8, 1.6, 0.4, css(MENU_TAG_BARS[index] as number));
+    line(ctx, x - 1.6, top + 4.6, x + 1.6, top + 4.6, css(0x8a7a66, 0.6), 0.5);
+  }
+}
+
 /**
  * Paints the stall's hanging wares from a rail across a span of the wall.
  *
@@ -518,6 +547,32 @@ export function paint_hanging_wares(
       return;
     case "net":
       paint_net(scene, from, to, railY);
+      return;
+    case "ladles":
+      points.forEach((x, index) => {
+        const drop = 12 + (index % 2) * 3;
+        line(ctx, x, railY, x, railY + drop, css(TIMBER), 1.2);
+        fill_ellipse(ctx, x, railY + drop + 2, 3.2, 2.4, css(STEEL));
+      });
+      return;
+    case "menu-tags":
+      paint_menu_tags(scene, from, to, railY);
+      return;
+    case "chillies":
+      for (const x of points) {
+        line(ctx, x, railY, x, railY + 18, css(0x8a643b), 0.6);
+        for (let pod = 0; pod < 6; pod += 1) {
+          const side = pod % 2 === 0 ? -1.2 : 1.2;
+          fill_ellipse(ctx, x + side, railY + 3 + pod * 2.6, 1.4, 1.9, css(0xb3271e));
+        }
+      }
+      return;
+    case "skillets":
+      for (const x of points) {
+        line(ctx, x, railY, x, railY + 6, css(CHARCOAL), 1.4);
+        fill_circle(ctx, x, railY + 11, 5.2, css(CHARCOAL));
+        stroke_ellipse(ctx, x, railY + 11, 5.2, 5.2, css(STEEL_DARK), 0.9);
+      }
       return;
   }
 }
@@ -885,6 +940,11 @@ export function paint_shelf_goods(
     case "herb-jars":
       [0x8a5b3a, 0xc55656, 0xd9c39a, 0x5a4634, 0xb0552c].forEach((colourValue, index) => {
         paint_jar(scene, at(0.08 + index * 0.21), baseY, colourValue, 9 + (index % 2) * 2, 7);
+      });
+      return;
+    case "cracker-jars":
+      [0xe6c28a, 0xd98a6a, 0xe6c28a].forEach((colourValue, index) => {
+        paint_jar(scene, at(0.16 + index * 0.33), baseY, colourValue, 12, 8, GLASS);
       });
       return;
     case "limes":

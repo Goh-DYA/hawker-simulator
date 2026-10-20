@@ -6,7 +6,8 @@
  * The roofline comes from the stall's `STALL_ART_BY_ID` branch: a striped fabric awning with a
  * round, pointed or straight valance; corrugated zinc with a painted fascia, soot and an
  * extractor flue; an attap thatch with a ragged fringe; timber shingles under a gable; split
- * bamboo poles; or a shophouse parapet faced with Peranakan tiles. The sign shape comes from
+ * bamboo poles; glazed barrel tiles with round end caps; or a shophouse parapet faced with
+ * Peranakan tiles. The sign shape comes from
  * content: a backlit lightbox, a painted timber board, a tiled panel or an awning plaque.
  */
 import type { StallRoofArt } from "../../render/art";
@@ -625,10 +626,74 @@ function paint_roof(scene: StallScene): void {
         band: spec.accent,
       });
       return;
+    case "jade-ladle":
+      paint_glazed_tiles(scene);
+      return;
+    case "longan-moon":
+      paint_awning(scene, {
+        stripeA: spec.primary,
+        stripeB: tint(spec.secondary, 0.15),
+        stripes: 5,
+        valance: "round",
+        valanceA: spec.accent,
+        valanceB: spec.primary,
+        band: spec.accent,
+      });
+      return;
+    case "lesung":
+      paint_zinc(scene, { sheet: 0x9a7b62, soot: 0.15, fascia: spec.primary, isNautical: false });
+      return;
+    case "peppercorn":
+      paint_awning(scene, {
+        stripeA: spec.primary,
+        stripeB: tint(spec.secondary, 0.1),
+        stripes: 13,
+        valance: "straight",
+        valanceA: spec.primary,
+        valanceB: spec.primary,
+        band: spec.accent,
+      });
+      return;
     case "awning":
       paint_awning(scene, generic_awning(scene));
       return;
   }
+}
+
+/**
+ * Paints a roof of glazed barrel tiles in the accent glaze, with round end caps along the eave
+ * over a timber fascia (the Cantonese porridge stall).
+ *
+ * @param scene - The stall scene.
+ */
+function paint_glazed_tiles(scene: StallScene): void {
+  const { ctx, geo, spec, isLowDetail } = scene;
+  const width = geo.width;
+  const bottom = geo.header.height;
+  const eave = eave_y(scene) + 2;
+  const glaze = spec.accent;
+  fill_rect(ctx, 0, 0, width, eave, css(shade(glaze, 0.35)));
+  const pitch = 7;
+  for (let x = 0; x < width + pitch; x += pitch) {
+    fill_rect(
+      ctx,
+      x - 2.6,
+      0,
+      5.2,
+      eave,
+      linear_gradient(ctx, x - 2.6, 0, x + 2.6, 0, [
+        [0, shade(glaze, 0.15)],
+        [0.4, tint(glaze, 0.35)],
+        [1, shade(glaze, 0.25)],
+      ]),
+    );
+    if (!isLowDetail) fill_circle(ctx, x, eave, 2.6, css(tint(glaze, 0.1)));
+    if (!isLowDetail) fill_circle(ctx, x, eave, 1.2, css(shade(glaze, 0.3)));
+  }
+  fill_rect(ctx, 0, eave + 2.4, width, bottom - eave - 2.4, css(TIMBER_DARK));
+  fill_rect(ctx, 0, eave + 2.4, width, 1, css(tint(TIMBER, 0.3)));
+  fill_rect(ctx, 0, bottom - 3, width, 1.5, css(spec.primary));
+  fill_rect(ctx, 0, 0, width, 2, css(shade(glaze, 0.4)));
 }
 
 /**
