@@ -79,6 +79,13 @@ export const SNACK_RATED_DISH_IDS = new Set([
   "dish.pulut-hitam",
 ]);
 
+/**
+ * Borrowed source rows the importer accepts, and only as a non-first entry of a composite's
+ * `components`: a single ingredient the source has no Lab, NIP or Derived row for. Each one is
+ * named in its mapping notes and listed with its values in KNOWN_ISSUES.
+ */
+export const BORROWED_COMPONENT_ALLOWLIST = new Set(["Cooked white rice"]);
+
 /** The primary profile mapping of every dish, in generated profile order. */
 export const PRIMARY_PROFILE_MAPPINGS = [
   released(

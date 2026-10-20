@@ -13,6 +13,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  BORROWED_COMPONENT_ALLOWLIST,
   EXPECTED_FOOD_FILE_SHA256,
   EXPECTED_GUIDELINE_FILE_SHA256,
   NUTRITION_DISCLOSURE,
@@ -448,6 +449,26 @@ const merge_component_values = (part_values) => {
 };
 
 /**
+ * Rejects a Borrowed source row anywhere but as a later component of a composite, and any
+ * Borrowed row outside `BORROWED_COMPONENT_ALLOWLIST`, so Borrowed data never becomes the
+ * main row of a profile.
+ *
+ * @param {{ foodName: string }[]} parts
+ * @param {(food_name: string) => string | undefined} source_type_of
+ * @param {string} profile_id
+ */
+export const assert_borrowed_parts_allowed = (parts, source_type_of, profile_id) => {
+  parts.forEach((part, index) => {
+    if (source_type_of(part.foodName) !== "Borrowed") return;
+    if (index === 0 || parts.length < 2 || !BORROWED_COMPONENT_ALLOWLIST.has(part.foodName)) {
+      throw new Error(
+        `${profile_id} uses the Borrowed row "${part.foodName}" outside an allowed composite component.`,
+      );
+    }
+  });
+};
+
+/**
  * Builds the profile for a mapped food row, or for the summed rows of a composite: released
  * when the rows are plausible and quarantined otherwise, with placeholder ratings until the
  * rating passes run. Values a plausibility rule withholds are published as unavailable, and
@@ -474,6 +495,11 @@ const buildReleasedProfile = ({
   const parts = mapping.components ?? [
     { foodName: mapping.foodName, multiplier: mapping.multiplier ?? 1 },
   ];
+  assert_borrowed_parts_allowed(
+    parts,
+    (food_name) => findUniqueFoodRow(parsedFood, food_name).values["Source of Data"],
+    profileId,
+  );
   const source = findUniqueFoodRow(parsedFood, parts[0].foodName);
   const multiplier = mapping.multiplier ?? 1;
   /** @param {string} food_name @param {number} part_multiplier */
