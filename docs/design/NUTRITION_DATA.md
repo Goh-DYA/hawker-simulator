@@ -1,6 +1,6 @@
 # Nutrition data and educational-use policy
 
-Status: Implemented schema-v2 content contract with guideline-anchored ratings (review revision 4); source, clinical, and cultural review remain required before release
+Status: Implemented schema-v2 content contract with guideline-anchored ratings and a whole-profile overall meal rating (review revision 5); source, clinical, and cultural review remain required before release
 
 ## Purpose
 
@@ -54,7 +54,7 @@ The milky fish-soup variants use the fried-fish Lab pair ('Fried fish beehoon so
 
 Serving labels read "<count> <noun> (<amount> <unit>)", such as "1 bowl (811 g)"; source labels like "1 bowl(s) = 811g" are rewritten, curated labels are kept, and every amount is rounded to one decimal place. A content test checks that each label states the rated amount.
 
-`NUTRITION_REVIEW_REVISION` in `tools/nutrition/manifest.mjs` is part of the generated `dataVersion` (`sg-<food>-<guidelines>-r<revision>`). It is 4 in content `1.6.0`, so `dataVersion` is `sg-1bc212db6eda-c87987b4281c-r4`. Raising it when the mappings or the rating model change resets saved recipe-variant choices to the reviewed defaults through the runtime's `nutritionDataVersion` check.
+`NUTRITION_REVIEW_REVISION` in `tools/nutrition/manifest.mjs` is part of the generated `dataVersion` (`sg-<food>-<guidelines>-r<revision>`). It is 5 from content `1.7.0`, so `dataVersion` is `sg-1bc212db6eda-c87987b4281c-r5`. Raising it when the mappings or the rating model change resets saved recipe-variant choices to the reviewed defaults through the runtime's `nutritionDataVersion` check.
 
 ## Rating methodology
 
@@ -62,7 +62,7 @@ All ratings use a 1.0-5.0 scale rounded to one decimal place.
 
 `starRating` is independent of nutrition and is calculated from authored dish quality and base demand: `1 + 4 x (0.65 x quality + 0.35 x demand)`. Quality and demand are authored from Singapore popularity and taste reputation, not from nutrition.
 
-The Health and condition ratings rate each serving on its own against fixed, guideline-based amounts, in `tools/nutrition/ratings.mjs` ([ADR 0007](../decisions/0007-guideline-anchored-nutrition-ratings.md), extended by [ADR 0008](../decisions/0008-snack-basis-edible-density-and-source-plausibility.md)). A rating never depends on which other dishes are on the menu. Each released profile carries its `ratingInputs` (the edible amount of the serving and any stand-ins for withheld values), so the ratings can be recomputed from the generated JSON alone.
+The Health and condition ratings rate each serving on its own against fixed, guideline-based amounts, in `tools/nutrition/ratings.mjs` ([ADR 0007](../decisions/0007-guideline-anchored-nutrition-ratings.md), extended by [ADR 0008](../decisions/0008-snack-basis-edible-density-and-source-plausibility.md) and [ADR 0009](../decisions/0009-whole-profile-overall-health-rating.md)). A rating never depends on which other dishes are on the menu. Each released profile carries its `ratingInputs` (the edible amount of the serving and any stand-ins for withheld values), so the ratings can be recomputed from the generated JSON alone.
 
 ### Meals
 
@@ -71,7 +71,7 @@ Each limit nutrient gets a penalty from 0 to 1: the worse of its per-serving dos
 - **Per serving**, against one meal's share (a third) of a general adult daily reference value: no penalty up to half a meal's share, 0.5 at one meal's share, 0.9 at two and 1 at the whole day. The references are 2,000 kcal energy (HPB's 1,800-2,200 kcal adult averages), under 2,000 mg sodium (WHO, HPB), saturated plus trans fat under 10% of energy (22 g; WHO, HPB), total fat at most 35% of energy (78 g; HPB) and sugar under 10% of energy (50 g; WHO, HPB). Energy has its own curve: no penalty up to HPB's 500 kcal lower-calorie meal, 0.5 at 667 kcal and 1 at 1,000 kcal.
 - **Per 100 g of the edible portion** (the source's `Edible Portion` share of the serving, which matters for bone-in chicken and crab), against the UK FSA front-of-pack bands (fat 3-17.5 g, saturated fat 1.5-5 g, total sugar 5-22.5 g, sodium 120-600 mg) and the WCRF/AICR energy-density band (125-275 kcal): no penalty at the low threshold and 0.75 at the high one, so density alone never takes the full penalty.
 
-The **overall Health rating** starts at five stars and takes off one star per limit nutrient (energy, saturated plus trans fat, sodium, sugar) at its full penalty, plus the worst of the four once more, so a single nutrient at a full day's limit costs two stars instead of being averaged away. In the overall rating only, a penalty keeps rising past the full penalty, to 1.25 at one and a half times that amount. Fibre and protein add credits: fibre up to half a star (full credit at the EU "high fibre" 6 g per 100 g or 3 g per 100 kcal), and protein up to a quarter star (none at 10% of energy, full at the EU "high protein" 20%). The credits are per 100 g or per unit of energy, so a larger serving can never rate higher, and they shrink as the penalties grow.
+The **overall Health rating** of a meal is half a nutrient score and half a condition score, less a day excess ([ADR 0009](../decisions/0009-whole-profile-overall-health-rating.md)). The nutrient score starts at five stars and takes off each limit nutrient's penalty (energy, saturated plus trans fat, sodium, sugar), each up to one star, and in this score only rising past its full penalty to 1.25 at one and a half times that amount; no nutrient counts twice. Fibre and protein add credits: fibre up to half a star (full credit at the EU "high fibre" 6 g per 100 g or 3 g per 100 kcal), and protein up to a quarter star (none at 10% of energy, full at the EU "high protein" 20%). The credits are per 100 g or per unit of energy, so a larger serving can never rate higher, and they shrink as the summed penalty grows, to none when all four are at their full penalty. The nutrient score is floored at one star. The condition score is two thirds the mean of the four unrounded condition ratings and one third the lowest, so the lowest condition counts as much as the other three together. A serving that holds more than a full day's amount of energy (2,000 kcal), saturated plus trans fat (22 g), sodium (2,000 mg) or sugar (50 g) loses one more star for each further day of its largest share, with no cap. The result is clamped to 1-5 and rounded once. Each meal profile carries the parts (`healthParts`) the card shows.
 
 **Desserts are rated as snacks.** Ice kacang, chendol, tau huay and pulut hitam, and the five tong sui desserts (cheng tng, orh nee, tau suan, green bean soup and black sesame paste) (`SNACK_RATED_DISH_IDS` in the manifest, which a test ties to the dishes in the `dessert` category) are an extra eating occasion, so their energy and sugar are held to 0.4 of a meal's share, HPB's 200 kcal snack against its 500 kcal meal: no energy penalty up to 200 kcal, half at 267 kcal and full at 400 kcal. Saturated fat, sodium, total fat and carbohydrate keep the meal curves.
 
@@ -116,13 +116,34 @@ The importer (`tools/nutrition/plausibility.mjs`) withholds a source value that 
 
 These weights and thresholds are an in-game educational model, not an HPB formula, a Nutri-Grade label for food, or a certification. Their rationale follows official guidance about [carbohydrate and fibre for diabetes](https://www.healthhub.sg/programmes/diabetes-hub/understanding-carbohydrates), [dietary fat and fibre for hyperlipidemia](https://www.healthhub.sg/health-conditions/hyperlipidemia), [sodium and balanced eating for blood pressure](https://www.healthhub.sg/well-being-and-lifestyle/food-diet-and-nutrition/what-to-eat-to-lower-blood-pressure), [nutrition-label choices for common health concerns](https://www.healthhub.sg/programmes/nutrition-hub/tools-and-resources/), and [adult dietary guidance on energy, fat, salt, sugar, and variety](https://www.healthhub.sg/well-being-and-lifestyle/food-diet-and-nutrition/dietary_guidelines_adults), HealthHub's guidance on snacking, Nutri-Grade (HPB; MOH, 30 December 2022, extended to freshly prepared drinks from 30 December 2023), the UK front-of-pack guidance (November 2016), WCRF/AICR 2007, WHO sodium (2012), sugars (2015) and fat (2023) guidelines, ESC/EAS 2019, the 2017 ACC/AHA blood-pressure guideline, AHA/ACC/TOS 2013 and EU Regulation 1924/2006. The project's review panel of AI agents checked the thresholds against these primary sources; no qualified dietitian or the gazetted regulation text has confirmed them.
 
+### How the card explains the rating
+
+The importer writes the parts of each meal's overall rating into its profile, from the same unrounded values as the rating (`build_health_parts` in `tools/nutrition/ratings.mjs`), so the card never recomputes them:
+
+- `healthParts` on every released meal profile: `nutrients` (the nutrient score, capped at 5 for display), `conditions` (the condition score) and `excess` (the day excess), each to 0.1; `excessNutrient` and `excessDayShare` (the day share to 0.01), only when one serving holds more than a full day of a limit nutrient; and `denseNutrients`, the limit nutrients whose per-100 g density set their penalty (a density penalty of at least 0.25 and at least 0.1 above the serving penalty), each with its resolved amount per 100 g edible (kcal and mg whole, grams to 0.1, saturated fat including trans fat). Drinks and unrated profiles carry none.
+- A top-level `dailyReference` with the four daily amounts the card quotes: 2,000 kcal, 22 g saturated fat, 2,000 mg sodium and 50 g total sugar, taken from `DAILY_REFERENCE`, so `ratings.mjs` stays their single owner.
+
+Of the 147 meals, 48 carry an excess nutrient (46 sodium, 2 saturated fat), of which 46 show a deduction (Teochew fish dumpling soup and roti john hold 101% of a day and show none); 29 carry dense nutrients (energy 28, saturated fat 12, sodium 11); and 60 report trans fat above 0.
+
+For a meal, the card's "How this Health rating is built" disclosure shows:
+
+1. **A summary line:** "How this Health rating is built: daily-guideline nutrients {N} and condition fit {C}" (on the personal-fit card, "Health rating {overall} is built from daily-guideline nutrients {N} and condition fit {C}"), followed by " · lowest: {condition} {rating}" when the lowest displayed condition rating is below 3.5. Every number is to one decimal, and the card never shows an "=": rebuilding the shown overall from the rounded parts is off by 0.1 for 33 meals.
+2. **"Daily-guideline nutrients {N}/5"**, with one row each for energy ("{kcal} kcal, {pct}% of the 2,000 kcal daily energy reference"), saturated fat ("{g} g saturated fat, {pct}% of the 22 g daily saturated fat guideline", adding "(trans fat counted with it)" when the profile reports trans fat above 0), sodium ("{mg} mg sodium, {pct}% of the 2,000 mg daily sodium guideline") and sugar ("{g} g total sugar, {pct}% of the 50 g daily sugar guideline"). An unreported or withheld amount shows its usual value text and no percentage. Then: "Fibre and protein add credit, which shrinks as energy, saturated fat, sodium and sugar rise."
+3. **A density line**, when `denseNutrients` is present: "Also rated per 100 g: …", for example "258 kcal, 2.8 g saturated fat (trans fat counted with it)" for plain thosai.
+4. **"Condition fit {C}/5 (the lowest condition counts as much as the other three together)"**, with the four condition ratings.
+5. **An excess line**, when `excessDayShare` is present, such as "One serving holds 203% of the 2,000 mg daily sodium guideline (−1.0 star)" for mee soto. The deduction is shown only when the excess is at least 0.1. An excess line driven by an imputed amount says "estimated"; a content test keeps this at none.
+
+Drinks keep the "Health rating by condition" disclosure and their Nutri-Grade reading. The Help text adds: "For meals, the Health rating is half a score for energy, saturated fat, sodium and sugar measured against daily guideline amounts, with credit for fibre and protein, and half the four condition ratings, where the lowest counts as much as the other three together. A serving holding more than a full day's amount of energy, saturated fat, sodium or sugar (2,000 kcal, 22 g, 2,000 mg or 50 g) loses one more star for each extra day. It describes one serving for a general adult and is not dietary advice."
+
+The card copy follows these rules: no "good", "bad", "healthy", "healthier", "light", "suited to" or "safe for"; no medical claim; "daily guideline", never "RI" or "reference intake", and energy is the "2,000 kcal daily energy reference"; carbohydrate is named only beside the diabetes condition; no copy may state that a dry order is lighter than its soup version, or the reverse, or present masala or plain thosai as the lighter order; and the fiction note stays.
+
 ### Customer intents
 
 Customer nutrition intents still rank servings relative to the other released servings of their class, because an intent models a guest choosing among what is offered. Intent fits are a game mechanic and are never shown as a rating. Because they are relative, adding profiles re-ranks them: the 55 profiles added in content `1.6.0` re-ranked the intent fits of the existing profiles without changing a Health or condition rating, and the seeded starter probe's XP moved by −0.9% to +2.2% (still level 7 on day 5 and level 8 on day 7).
 
 ## Recipe variants and defaults
 
-Content `1.6.0` has 23 reviewed variant families: kopi, teh tarik, nasi lemak, fried carrot cake, roti prata, fish bee hoon soup (`dish.sliced-fish-soup`), bak chor mee, chicken murtabak, chicken nasi briyani, masala thosai, yong tau foo, ban mian, bak kut teh, duck rice, prawn noodle soup, economic rice, nasi padang, mee siam, wanton mee, soya bean milk, chicken chop, fish and chips and fish porridge. Each option maps to its own source row (or, for bak kut teh, its own composite), and each is an order hawker diners actually place.
+Content `1.6.0` has 23 reviewed variant families: kopi, teh tarik, nasi lemak, fried carrot cake, roti prata, fish bee hoon soup (`dish.sliced-fish-soup`), bak chor mee, chicken murtabak, chicken nasi briyani, thosai (`dish.masala-thosai`), yong tau foo, ban mian, bak kut teh, duck rice, prawn noodle soup, economic rice, nasi padang, mee siam, wanton mee, soya bean milk, chicken chop, fish and chips and fish porridge. Each option maps to its own source row (or, for bak kut teh, its own composite), and each is an order hawker diners actually place.
 
 **Ranks are positional.** A variant unlocks at the stall-mastery rank given by its position in the family (`VARIANT_UNLOCK_RANKS` in `src/content/roster.ts`): the default (first) at rank 1, the second option at rank 2, the third at rank 4, and the fourth and later at rank 7. Adding or reordering an option therefore moves the ranks of the options after it.
 
@@ -133,18 +154,29 @@ Content `1.6.0` has 23 reviewed variant families: kopi, teh tarik, nasi lemak, f
 1. The default's overall Health rating is strictly below some other option's.
 2. Some option either rates at least 0.3 higher overall, or rates no lower overall and at least 0.5 higher on one condition rating.
 
-All 23 families pass both parts. Four defaults moved to the usual order in content `1.6.0`: black carrot cake (1.7; white carrot cake 2.6), fried fish bee hoon in clear soup (2.4; sliced fish bee hoon in clear soup 3.1), yong tau foo in clear soup with bee hoon or rice (1.1; pieces only 1.7) and bak kut teh with rice and half a you tiao (1.7; with rice and no you tiao 3.0). A default may also tie an option that is not the best one (teh tarik, fish bee hoon soup, chicken murtabak, chicken nasi briyani and economic rice do).
+All 23 families pass both parts under the whole-profile rating of review revision 5, with no exception. Four defaults moved to the usual order in content `1.6.0`; under revision 5 they rate: black carrot cake 2.2 (white carrot cake 3.2), fried fish bee hoon in clear soup 2.7 (sliced fish bee hoon in clear soup 3.4), yong tau foo in clear soup with bee hoon or rice 1.4 (pieces only 2.1) and bak kut teh with rice and half a you tiao 2.2 (with rice and no you tiao 3.3). In content `1.7.0` the thosai family's default became plain thosai (3.7), with masala thosai (3.8) as its rank-2 option: under revision 5 masala thosai, the earlier default, rated above every other option, and the owner chose plain thosai, the most common basic order, as the default rather than record a test exception ([ADR 0009](../decisions/0009-whole-profile-overall-health-rating.md#the-thosai-default-owner-decision)). Plain thosai rates higher for hypertension and high cholesterol, and masala thosai for obesity and diabetes, so neither order is presented as the lighter one. A default may also tie an option that is not the best one (teh tarik and chicken murtabak do).
 
-Four families pass on a small overall margin. They are kept, because each is a real order and the dataset has no third row that separates them more clearly, but no copy or document may present their overall difference as meaningful; the difference by condition is:
+Five families pass on a small overall margin. They are kept, because each is a real order and the dataset has no third row that separates them more clearly, but no copy or document may present their overall difference as meaningful; the difference by condition is:
 
-| Family | Default | Best other option | Raw overall margin | Condition differences (displayed) |
+| Family | Default | Best other option | Raw margin | Condition differences (displayed) |
 |---|---|---|---:|---|
-| Bak chor mee | Dry, 3.0 | Soup, 3.1 | 0.174 | Soup: high cholesterol +1.4, diabetes +0.7. Dry: hypertension +0.4. A 10% change in one nutrient reverses the overall order. |
-| Masala thosai | Masala, 3.2 | Plain, 3.3 | 0.075 | Plain: hypertension +0.8, high cholesterol +0.4. Masala: obesity +1.3, diabetes +0.7. |
-| Ban mian | Soup, 2.4 | Vegetable, 2.7 | 0.240 | Vegetable: obesity +0.6. Soup: diabetes +0.3. |
-| Economic rice | 1 veg, 1 meat, 2.2 | 1 veg, 1 fish, 2.5 | 0.366 | 1 veg, 1 fish: obesity +0.6, diabetes +0.6, hypertension +0.4, high cholesterol +0.3. Portion-sensitive: the margin falls to 0.15 at ±10%. |
+| Thosai | Plain, 3.7 | Masala, 3.8 | 0.083 | Masala: obesity +1.3, diabetes +0.7. Plain: hypertension +0.8, high cholesterol +0.4. The default since content `1.7.0` (owner decision, [ADR 0009](../decisions/0009-whole-profile-overall-health-rating.md#the-thosai-default-owner-decision)) |
+| Chicken chop | Fries and coleslaw, 2.1 | Spaghetti, 2.2 | 0.089 | Spaghetti: high cholesterol +0.6, obesity +0.2. Default: diabetes +0.8, hypertension +0.4. Rests on 0 g sugar reports ([limitation (o)](../KNOWN_ISSUES.md#data-limitations-kept-by-decision)) |
+| Ban mian | Soup, 2.7 | Vegetable, 2.8 | 0.110 | Vegetable: obesity +0.6. Soup: diabetes +0.3 |
+| Bak chor mee | Dry, 3.3 | Soup, 3.5 | 0.152 | Soup: high cholesterol +1.4, diabetes +0.7. Dry: hypertension +0.4 |
+| Economic rice | 1 veg, 1 meat, 2.7 | 1 veg, 1 fish, 3.1 | 0.388 | 1 veg, 1 fish: obesity +0.6, diabetes +0.6, hypertension +0.4, high cholesterol +0.3. Portion-sensitive: 0.015 with the default's energy, fat, saturated fat, carbohydrate, sugar and sodium scaled to 0.9× |
 
-**No rounding-edge picks.** A displayed rating is rounded to one decimal place, so a dish shown at 3.5 may sit just below it. Cheng tng shows 3.5 from a raw 3.463 and must not be cited as a 3.5 pick in copy, objectives or documentation.
+Other values near a test threshold or a display edge, which no copy, objective, document or test may quote as their rounded neighbour:
+
+| Kind | Values (unrounded) |
+|---|---|
+| The owner's pair | chicken congee 3.871, char siew rice 3.758 |
+| Sodium order against congee | Teochew fish dumpling soup 3.831 against congee 3.871 (margin 0.040) |
+| Thinnest local swaps | cheng tng above green bean soup 0.349; mee soto above mee rebus 0.491 (the bound on the excess slope) |
+| Synthetic anchors | the lean serving 4.5887 (the test requires at least 4.5); the lean serving with a day's sodium 3.4960 (shown 3.5; the test uses at most 3.6) |
+| Within 0.005 of a display edge | aglio olio 4.2498; spaghetti bolognese 2.7500; gado gado 2.6492; you tiao 2.5501; duck rice 2.9467; duck noodles dry 3.3541; bak kut teh 2.1540; ban mian dry 2.6466; thosai with cheese 2.7486; yong tau foo clear mixed 2.0501; murtabak vegetable 1.9549; nasi lemak with chicken cutlet 1.8524; grilled fish set 2.7459; chwee kueh 4.5472; tau huay 4.4460; chap chye 4.2534 |
+
+**No rounding-edge picks.** A displayed rating is rounded to one decimal place, so a dish shown at 3.5 may sit just below it. Ice kacang shows 3.5 from a raw 3.464, bak chor mee soup from 3.477 and rawa thosai from 3.485; none may be cited as a 3.5 pick in copy, objectives or documentation.
 
 ## Guideline boundaries
 
@@ -153,7 +185,8 @@ The adult daily guideline block remains contextual in the interface: it is shown
 - total sugar is held to the free-sugar limit inside the ratings, because the source reports no added sugar; the interface still says that total sugar is not the same as added sugar;
 - food water in grams is not compared with beverage-water guidance;
 - cholesterol guidance is not compared directly because the food CSV has no cholesterol field;
-- calcium and iron are shown but do not affect the ratings.
+- calcium and iron are shown but do not affect the ratings;
+- the day excess compares total sugar with the 50 g free-sugar limit, and saturated plus trans fat with the 22 g saturated-fat limit; WHO sets trans fat (at most 1% of energy) separately.
 
 ## Player-facing disclosure
 
@@ -162,5 +195,7 @@ The adult daily guideline block remains contextual in the interface: it is shown
 ## Review requirements
 
 For content `1.6.0`, a five-member review panel of AI agents (a clinical dietitian, a methodologist and data auditor, a Singapore food culture reviewer, a game economist and an art and integration lead) re-scrutinised every new and changed mapping, serving, variant option and default, and a chair ruled on 140 proposals. Like the earlier panel, it is internal review by AI agents, not a qualified dietitian's or a Singapore cultural reviewer's sign-off.
+
+For content `1.7.0`, a third panel of five AI agents (a clinical dietitian, a nutrient-profiling methodologist, a Singapore food culture and consumer reviewer, a public-health evidence reviewer and a game economist) and a chair ruled on 76 proposals for the whole-profile overall rating of [ADR 0009](../decisions/0009-whole-profile-overall-health-rating.md). It is not a qualified sign-off either.
 
 Before release, a qualified reviewer must verify source permissions, mappings, serving multipliers, variant names, nutrient units, rating weights and thresholds (including the transcription of the Nutri-Grade bands and the clinical references above), and the contextual guideline transcription. The data limitations that [KNOWN_ISSUES.md](../KNOWN_ISSUES.md#open-nutrition-data-and-rating-issues) keeps by decision need a corrected source or a reviewed replacement. Singapore cultural review must also check that recipe variants and visuals are recognisable without implying halal, vegetarian, allergy-safe, or other certification claims.

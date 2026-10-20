@@ -54,6 +54,7 @@ The launch content counts are the one exception. These requirement and evidence 
 - [ADR 0006](decisions/0006-seeded-neighbourhood-and-save-v5.md): seeded neighbourhood and save schema V5.
 - [ADR 0007](decisions/0007-guideline-anchored-nutrition-ratings.md): guideline-anchored nutrition ratings and realistic hawker servings.
 - [ADR 0008](decisions/0008-snack-basis-edible-density-and-source-plausibility.md): snack basis, edible-portion density and source plausibility rules.
+- [ADR 0009](decisions/0009-whole-profile-overall-health-rating.md): whole-profile overall Health rating for meals (nutrient score, condition score and day excess).
 
 ## Release
 

@@ -1,6 +1,6 @@
 # ADR 0007: Guideline-anchored nutrition ratings and realistic hawker servings
 
-Status: Accepted; qualified nutrition review and Singapore cultural review pending
+Status: Accepted; qualified nutrition review and Singapore cultural review pending. The overall meal formula is superseded by [ADR 0009](0009-whole-profile-overall-health-rating.md)
 
 ## Context
 
