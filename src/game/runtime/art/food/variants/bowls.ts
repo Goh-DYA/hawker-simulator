@@ -1,5 +1,6 @@
 /**
- * Variant layers for the bowl dishes: sliced fish soup (clear or milky, slices or bee hoon),
+ * Variant layers for the bowl dishes: fish soup (clear or milky, sliced or fried fish, with or
+ * without bee hoon),
  * bak chor mee (dry or soup), yong tau foo (clear or laksa broth with boiled, fried, mixed or
  * noodle pieces), ban mian (six ways) and bak kut teh (peppery, dry claypot or herbal).
  *
@@ -9,7 +10,9 @@
 import { css, fill_ellipse, stroke_ellipse } from "../../canvas";
 import { at, heap_scale, pieces_left } from "../motif";
 import {
+  FRIED_BATTER,
   paint_ball,
+  paint_battered_piece,
   paint_chilli_slice,
   paint_dots,
   paint_drizzle,
@@ -92,9 +95,13 @@ function paint_fish_slice(q: LayerPaint, x: number, y: number, angle: number): v
   ctx.restore();
 }
 
+/** Milky fish broth soaked into the lower edge of a fried piece. */
+const MILKY_SOAK = 0xd9b98a;
+
 /**
- * The sliced fish soup layer: clear or milky broth with bee hoon or extra fish slices, greens,
- * tomato and spring onion.
+ * The fish soup layer: clear or milky broth, with or without bee hoon, holding either flat
+ * sliced fish or a golden heap of battered fried fish pieces (with fried shallots), plus
+ * greens, tomato and spring onion.
  *
  * @param q - The layer paint.
  */
@@ -116,10 +123,39 @@ export function paint_fish_soup_layer(q: LayerPaint): void {
       0.9,
       q.isLowDetail,
     );
-  const slices = pieces_left(hasBeehoon ? 3 : 4, q.remaining);
-  for (let slice = 0; slice < slices; slice += 1) {
-    const [x, y] = at(area, -0.35 + slice * 0.28, -0.35 + (slice % 2) * 0.3);
-    paint_fish_slice(q, x, y, -0.3 + slice * 0.4);
+  if (q.has("fried")) {
+    // The fried pieces heap in two rows on the right half of the bowl, above the noodles.
+    const soak_colour = isMilky ? MILKY_SOAK : FRIED_BATTER.crater;
+    const pieces = pieces_left(hasBeehoon ? 4 : 5, q.remaining);
+    for (let piece = 0; piece < pieces; piece += 1) {
+      const [x, y] = at(
+        area,
+        0.05 + (piece % 3) * 0.24,
+        -0.4 + Math.floor(piece / 3) * 0.32 + (piece % 2) * 0.12,
+      );
+      const seed = q.seed ^ (piece * 0x9e37);
+      paint_battered_piece(
+        ctx,
+        x,
+        y,
+        10.4,
+        6.8,
+        -0.4 + piece * 0.5,
+        seed,
+        soak_colour,
+        q.isLowDetail,
+      );
+    }
+    if (!q.isLowDetail) {
+      const [sx, sy] = at(area, 0.1, -0.1);
+      paint_dots(ctx, sx, sy, area.rx * 0.4, 5, 0.7, SHALLOT, q.seed ^ 0x5a);
+    }
+  } else {
+    const slices = pieces_left(hasBeehoon ? 3 : 4, q.remaining);
+    for (let slice = 0; slice < slices; slice += 1) {
+      const [x, y] = at(area, -0.35 + slice * 0.28, -0.35 + (slice % 2) * 0.3);
+      paint_fish_slice(q, x, y, -0.3 + slice * 0.4);
+    }
   }
   const [gx, gy] = at(area, -0.5, 0.4);
   paint_greens(ctx, gx, gy, 8, 0.3, 0x3f8a3a);

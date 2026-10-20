@@ -1569,3 +1569,83 @@ export function paint_fried_ring(
     );
   }
 }
+
+/** Battered, deep-fried food: a golden crust, lighter crisp ridges and darker browned craters. */
+export const FRIED_BATTER = { crust: 0xc8873a, ridge: 0xe6b868, crater: 0x8a5426 } as const;
+
+/**
+ * Paints a battered, deep-fried piece (fish, chicken): a craggy nugget with a golden crust
+ * shading from light ridges to browned craters, crumbs and pits on top in full detail, and its
+ * lower edge soaked in the colour of whatever it sits in.
+ *
+ * @param ctx - The paint context.
+ * @param x - Piece centre x.
+ * @param y - Piece centre y.
+ * @param width - Piece width before the seeded bumps.
+ * @param height - Piece height before the seeded bumps.
+ * @param angle - Tilt in radians.
+ * @param seed - Seed for the craggy outline and the crumbs.
+ * @param soak_colour - The colour of the soaked lower edge (broth, gravy or sauce).
+ * @param is_low_detail - True for the lower-end frame: fewer bumps and no crumbs.
+ */
+export function paint_battered_piece(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  angle: number,
+  seed: number,
+  soak_colour: number,
+  is_low_detail: boolean,
+): void {
+  const next = seeded(seed);
+  const half_width = width / 2;
+  const half_height = height / 2;
+  const corners = is_low_detail ? 7 : 11;
+  const points: [number, number][] = [];
+  for (let index = 0; index < corners; index += 1) {
+    const turn = (index / corners) * TAU;
+    const bump = 0.82 + next() * 0.3;
+    points.push([Math.cos(turn) * half_width * bump, Math.sin(turn) * half_height * bump]);
+  }
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  fill_ellipse(
+    ctx,
+    0.6,
+    half_height * 0.47,
+    half_width * 0.96,
+    half_height * 0.76,
+    css(SHADOW_INK, 0.22),
+  );
+  fill_ellipse(
+    ctx,
+    0,
+    half_height * 0.35,
+    half_width * 0.96,
+    half_height * 0.7,
+    css(soak_colour, 0.9),
+  );
+  fill_polygon(
+    ctx,
+    points,
+    linear_gradient(ctx, 0, -half_height * 1.06, 0, half_height * 1.06, [
+      [0, FRIED_BATTER.ridge],
+      [0.5, FRIED_BATTER.crust],
+      [1, FRIED_BATTER.crater],
+    ]),
+  );
+  if (!is_low_detail) {
+    for (let crumb = 0; crumb < 4; crumb += 1) {
+      const crumb_x = (next() - 0.5) * half_width * 1.15;
+      const crumb_y = (next() - 0.7) * half_height * 0.88;
+      fill_ellipse(ctx, crumb_x, crumb_y, 0.9, 0.6, css(FRIED_BATTER.ridge, 0.9));
+      const pit_x = (next() - 0.5) * half_width * 1.15;
+      const pit_y = (next() - 0.3) * half_height * 0.88;
+      fill_ellipse(ctx, pit_x, pit_y, 0.7, 0.5, css(FRIED_BATTER.crater, 0.7));
+    }
+  }
+  ctx.restore();
+}

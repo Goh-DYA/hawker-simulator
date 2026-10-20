@@ -661,9 +661,9 @@ export const VARIANT_FAMILY_MAPPINGS = [
     defaultVariantId: "fish-soup-beehoon-no-milk",
     variants: [
       variant("fish-soup-beehoon-no-milk", "Fish beehoon, no milk", "Sliced fish beehoon soup (no milk)", 1, "fish-beehoon-clear", "Default clear soup with beehoon."),
-      variant("fish-soup-beehoon-milk", "Fried fish beehoon with milk", "Fried fish beehoon soup (with milk)", 2, "fish-beehoon-milky", "Milky soup with the default bowl's 250 g of thick beehoon: the Derived row is the Lab milky fried-fish soup plus 1.25 thick beehoon, built the same way as the clear default; the milky sliced-fish Lab soup is not a like-for-like partner of the clear sliced-fish Lab soup (1,405 vs 2,407 mg sodium).", "curated-synonym"),
-      variant("fish-soup-sliced-no-milk", "Fried fish soup, no milk", "Fried fish soup (no milk)", 4, "fish-slices-clear", "Clear fried-fish soup without noodles; the sliced-fish row states 84 kcal against about 154 kcal from its own macronutrients, so the reviewed fried-fish bowl stands in.", "curated-synonym"),
-      variant("fish-soup-sliced-milk", "Fried fish soup with milk", "Fried fish soup (with milk)", 7, "fish-slices-milky", "Milky fried-fish soup without noodles, the Lab pair of the clear fried-fish variant.", "curated-synonym"),
+      variant("fish-soup-beehoon-milk", "Fried fish beehoon with milk", "Fried fish beehoon soup (with milk)", 2, "fish-fried-beehoon-milky", "Milky soup with the default bowl's 250 g of thick beehoon: the Derived row is the Lab milky fried-fish soup plus 1.25 thick beehoon, built the same way as the clear default; the milky sliced-fish Lab soup is not a like-for-like partner of the clear sliced-fish Lab soup (1,405 vs 2,407 mg sodium).", "curated-synonym"),
+      variant("fish-soup-sliced-no-milk", "Fried fish soup, no milk", "Fried fish soup (no milk)", 4, "fish-fried-clear", "Clear fried-fish soup without noodles; the sliced-fish row states 84 kcal against about 154 kcal from its own macronutrients, so the reviewed fried-fish bowl stands in.", "curated-synonym"),
+      variant("fish-soup-sliced-milk", "Fried fish soup with milk", "Fried fish soup (with milk)", 7, "fish-fried-milky", "Milky fried-fish soup without noodles, the Lab pair of the clear fried-fish variant.", "curated-synonym"),
     ],
   },
   {

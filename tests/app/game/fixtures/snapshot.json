@@ -2187,7 +2187,7 @@
           "label": "Fish beehoon with milk",
           "unlockRank": 2,
           "profileId": "dish.sliced-fish-soup:fish-soup-beehoon-milk",
-          "visualKey": "fish-beehoon-milky",
+          "visualKey": "fish-fried-beehoon-milky",
           "unlocked": false,
           "selected": false,
           "profile": {
@@ -2261,7 +2261,7 @@
           "label": "Sliced fish soup, no milk",
           "unlockRank": 4,
           "profileId": "dish.sliced-fish-soup:fish-soup-sliced-no-milk",
-          "visualKey": "fish-slices-clear",
+          "visualKey": "fish-fried-clear",
           "unlocked": false,
           "selected": false,
           "profile": {
@@ -2335,7 +2335,7 @@
           "label": "Sliced fish soup with milk",
           "unlockRank": 7,
           "profileId": "dish.sliced-fish-soup:fish-soup-sliced-milk",
-          "visualKey": "fish-slices-milky",
+          "visualKey": "fish-fried-milky",
           "unlocked": false,
           "selected": false,
           "profile": {
