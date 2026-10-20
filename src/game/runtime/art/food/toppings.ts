@@ -1,8 +1,8 @@
 /**
  * More ingredient primitives for the dish motifs, alongside `parts.ts`: shreds and bean sprouts,
  * leafy greens, scallion rings, sambal dollops, fish cake and sausage slices, mushrooms, tofu
- * puffs, chicken wings and drumsticks, small fried fish, dough-fritter slices, calamansi halves,
- * shaved-ice mounds and spoons.
+ * puffs, chicken wings and drumsticks, small fried fish, dough-fritter slices and sticks,
+ * calamansi halves, shaved-ice mounds and spoons.
  *
  * Each is a pure Canvas 2D painter in world pixels, lit from the north-west with a small cast
  * shadow to the south-east, and flat round things are foreshortened by `FLAT_RATIO` so they lie
@@ -640,6 +640,64 @@ export function paint_youtiao(ctx: PaintContext, x: number, y: number, size: num
     );
     fill_ellipse(ctx, cx, y, size * 0.13, size * 0.1, css(0xf6e3b8));
   }
+}
+
+/** You tiao dough: golden brown, with its pale crumb and the lit crust it fades to. */
+const YOUTIAO = { dough: 0xd9963c, crumb: 0xf6e3b8, lit: 0xf3d79a } as const;
+
+/** Where the blisters sit on a you tiao stick: along its length (-1 to 1) and across it. */
+const YOUTIAO_BLISTERS: ReadonlyArray<readonly [number, number]> = [
+  [-0.5, -1.1],
+  [-0.1, 1.1],
+  [0.35, -0.9],
+  [0.62, 0.9],
+];
+
+/**
+ * Paints a length of you tiao: two golden dough sticks joined along a pale seam, lying at an
+ * angle, with a few blistered bubbles on the crust.
+ *
+ * @param ctx - The paint context.
+ * @param x - Stick centre x.
+ * @param y - Stick centre y.
+ * @param length - Stick length.
+ * @param angle - Rotation in radians.
+ * @param isLowDetail - True to skip the blisters.
+ */
+export function paint_youtiao_stick(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  length: number,
+  angle: number,
+  isLowDetail: boolean,
+): void {
+  const half = length / 2;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  fill_ellipse(ctx, 0.6, 1.8, half, 2.1, css(SHADOW_INK, 0.22));
+  for (const offset of [-0.95, 0.95]) {
+    fill_ellipse(
+      ctx,
+      0,
+      offset,
+      half,
+      1.25,
+      radial_gradient(ctx, -half * 0.3, offset - 0.6, 0.2, half, [
+        [0, YOUTIAO.lit],
+        [0.55, YOUTIAO.dough],
+        [1, shade(YOUTIAO.dough, 0.32)],
+      ]),
+    );
+  }
+  fill_ellipse(ctx, 0, 0, half * 0.86, 0.35, css(YOUTIAO.crumb, 0.9));
+  if (!isLowDetail) {
+    for (const [along, across] of YOUTIAO_BLISTERS) {
+      fill_ellipse(ctx, along * half, across, 0.5, 0.32, css(tint(YOUTIAO.dough, 0.45), 0.85));
+    }
+  }
+  ctx.restore();
 }
 
 /**

@@ -15,6 +15,7 @@ export type DishVesselProfile =
   | "tall-drinking-glass"
   | "banana-leaf-lined-plate"
   | "shared-oval-platter"
+  | "cast-iron-hot-plate"
   | "bamboo-steamer";
 
 export type DishPortionShape =
@@ -196,6 +197,8 @@ const DISH_PRESENTATIONS: Readonly<Record<string, DishPresentationSeed>> = {
 };
 
 function dishVesselProfile(frame: string): DishVesselProfile {
+  // Checked before any plate rule, since "hot-plate" contains "plate".
+  if (frame.includes("hot-plate")) return "cast-iron-hot-plate";
   if (frame.includes("leaf")) return "banana-leaf-lined-plate";
   if (frame.includes("platter")) return "shared-oval-platter";
   if (frame.includes("glass")) return "tall-drinking-glass";

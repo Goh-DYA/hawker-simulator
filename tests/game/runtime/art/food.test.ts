@@ -5,7 +5,8 @@
  * and the digest of its calls is compared: dishes against each other, eaten thirds against the
  * full serving, each variant's cue against the fallback branch and against its siblings (also at
  * one fixed seed, so a sibling cannot pass on seed jitter alone). So each composition is proven
- * by what it paints rather than by source text.
+ * by what it paints rather than by source text. The variant side pass paints only for a key
+ * that orders a side, and the hot plate is painted from an in-test dish until content uses it.
  *
  * The geometry is checked on real pixels, painted with `@napi-rs/canvas` (the gallery tool's
  * canvas) into a texture with a transparent margin round it: nothing may paint outside the dish
@@ -18,6 +19,7 @@ import { describe, expect, it } from "vitest";
 import { DISHES, NUTRITION_CONTENT, getNutritionVariantFamily } from "@/src/content/index";
 import type { PaintContext } from "@/src/game/runtime/art/canvas";
 import { includes_any, paint_variant_cue, plan_dish } from "@/src/game/runtime/art/food";
+import { paint_variant_sides } from "@/src/game/runtime/art/food/cues";
 import { DEFAULT_LAYER_KEYS } from "@/src/game/runtime/art/food/motifs";
 import { food_area, vessel_scale, type VesselKind } from "@/src/game/runtime/art/food/vessels";
 import { DISH_SIZE, type DishPaintSpec, type PaintFrame } from "@/src/game/runtime/art/specs";
@@ -188,6 +190,7 @@ const VESSEL_KINDS: readonly VesselKind[] = [
   "leaf-plate",
   "steel-leaf-plate",
   "platter",
+  "hot-plate",
   "bowl",
   "claypot",
   "steamer",
@@ -230,6 +233,38 @@ function find_identical_siblings(seed?: number): string[][] {
     identical_groups.push(...[...keys_by_digest.values()].filter((keys) => keys.length > 1));
   }
   return identical_groups;
+}
+
+/**
+ * Paints a variant's side pass alone into a fresh recording context, at the full serving and
+ * at {@link FIXED_CUE_SEED}.
+ *
+ * @param visual_key - The variant's visual key.
+ * @returns The recorded paint calls.
+ */
+function record_sides(visual_key: string): string[] {
+  const recording = create_recording_context();
+  paint_variant_sides(recording.ctx, visual_key, variantVisualFamilyForKey(visual_key), 18, 18, {
+    remaining: 1,
+    isLowDetail: false,
+    seed: FIXED_CUE_SEED,
+  });
+  return recording.log;
+}
+
+/**
+ * Counts the pixels painted in one raster where another of the same size is transparent.
+ *
+ * @param base - The raster painted without the extra parts.
+ * @param extended - The raster painted with them.
+ * @returns The number of pixels with alpha in `extended` and none in `base`.
+ */
+function count_new_coverage(base: DishRaster, extended: DishRaster): number {
+  let count = 0;
+  for (let index = 3; index < base.data.length; index += 4) {
+    if ((base.data[index] ?? 0) === 0 && (extended.data[index] ?? 0) > 0) count += 1;
+  }
+  return count;
 }
 
 /**
@@ -434,6 +469,106 @@ describe("dish serving painted pixels", () => {
         MIN_EATEN_CHANGE,
       );
     }
+  });
+});
+
+describe("variant side pass", () => {
+  const dish = launch_dish("dish.bak-kut-teh");
+  const sides_key = "bak-kut-teh-rice-youtiao";
+  const variant_spec = (key: string, eaten: DishPaintSpec["eaten"] = 0): DishPaintSpec => ({
+    kind: "dish",
+    dishId: dish.id,
+    recipe: visualRecipeForDishVariant(dish, key),
+    eaten,
+    frame: FRAMES[0] as PaintFrame,
+  });
+
+  it("paints nothing for every key the content uses today", () => {
+    const keys = [
+      ...NUTRITION_CONTENT.variantFamilies.flatMap((family) =>
+        family.variants.map((variant) => variant.visualKey),
+      ),
+      ...Object.values(DEFAULT_LAYER_KEYS),
+    ];
+
+    for (const key of keys) expect(record_sides(key), key).toEqual([]);
+  });
+
+  it("paints a side bowl of rice and a you tiao stick for a key that orders both", () => {
+    const rice = record_sides("bak-kut-teh-rice");
+    const youtiao = record_sides("bak-kut-teh-youtiao");
+    const both = record_sides(sides_key);
+
+    expect(rice.length).toBeGreaterThan(0);
+    expect(youtiao.length).toBeGreaterThan(0);
+    // The rice bowl's calls, then the stick's, inside one save, translate and line style.
+    expect(both).toEqual([...rice.slice(0, -1), ...youtiao.slice(4)]);
+  });
+
+  it("paints the sides outside the soup bowl's clip and inside the dish texture", () => {
+    const soup = rasterise_dish(variant_spec("bak-kut-teh-pepper-soup"));
+    const served = rasterise_dish(variant_spec(sides_key));
+
+    expect(count_new_coverage(soup, served)).toBeGreaterThan(40);
+    for (const [frame_index, frame] of FRAMES.entries()) {
+      for (const eaten of [0, 1, 2] as const) {
+        for (const ratio of PIXEL_RATIOS) {
+          const spec: DishPaintSpec = { ...variant_spec(sides_key, eaten), frame };
+
+          expect(
+            count_paint_outside(rasterise_dish(spec, ratio)),
+            `f${frame_index} e${eaten} x${ratio}`,
+          ).toBe(0);
+        }
+      }
+    }
+  });
+
+  it("eats the sides away with the serving", () => {
+    const digests = ([0, 1, 2] as const).map((eaten) =>
+      record_paint(variant_spec(sides_key, eaten)).digest(),
+    );
+
+    expect(new Set(digests).size).toBe(3);
+  });
+});
+
+describe("hot plate vessel", () => {
+  const plate_dish = launch_dish("dish.poached-chicken-rice");
+  const hot_plate_dish: (typeof DISHES)[number] = {
+    ...plate_dish,
+    containerSprite: { ...plate_dish.containerSprite, frame: "hot-plate" },
+  };
+  const hot_plate_spec = (
+    eaten: DishPaintSpec["eaten"] = 0,
+    frame: PaintFrame = FRAMES[0] as PaintFrame,
+  ): DishPaintSpec => dish_spec(hot_plate_dish, eaten, frame);
+
+  it("serves a hot-plate container on the cast-iron hot plate", () => {
+    expect(visualRecipeForDish(hot_plate_dish).presentation.vessel).toBe("cast-iron-hot-plate");
+    expect(vessel_scale("hot-plate")).toBe(1);
+  });
+
+  it("paints in every frame, differently from the dinner plate, inside the dish texture", () => {
+    expect(record_paint(hot_plate_spec()).digest()).not.toBe(
+      record_paint(dish_spec(plate_dish)).digest(),
+    );
+    for (const [frame_index, frame] of FRAMES.entries()) {
+      for (const eaten of [0, 1, 2] as const) {
+        for (const ratio of PIXEL_RATIOS) {
+          const raster = rasterise_dish(hot_plate_spec(eaten, frame), ratio);
+
+          expect(count_paint_outside(raster), `f${frame_index} e${eaten} x${ratio}`).toBe(0);
+        }
+      }
+    }
+  });
+
+  it("is at least as wide as the dinner plate", () => {
+    const plate = measure_solid(rasterise_dish(dish_spec(plate_dish)));
+    const hot_plate = measure_solid(rasterise_dish(hot_plate_spec()));
+
+    expect(hot_plate.width / plate.width).toBeGreaterThanOrEqual(1);
   });
 });
 
