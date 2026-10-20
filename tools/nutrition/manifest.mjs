@@ -31,8 +31,11 @@ export const EXPECTED_GUIDELINE_FILE_SHA256 =
  * the guideline-anchored ratings and realistic hawker servings. Revision 4 added the four new
  * stalls' dishes and nine families, and moved four defaults (black carrot cake, fried fish bee
  * hoon, yong tau foo with noodles, bak kut teh with rice and you tiao) below a healthier option.
+ * Revision 5 re-weighted every meal's overall Health rating (ADR 0009): half a nutrient score
+ * with no worst-nutrient double count and half a condition score, less one star per further
+ * day past a full day's amount of a limit nutrient.
  */
-export const NUTRITION_REVIEW_REVISION = 4;
+export const NUTRITION_REVIEW_REVISION = 5;
 
 /**
  * The number of adult daily guideline rows the reviewed guideline file holds. It matches

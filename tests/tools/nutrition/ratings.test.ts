@@ -17,8 +17,15 @@
  * withhold values. It has no `Food Subgroup` column, so the outlier fence is covered by the
  * unit tests in `plausibility.test.ts`.
  *
- * If a refactor makes either suite fail, the refactor changed importer output: fix the
- * code, never the literal or the fixture.
+ * The anchor suite rates frozen synthetic meal servings (ADR 0009): a lean serving with
+ * every limit nutrient at half a meal's share, an on-budget serving at one meal share, and
+ * the lean serving with more sodium or saturated fat. Each saturated-fat case adds 9 kcal
+ * and 1 g of total fat per extra gram. It fixes orderings and bounds, not constants. The
+ * property suite raises one nutrient of every released meal at a time and expects the
+ * overall rating never to move the wrong way.
+ *
+ * If a refactor makes either golden suite fail, the refactor changed importer output: fix
+ * the code, never the literal or the fixture.
  */
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -37,7 +44,7 @@ import {
 } from "@/tools/nutrition/importer.mjs";
 
 /** sha256 of `${JSON.stringify(content, null, 2)}\n` for the varied fixture. */
-const VARIED_OUTPUT_SHA256 = "0d8bb5a073ccc906c6e9220eebfac62f53d8689505a8de0e2ce03f7fb5a4ff29";
+const VARIED_OUTPUT_SHA256 = "cee6903938095b8647481578b1b7de3c32d8b8bce4af621238f00375fcd39d1f";
 
 /** Guideline rows for the 11 nutrients the importer recognises, in source order. */
 const GUIDELINE_ROWS = [
@@ -86,6 +93,96 @@ function read_checked_in_nutrition(): GeneratedNutrition {
     "utf8",
   );
   return JSON.parse(text) as GeneratedNutrition;
+}
+
+/** The per-serving amounts of a frozen synthetic meal serving, every field set. */
+interface SyntheticServing {
+  grams: number;
+  energyKcal: number;
+  proteinG: number;
+  totalFatG: number;
+  saturatedFatG: number;
+  carbohydrateG: number;
+  totalSugarG: number;
+  dietaryFibreG: number;
+  sodiumMg: number;
+}
+
+/** Every limit nutrient at half a meal's share of the day. */
+const LEAN_SERVING: SyntheticServing = {
+  grams: 350,
+  energyKcal: 500,
+  proteinG: 25,
+  totalFatG: 15,
+  saturatedFatG: 3.67,
+  carbohydrateG: 65,
+  totalSugarG: 8.3,
+  dietaryFibreG: 6,
+  sodiumMg: 333,
+};
+
+/** Every limit nutrient at one meal's share (a third of the day). */
+const ON_BUDGET_SERVING: SyntheticServing = {
+  grams: 400,
+  energyKcal: 667,
+  proteinG: 25,
+  totalFatG: 26,
+  saturatedFatG: 7.33,
+  carbohydrateG: 85,
+  totalSugarG: 16.7,
+  dietaryFibreG: 6,
+  sodiumMg: 667,
+};
+
+/** The lean serving with a full day (22 g) of saturated fat. */
+const LEAN_SATURATED_FAT_ONE_DAY: SyntheticServing = {
+  ...LEAN_SERVING,
+  energyKcal: 664.97,
+  totalFatG: 33.33,
+  saturatedFatG: 22,
+};
+
+/** The lean serving with two days (44 g) of saturated fat. */
+const LEAN_SATURATED_FAT_TWO_DAYS: SyntheticServing = {
+  ...LEAN_SERVING,
+  energyKcal: 862.97,
+  totalFatG: 55.33,
+  saturatedFatG: 44,
+};
+
+function build_synthetic_profile(serving: SyntheticServing): RatedProfile & {
+  dishId: string;
+  serving: { amount: number };
+} {
+  const known = (value: number): NutritionValue => ({ status: "known", value });
+  return {
+    id: "dish.synthetic",
+    dishId: "dish.synthetic",
+    status: "released",
+    nutritionClass: "meal",
+    serving: { amount: serving.grams },
+    nutrients: {
+      energyKcal: known(serving.energyKcal),
+      proteinG: known(serving.proteinG),
+      totalFatG: known(serving.totalFatG),
+      saturatedFatG: known(serving.saturatedFatG),
+      transFatG: known(0),
+      carbohydrateG: known(serving.carbohydrateG),
+      totalSugarG: known(serving.totalSugarG),
+      dietaryFibreG: known(serving.dietaryFibreG),
+      sodiumMg: known(serving.sodiumMg),
+      calciumMg: known(0),
+      ironMg: known(0),
+      waterG: known(0),
+    },
+    intentFits: {},
+  };
+}
+
+function rate_synthetic(serving: SyntheticServing): number {
+  const profile = build_synthetic_profile(serving);
+  addHealthRatings([profile]);
+  return profile.healthRating ?? Number.NaN;
 }
 
 function strip_derived_ratings(profiles: readonly RatedProfile[]): RatedProfile[] {
@@ -139,6 +236,123 @@ describe("nutrition importer re-rating golden", () => {
     addHealthRatings(rerated);
 
     expect(rerated).toStrictEqual(checked_in.profiles);
+  });
+});
+
+describe("overall meal rating anchors", () => {
+  const lean_with_sodium = (sodium_mg: number) =>
+    rate_synthetic({ ...LEAN_SERVING, sodiumMg: sodium_mg });
+  const lean = rate_synthetic(LEAN_SERVING);
+  const on_budget = rate_synthetic(ON_BUDGET_SERVING);
+
+  it("rates the lean serving at least 4.5 and the on-budget serving at most 2.8", () => {
+    expect(lean).toBeGreaterThanOrEqual(4.5);
+    expect(on_budget).toBeLessThanOrEqual(2.8);
+    expect(on_budget).toBeLessThan(lean);
+  });
+
+  it("keeps lowering the rating for each further day of sodium, with no plateau", () => {
+    const by_days = [2_000, 3_000, 4_000, 6_000].map(lean_with_sodium);
+    expect(by_days[0]).toBeLessThanOrEqual(3.6);
+    for (let index = 1; index < by_days.length; index += 1) {
+      expect(by_days[index]).toBeLessThan(by_days[index - 1]);
+    }
+    const [one_day, , two_days, three_days] = by_days;
+    expect(one_day - two_days).toBeGreaterThanOrEqual(0.9);
+    expect(two_days - three_days).toBeGreaterThanOrEqual(0.9);
+    expect(two_days).toBeLessThanOrEqual(on_budget);
+  });
+
+  it("rates two days of saturated fat no higher than the on-budget serving", () => {
+    expect(rate_synthetic(LEAN_SATURATED_FAT_ONE_DAY)).toBeGreaterThan(
+      rate_synthetic(LEAN_SATURATED_FAT_TWO_DAYS),
+    );
+    expect(rate_synthetic(LEAN_SATURATED_FAT_TWO_DAYS)).toBeLessThanOrEqual(on_budget);
+  });
+
+  it("still counts the rest of the serving past a day of sodium", () => {
+    expect(rate_synthetic({ ...ON_BUDGET_SERVING, sodiumMg: 4_000 })).toBeLessThanOrEqual(
+      lean_with_sodium(4_000) - 0.5,
+    );
+  });
+
+  it("pins the anchor ratings", () => {
+    expect({
+      lean,
+      onBudget: on_budget,
+      leanSodiumDays: [1_333, 2_000, 3_000, 4_000, 6_000].map(lean_with_sodium),
+      leanSaturatedFatDays: [LEAN_SATURATED_FAT_ONE_DAY, LEAN_SATURATED_FAT_TWO_DAYS].map(
+        rate_synthetic,
+      ),
+      onBudgetTwoDaysSodium: rate_synthetic({ ...ON_BUDGET_SERVING, sodiumMg: 4_000 }),
+    }).toEqual({
+      lean: 4.6,
+      onBudget: 2.6,
+      leanSodiumDays: [3.8, 3.5, 2.7, 2.2, 1.2],
+      leanSaturatedFatDays: [3.1, 1.6],
+      onBudgetTwoDaysSodium: 1,
+    });
+  });
+});
+
+describe("overall meal rating properties", () => {
+  const LIMIT_METRICS = [
+    "energyKcal",
+    "saturatedFatG",
+    "sodiumMg",
+    "totalSugarG",
+    "totalFatG",
+    "carbohydrateG",
+  ] as const;
+  const CREDIT_METRICS = ["dietaryFibreG", "proteinG"] as const;
+  const meals = read_checked_in_nutrition().profiles.filter(
+    (profile) => profile.status === "released" && profile.nutritionClass === "meal",
+  );
+  const rate_with = (profile: RatedProfile, metric: string, factor: number) => {
+    const changed = strip_derived_ratings([profile])[0];
+    const value = changed.nutrients[metric];
+    if (value.status !== "known") return undefined;
+    changed.nutrients[metric] = { status: "known", value: value.value * factor };
+    const sugar = changed.nutrients.totalSugarG;
+    const carbohydrate = changed.nutrients.carbohydrateG;
+    if (
+      metric === "totalSugarG" &&
+      sugar.status === "known" &&
+      carbohydrate.status === "known" &&
+      carbohydrate.value < sugar.value
+    ) {
+      changed.nutrients.carbohydrateG = { status: "known", value: sugar.value };
+    }
+    addHealthRatings([changed]);
+    return changed.healthRating;
+  };
+
+  it("never raises the rating when a meal holds more of a limit nutrient", () => {
+    for (const profile of meals) {
+      for (const metric of LIMIT_METRICS) {
+        for (const factor of [1.05, 1.2, 1.5, 2, 3]) {
+          const rating = rate_with(profile, metric, factor);
+          if (rating === undefined) continue;
+          expect(rating, `${profile.id} ${metric} x${factor}`).toBeLessThanOrEqual(
+            profile.healthRating ?? Number.NaN,
+          );
+        }
+      }
+    }
+  });
+
+  it("never lowers the rating when a meal holds more fibre or protein", () => {
+    for (const profile of meals) {
+      for (const metric of CREDIT_METRICS) {
+        for (const factor of [1.2, 2, 4]) {
+          const rating = rate_with(profile, metric, factor);
+          if (rating === undefined) continue;
+          expect(rating, `${profile.id} ${metric} x${factor}`).toBeGreaterThanOrEqual(
+            profile.healthRating ?? Number.NaN,
+          );
+        }
+      }
+    }
   });
 });
 

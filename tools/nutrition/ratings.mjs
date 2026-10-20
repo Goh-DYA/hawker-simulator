@@ -278,12 +278,14 @@ export const IMPUTATION = {
 
 /**
  * Stars each meal term removes at its full penalty, or adds back at its full credit.
- * In the overall rating the four limit nutrients HPB and WHO name carry equal weight, and
- * the worst of them counts once more, so one nutrient at a full day's limit costs two
- * stars rather than being averaged away by the others.
+ * In the overall rating's nutrient score the four limit nutrients HPB and WHO name carry
+ * equal weight and add up, as in the additive FSA/Ofcom lineage that Nutri-Score and the
+ * Health Star Rating build on; no nutrient counts twice (ADR 0009, which reverses ADR
+ * 0007's worst-nutrient double count). A single severe excess is carried instead by
+ * {@link OVERALL_DAY_EXCESS_STARS_PER_DAY}.
  */
 export const MEAL_RATING_WEIGHTS = {
-  overall: { limitNutrient: 1, worstLimitNutrient: 1, fibre: 0.5, protein: 0.25 },
+  overall: { limitNutrient: 1, fibre: 0.5, protein: 0.25 },
   "high-cholesterol": { saturatedFat: 3, energy: 0.5, sugar: 0.5, fibre: 0.75 },
   obesity: { energy: 2.75, totalFat: 0.5, sugar: 0.75, fibre: 0.5, protein: 0.25 },
   diabetes: {
@@ -298,11 +300,35 @@ export const MEAL_RATING_WEIGHTS = {
 };
 
 /**
- * The overall limit-nutrient penalty at which a meal's fibre and protein credits are gone:
- * every limit nutrient at its full penalty, the worst counted once more.
+ * The summed limit-nutrient penalty at which a meal's fibre and protein credits are gone:
+ * every limit nutrient at its full penalty, so credits cannot rescue a heavy serving.
  */
-const MAX_OVERALL_MEAL_PENALTY =
-  4 * MEAL_RATING_WEIGHTS.overall.limitNutrient + MEAL_RATING_WEIGHTS.overall.worstLimitNutrient;
+const MAX_OVERALL_MEAL_PENALTY = 4 * MEAL_RATING_WEIGHTS.overall.limitNutrient;
+
+/**
+ * How the condition score weighs the four unrounded condition ratings: two thirds their
+ * mean and one third the lowest, so the lowest condition counts as much as the other three
+ * together. Equal per condition, not weighted by prevalence, so no demographic enters. A
+ * design choice tested against the variant-family, price and ordering checks (ADR 0009).
+ */
+export const CONDITION_SCORE_WEIGHTS = { mean: 2 / 3, lowest: 1 / 3 };
+
+/**
+ * A meal's overall rating blends its nutrient score and its condition score equally. Equal
+ * weighting is a design choice (the OECD/JRC composite-indicator handbook, 2008, p. 31,
+ * warns it can disguise the absence of an empirical basis); it is the lowest nutrient share
+ * that keeps every variant family's default tunable (ADR 0009).
+ */
+export const OVERALL_BLEND = { nutrientScore: 0.5, conditionScore: 0.5 };
+
+/**
+ * Stars a meal loses for each further day's amount once one serving holds more than a full
+ * day of energy, saturated plus trans fat, sodium or sugar ({@link DAILY_REFERENCE}), with no
+ * cap. Past a full day the rest of the day can no longer bring intake within the limit. The
+ * linear shape follows the sodium-blood pressure dose-response (Filippini et al. 2021); the
+ * slope of one star a day is a design choice that continues the model's within-day rate.
+ */
+export const OVERALL_DAY_EXCESS_STARS_PER_DAY = 1;
 
 /**
  * How far past its full penalty a limit nutrient's overall penalty keeps rising: to 1.25 at
@@ -696,16 +722,25 @@ const extend_overall_penalty = (penalty, amount, full_penalty_amount) =>
 const finish_rating = (value) => roundRating(Math.min(5, Math.max(1, value)));
 
 /**
- * Rates a meal serving overall and for each condition. Each rating starts at five stars
- * and loses its weighted penalties. Its credits shrink as the key penalties grow, so
- * fibre and protein cannot rescue a heavy serving.
+ * Clamps a rating to one to five stars without rounding it.
+ *
+ * @param {number} value - The unclamped rating.
+ * @returns {number} The clamped rating.
+ */
+const clamp_rating = (value) => Math.min(5, Math.max(1, value));
+
+/**
+ * A meal's nutrient score: five stars less its four limit-nutrient penalties (each up to
+ * 1.25 past its full amount), plus fibre and protein credits that shrink as the summed
+ * penalty grows. Floored at one star but not capped at five, so credits still separate
+ * lean servings inside the blend.
  *
  * @param {ResolvedServing} serving - The meal serving.
- * @returns {{ overall: number; conditions: Record<HealthCondition, number> }} The ratings.
+ * @param {ReturnType<typeof compute_meal_fractions>} f - The serving's fractions.
+ * @returns {number} The unrounded nutrient score, at least 1.
  */
-const rate_meal = (serving) => {
-  const f = compute_meal_fractions(serving);
-  const w = MEAL_RATING_WEIGHTS;
+const compute_nutrient_score = (serving, f) => {
+  const w = MEAL_RATING_WEIGHTS.overall;
   const limit_penalties = [
     extend_overall_penalty(
       f.energy,
@@ -716,55 +751,111 @@ const rate_meal = (serving) => {
     extend_overall_penalty(f.sodium, serving.sodiumMg ?? 0, DAILY_REFERENCE.sodiumMg),
     extend_overall_penalty(f.sugar, serving.totalSugarG, DAILY_REFERENCE.totalSugarG),
   ];
-  const overall_penalty =
-    w.overall.limitNutrient * limit_penalties.reduce((sum, penalty) => sum + penalty, 0) +
-    w.overall.worstLimitNutrient * Math.max(...limit_penalties);
-  const overall_credit =
-    (w.overall.fibre * f.fibre + w.overall.protein * f.protein) *
-    (1 - Math.min(1, overall_penalty / MAX_OVERALL_MEAL_PENALTY));
+  const penalty_sum = w.limitNutrient * limit_penalties.reduce((sum, penalty) => sum + penalty, 0);
+  const credit =
+    (w.fibre * f.fibre + w.protein * f.protein) *
+    (1 - Math.min(1, penalty_sum / MAX_OVERALL_MEAL_PENALTY));
+  return Math.max(1, 5 - penalty_sum + credit);
+};
+
+/**
+ * A meal's condition score from its four unrounded condition ratings (see
+ * {@link CONDITION_SCORE_WEIGHTS}).
+ *
+ * @param {readonly number[]} condition_ratings - The four clamped, unrounded ratings.
+ * @returns {number} The condition score.
+ */
+const compute_condition_score = (condition_ratings) =>
+  CONDITION_SCORE_WEIGHTS.mean *
+    (condition_ratings.reduce((sum, rating) => sum + rating, 0) / condition_ratings.length) +
+  CONDITION_SCORE_WEIGHTS.lowest * Math.min(...condition_ratings);
+
+/**
+ * The largest share of a full day's amount that one serving holds of energy, saturated
+ * plus trans fat, sodium or sugar, on the resolved (imputed where unreported) amounts.
+ * Meals and snack-rated desserts are both measured against the whole day.
+ *
+ * @param {ResolvedServing} serving - The meal serving.
+ * @returns {number} The day share; above 1 when one serving breaches a full day.
+ */
+const compute_day_share = (serving) =>
+  Math.max(
+    serving.energyKcal / DAILY_REFERENCE.energyKcal,
+    serving.saturatedFatG / DAILY_REFERENCE.saturatedFatG,
+    (serving.sodiumMg ?? 0) / DAILY_REFERENCE.sodiumMg,
+    serving.totalSugarG / DAILY_REFERENCE.totalSugarG,
+  );
+
+/**
+ * Rates a meal serving overall and for each condition. Each condition rating starts at five
+ * stars and loses its weighted penalties; its credits shrink as the key penalties grow, so
+ * fibre and protein cannot rescue a heavy serving. The overall rating is half the nutrient
+ * score and half the condition score, less one star per further day's amount past a full
+ * day, rounded once.
+ *
+ * @param {ResolvedServing} serving - The meal serving.
+ * @returns {{ overall: number; conditions: Record<HealthCondition, number> }} The ratings.
+ */
+const rate_meal = (serving) => {
+  const f = compute_meal_fractions(serving);
+  const w = MEAL_RATING_WEIGHTS;
   const cholesterol = w["high-cholesterol"];
   const obesity = w.obesity;
   const diabetes = w.diabetes;
   const hypertension = w.hypertension;
   const diabetes_key = Math.max(f.diabetesCarbohydrate, f.diabetesSugar);
+  /** @type {Record<HealthCondition, number>} */
+  const raw_conditions = {
+    "high-cholesterol": clamp_rating(
+      5 -
+        cholesterol.saturatedFat * f.cholesterolSaturatedFat -
+        cholesterol.energy * f.energy -
+        cholesterol.sugar * f.sugar +
+        cholesterol.fibre * f.fibre *
+          (1 - Math.max(f.cholesterolSaturatedFat, f.energy, f.sugar)),
+    ),
+    obesity: clamp_rating(
+      5 -
+        obesity.energy * f.obesityEnergy -
+        obesity.totalFat * f.totalFat -
+        obesity.sugar * f.sugar +
+        (obesity.fibre * f.fibre + obesity.protein * f.protein) *
+          (1 - Math.max(f.obesityEnergy, f.totalFat, f.sugar)),
+    ),
+    diabetes: clamp_rating(
+      5 -
+        diabetes.carbohydrate * f.diabetesCarbohydrate -
+        diabetes.carbohydrateQuality *
+          f.carbohydrateQuality *
+          (1 - f.diabetesCarbohydrate) -
+        diabetes.sugar * f.diabetesSugar -
+        diabetes.energy * f.energy -
+        diabetes.saturatedFat * f.saturatedFat +
+        diabetes.fibre * f.fibre *
+          (1 - Math.max(diabetes_key, f.energy, f.saturatedFat)),
+    ),
+    hypertension: clamp_rating(
+      5 -
+        hypertension.sodium * f.hypertensionSodium -
+        hypertension.saturatedFat * f.saturatedFat +
+        hypertension.fibre * f.fibre *
+          (1 - Math.max(f.hypertensionSodium, f.saturatedFat)),
+    ),
+  };
+  const nutrient_score = compute_nutrient_score(serving, f);
+  const condition_score = compute_condition_score(Object.values(raw_conditions));
+  const day_excess = OVERALL_DAY_EXCESS_STARS_PER_DAY * Math.max(0, compute_day_share(serving) - 1);
   return {
-    overall: finish_rating(5 - overall_penalty + overall_credit),
+    overall: finish_rating(
+      OVERALL_BLEND.nutrientScore * nutrient_score +
+        OVERALL_BLEND.conditionScore * condition_score -
+        day_excess,
+    ),
     conditions: {
-      "high-cholesterol": finish_rating(
-        5 -
-          cholesterol.saturatedFat * f.cholesterolSaturatedFat -
-          cholesterol.energy * f.energy -
-          cholesterol.sugar * f.sugar +
-          cholesterol.fibre * f.fibre *
-            (1 - Math.max(f.cholesterolSaturatedFat, f.energy, f.sugar)),
-      ),
-      obesity: finish_rating(
-        5 -
-          obesity.energy * f.obesityEnergy -
-          obesity.totalFat * f.totalFat -
-          obesity.sugar * f.sugar +
-          (obesity.fibre * f.fibre + obesity.protein * f.protein) *
-            (1 - Math.max(f.obesityEnergy, f.totalFat, f.sugar)),
-      ),
-      diabetes: finish_rating(
-        5 -
-          diabetes.carbohydrate * f.diabetesCarbohydrate -
-          diabetes.carbohydrateQuality *
-            f.carbohydrateQuality *
-            (1 - f.diabetesCarbohydrate) -
-          diabetes.sugar * f.diabetesSugar -
-          diabetes.energy * f.energy -
-          diabetes.saturatedFat * f.saturatedFat +
-          diabetes.fibre * f.fibre *
-            (1 - Math.max(diabetes_key, f.energy, f.saturatedFat)),
-      ),
-      hypertension: finish_rating(
-        5 -
-          hypertension.sodium * f.hypertensionSodium -
-          hypertension.saturatedFat * f.saturatedFat +
-          hypertension.fibre * f.fibre *
-            (1 - Math.max(f.hypertensionSodium, f.saturatedFat)),
-      ),
+      "high-cholesterol": finish_rating(raw_conditions["high-cholesterol"]),
+      obesity: finish_rating(raw_conditions.obesity),
+      diabetes: finish_rating(raw_conditions.diabetes),
+      hypertension: finish_rating(raw_conditions.hypertension),
     },
   };
 };

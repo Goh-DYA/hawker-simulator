@@ -46,7 +46,7 @@ const NUTRITION_INTENT_UNLOCK_LEVEL = 2;
 /** Intent fit at or above which a served variant counts as matching the request. */
 const NUTRITION_INTENT_MATCH_THRESHOLD = 0.67;
 /** Personalised health rating at or above which a served dish counts as a health match. */
-const HEALTH_MATCH_THRESHOLD = 3.5;
+export const HEALTH_MATCH_THRESHOLD = 3.5;
 
 function weightedIntentFit(fit: number | undefined, weight: number): number {
   if (typeof fit !== "number" || !Number.isFinite(fit)) return 0;
