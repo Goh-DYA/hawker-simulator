@@ -1,7 +1,7 @@
 /**
- * The cooking stations on a stall's work bench, painted in the 3/4 oblique view: every pot, wok
- * and steamer shows its rim and contents from above and its body below, and flat equipment
- * (griddles, grills, boilers, ingredient trays) shows its top and a short south face.
+ * The cooking stations on a stall's work bench, painted in the 3/4 oblique view: every pot, wok,
+ * mortar and steamer shows its rim and contents from above and its body below, and flat equipment
+ * (griddles, grills, boilers, ingredient trays, a hot plate) shows its top and a short south face.
  *
  * A station paints inside a footprint box on the bench top and may rise above it. Wide boxes
  * (benches along the back or front wall) lay their pieces out west to east; tall boxes (benches
@@ -789,13 +789,112 @@ export function paint_station(scene: StallScene, box: Box): void {
     case "fish-grill":
       paint_fish_grill(scene, box);
       return;
+    case "congee-pot":
+      paint_congee_pot(scene, box);
+      return;
+    case "dessert-pots":
+      paint_dessert_pots(scene, box);
+      return;
+    case "sambal-mortar":
+      paint_sambal_mortar(scene, box);
+      return;
+    case "hot-plate":
+      paint_hot_plate(scene, box);
+      return;
   }
 }
 
 /**
+ * A tall pot of white rice porridge on a gas ring with a long wooden paddle (the porridge stall).
+ *
+ * @param scene - The stall scene.
+ * @param box - The station footprint.
+ */
+function paint_congee_pot(scene: StallScene, box: Box): void {
+  const { ctx } = scene;
+  const isWide = box.width >= box.height;
+  const radius = Math.min(10, (isWide ? box.width * 0.28 : box.width * 0.48) - 0.5);
+  const x = isWide ? box.x + radius + 2 : box.x + box.width / 2;
+  const baseY = isWide ? box.y + box.height * 0.85 : box.y + radius + 8;
+  paint_burner(scene, x, baseY - 1, radius - 2);
+  paint_pot(scene, x, baseY - 1, radius, 10, 0xc9cfcd, 0xf1e9d6);
+  line(ctx, x - 2, baseY - 12, x + radius + 3, baseY - 24, css(TIMBER), 1.8);
+  const rest = isWide
+    ? { x: x + radius + 4, y: box.y, width: box.x + box.width - x - radius - 4, height: box.height }
+    : { x: box.x, y: baseY + 4, width: box.width, height: box.y + box.height - baseY - 4 };
+  if (rest.width > 6 && rest.height > 4) {
+    spots(rest, 2).forEach((spot) => paint_pot(scene, spot.x, spot.y, 3.4, 3, PORCELAIN, 0xf1e9d6));
+  }
+}
+
+/**
+ * Three lidded pots of hot sweet soup (two on a side bench) in a steel water bath, the first one
+ * open (the dessert soup stall).
+ *
+ * @param scene - The stall scene.
+ * @param box - The station footprint.
+ */
+function paint_dessert_pots(scene: StallScene, box: Box): void {
+  const { ctx } = scene;
+  const bath = lifted(inset(box, 0.5), 2);
+  paint_block(scene, bath, 3, STEEL, STEEL_DARK);
+  const soups = [0x8e6a9b, 0xe9dcb2, 0x2e2a28];
+  const count = box.width >= box.height ? 3 : 2;
+  spots(inset(bath, 1), count).forEach((spot, index) => {
+    paint_pot(scene, spot.x, spot.y + 1, 5, 6, 0xc9cfcd, index === 0 ? soups[0] : undefined);
+    if (index === 0) {
+      fill_ellipse(ctx, spot.x + 5, spot.y - 6.5, 3.4, 1.4, css(tint(0xc9cfcd, 0.2)));
+    }
+    if (index > 0) {
+      fill_ellipse(ctx, spot.x - 2, spot.y - 5.5, 1.2, 0.6, css(soups[index] as number, 0.8));
+    }
+  });
+}
+
+/**
+ * A granite mortar of red sambal with its pestle beside a kuali of frying chicken (the warung).
+ *
+ * @param scene - The stall scene.
+ * @param box - The station footprint.
+ */
+function paint_sambal_mortar(scene: StallScene, box: Box): void {
+  const { ctx } = scene;
+  const [mortar, kuali] = spots(box, 2) as [Spot, Spot];
+  base_shadow(scene, mortar.x, mortar.y, 6);
+  fill_ellipse(ctx, mortar.x, mortar.y - 1.5, 6.5, 3.4, css(0x6f6e6a));
+  fill_ellipse(ctx, mortar.x, mortar.y - 3, 6.5, 3.2, css(0x8d8b85));
+  fill_ellipse(ctx, mortar.x, mortar.y - 3, 4.6, 2.2, css(0xb5342a));
+  line(ctx, mortar.x + 1, mortar.y - 3.5, mortar.x + 6, mortar.y - 11, css(0x5f5e5a), 2.6);
+  paint_burner(scene, kuali.x, kuali.y, 5);
+  paint_wok(scene, kuali.x, kuali.y - 1, 7, 0xc98a3c);
+}
+
+/**
+ * A steel flat-top with chops searing and two cast-iron sizzle plates on timber boards (the hawker
+ * Western stall).
+ *
+ * @param scene - The stall scene.
+ * @param box - The station footprint.
+ */
+function paint_hot_plate(scene: StallScene, box: Box): void {
+  const { ctx } = scene;
+  const top = lifted(inset(box, 0.5), 5);
+  paint_block(scene, top, 5, 0x9aa3a1, 0x5d6563);
+  if (scene.spec.isOpen && !scene.isLowDetail) {
+    glow(ctx, top.x + top.width / 2, top.y + top.height + 4, top.width * 0.4, FLAME, 0.25);
+  }
+  spots(inset(top, 1), 2).forEach((spot, index) => {
+    fill_ellipse(ctx, spot.x, spot.y, 6.2, 3.4, css(TIMBER));
+    fill_ellipse(ctx, spot.x, spot.y - 0.8, 5.2, 2.7, css(CHARCOAL));
+    fill_ellipse(ctx, spot.x - 1, spot.y - 1.2, 3, 1.6, css(index === 0 ? 0x8a5a2b : 0xd9a441));
+    fill_ellipse(ctx, spot.x + 2.2, spot.y - 0.8, 1.6, 1, css(0xe8c46a));
+  });
+}
+
+/**
  * Paints the side piece beside the station: a rice warmer, a stock pot, bowls, sauces, a
- * teapot, a tea urn, banana leaves, noodle portions, syrups, a claypot, peanut sauce or a
- * small steamer stack.
+ * teapot, a tea urn, banana leaves, noodle portions, syrups, a claypot, peanut sauce, a small
+ * steamer stack, a tray of fried dough sticks or a deep fryer.
  *
  * @param scene - The stall scene.
  * @param box - The side piece's footprint on the bench top.
@@ -866,6 +965,37 @@ export function paint_side_piece(scene: StallScene, box: Box): void {
       return;
     case "steamers":
       paint_steamer_stack(scene, centre.x, centre.y, 6, 2);
+      return;
+    case "dough-sticks":
+      fill_rounded_rect(ctx, centre.x - 7, centre.y - 4, 14, 5, 1, css(STEEL));
+      for (const dy of [-3.2, -1.6]) {
+        fill_rounded_rect(ctx, centre.x - 6, centre.y + dy - 1, 12, 1.6, 0.8, css(0xc98a3c));
+        line(
+          ctx,
+          centre.x - 5,
+          centre.y + dy - 0.3,
+          centre.x + 5,
+          centre.y + dy - 0.3,
+          css(0xe6b868),
+          0.5,
+        );
+      }
+      return;
+    case "fryer":
+      paint_block(scene, lifted(inset(box, 1), 3), 4, STEEL, STEEL_DARK);
+      fill_rounded_rect(ctx, centre.x - 5, centre.y - 6, 10, 4, 1, css(0xc7922f));
+      for (let dx = -4; dx <= 3; dx += 1.6) {
+        line(
+          ctx,
+          centre.x + dx,
+          centre.y - 6,
+          centre.x + dx + 0.6,
+          centre.y - 3,
+          css(0xf0cf6e),
+          0.8,
+        );
+      }
+      line(ctx, centre.x + 5, centre.y - 5, centre.x + 9, centre.y - 9, css(CHARCOAL), 1.2);
       return;
   }
 }

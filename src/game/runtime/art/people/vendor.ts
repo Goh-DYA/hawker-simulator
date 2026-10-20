@@ -6,8 +6,9 @@
  * Poses: two idle frames with the hands resting on the counter and a slight shift of weight;
  * two order frames (an open hand raised to the guest, then a hand held out over the counter);
  * and four prepare frames that act out the stall's own work at counter height: chopping with a
- * cleaver against the board, stirring or tossing in a pot or wok, pouring from height into a
- * cup or bowl held below, dipping and shaking a basket, or turning food on a griddle or grill.
+ * cleaver against the board or pounding with a pestle in a mortar, stirring or tossing in a pot
+ * or wok, pouring from height into a cup or bowl held below, dipping and shaking a basket or a
+ * ladle, or turning food on a griddle, grill or hot plate.
  * The working hand is the right hand; the other hand steadies the board, the pot or the cup.
  *
  * The counter in front hides the vendor below the waist, so the work happens just above the
@@ -84,6 +85,10 @@ const WORK_MOTION: Readonly<Record<StallVendorWorkAction, WorkMotion>> = {
   "turn-skewers": "turn",
   chargrill: "turn",
   "pick-pieces": "turn",
+  "stir-congee": "stir",
+  "scoop-dessert": "dip",
+  "pound-sambal": "strike",
+  "sear-plate": "turn",
 };
 
 /**

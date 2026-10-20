@@ -42,7 +42,11 @@ export type StallVendorTool =
   | "braising-ladle"
   | "fish-turner"
   | "ingredient-tongs"
-  | "claypot-ladle";
+  | "claypot-ladle"
+  | "congee-paddle"
+  | "dessert-ladle"
+  | "pestle"
+  | "hot-plate-spatula";
 
 export type StallVendorWorkAction =
   | "chop"
@@ -58,7 +62,11 @@ export type StallVendorWorkAction =
   | "stir-braise"
   | "chargrill"
   | "pick-pieces"
-  | "tend-claypot";
+  | "tend-claypot"
+  | "stir-congee"
+  | "scoop-dessert"
+  | "pound-sambal"
+  | "sear-plate";
 
 export type StallVendorEmblem =
   | "sunburst"
@@ -74,7 +82,11 @@ export type StallVendorEmblem =
   | "hearth-tile"
   | "harbour-wave"
   | "ingredient-grid"
-  | "claypot-steam";
+  | "claypot-steam"
+  | "rice-bowl"
+  | "crescent-moon"
+  | "mortar"
+  | "pepper-mill";
 
 /** A stable, renderer-ready identity for the worker assigned to a stall. */
 export interface StallVendorRecipe {
@@ -315,6 +327,54 @@ const STALL_VENDOR_PROFILES: Readonly<Record<string, StallVendorProfileSeed>> = 
     workAction: "tend-claypot",
     emblem: "claypot-steam",
   },
+  "stall.jade-ladle": {
+    skinIndex: 2,
+    hairIndex: 2,
+    shirtIndex: 0,
+    apronIndex: 15,
+    hairStyle: "side-part",
+    apronStyle: "cross-back",
+    headwear: "hairnet",
+    tool: "congee-paddle",
+    workAction: "stir-congee",
+    emblem: "rice-bowl",
+  },
+  "stall.longan-moon": {
+    skinIndex: 1,
+    hairIndex: 0,
+    shirtIndex: 6,
+    apronIndex: 17,
+    hairStyle: "wavy",
+    apronStyle: "utility",
+    headwear: "service-cap",
+    tool: "dessert-ladle",
+    workAction: "scoop-dessert",
+    emblem: "crescent-moon",
+  },
+  "stall.lesung-corner": {
+    skinIndex: 4,
+    hairIndex: 1,
+    shirtIndex: 5,
+    apronIndex: 16,
+    hairStyle: "tied-back",
+    apronStyle: "waist",
+    headwear: "hair-wrap",
+    tool: "pestle",
+    workAction: "pound-sambal",
+    emblem: "mortar",
+  },
+  "stall.peppercorn-plate": {
+    skinIndex: 0,
+    hairIndex: 3,
+    shirtIndex: 1,
+    apronIndex: 14,
+    hairStyle: "close-cut",
+    apronStyle: "bib",
+    headwear: "chef-cap",
+    tool: "hot-plate-spatula",
+    workAction: "sear-plate",
+    emblem: "pepper-mill",
+  },
 };
 
 const VENDOR_HAIR_STYLES = [
@@ -349,6 +409,10 @@ const VENDOR_EMBLEMS = [
   "harbour-wave",
   "ingredient-grid",
   "claypot-steam",
+  "rice-bowl",
+  "crescent-moon",
+  "mortar",
+  "pepper-mill",
 ] as const satisfies readonly StallVendorEmblem[];
 
 const VENDOR_ACTION_RULES: readonly (readonly [RegExp, StallVendorTool, StallVendorWorkAction])[] = [

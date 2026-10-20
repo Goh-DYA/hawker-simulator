@@ -28,6 +28,10 @@ export type StallRoofArt =
   | "harbour"
   | "tiffin"
   | "straits"
+  | "jade-ladle"
+  | "longan-moon"
+  | "lesung"
+  | "peppercorn"
   | "awning";
 
 /** The counter work-prop branch of `drawStallGraphic`; `generic` is the plain prop row. */
@@ -287,6 +291,10 @@ function classify_stall_roof(id: string): StallRoofArt {
   if (id.includes("harbour")) return "harbour";
   if (id.includes("tiffin")) return "tiffin";
   if (id.includes("straits")) return "straits";
+  if (id.includes("jade-ladle")) return "jade-ladle";
+  if (id.includes("longan")) return "longan-moon";
+  if (id.includes("lesung")) return "lesung";
+  if (id.includes("peppercorn")) return "peppercorn";
   return "awning";
 }
 
