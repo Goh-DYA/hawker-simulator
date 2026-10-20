@@ -1,12 +1,53 @@
 # Test Report
 
-Report date: 2026-10-19
-Build/commit: Content `1.5.0` working source validated with Node.js `v22.22.0`; commit/publication record pending
+Report date: 2026-10-20
+Build/commit: Content `1.6.0` working source; working source validated with Node.js `v22.22.0`; commit/publication record pending
 Release verdict: **NO-GO pending exact-production browser/offline QA and required human reviews**
 
 This document owns the dated test and gate evidence; other documents link here instead of restating results (see the [documentation index](README.md)). Release blockers are listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md), and content counts in [CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md#roster-counts).
 
-Scope note: this report records the content `1.5.0` working-source gate, retains the content `1.4.0` and `1.3.0` gates as previous records, and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
+Scope note: this report records the content `1.6.0` working-source gate, retains the content `1.5.0`, `1.4.0` and `1.3.0` gates as previous records, and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
+
+## Content `1.6.0` working-source validation
+
+Gate results on the landed source:
+
+| Check | Result |
+|---|---|
+| Date and Node.js version | 2026-10-20, Node.js `v22.22.0` (Linux) |
+| `CI=true npm run test:release`: typecheck, lint with no warnings, Vitest files / tests, Vinext build, rendered-output/offline-shell assertions | **Pass**: typecheck, lint with no warnings, 107 Vitest files / 1,304 tests (1 skipped: the gallery-fixture generator, which runs only with `GALLERY_REGENERATE=1`), the Vinext build, and 2/2 rendered-output/offline-shell assertions |
+| `npm run build:vercel` (native Next.js Vercel build) | **Pass** |
+| Service-worker build ID (Linux build) | `846bf8405a46` |
+| `benchmark-80-agents` mean and p95 per fixed step | 0.101 ms and 0.112 ms |
+| Landed `src/content/nutrition.generated.json` byte-identical to the panel chair's reference (sha256 `b0cd79d05beb67303add9b0f9bc8a28b63b756305203d0470a12737ef7016b9b`) | **Byte-identical** |
+| Re-pinned in the commit that moved each one, with the reason in its message: the fried-fish keys and art; the content, nutrition and importer pins; the runtime export, core and input hashes (data version, defaults and the intent-fit re-rank); the runtime and app snapshots; the gallery, gallery-variants and day-2 render digests; and the content version |
+
+The generated nutrition snapshot is review revision 4, `dataVersion` `sg-1bc212db6eda-c87987b4281c-r4`: 171 released profiles (0 quarantined) across 23 variant families for 91 dishes, rated by the unchanged guideline-anchored model of [ADR 0007](decisions/0007-guideline-anchored-nutrition-ratings.md) and [ADR 0008](decisions/0008-snack-basis-edible-density-and-source-plausibility.md). The goldens that moved are the nutrition snapshot and importer pins (171 profiles, 23 families), the ratings fixture, the content golden, the stall, vendor, art-table, food and dish-visual pins, the render digests (an intentional art change) and the runtime and app snapshots (visual keys and counts).
+
+### Review panel verification
+
+The results below come from the round-2 review panel, five AI agents (a clinical dietitian, a methodologist and data auditor, a Singapore food culture reviewer, a game economist and an art and integration lead) whose 140 proposals a chair ruled on. They are internal checks on the chair's reference worktree, not the landed-source gate above, and not a qualified nutrition review or a human Singapore cultural review, both of which remain release gates. No browser pass was run for this change.
+
+Verified by the panel chair on the reference worktree:
+
+- `npm run validate:content` passed 17 of 17 checks; `tsc --noEmit` was clean; ESLint with `--max-warnings=0` was clean on `src/content`, `tools/nutrition`, `tests/content` and `src/game/runtime/rules.ts`.
+- **Price-health**, across the 91 dishes: the Spearman correlation between price and Health rating is −0.421 (the check requires at most zero). 16 dishes rate 3.5 or above, and 15 of them cost no more than the Student Saver's $6.50 mid budget; the exception is sotong panggang at $10, as in content `1.5.0`. Every dessert ($2-3) costs less than the cheapest noodle dish ($4), and the $2 floor binds only for kopi and you tiao.
+- **Defaults**: 23 of 23 variant families pass both parts of the default rule (the default rates strictly below another option, and some option is at least 0.3 higher overall or no lower overall and at least 0.5 higher on one condition), run over the generated families.
+- **Star ratings**: all 91 equal round1(1 + 4 × (0.65 × quality + 0.35 × demand)).
+- **Starter probe** (not committed): five world seeds, seven operating days, speed 10, re-run on the final content; the result is identical to the economist's integrated run, and day-5 and day-7 XP are within −0.88% to +2.20% of content `1.5.0`.
+
+  | Seed | Day 5 XP / level | Day 7 XP / level |
+  |---|---|---|
+  | default | 4,422 / L7 | 5,818 / L8 |
+  | 11 | 4,435 / L7 | 5,806 / L8 |
+  | 222 | 4,412 / L7 | 5,803 / L8 |
+  | 3333 | 4,424 / L7 | 5,872 / L8 |
+  | 44444 | 4,613 / L7 | 6,172 / L8 |
+
+From the economist's integrated career runs, accepted by the chair but not re-run by it:
+
+- **Unlock reach**: greedy and moderate builders unlock and buy every tendered stall on its tender day. The late level gates are reached around level 14 on days 11-12, level 16 on days 14-15, level 18 on days 17-18, level 20 on days 20-21, level 22 on days 22-24, level 24 on days 25-27 and level 26 on days 29-30, so the tender, not the level, sets when an engaged builder's late stalls arrive.
+- **Light builder** (about two seats per stall): the Straits Hearth chain may wait on reputation, and Harbour Ember was not reached by day 40 on three seeds; [KNOWN_ISSUES.md](KNOWN_ISSUES.md#open-gameplay-balance-issues) records it.
 
 ## Content `1.5.0` working-source validation
 

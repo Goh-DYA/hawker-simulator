@@ -29,8 +29,8 @@ The game is for casual and simulation players aged 13+, launches free, requires 
 - Mouse, trackpad, and keyboard are required. Touch is optional.
 - One coherent map theme, orthographic top-down square-grid construction, pan, and zoom.
 - Place, move, rotate, store, sell, remove, and undo placeable objects and stalls.
-- Fourteen fictional stalls, 67 playable dishes, 80 meaningfully distinct placeables, and twelve behavior archetypes.
-- A released source profile and Star rating for every dish, with 116 released nutrition profiles across 14 reviewed recipe-variant families.
+- Eighteen fictional stalls, 91 playable dishes, 80 meaningfully distinct placeables, and twelve behavior archetypes.
+- A released source profile and Star rating for every dish, with 171 released nutrition profiles across 23 reviewed recipe-variant families, each with a default the player can tune to an option that rates higher.
 - Overall Health ratings plus distinct high-cholesterol, obesity, diabetes, and hypertension ratings; optional visit conditions remain independent of customer archetype and demographics.
 - Customer spawning, choice, pathfinding, queueing, ordering, preparation abstraction, seat reservation, eating, reactions, tray return where applicable, and departure.
 - Cash, experience, reputation, unlocks, upgrades, objectives, and map expansion.
@@ -48,14 +48,14 @@ Accounts, cloud saves, multiplayer, chat, leaderboards, social visits, user-gene
 The release must pass the acceptance checklist in [RELEASE_CHECKLIST.md](../release/RELEASE_CHECKLIST.md). In particular:
 
 - The complete customer lifecycle and build-mode recovery cases pass automated and browser tests.
-- Content validators prove 14 / 67 / 80 / 12 counts, 346 English localization entries, 116 released profiles, 14 variant families, and no missing runtime references.
+- Content validators prove 18 / 91 / 80 / 12 counts, 402 English localization entries, 171 released profiles, 23 variant families, and no missing runtime references.
 - IndexedDB recovery, save migrations, cache updates, and offline reload are verified.
 - Measured performance meets an approved supported-customer cap in both quality tiers.
 - Essential UI actions work by keyboard and do not rely on color or audio alone.
 - Current stable desktop Chrome is tested and its exact version recorded.
 - Human Singapore cultural review, qualified legal/privacy review, and independent security review are complete or explicitly waived by the accountable human owner.
 
-The content `1.5.0` source contract, complete automated working-source gate, and both local production builds are recorded. Exact-production browser/offline validation, publication evidence, and all external review gates remain incomplete as of this document date.
+The content `1.6.0` source contract is recorded; its complete automated working-source gate and both local production builds pass. Exact-production browser/offline validation, publication evidence, and all external review gates remain incomplete as of this document date.
 
 ### Product assumptions
 

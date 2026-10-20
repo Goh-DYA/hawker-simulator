@@ -512,6 +512,8 @@ Other follow-ups:
 - Use `clone_progression` and `clone_access_points` in `persistentStateFromGame` too.
 - Several modules that are mostly moved code (`preferences.ts`, `catalogue.tsx`, `dialogs.tsx`, `content/rules.ts`, `tools/nutrition/csv.mjs`, `tools/nutrition/ratings.mjs`) do not pass `format:check`, because moved code was never reformatted.
 - The pinned behaviour defects (TD-06, TD-36, TD-46, identical yong tau foo variant cues, generic art for the two newest stalls) are recorded in [KNOWN_ISSUES.md](KNOWN_ISSUES.md). Fixing any of them changes a golden on purpose.
+- The chicken and beef satay sets still paint cucumber and ketupat that their source rows do not name (the round-2 review panel's row-faithful art rule, C22). The content `1.6.0` mutton satay set already paints without them through `paint_satay(..., hasSides = false)`; switching the chicken and beef sets the same way moves their render digests, so it is its own change.
+- The new stalls' art polish pass (A32): a larger sambal mortar at Lesung Corner and drips on Longan Moon's dessert pots.
 
 ## Descoped by the user (future work)
 
@@ -532,7 +534,7 @@ On 2026-10-17 the user limited this effort to a structural refactor. The followi
 - **S69**: Log errors swallowed by the service worker (register: TD-29)
 - **S140**: Report nutrition profiles that belong to no dish variant (register: TD-14)
 - **S149**: Wire empty content-ID alias and refund tables into save loading (register: TD-34)
-- **S151**: Report the real output path and reject flags without values (register: TD-16)
+- **S151**: Report the real output path and reject flags without values (register: TD-16). The importer's final log line now prints the real output path; rejecting flags without values remains.
 - **S152**: Make the smoke tool importable and test it by behaviour (register: TD-33)
 - **S153**: Share the deployed shell invariants between smoke and SSR checks (register: TD-33)
 - **S154**: Remove the unused image optimisation branch (register: TD-42, TD-10)

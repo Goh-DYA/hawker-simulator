@@ -118,17 +118,18 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 
 - Zod parse and safe error for malformed definitions.
 - Unique IDs/keys and valid cross-references.
-- The [roster counts](design/CONTENT_CATALOGUE.md#roster-counts): exactly 14 stalls, 67 dishes, and 12 archetypes, at least 80 placeables, and 346 English localization entries.
-- Every dish assigned, every stall has a menu item available at its unlock, every required English key present, no unlock cycles.
+- The [roster counts](design/CONTENT_CATALOGUE.md#roster-counts): exactly 18 stalls, 91 dishes, and 12 archetypes, at least 80 placeables, and 402 English localization entries.
+- Every dish assigned, every stall has a menu item available at its unlock and at least one opening dish at or below the Student Saver's $6.50 mid budget, stalls authored in unlock order (each at a later level than the one before, apart from the two level-1 starters), every required English key present, no unlock cycles.
 - Footprint/interaction/depth anchors valid, every referenced visual/audio/animation known, and every stall/dish primary visual reference unique.
 - Catalogue duplicate policy check.
-- Exact 116 released nutrition profiles, 14 reviewed variant families with 63 selectable variants, and one released base profile plus Star rating for all 67 dishes.
+- Exact 171 released nutrition profiles, 23 reviewed variant families with 103 selectable variants (80 beyond the defaults), and one released base profile plus Star rating for all 91 dishes.
+- In every variant family the default rates strictly below another option, and some option is at least 0.3 higher overall or no lower overall and at least 0.5 higher on one condition, on displayed ratings; no two profiles share a source row, multiplier and component list; no Borrowed source row is a primary, a single-row variant or a composite's first component, and only `BORROWED_COMPONENT_ALLOWLIST` rows are accepted as later components; no limit nutrient is withheld by the outlier fence.
 - Overall Health and all four condition ratings are finite and bounded from 1 to 5; high-cholesterol, obesity, diabetes, and hypertension schemes use their documented nutrient families and remain distinct from Star ratings.
 - Deterministic CSV generation, source and row hash drift, serving scaling, malformed booleans, `Trace`, unavailable values, quarantine rules, intent-fit percentile ties, the guideline-anchored rating curves and missing-value rules, and incompatible daily-guideline comparisons.
 
 ### Stall graphics and animation
 
-- All 14 stall visual recipes are deterministic and materially distinct in facade layers, equipment, counter treatment, food/drink display, and vendor treatment rather than palette alone.
+- All 18 stall visual recipes are deterministic and materially distinct in facade layers, equipment, counter treatment, food/drink display, and vendor treatment rather than palette alone.
 - Every displayed food or drink prop resolves to a dish in that stall's active menu; enabling or disabling a dish updates the display deterministically and never leaks another stall's menu item.
 - Vendor animation recipes consume each stall's authored idle, preparation/cooking, and serving references; full-motion poses vary by tick while reduced-motion poses have zero body, arm, utensil, prop, and steam offsets and remain tick-invariant.
 - Closed stalls render an opaque shutter state that hides the vendor and service props; open/closed changes do not alter simulation state beyond the existing operational command.
@@ -174,7 +175,7 @@ Run at 1280 × 720 and 1024 × 640, plus zoom levels in [ACCESSIBILITY.md](relea
 
 ### Stall graphics browser matrix
 
-1. Place all 14 stall identities in a deterministic gallery and capture each open facade at useful game zoom. Verify roof, fascia, sign, wall, window, counter, equipment, trim, props, and vendor form a readable layered scene and no two stalls are distinguishable by palette alone.
+1. Place all 18 stall identities in a deterministic gallery and capture each open facade at useful game zoom. Verify roof, fascia, sign, wall, window, counter, equipment, trim, props, and vendor form a readable layered scene and no two stalls are distinguishable by palette alone.
 2. For every stall, compare the visible display with its active menu, disable at least one displayed dish, enable another valid dish, and verify the food/drink props update without showing an unavailable or cross-stall item.
 3. Close and reopen the centre. Verify every closed shutter completely masks the vendor and work props, every reopened scene returns, and labels/queue overlays remain readable in both states.
 4. Cover compact 3 x 2 and large 5 x 3 stalls, including representative 0-, 90-, 180-, and 270-degree placements. Check clipping, counter-facing placement, service-point clarity, vendor containment, and prop overlap.
@@ -226,7 +227,7 @@ These budgets are provisional; supported limits require measurement. Measured re
 - Desktop Chrome stable, 1280 × 720, device pixel ratio recorded.
 - Mid-range reference hardware and one lower-end reference device must be described in the [performance evidence](TEST_REPORT.md#performance-evidence) of `TEST_REPORT.md`.
 - Standard mode targets 60 FPS; lower-end mode targets 30 FPS.
-- Benchmark scene: late-game unlocked map, mixed furniture, all 14 stalls, visible queues, normal audio, and seeded arrivals.
+- Benchmark scene: late-game unlocked map, mixed furniture, all 18 stalls, visible queues, normal audio, and seeded arrivals.
 
 ### Budgets
 

@@ -1,15 +1,15 @@
 # Release Checklist
 
-Status: Content `1.5.0` working-source gate passes; **NO-GO pending source/artifact publication, exact-production browser/offline QA, and human reviews**
+Status: Content `1.6.0` working-source gate passes; **NO-GO pending source/artifact publication, exact-production browser/offline QA, and human reviews**
 Rule: check an item only with evidence in [`TEST_REPORT.md`](../TEST_REPORT.md), including its [performance evidence](../TEST_REPORT.md#performance-evidence), or the named review record. An implementation checkbox is not a browser or compliance claim.
 
 ## Product and content
 
-- [x] Content `1.5.0` validation evidence records exactly 14 operational stalls, 67 assigned dishes, and 12 customer archetypes, at least 80 meaningful placeables, and 346 English localization entries ([roster counts](../design/CONTENT_CATALOGUE.md#roster-counts)).
-- [x] The current catalogue categories, reciprocal references, unique IDs, localization, unlock bounds/prerequisites, and non-placeholder copy pass the full automated gate.
+- [x] Content `1.6.0` validation evidence records exactly 18 operational stalls, 91 assigned dishes, and 12 customer archetypes, at least 80 meaningful placeables, and 402 English localization entries ([roster counts](../design/CONTENT_CATALOGUE.md#roster-counts)).
+- [x] The current catalogue categories, reciprocal references, unique IDs, localization, unlock bounds/prerequisites, stalls authored in unlock order, an affordable opening dish at every stall, and non-placeholder copy pass the full automated gate.
 - [x] One coherent Community Courtyard theme uses original code-native illustrated visuals and fictional stall identities.
-- [x] Content `1.5.0` automated visual-contract coverage accounts for 80 distinct placeables, unique primary references for 14 stall identities and 67 dishes, 67 dish/vessel recipes, 12 archetype appearances, and all 11 customer states, including reduced-motion signatures.
-- [x] Nutrition validation records 116 released profiles, 14 variant families with 63 selectable variants, complete Health/condition ratings, and a released base profile plus Star rating for every dish.
+- [x] Content `1.6.0` automated visual-contract coverage accounts for 80 distinct placeables, unique primary references for 18 stall identities and 91 dishes, 91 dish/vessel recipes (including the hot plate), 12 archetype appearances, and all 11 customer states, including reduced-motion signatures.
+- [x] Nutrition validation records 171 released profiles, 23 variant families with 103 selectable variants, a default in every family that rates below another option, no Borrowed row outside the allowlisted composite component, complete Health/condition ratings, and a released base profile plus Star rating for every dish.
 - [x] Player-facing build catalogue, stall/menu manager, objectives/insights, tutorial, progression, settings, and save tools are integrated.
 - [x] Asset provenance is present; no real brand or certification mark is intentionally used.
 - [ ] Complete build/open/inspect/customer/progression loop is manually passed on the exact production artifact in a real browser.
@@ -43,7 +43,7 @@ Rule: check an item only with evidence in [`TEST_REPORT.md`](../TEST_REPORT.md),
 ## Browser and UI
 
 - [x] Pre-expansion targeted development-browser screenshots cover starter, live service, queue routing/editing, and repeated expansion states; paths, post-capture changes, and limitations are recorded under [Graphics and gameplay verification](../TEST_REPORT.md#graphics-and-gameplay-verification).
-- [ ] Every one of the 14 stall identities and 67 dish presentations is inspected in the exact production artifact, with culturally informed findings recorded.
+- [ ] Every one of the 18 stall identities and 91 dish presentations is inspected in the exact production artifact, with culturally informed findings recorded.
 - [ ] Current stable desktop Chrome exact version and OS are recorded.
 - [ ] Edge and Firefox exact versions and limitations are recorded.
 - [ ] 1280 × 720 and 1024 × 640 layouts pass.
@@ -65,9 +65,10 @@ Rule: check an item only with evidence in [`TEST_REPORT.md`](../TEST_REPORT.md),
 
 - [x] The retained content `1.2.0` Node benchmark exercised 80 active agents for 1,200 fixed steps and passed its simulation budget.
 - [x] The content `1.2.0` baseline `benchmark-80-agents` result is recorded under [Performance evidence](../TEST_REPORT.md#performance-evidence) from the supported Node.js `v24.14.0` run.
-- [x] The content `1.5.0` Node benchmark exercises 80 active agents for 1,200 fixed steps within its simulation budget.
+- [x] The content `1.5.0` Node benchmark exercised 80 active agents for 1,200 fixed steps within its simulation budget (previous record).
+- [x] The content `1.6.0` Node benchmark exercises 80 active agents for 1,200 fixed steps within its simulation budget.
 - [ ] The browser performance matrix is rerun on the exact production artifact.
-- [ ] The content `1.5.0` production artifact raw/gzip sizes, deterministic content-manifest hash, and service-worker build ID are recorded.
+- [ ] The content `1.6.0` production artifact raw/gzip sizes, deterministic content-manifest hash, and service-worker build ID are recorded.
 - [ ] Production payload and time-to-interactive budgets are measured in a real browser.
 - [ ] Standard 60 FPS and lower-end 30 FPS targets pass at documented supported caps.
 - [ ] Browser simulation/render/path/save/audio/memory budgets pass.
@@ -93,11 +94,12 @@ Rule: check an item only with evidence in [`TEST_REPORT.md`](../TEST_REPORT.md),
 ## Build and operations
 
 - [x] The retained content `1.2.0` baseline release checks passed on bundled Node.js `v24.14.0`: typecheck, lint, 24 Vitest files / 131 tests, five-environment Vinext build, native Vercel build, and 2/2 rendered-output/offline-shell assertions.
-- [x] Content `1.5.0` passes and records the current typecheck, lint, complete test suite, Vinext build, native Vercel build, and rendered-output/offline-shell assertions.
+- [x] Content `1.5.0` passed and recorded typecheck, lint, the complete test suite, the Vinext build, the native Vercel build, and the rendered-output/offline-shell assertions (previous record).
+- [x] Content `1.6.0` passes and records the current typecheck, lint, complete test suite, Vinext build, native Vercel build, and rendered-output/offline-shell assertions.
 - [ ] The production-only npm audit is rerun and passes for the release candidate, and the all-dependencies audit is rerun and its remaining findings reviewed; see [TEST_REPORT.md](../TEST_REPORT.md#dependency-audit) for the current dated result.
 - [x] The earlier content `1.2.0` service-worker build ID `c5ed3679ba56` is recorded as historical evidence.
-- [ ] The content `1.5.0` service-worker build ID, source commit, artifact path/hash, and payload sizes are recorded.
-- [ ] Content `1.5.0` validated-source commit, artifact path/hash/payload sizes, and publication URL are recorded; the existing private preview record predates the expansion.
+- [ ] The content `1.6.0` service-worker build ID, source commit, artifact path/hash, and payload sizes are recorded.
+- [ ] Content `1.6.0` validated-source commit, artifact path/hash/payload sizes, and publication URL are recorded; the existing private preview record predates the expansion.
 - [ ] Vercel project setup, first Preview, staged-production smoke, protected approval, promotion, and rollback rehearsal are recorded with exact deployment URLs.
 - [ ] Browser critical path and offline/update tests pass on that exact artifact.
 - [ ] Private deployment smoke, rollback, and save-forward compatibility are rehearsed.
@@ -106,4 +108,4 @@ Rule: check an item only with evidence in [`TEST_REPORT.md`](../TEST_REPORT.md),
 
 ## Current decision
 
-**NO-GO.** Content `1.5.0` passes its supported-runtime working-source gate and both local production builds. Production approval remains withheld until the current commit/artifact record, exact-artifact browser/offline and performance gates, and required human cultural, accessibility, security, and qualified legal/privacy reviews are complete.
+**NO-GO.** Content `1.6.0` passes its supported-runtime working-source gate and both local production builds. Production approval remains withheld until the current commit/artifact record, exact-artifact browser/offline and performance gates, and required human cultural, accessibility, security, and qualified legal/privacy reviews are complete.

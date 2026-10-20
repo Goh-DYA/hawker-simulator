@@ -75,7 +75,7 @@ Layered stall facades, food displays, and vendor characters are supplemental can
 - 200% browser zoom and each in-game text scale.
 - Reduced motion at OS and in-game levels.
 - Contrast analyzer and forced-colors/high-contrast inspection.
-- All 14 stall facades at full and reduced motion, including an in-place toggle while open and paused; verify the vendor freezes immediately without disappearing or conveying unique state through motion.
+- All 18 stall facades at full and reduced motion, including an in-place toggle while open and paused; verify the vendor freezes immediately without disappearing or conveying unique state through motion.
 - Normal/high-contrast comparison of compact and large stalls with active food displays and closed shutters; verify distinct shapes, readable layering, and text-equivalent menu/open state.
 - Color-vision simulation for placement, satisfaction, and overlays.
 - Keyboard and screen-reader checks for the Nutrition Lens, distinct Health/Star ratings, four condition-specific rating explanations, Variant Lab radio cards, customer inspector, Focus sheet, disclosure, and Pulse empty/data states.
