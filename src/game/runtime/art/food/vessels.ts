@@ -1,6 +1,6 @@
 /**
- * Dish vessels in the 3/4 view: plates and platters seen from above with the sliver of their
- * edge showing, bowls, claypots and bamboo steamers showing their rim and the outer side below
+ * Dish vessels in the 3/4 view: plates, platters and the cast-iron hot plate on its timber
+ * underliner seen from above with the sliver of their edge showing, bowls, claypots and bamboo steamers showing their rim and the outer side below
  * it, a kopitiam cup on its saucer and a tall glass showing its side.
  *
  * A vessel is painted in two passes around the food: `paint_vessel` paints everything behind
@@ -37,6 +37,7 @@ export type VesselKind =
   | "leaf-plate"
   | "steel-leaf-plate"
   | "platter"
+  | "hot-plate"
   | "bowl"
   | "claypot"
   | "steamer"
@@ -107,14 +108,15 @@ const INK_WIDTH = { silhouette: 1.6, rim: 1.4 } as const;
 /**
  * Each vessel's draw scale, set so its width against the dinner plate matches real hawker
  * crockery: a noodle bowl or claypot about three quarters of a plate across, a dim sum steamer
- * about 0.6 and a kopitiam cup on its saucer about 0.55. Plates and platters fill the texture,
- * and a tall glass keeps its full height.
+ * about 0.6 and a kopitiam cup on its saucer about 0.55. Plates, platters and the hot plate
+ * fill the texture, and a tall glass keeps its full height.
  */
 const VESSEL_SCALE: Readonly<Record<VesselKind, number>> = {
   plate: 1,
   "leaf-plate": 1,
   "steel-leaf-plate": 1,
   platter: 1,
+  "hot-plate": 1,
   bowl: (0.75 * PLATE.rx) / BOWL.rx,
   claypot: (0.75 * PLATE.rx) / CLAYPOT_RX,
   steamer: (0.6 * PLATE.rx) / STEAMER.rx,
@@ -199,6 +201,8 @@ export function food_area(
       return { x: cx, y: cy - 0.4 * scale, rx: 12.4 * scale, ry: 9.4 * scale };
     case "platter":
       return { x: cx, y: cy, rx: 13.2 * scale, ry: 8.4 * scale };
+    case "hot-plate":
+      return { x: cx, y: cy - 0.6 * scale, rx: 11.6 * scale, ry: 7.8 * scale };
     case "bowl": {
       const narrow = 1 - eaten * 0.16;
       return {
@@ -355,6 +359,8 @@ export function paint_vessel(
       return paint_plate(ctx, style, cx, cy, area, isLowDetail);
     case "platter":
       return paint_platter(ctx, style, cx, cy, area);
+    case "hot-plate":
+      return paint_hot_plate(ctx, cx, cy, area, isLowDetail);
     case "bowl":
       return paint_bowl(ctx, style, cx, cy, area, PORCELAIN, isLowDetail);
     case "claypot":
@@ -556,6 +562,109 @@ function paint_banana_leaf(ctx: PaintContext, cx: number, cy: number, isLowDetai
   }
   fill_ellipse(ctx, -6, -6, 6, 1.2, css(WHITE, 0.25));
   ctx.restore();
+}
+
+/** The sizzling plate: a timber underliner under a cast-iron oval with a raised lip. */
+const HOT_PLATE = { rx: 16.4, ry: 12, ironRx: 14.2, ironRy: 9.8, lift: 1.4 } as const;
+/** Cast iron. */
+const IRON = 0x2b2826;
+/** The timber underliner. */
+const UNDERLINER = 0x8a5a32;
+/** Where the underliner's grain strokes run, as vertical offsets from its centre. */
+const UNDERLINER_GRAIN: readonly number[] = [-6, -2, 3, 7];
+
+/**
+ * Paints a hawker Western sizzling plate: an oval cast-iron plate with a raised lip, sitting
+ * in an oval timber underliner, with a faint heat sheen on the iron.
+ *
+ * @param ctx - The paint context.
+ * @param cx - Dish centre x.
+ * @param cy - Dish centre y.
+ * @param area - The food area.
+ * @param isLowDetail - True to skip the wood grain and soften the highlight.
+ * @returns The hot plate passes.
+ */
+function paint_hot_plate(
+  ctx: PaintContext,
+  cx: number,
+  cy: number,
+  area: FoodArea,
+  isLowDetail: boolean,
+): VesselPaint {
+  const { rx, ry, ironRx, ironRy, lift } = HOT_PLATE;
+  const top = cy + 0.8;
+  paint_cast_shadow(ctx, cx + 1, top + 3, rx + 0.4, ry + 0.6, 0.36);
+  fill_ellipse(ctx, cx, top + 1.6, rx, ry, css(shade(UNDERLINER, 0.35)));
+  fill_ellipse(
+    ctx,
+    cx,
+    top,
+    rx,
+    ry,
+    linear_gradient(ctx, cx - rx, top - ry, cx + rx, top + ry, [
+      [0, tint(UNDERLINER, 0.25)],
+      [1, shade(UNDERLINER, 0.15)],
+    ]),
+  );
+  if (!isLowDetail) {
+    for (const offset of UNDERLINER_GRAIN) {
+      stroke_ellipse(
+        ctx,
+        cx,
+        top + offset * 0.25,
+        rx * 0.97,
+        ry * 0.2 + Math.abs(offset) * 0.6,
+        css(shade(UNDERLINER, 0.3), 0.25),
+        0.4,
+      );
+    }
+  }
+  const iron_y = top - lift;
+  fill_ellipse(ctx, cx, iron_y + 1.4, ironRx, ironRy, css(shade(IRON, 0.4)));
+  fill_ellipse(ctx, cx, iron_y, ironRx, ironRy, css(IRON));
+  fill_ellipse(
+    ctx,
+    cx + 0.3,
+    iron_y + 0.5,
+    ironRx * 0.86,
+    ironRy * 0.84,
+    radial_gradient(ctx, cx - 3, iron_y - 3, 1, ironRx, [
+      [0, tint(IRON, 0.22)],
+      [1, shade(IRON, 0.2)],
+    ]),
+  );
+  return {
+    area,
+    clip: () => undefined,
+    finish: (target) => {
+      target.save();
+      target.beginPath();
+      target.ellipse(
+        cx,
+        iron_y,
+        ironRx - 0.5,
+        ironRy - 0.4,
+        0,
+        1.05 * Math.PI,
+        1.55 * Math.PI,
+        false,
+      );
+      target.strokeStyle = css(WHITE, isLowDetail ? 0.35 : 0.55);
+      target.lineWidth = 0.7;
+      target.stroke();
+      target.restore();
+    },
+    ink: (target, weight) =>
+      stroke_ellipse(
+        target,
+        cx,
+        top + 0.8,
+        rx + 0.3,
+        ry + 1,
+        css(INK),
+        INK_WIDTH.silhouette * weight,
+      ),
+  };
 }
 
 /**

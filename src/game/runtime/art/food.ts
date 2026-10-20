@@ -2,11 +2,11 @@
  * Food painters: a dish serving in the 3/4 view, painted into a {@link DISH_SIZE} square that
  * the renderer scales for counters, trays and table tops.
  *
- * A serving is its vessel (a plate or platter showing the sliver of its edge, a bowl, claypot
- * or steamer showing its rim and outer side, a kopitiam cup on its saucer or a tall glass
- * showing its side), the dish's own motif (two or three bold ingredients in their true colours,
- * garnish and a glaze highlight) and, for the dishes with reviewed nutrition variants, the
- * variant's layer. The eaten thirds take pieces away and lower the level while the vessel stays.
+ * A serving is its vessel (a plate, platter or sizzling hot plate showing the sliver of its
+ * edge, a bowl, claypot or steamer showing its rim and outer side, a kopitiam cup on its saucer
+ * or a tall glass showing its side), the dish's own motif (two or three bold ingredients in
+ * their true colours, garnish and a glaze highlight) and, for the dishes with reviewed nutrition
+ * variants, the variant's layer, plus any sides the variant orders, painted over the rim. The eaten thirds take pieces away and lower the level while the vessel stays.
  * Each vessel is drawn at its real size against the dinner plate (`vessel_scale`), so a kopi or
  * a dim sum steamer is smaller than a plate of chicken rice wherever the texture is placed.
  *
@@ -21,7 +21,7 @@ import {
 } from "../visuals/dish";
 import { stableVisualHash } from "../visuals/palette";
 import type { PaintContext } from "./canvas";
-import { paint_variant_layer } from "./food/cues";
+import { paint_variant_layer, paint_variant_sides } from "./food/cues";
 import { DEFAULT_LAYER_KEYS, motif_for } from "./food/motifs";
 import { includes_any } from "./food/parts";
 import { paint_vessel, vessel_scale, type VesselKind, type VesselStyle } from "./food/vessels";
@@ -41,6 +41,7 @@ const VESSEL_BY_PROFILE: Readonly<Record<DishVesselProfile, VesselKind>> = {
   "tall-drinking-glass": "glass",
   "banana-leaf-lined-plate": "leaf-plate",
   "shared-oval-platter": "platter",
+  "cast-iron-hot-plate": "hot-plate",
   "bamboo-steamer": "steamer",
 };
 
@@ -153,6 +154,12 @@ function paint_dish(ctx: PaintContext, spec: DishPaintSpec): void {
   }
   ctx.restore();
   vessel.finish(ctx);
+  if (layer) {
+    paint_variant_sides(ctx, layer.key, layer.family, CENTRE, CENTRE, {
+      remaining,
+      isLowDetail: frame.isLowDetail,
+    });
+  }
   if (frame.isHighContrast) vessel.ink(ctx, 1 / scale);
   ctx.restore();
 }

@@ -5,9 +5,17 @@
  * noodle pieces), ban mian (six ways) and bak kut teh (peppery, dry claypot or herbal).
  *
  * Each pours its broth (or sauce) into the bowl's food area first, then lays the noodles and
- * pieces that tell its siblings apart.
+ * pieces that tell its siblings apart. Bak kut teh also has a side pass, painted after the
+ * bowl's rim and outside its clip: a side bowl of rice and a you tiao stick across the rim.
  */
-import { css, fill_ellipse, stroke_ellipse } from "../../canvas";
+import {
+  css,
+  fill_ellipse,
+  fill_polygon,
+  linear_gradient,
+  SHADOW_INK,
+  stroke_ellipse,
+} from "../../canvas";
 import { at, heap_scale, pieces_left } from "../motif";
 import {
   FRIED_BATTER,
@@ -23,8 +31,10 @@ import {
   paint_noodles,
   paint_prawn,
   paint_rib,
+  paint_rice_mound,
   paint_slice,
   paint_tofu,
+  PORCELAIN,
   SHALLOT,
   type FoodArea,
 } from "../parts";
@@ -34,6 +44,7 @@ import {
   paint_scallions,
   paint_shreds,
   paint_tofu_puff,
+  paint_youtiao_stick,
 } from "../toppings";
 import { food_area } from "../vessels";
 import type { LayerPaint } from "./layer";
@@ -397,6 +408,76 @@ function paint_garlic(q: LayerPaint, area: FoodArea, count: number): void {
     fill_ellipse(q.ctx, x + 0.3, y + 0.6, 1.8, 1.3, css(0x18323b, 0.22));
     fill_ellipse(q.ctx, x, y, 1.8, 1.3, css(0xf2e8d2));
     stroke_ellipse(q.ctx, x, y, 1.8, 1.3, css(0xc8a882, 0.7), 0.4);
+  }
+}
+
+/**
+ * The key parts that order a side with bak kut teh: `rice` for a side bowl of white rice and
+ * `youtiao` for a you tiao stick. A key with neither is served no side, and its side pass
+ * paints nothing.
+ */
+export const BAK_KUT_TEH_SIDE_PARTS: readonly string[] = ["rice", "youtiao"];
+
+/**
+ * The side rice bowl: its centre from the dish centre (in front of the soup bowl's south-west
+ * rim), its rim radii and depth, its teal band and the rice in it.
+ */
+const SIDE_RICE_BOWL = {
+  x: -10.2,
+  y: 9.6,
+  rx: 5.8,
+  ry: 2.2,
+  depth: 4.2,
+  band: 0x2f8f8f,
+  rice: 0xfbf8f0,
+} as const;
+
+/** The you tiao stick across the soup bowl's north-east rim: centre, full length and angle. */
+const SIDE_YOUTIAO = { x: 8.4, y: -10.4, length: 18, angle: 0.36 } as const;
+
+/**
+ * Paints the sides served with a bak kut teh bowl, outside the bowl's clip and over its rim so
+ * a sprite never reads them as porridge: a small bowl of white rice in front of the south-west
+ * rim, whose rice sinks as it is eaten, and a you tiao stick resting across the north-east rim,
+ * which shortens as it is eaten.
+ *
+ * @param q - The layer paint, translated to the dish centre.
+ */
+export function paint_bak_kut_teh_sides(q: LayerPaint): void {
+  const { ctx } = q;
+  if (q.has("rice")) {
+    const { x, y, rx, ry, depth } = SIDE_RICE_BOWL;
+    fill_ellipse(ctx, x + 0.8, y + 3.6, rx - 0.2, ry, css(SHADOW_INK, 0.24));
+    fill_polygon(
+      ctx,
+      [
+        [x - rx, y],
+        [x + rx, y],
+        [x + 3.4, y + depth],
+        [x - 3.4, y + depth],
+      ],
+      linear_gradient(ctx, x, y, x, y + depth, [
+        [0, PORCELAIN],
+        [1, 0xc9c2b4],
+      ]),
+    );
+    fill_ellipse(ctx, x, y + 2.4, rx - 1.2, 0.6, css(SIDE_RICE_BOWL.band, 0.85));
+    fill_ellipse(ctx, x, y, rx, ry, css(0xe9e3d6));
+    // At this size the rice keeps the lower-end grain count in every frame.
+    paint_rice_mound(
+      ctx,
+      x,
+      y - 0.6 - q.remaining * 0.4,
+      rx - 1.2,
+      ry + q.remaining * 0.6,
+      SIDE_RICE_BOWL.rice,
+      q.seed ^ 0x45,
+      true,
+    );
+  }
+  if (q.has("youtiao")) {
+    const { x, y, length, angle } = SIDE_YOUTIAO;
+    paint_youtiao_stick(ctx, x, y, length * (0.6 + 0.4 * q.remaining), angle, q.isLowDetail);
   }
 }
 

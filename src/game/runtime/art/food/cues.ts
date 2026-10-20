@@ -4,14 +4,20 @@
  * dish itself (the drink's colour and sugar, the protein beside the rice, the broth and pieces
  * in a bowl, the shape of the bread); an unreviewed key falls back to one to three outlined
  * triangles, counted from a stable hash of the key, so an active variant always shows.
+ *
+ * A family that also serves sides (bak kut teh's rice and you tiao) has a side pass, painted
+ * after the vessel's rim and outside its clip. It runs only for a key that orders a side, so
+ * every other key paints exactly as it did without it.
  */
 import type { DishVariantVisualFamily } from "../../visuals/dish";
 import { stableVisualHash } from "../../visuals/palette";
 import { css, fill_polygon, type PaintContext } from "../canvas";
 import { includes_any, INK } from "./parts";
 import {
+  BAK_KUT_TEH_SIDE_PARTS,
   paint_bak_chor_layer,
   paint_bak_kut_teh_layer,
+  paint_bak_kut_teh_sides,
   paint_ban_mian_layer,
   paint_fish_soup_layer,
   paint_yong_tau_foo_layer,
@@ -44,6 +50,22 @@ const LAYER_PAINTERS: Readonly<Record<ReviewedFamily, LayerPainter>> = {
   "ban-mian": paint_ban_mian_layer,
   "bak-kut-teh": paint_bak_kut_teh_layer,
   "duck-rice": paint_duck_rice_layer,
+};
+
+/** A family's side pass: the key parts that order a side, and the painter that serves them. */
+interface SidePass {
+  /** The key parts that each order a side; a key with none of them is served no side. */
+  readonly parts: readonly string[];
+  /** Paints the sides the key orders, around the dish centre at the origin. */
+  readonly paint: LayerPainter;
+}
+
+/**
+ * The families that also serve something beside the vessel (a side of rice, a dipping stick),
+ * painted after the vessel's rim and outside its clip.
+ */
+const SIDE_PAINTERS: Readonly<Partial<Record<ReviewedFamily, SidePass>>> = {
+  "bak-kut-teh": { parts: BAK_KUT_TEH_SIDE_PARTS, paint: paint_bak_kut_teh_sides },
 };
 
 /** How much of the serving is left and how much detail to paint. */
@@ -136,9 +158,59 @@ export function paint_variant_layer(
 }
 
 /**
+ * Finds the side pass a variant key orders.
+ *
+ * @param visualKey - The variant's visual key.
+ * @param family - The variant's visual family.
+ * @returns The family's side pass, or undefined when it has none or the key orders no side.
+ */
+function find_side_pass(visualKey: string, family: DishVariantVisualFamily): SidePass | undefined {
+  const side_pass = family === "fallback" ? undefined : SIDE_PAINTERS[family];
+  return side_pass && includes_any(visualKey, side_pass.parts) ? side_pass : undefined;
+}
+
+/**
+ * Paints a variant's sides beside and over the vessel, after its rim and outside its clip,
+ * when its family serves any and the key orders one. Otherwise it returns before any canvas
+ * call, so a dish without sides paints exactly as it would without this pass.
+ *
+ * @param ctx - The paint context.
+ * @param visualKey - The active variant's visual key.
+ * @param family - The variant's visual family.
+ * @param x - Dish centre x.
+ * @param y - Dish centre y.
+ * @param options - The uneaten share, the detail level and an optional seed override.
+ */
+export function paint_variant_sides(
+  ctx: PaintContext,
+  visualKey: string,
+  family: DishVariantVisualFamily,
+  x: number,
+  y: number,
+  options: VariantLayerOptions,
+): void {
+  const side_pass = find_side_pass(visualKey, family);
+  if (!side_pass) return;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  side_pass.paint({
+    ctx,
+    key: visualKey,
+    remaining: options.remaining,
+    isLowDetail: options.isLowDetail,
+    seed: options.seed ?? stableVisualHash(visualKey),
+    has: (...parts) => includes_any(visualKey, parts),
+  });
+  ctx.restore();
+}
+
+/**
  * Paints the cue for a dish's active nutrition variant on top of the served dish: the family
  * picks the composition and substrings of the visual key pick the details within it, and a
  * `fallback` family draws one to three outlined triangles counted from a stable hash of the key.
+ * A key that orders sides gets them too, so the sibling tests see them.
  *
  * @param ctx - The paint context.
  * @param visualKey - The active variant's visual key.
@@ -157,9 +229,16 @@ export function paint_variant_cue(
   scale: number,
   options: VariantCueOptions = {},
 ): void {
-  paint_variant_layer(ctx, visualKey, family, x, y, scale, {
+  const layer_options: VariantLayerOptions = {
     remaining: 1,
     isLowDetail: false,
     seed: options.seed,
-  });
+  };
+  paint_variant_layer(ctx, visualKey, family, x, y, scale, layer_options);
+  if (!find_side_pass(visualKey, family)) return;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  paint_variant_sides(ctx, visualKey, family, 0, 0, layer_options);
+  ctx.restore();
 }
