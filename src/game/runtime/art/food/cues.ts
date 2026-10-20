@@ -52,6 +52,17 @@ export interface VariantLayerOptions {
   readonly remaining: number;
   /** True for the lower-end frame. */
   readonly isLowDetail: boolean;
+  /**
+   * Overrides the layer's seed, which is otherwise a stable hash of the visual key. Tests hold
+   * it fixed so two keys can only paint differently through the branches their parts select.
+   */
+  readonly seed?: number;
+}
+
+/** Options for a variant cue painted on its own. */
+export interface VariantCueOptions {
+  /** Overrides the cue's seed (by default a stable hash of the visual key). */
+  readonly seed?: number;
 }
 
 /**
@@ -117,7 +128,7 @@ export function paint_variant_layer(
       key: visualKey,
       remaining: options.remaining,
       isLowDetail: options.isLowDetail,
-      seed: stableVisualHash(visualKey),
+      seed: options.seed ?? stableVisualHash(visualKey),
       has: (...parts) => includes_any(visualKey, parts),
     });
   }
@@ -135,6 +146,7 @@ export function paint_variant_layer(
  * @param x - Dish centre x.
  * @param y - Dish centre y.
  * @param scale - The cue's draw scale (1 at the dish texture size).
+ * @param options - An optional seed override; the fallback cue ignores it.
  */
 export function paint_variant_cue(
   ctx: PaintContext,
@@ -143,6 +155,11 @@ export function paint_variant_cue(
   x: number,
   y: number,
   scale: number,
+  options: VariantCueOptions = {},
 ): void {
-  paint_variant_layer(ctx, visualKey, family, x, y, scale, { remaining: 1, isLowDetail: false });
+  paint_variant_layer(ctx, visualKey, family, x, y, scale, {
+    remaining: 1,
+    isLowDetail: false,
+    seed: options.seed,
+  });
 }
