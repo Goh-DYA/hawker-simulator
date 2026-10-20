@@ -957,10 +957,11 @@ export const runImporter = async (argumentsList) => {
 };
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  runImporter(process.argv.slice(2))
+  const cli_arguments = process.argv.slice(2);
+  runImporter(cli_arguments)
     .then((content) => {
       process.stdout.write(
-        `Generated ${content.profiles.length} nutrition profiles at ${DEFAULT_OUTPUT_PATH}.\n`,
+        `Generated ${content.profiles.length} nutrition profiles at ${parseArguments(cli_arguments).outputPath}.\n`,
       );
     })
     .catch((error) => {
