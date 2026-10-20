@@ -102,6 +102,11 @@
       "reviewNote": "The reviewed steamed-chicken serving is the closest source match for the game's poached chicken rice.",
       "ratingInputs": {
         "edibleAmount": 322.991
+      },
+      "healthParts": {
+        "nutrients": 4.2,
+        "conditions": 3.3,
+        "excess": 0
       }
     },
     {
@@ -190,6 +195,11 @@
       "reviewNote": "The source uses roasted rather than roast in the food name.",
       "ratingInputs": {
         "edibleAmount": 361.0035
+      },
+      "healthParts": {
+        "nutrients": 3.5,
+        "conditions": 2.7,
+        "excess": 0
       }
     },
     {
@@ -290,6 +300,17 @@
       ],
       "ratingInputs": {
         "edibleAmount": 290
+      },
+      "healthParts": {
+        "nutrients": 3.9,
+        "conditions": 3.2,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 183
+          }
+        ]
       }
     },
     {
@@ -376,6 +397,11 @@
       "reviewNote": "Singapore source terminology uses porridge for the game's chicken congee.",
       "ratingInputs": {
         "edibleAmount": 556
+      },
+      "healthParts": {
+        "nutrients": 4.3,
+        "conditions": 3.5,
+        "excess": 0
       }
     },
     {
@@ -467,7 +493,12 @@
       "ratingInputs": {
         "edibleAmount": 381.013
       },
-      "variantId": "nasi-lemak-chicken-wing"
+      "variantId": "nasi-lemak-chicken-wing",
+      "healthParts": {
+        "nutrients": 2.6,
+        "conditions": 1.6,
+        "excess": 0
+      }
     },
     {
       "id": "dish.mee-rebus",
@@ -563,6 +594,13 @@
         "standIns": {
           "totalSugarG": 7.31
         }
+      },
+      "healthParts": {
+        "nutrients": 2.8,
+        "conditions": 1.6,
+        "excess": 0.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.23
       }
     },
     {
@@ -653,6 +691,13 @@
       "reviewNote": "Exact named dish match.",
       "ratingInputs": {
         "edibleAmount": 569
+      },
+      "healthParts": {
+        "nutrients": 4.4,
+        "conditions": 3.2,
+        "excess": 0.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.21
       }
     },
     {
@@ -742,6 +787,11 @@
       "reviewNote": "The game name and recipe were refined to the source's complete sayur lodeh with lontong bowl.",
       "ratingInputs": {
         "edibleAmount": 553
+      },
+      "healthParts": {
+        "nutrients": 3.6,
+        "conditions": 2.7,
+        "excess": 0
       }
     },
     {
@@ -1011,6 +1061,11 @@
       "reviewNote": "Exact named dessert match.",
       "ratingInputs": {
         "edibleAmount": 425
+      },
+      "healthParts": {
+        "nutrients": 3.8,
+        "conditions": 3.1,
+        "excess": 0
       }
     },
     {
@@ -1101,6 +1156,13 @@
       "reviewNote": "Exact named dish match.",
       "ratingInputs": {
         "edibleAmount": 480
+      },
+      "healthParts": {
+        "nutrients": 2,
+        "conditions": 1.2,
+        "excess": 0.1,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.05
       }
     },
     {
@@ -1190,6 +1252,11 @@
       "reviewNote": "Singapore Hokkien mee is the source's complete plate corresponding to the game's refined noodle dish.",
       "ratingInputs": {
         "edibleAmount": 545.9805
+      },
+      "healthParts": {
+        "nutrients": 2.4,
+        "conditions": 1.6,
+        "excess": 0
       }
     },
     {
@@ -1281,7 +1348,12 @@
       "ratingInputs": {
         "edibleAmount": 331
       },
-      "variantId": "carrot-cake-black"
+      "variantId": "carrot-cake-black",
+      "healthParts": {
+        "nutrients": 2.7,
+        "conditions": 1.6,
+        "excess": 0
+      }
     },
     {
       "id": "dish.oyster-omelette",
@@ -1370,6 +1442,17 @@
       "reviewNote": "The source reports a 100 g serving-spoon scoop; values are scaled to the game's hawker plate.",
       "ratingInputs": {
         "edibleAmount": 200
+      },
+      "healthParts": {
+        "nutrients": 3.1,
+        "conditions": 2.5,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 255
+          }
+        ]
       }
     },
     {
@@ -1471,7 +1554,14 @@
       "ratingInputs": {
         "edibleAmount": 406.2
       },
-      "variantId": "prata-two-plain-curry"
+      "variantId": "prata-two-plain-curry",
+      "healthParts": {
+        "nutrients": 2.4,
+        "conditions": 1.4,
+        "excess": 0.3,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.32
+      }
     },
     {
       "id": "dish.mee-goreng-mamak",
@@ -1561,6 +1651,13 @@
       "reviewNote": "The source row is the reviewed local mee goreng preparation.",
       "ratingInputs": {
         "edibleAmount": 465
+      },
+      "healthParts": {
+        "nutrients": 2.3,
+        "conditions": 1.3,
+        "excess": 0.5,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.53
       }
     },
     {
@@ -1652,7 +1749,12 @@
       "ratingInputs": {
         "edibleAmount": 330
       },
-      "variantId": "murtabak-chicken"
+      "variantId": "murtabak-chicken",
+      "healthParts": {
+        "nutrients": 2.5,
+        "conditions": 1.9,
+        "excess": 0
+      }
     },
     {
       "id": "dish.nasi-briyani",
@@ -1743,7 +1845,14 @@
       "ratingInputs": {
         "edibleAmount": 709.9686
       },
-      "variantId": "briyani-chicken"
+      "variantId": "briyani-chicken",
+      "healthParts": {
+        "nutrients": 1.9,
+        "conditions": 1.3,
+        "excess": 0.4,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.39
+      }
     },
     {
       "id": "dish.masala-thosai",
@@ -1834,7 +1943,22 @@
       "ratingInputs": {
         "edibleAmount": 156
       },
-      "variantId": "thosai-plain"
+      "variantId": "thosai-plain",
+      "healthParts": {
+        "nutrients": 3.9,
+        "conditions": 3.5,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 258
+          },
+          {
+            "nutrient": "saturated-fat",
+            "per100g": 2.8
+          }
+        ]
+      }
     },
     {
       "id": "dish.idli-sambar",
@@ -1922,6 +2046,11 @@
       "reviewNote": "The reviewed source serving description includes the accompaniments represented by the game; the source labels the whole set as one piece.",
       "ratingInputs": {
         "edibleAmount": 269
+      },
+      "healthParts": {
+        "nutrients": 4.9,
+        "conditions": 4.6,
+        "excess": 0
       }
     },
     {
@@ -2012,6 +2141,21 @@
       "reviewNote": "The source reports one vadai; values are scaled to the game's two-piece serving.",
       "ratingInputs": {
         "edibleAmount": 120
+      },
+      "healthParts": {
+        "nutrients": 2.9,
+        "conditions": 2.5,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 280
+          },
+          {
+            "nutrient": "sodium",
+            "per100g": 613
+          }
+        ]
       }
     },
     {
@@ -2102,6 +2246,11 @@
       "reviewNote": "The game recipe was refined to the source's complete lemon-rice bowl without unreported sides.",
       "ratingInputs": {
         "edibleAmount": 200
+      },
+      "healthParts": {
+        "nutrients": 4.4,
+        "conditions": 4.1,
+        "excess": 0
       }
     },
     {
@@ -2206,6 +2355,13 @@
       ],
       "ratingInputs": {
         "edibleAmount": 611
+      },
+      "healthParts": {
+        "nutrients": 2.5,
+        "conditions": 1.7,
+        "excess": 0.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.16
       }
     },
     {
@@ -2296,6 +2452,21 @@
       "reviewNote": "The source has no buah keluak row, so the stable dish ID serves the source-backed Nonya ayam pongteh; the 100 g scoop is scaled to a side plate.",
       "ratingInputs": {
         "edibleAmount": 120
+      },
+      "healthParts": {
+        "nutrients": 4.5,
+        "conditions": 4.1,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 175
+          },
+          {
+            "nutrient": "saturated-fat",
+            "per100g": 3.3
+          }
+        ]
       }
     },
     {
@@ -2386,6 +2557,11 @@
       "reviewNote": "The source reports a 100 g scoop; values are scaled to the game's side plate without unreported rice.",
       "ratingInputs": {
         "edibleAmount": 200
+      },
+      "healthParts": {
+        "nutrients": 4.4,
+        "conditions": 4.1,
+        "excess": 0
       }
     },
     {
@@ -2476,6 +2652,17 @@
       "reviewNote": "The source reports a 100 g scoop; values are scaled to the game's side plate without unreported rice.",
       "ratingInputs": {
         "edibleAmount": 200
+      },
+      "healthParts": {
+        "nutrients": 3.7,
+        "conditions": 2.9,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 204
+          }
+        ]
       }
     },
     {
@@ -2566,6 +2753,11 @@
       "reviewNote": "Exact named dish match.",
       "ratingInputs": {
         "edibleAmount": 254
+      },
+      "healthParts": {
+        "nutrients": 3.7,
+        "conditions": 3.3,
+        "excess": 0
       }
     },
     {
@@ -2657,7 +2849,14 @@
       "ratingInputs": {
         "edibleAmount": 793
       },
-      "variantId": "fish-soup-fried-beehoon-no-milk"
+      "variantId": "fish-soup-fried-beehoon-no-milk",
+      "healthParts": {
+        "nutrients": 3.6,
+        "conditions": 2.2,
+        "excess": 0.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.21
+      }
     },
     {
       "id": "dish.black-pepper-crab",
@@ -2747,6 +2946,11 @@
       "reviewNote": "The source reports one pincer; values are scaled to the source's alternative quarter-crab serving.",
       "ratingInputs": {
         "edibleAmount": 188.16
+      },
+      "healthParts": {
+        "nutrients": 4,
+        "conditions": 3.3,
+        "excess": 0
       }
     },
     {
@@ -2837,7 +3041,12 @@
       "ratingInputs": {
         "edibleAmount": 430
       },
-      "variantId": "bak-chor-mee-dry"
+      "variantId": "bak-chor-mee-dry",
+      "healthParts": {
+        "nutrients": 4,
+        "conditions": 2.7,
+        "excess": 0
+      }
     },
     {
       "id": "dish.fishball-mee-pok",
@@ -2927,6 +3136,11 @@
       "reviewNote": "The reviewed dry fishball-noodle serving matches the game's mee pok presentation.",
       "ratingInputs": {
         "edibleAmount": 377
+      },
+      "healthParts": {
+        "nutrients": 4,
+        "conditions": 2.6,
+        "excess": 0
       }
     },
     {
@@ -3018,6 +3232,13 @@
       ],
       "ratingInputs": {
         "edibleAmount": 716
+      },
+      "healthParts": {
+        "nutrients": 2.8,
+        "conditions": 1.7,
+        "excess": 0.7,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.72
       }
     },
     {
@@ -3106,6 +3327,13 @@
       "reviewNote": "The fishball soup row without noodles reports 44 kcal and trace carbohydrate for seven fishballs, so the stable dish ID serves the source's complete fishball tang hoon bowl.",
       "ratingInputs": {
         "edibleAmount": 527
+      },
+      "healthParts": {
+        "nutrients": 4.4,
+        "conditions": 3.3,
+        "excess": 0,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.01
       }
     },
     {
@@ -3195,6 +3423,11 @@
       "reviewNote": "Exact named dessert match.",
       "ratingInputs": {
         "edibleAmount": 423
+      },
+      "healthParts": {
+        "nutrients": 2.7,
+        "conditions": 2.1,
+        "excess": 0
       }
     },
     {
@@ -3285,6 +3518,11 @@
       "reviewNote": "The game dessert was refined to the source's complete soybean-pudding bowl with assorted toppings.",
       "ratingInputs": {
         "edibleAmount": 392
+      },
+      "healthParts": {
+        "nutrients": 4.9,
+        "conditions": 4,
+        "excess": 0
       }
     },
     {
@@ -3463,6 +3701,11 @@
       "reviewNote": "Exact named dessert match.",
       "ratingInputs": {
         "edibleAmount": 425
+      },
+      "healthParts": {
+        "nutrients": 3.4,
+        "conditions": 2.5,
+        "excess": 0
       }
     },
     {
@@ -3553,6 +3796,17 @@
       "reviewNote": "The source reports one skewer with sauce; values are scaled to the game's ten-skewer serving.",
       "ratingInputs": {
         "edibleAmount": 270
+      },
+      "healthParts": {
+        "nutrients": 2.9,
+        "conditions": 2.5,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 211
+          }
+        ]
       }
     },
     {
@@ -3642,6 +3896,25 @@
       "reviewNote": "The source reports one wing; values are scaled to the game's three-wing serving.",
       "ratingInputs": {
         "edibleAmount": 103.569
+      },
+      "healthParts": {
+        "nutrients": 3.5,
+        "conditions": 3.1,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 232
+          },
+          {
+            "nutrient": "saturated-fat",
+            "per100g": 3.3
+          },
+          {
+            "nutrient": "sodium",
+            "per100g": 629
+          }
+        ]
       }
     },
     {
@@ -3732,6 +4005,17 @@
       "reviewNote": "The source reports one skewer with sauce; values are scaled to the game's ten-skewer serving.",
       "ratingInputs": {
         "edibleAmount": 210
+      },
+      "healthParts": {
+        "nutrients": 3.2,
+        "conditions": 3,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 214
+          }
+        ]
       }
     },
     {
@@ -3821,6 +4105,11 @@
       "reviewNote": "Sotong panggang is the source's grilled squid with spices; the 100 g scoop is scaled to the game's grill plate.",
       "ratingInputs": {
         "edibleAmount": 200
+      },
+      "healthParts": {
+        "nutrients": 4.6,
+        "conditions": 3.8,
+        "excess": 0
       }
     },
     {
@@ -3910,6 +4199,11 @@
       "reviewNote": "The source reports one prawn dumpling; values are scaled to the game's four-piece bowl with vegetables in light soup.",
       "ratingInputs": {
         "edibleAmount": 196
+      },
+      "healthParts": {
+        "nutrients": 4.2,
+        "conditions": 3.8,
+        "excess": 0
       }
     },
     {
@@ -4000,6 +4294,25 @@
       "reviewNote": "The source reports one piece; values are scaled to the game's four-piece basket.",
       "ratingInputs": {
         "edibleAmount": 120
+      },
+      "healthParts": {
+        "nutrients": 3.5,
+        "conditions": 3.3,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 223
+          },
+          {
+            "nutrient": "saturated-fat",
+            "per100g": 4.4
+          },
+          {
+            "nutrient": "sodium",
+            "per100g": 483
+          }
+        ]
       }
     },
     {
@@ -4090,6 +4403,17 @@
       "reviewNote": "The source reports one pau; values are scaled to the game's three-piece basket.",
       "ratingInputs": {
         "edibleAmount": 168
+      },
+      "healthParts": {
+        "nutrients": 3.4,
+        "conditions": 2.3,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 263
+          }
+        ]
       }
     },
     {
@@ -4180,6 +4504,11 @@
       "reviewNote": "The source uses a descriptive food name for the game's complete lotus-leaf rice parcel and labels the whole parcel as one scoop.",
       "ratingInputs": {
         "edibleAmount": 308.1874
+      },
+      "healthParts": {
+        "nutrients": 3.4,
+        "conditions": 2.2,
+        "excess": 0
       }
     },
     {
@@ -4271,7 +4600,14 @@
       "ratingInputs": {
         "edibleAmount": 971
       },
-      "variantId": "ytf-clear-noodles"
+      "variantId": "ytf-clear-noodles",
+      "healthParts": {
+        "nutrients": 2.3,
+        "conditions": 1.3,
+        "excess": 0.4,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.39
+      }
     },
     {
       "id": "dish.ban-mian",
@@ -4359,7 +4695,14 @@
       "ratingInputs": {
         "edibleAmount": 792
       },
-      "variantId": "ban-mian-soup"
+      "variantId": "ban-mian-soup",
+      "healthParts": {
+        "nutrients": 3.5,
+        "conditions": 2.2,
+        "excess": 0.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.16
+      }
     },
     {
       "id": "dish.thunder-tea-rice",
@@ -4449,6 +4792,11 @@
       "reviewNote": "Exact named complete dish match.",
       "ratingInputs": {
         "edibleAmount": 431
+      },
+      "healthParts": {
+        "nutrients": 3.4,
+        "conditions": 2.7,
+        "excess": 0
       }
     },
     {
@@ -4538,6 +4886,11 @@
       "reviewNote": "Exact named complete snack match.",
       "ratingInputs": {
         "edibleAmount": 191
+      },
+      "healthParts": {
+        "nutrients": 5,
+        "conditions": 4.5,
+        "excess": 0
       }
     },
     {
@@ -4643,7 +4996,14 @@
       "ratingInputs": {
         "edibleAmount": 740.5452
       },
-      "variantId": "bak-kut-teh-rice-you-tiao"
+      "variantId": "bak-kut-teh-rice-you-tiao",
+      "healthParts": {
+        "nutrients": 2.8,
+        "conditions": 1.7,
+        "excess": 0.1,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.08
+      }
     },
     {
       "id": "dish.duck-rice",
@@ -4732,7 +5092,12 @@
       "ratingInputs": {
         "edibleAmount": 398
       },
-      "variantId": "duck-rice-braised"
+      "variantId": "duck-rice-braised",
+      "healthParts": {
+        "nutrients": 3.4,
+        "conditions": 2.5,
+        "excess": 0
+      }
     },
     {
       "id": "dish.kway-chap",
@@ -4822,6 +5187,13 @@
       "reviewNote": "Exact named complete dish match.",
       "ratingInputs": {
         "edibleAmount": 928
+      },
+      "healthParts": {
+        "nutrients": 1.7,
+        "conditions": 1.2,
+        "excess": 0.9,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.87
       }
     },
     {
@@ -4915,6 +5287,13 @@
       ],
       "ratingInputs": {
         "edibleAmount": 531.9771
+      },
+      "healthParts": {
+        "nutrients": 2.6,
+        "conditions": 1.6,
+        "excess": 0.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.24
       }
     },
     {
@@ -5004,6 +5383,11 @@
       "reviewNote": "Exact named complete dish match.",
       "ratingInputs": {
         "edibleAmount": 353
+      },
+      "healthParts": {
+        "nutrients": 4.3,
+        "conditions": 3.2,
+        "excess": 0
       }
     },
     {
@@ -5095,7 +5479,12 @@
       "ratingInputs": {
         "edibleAmount": 544
       },
-      "variantId": "nasi-padang-beef"
+      "variantId": "nasi-padang-beef",
+      "healthParts": {
+        "nutrients": 2.2,
+        "conditions": 1.5,
+        "excess": 0
+      }
     },
     {
       "id": "dish.kaya-toast",
@@ -5185,6 +5574,21 @@
       "reviewNote": "Exact named kopitiam toast match.",
       "ratingInputs": {
         "edibleAmount": 94
+      },
+      "healthParts": {
+        "nutrients": 2.5,
+        "conditions": 1.7,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 404
+          },
+          {
+            "nutrient": "sodium",
+            "per100g": 380
+          }
+        ]
       }
     },
     {
@@ -5360,6 +5764,13 @@
       "reviewNote": "Exact named complete dish match.",
       "ratingInputs": {
         "edibleAmount": 682
+      },
+      "healthParts": {
+        "nutrients": 3,
+        "conditions": 1.8,
+        "excess": 0.1,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.07
       }
     },
     {
@@ -5449,6 +5860,11 @@
       "reviewNote": "The source reports one piece; values are scaled to the game's five-piece serving.",
       "ratingInputs": {
         "edibleAmount": 175
+      },
+      "healthParts": {
+        "nutrients": 4.7,
+        "conditions": 4.4,
+        "excess": 0
       }
     },
     {
@@ -5539,6 +5955,19 @@
       "reviewNote": "Exact named complete dish match.",
       "ratingInputs": {
         "edibleAmount": 253
+      },
+      "healthParts": {
+        "nutrients": 1.8,
+        "conditions": 1.2,
+        "excess": 0,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.01,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 286
+          }
+        ]
       }
     },
     {
@@ -5718,7 +6147,12 @@
       "ratingInputs": {
         "edibleAmount": 553
       },
-      "variantId": "economic-rice-veg-meat"
+      "variantId": "economic-rice-veg-meat",
+      "healthParts": {
+        "nutrients": 3.1,
+        "conditions": 2.2,
+        "excess": 0
+      }
     },
     {
       "id": "dish.wanton-mee",
@@ -5807,7 +6241,12 @@
       "ratingInputs": {
         "edibleAmount": 388
       },
-      "variantId": "wanton-mee-dry"
+      "variantId": "wanton-mee-dry",
+      "healthParts": {
+        "nutrients": 3.3,
+        "conditions": 2.1,
+        "excess": 0
+      }
     },
     {
       "id": "dish.mee-siam",
@@ -5904,7 +6343,14 @@
           "totalSugarG": 24.95
         }
       },
-      "variantId": "mee-siam-gravy"
+      "variantId": "mee-siam-gravy",
+      "healthParts": {
+        "nutrients": 1.5,
+        "conditions": 1.2,
+        "excess": 0.9,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.88
+      }
     },
     {
       "id": "dish.kueh-pie-tee",
@@ -5994,6 +6440,17 @@
       "reviewNote": "The source reports one cup; values are scaled to the game's five-piece serving.",
       "ratingInputs": {
         "edibleAmount": 185
+      },
+      "healthParts": {
+        "nutrients": 3.2,
+        "conditions": 2.5,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 238
+          }
+        ]
       }
     },
     {
@@ -6084,7 +6541,14 @@
       "ratingInputs": {
         "edibleAmount": 724.9728
       },
-      "variantId": "prawn-noodles-soup"
+      "variantId": "prawn-noodles-soup",
+      "healthParts": {
+        "nutrients": 4.1,
+        "conditions": 2.6,
+        "excess": 0.7,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.69
+      }
     },
     {
       "id": "dish.century-egg-porridge",
@@ -6171,6 +6635,11 @@
       "reviewNote": "Exact named Lab porridge bowl.",
       "ratingInputs": {
         "edibleAmount": 489
+      },
+      "healthParts": {
+        "nutrients": 4.3,
+        "conditions": 3.7,
+        "excess": 0
       }
     },
     {
@@ -6262,7 +6731,14 @@
       "ratingInputs": {
         "edibleAmount": 660
       },
-      "variantId": "fish-porridge-fried"
+      "variantId": "fish-porridge-fried",
+      "healthParts": {
+        "nutrients": 3.7,
+        "conditions": 2.5,
+        "excess": 0.1,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.13
+      }
     },
     {
       "id": "dish.minced-pork-porridge",
@@ -6349,6 +6825,11 @@
       "reviewNote": "Exact named Lab porridge bowl.",
       "ratingInputs": {
         "edibleAmount": 593
+      },
+      "healthParts": {
+        "nutrients": 4.1,
+        "conditions": 3.2,
+        "excess": 0
       }
     },
     {
@@ -6437,6 +6918,11 @@
       "reviewNote": "The plain rice rolls with sweet sauce (Lab); the source labels its one 262 g serving one roll, which is a hawker plate of rolls.",
       "ratingInputs": {
         "edibleAmount": 262
+      },
+      "healthParts": {
+        "nutrients": 4.3,
+        "conditions": 3.5,
+        "excess": 0
       }
     },
     {
@@ -6527,6 +7013,21 @@
       "reviewNote": "Exact named Lab fried dough stick at the source's one-stick serving.",
       "ratingInputs": {
         "edibleAmount": 117
+      },
+      "healthParts": {
+        "nutrients": 2.8,
+        "conditions": 2.3,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 391
+          },
+          {
+            "nutrient": "sodium",
+            "per100g": 644
+          }
+        ]
       }
     },
     {
@@ -6614,6 +7115,11 @@
       "reviewNote": "Exact named Lab dessert bowl, rated as a snack.",
       "ratingInputs": {
         "edibleAmount": 390
+      },
+      "healthParts": {
+        "nutrients": 4.5,
+        "conditions": 3.8,
+        "excess": 0
       }
     },
     {
@@ -6704,6 +7210,17 @@
       "reviewNote": "Exact named Lab dessert bowl, rated as a snack.",
       "ratingInputs": {
         "edibleAmount": 150
+      },
+      "healthParts": {
+        "nutrients": 2.5,
+        "conditions": 2.2,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "saturated-fat",
+            "per100g": 5.1
+          }
+        ]
       }
     },
     {
@@ -6794,6 +7311,11 @@
       "reviewNote": "Exact named Lab dessert bowl, rated as a snack.",
       "ratingInputs": {
         "edibleAmount": 369
+      },
+      "healthParts": {
+        "nutrients": 3.6,
+        "conditions": 2.6,
+        "excess": 0
       }
     },
     {
@@ -6883,6 +7405,11 @@
       "reviewNote": "Exact named Lab dessert bowl, rated as a snack.",
       "ratingInputs": {
         "edibleAmount": 376
+      },
+      "healthParts": {
+        "nutrients": 4.1,
+        "conditions": 3.4,
+        "excess": 0
       }
     },
     {
@@ -6976,6 +7503,11 @@
       ],
       "ratingInputs": {
         "edibleAmount": 273
+      },
+      "healthParts": {
+        "nutrients": 3.9,
+        "conditions": 3.5,
+        "excess": 0
       }
     },
     {
@@ -7066,6 +7598,11 @@
       "reviewNote": "Exact named Lab plate with rice.",
       "ratingInputs": {
         "edibleAmount": 467.9884
+      },
+      "healthParts": {
+        "nutrients": 2.7,
+        "conditions": 2,
+        "excess": 0
       }
     },
     {
@@ -7155,6 +7692,13 @@
       "reviewNote": "Exact named Lab plate; the source reports sugar as trace (KNOWN_ISSUES).",
       "ratingInputs": {
         "edibleAmount": 485
+      },
+      "healthParts": {
+        "nutrients": 2.6,
+        "conditions": 1.6,
+        "excess": 0.1,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.07
       }
     },
     {
@@ -7244,6 +7788,13 @@
       "reviewNote": "Exact named Lab bowl; its 14.1 g fibre trips no plausibility rule (KNOWN_ISSUES).",
       "ratingInputs": {
         "edibleAmount": 622
+      },
+      "healthParts": {
+        "nutrients": 4.2,
+        "conditions": 2.7,
+        "excess": 1,
+        "excessNutrient": "sodium",
+        "excessDayShare": 2.03
       }
     },
     {
@@ -7334,6 +7885,11 @@
       "reviewNote": "Exact named Lab plate; the source does not report sugar, so the rating imputes it (KNOWN_ISSUES).",
       "ratingInputs": {
         "edibleAmount": 421
+      },
+      "healthParts": {
+        "nutrients": 3,
+        "conditions": 2.3,
+        "excess": 0
       }
     },
     {
@@ -7423,6 +7979,11 @@
       "reviewNote": "Exact named Lab plate (750 g, 86% edible). Its rating reflects the large analysed plate and sweet marinade, not grilling against frying; the source's 189 g piece is the chicken alone, so no smaller plate is available.",
       "ratingInputs": {
         "edibleAmount": 645
+      },
+      "healthParts": {
+        "nutrients": 1.8,
+        "conditions": 1.2,
+        "excess": 0
       }
     },
     {
@@ -7514,7 +8075,12 @@
       "ratingInputs": {
         "edibleAmount": 454
       },
-      "variantId": "chicken-chop-fries-coleslaw"
+      "variantId": "chicken-chop-fries-coleslaw",
+      "healthParts": {
+        "nutrients": 2.3,
+        "conditions": 1.9,
+        "excess": 0
+      }
     },
     {
       "id": "dish.aglio-olio",
@@ -7604,6 +8170,17 @@
       "reviewNote": "Exact named Lab plate; its 13.8 g fibre trips no plausibility rule (KNOWN_ISSUES).",
       "ratingInputs": {
         "edibleAmount": 284
+      },
+      "healthParts": {
+        "nutrients": 4.6,
+        "conditions": 3.9,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 188
+          }
+        ]
       }
     },
     {
@@ -7695,7 +8272,12 @@
       "ratingInputs": {
         "edibleAmount": 345
       },
-      "variantId": "fish-and-chips"
+      "variantId": "fish-and-chips",
+      "healthParts": {
+        "nutrients": 2.3,
+        "conditions": 1.8,
+        "excess": 0
+      }
     },
     {
       "id": "dish.spaghetti-bolognese",
@@ -7785,6 +8367,11 @@
       "reviewNote": "The source names the Lab spaghetti plate by its beef bolognese sauce.",
       "ratingInputs": {
         "edibleAmount": 410
+      },
+      "healthParts": {
+        "nutrients": 3.2,
+        "conditions": 2.3,
+        "excess": 0
       }
     },
     {
@@ -7875,6 +8462,13 @@
       "reviewNote": "Exact named Lab plate; its 49 g carbohydrate and 7.9 g fibre show the usual potato and vegetable sides.",
       "ratingInputs": {
         "edibleAmount": 475
+      },
+      "healthParts": {
+        "nutrients": 2.6,
+        "conditions": 2.1,
+        "excess": 0.2,
+        "excessNutrient": "saturated-fat",
+        "excessDayShare": 1.17
       }
     },
     {
@@ -7965,6 +8559,17 @@
       "reviewNote": "The source reports one skewer with sauce (Derived, as the beef and chicken satay); values are scaled to the game's ten-skewer serving.",
       "ratingInputs": {
         "edibleAmount": 190
+      },
+      "healthParts": {
+        "nutrients": 2.6,
+        "conditions": 2.3,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 253
+          }
+        ]
       }
     },
     {
@@ -8055,6 +8660,21 @@
       "reviewNote": "The source reports one 72 g appam with no alternative serving; values are scaled to the usual two-piece order.",
       "ratingInputs": {
         "edibleAmount": 144
+      },
+      "healthParts": {
+        "nutrients": 4.1,
+        "conditions": 3.4,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 221
+          },
+          {
+            "nutrient": "sodium",
+            "per100g": 347
+          }
+        ]
       }
     },
     {
@@ -8145,6 +8765,11 @@
       "reviewNote": "The source names the Lab bowl by its pork ribs first.",
       "ratingInputs": {
         "edibleAmount": 610.924
+      },
+      "healthParts": {
+        "nutrients": 4.6,
+        "conditions": 3.9,
+        "excess": 0
       }
     },
     {
@@ -8235,6 +8860,11 @@
       "reviewNote": "The source reports one pincer; values are scaled to the source's alternative quarter-crab serving, as for black pepper crab.",
       "ratingInputs": {
         "edibleAmount": 384
+      },
+      "healthParts": {
+        "nutrients": 3.3,
+        "conditions": 2.8,
+        "excess": 0
       }
     },
     {
@@ -9728,6 +10358,11 @@
       "reviewNote": "Chicken-cutlet set.",
       "ratingInputs": {
         "edibleAmount": 399
+      },
+      "healthParts": {
+        "nutrients": 2.3,
+        "conditions": 1.4,
+        "excess": 0
       }
     },
     {
@@ -9819,6 +10454,11 @@
       "reviewNote": "Larger set with both chicken preparations.",
       "ratingInputs": {
         "edibleAmount": 466.984
+      },
+      "healthParts": {
+        "nutrients": 2.1,
+        "conditions": 1.2,
+        "excess": 0
       }
     },
     {
@@ -9910,6 +10550,11 @@
       "reviewNote": "Set centred on egg, ikan bilis and peanuts.",
       "ratingInputs": {
         "edibleAmount": 313
+      },
+      "healthParts": {
+        "nutrients": 3.2,
+        "conditions": 2.1,
+        "excess": 0
       }
     },
     {
@@ -10001,6 +10646,11 @@
       "reviewNote": "Fish set.",
       "ratingInputs": {
         "edibleAmount": 335.0051
+      },
+      "healthParts": {
+        "nutrients": 2.9,
+        "conditions": 1.9,
+        "excess": 0
       }
     },
     {
@@ -10089,6 +10739,11 @@
       "reviewNote": "Rice-only source serving; presented as a portion-size trade-off, not a complete-meal recommendation.",
       "ratingInputs": {
         "edibleAmount": 214
+      },
+      "healthParts": {
+        "nutrients": 4.2,
+        "conditions": 3.7,
+        "excess": 0
       }
     },
     {
@@ -10180,6 +10835,11 @@
       "reviewNote": "Savoury white preparation without sweet dark soy.",
       "ratingInputs": {
         "edibleAmount": 321
+      },
+      "healthParts": {
+        "nutrients": 3.6,
+        "conditions": 2.9,
+        "excess": 0
       }
     },
     {
@@ -10271,6 +10931,25 @@
       "reviewNote": "The 141 g Lab plain prata holds 73.39 g carbohydrate, the dough of almost two egg prata (39.87 g); scaled to one egg-prata-sized piece.",
       "ratingInputs": {
         "edibleAmount": 76.6
+      },
+      "healthParts": {
+        "nutrients": 2.9,
+        "conditions": 2.5,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 352
+          },
+          {
+            "nutrient": "saturated-fat",
+            "per100g": 5.2
+          },
+          {
+            "nutrient": "sodium",
+            "per100g": 571
+          }
+        ]
       }
     },
     {
@@ -10362,6 +11041,25 @@
       "reviewNote": "Egg-filled prata.",
       "ratingInputs": {
         "edibleAmount": 119
+      },
+      "healthParts": {
+        "nutrients": 3.6,
+        "conditions": 3.2,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 278
+          },
+          {
+            "nutrient": "saturated-fat",
+            "per100g": 3.9
+          },
+          {
+            "nutrient": "sodium",
+            "per100g": 420
+          }
+        ]
       }
     },
     {
@@ -10453,6 +11151,21 @@
       "reviewNote": "Egg-and-onion prata.",
       "ratingInputs": {
         "edibleAmount": 177
+      },
+      "healthParts": {
+        "nutrients": 3.7,
+        "conditions": 3.1,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 220
+          },
+          {
+            "nutrient": "saturated-fat",
+            "per100g": 4.8
+          }
+        ]
       }
     },
     {
@@ -10544,6 +11257,17 @@
       "reviewNote": "Egg, onion and cheese prata.",
       "ratingInputs": {
         "edibleAmount": 185
+      },
+      "healthParts": {
+        "nutrients": 3,
+        "conditions": 2.5,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 248
+          }
+        ]
       }
     },
     {
@@ -10635,6 +11359,13 @@
       "reviewNote": "Fresh sliced fish with thick beehoon in clear soup (Derived), the like-for-like option to the fried default.",
       "ratingInputs": {
         "edibleAmount": 811
+      },
+      "healthParts": {
+        "nutrients": 4.3,
+        "conditions": 2.9,
+        "excess": 0.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.21
       }
     },
     {
@@ -10726,6 +11457,13 @@
       "reviewNote": "Milky soup with the default bowl's 250 g of thick beehoon: the Derived row is the Lab milky fried-fish soup plus 1.25 thick beehoon, built the same way as the clear default; the milky sliced-fish Lab soup is not a like-for-like partner of the clear sliced-fish Lab soup (1,405 vs 2,407 mg sodium).",
       "ratingInputs": {
         "edibleAmount": 848
+      },
+      "healthParts": {
+        "nutrients": 3.1,
+        "conditions": 1.8,
+        "excess": 0.3,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.28
       }
     },
     {
@@ -10817,6 +11555,13 @@
       "reviewNote": "Clear fried-fish soup without noodles (the ID predates the fried row); the sliced-fish row states 84 kcal against about 154 kcal from its own macronutrients, so the reviewed fried-fish bowl stands in.",
       "ratingInputs": {
         "edibleAmount": 543
+      },
+      "healthParts": {
+        "nutrients": 3.9,
+        "conditions": 2.9,
+        "excess": 0.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.21
       }
     },
     {
@@ -10908,6 +11653,13 @@
       "reviewNote": "Milky fried-fish soup without noodles (the ID predates the fried row), the Lab pair of the clear fried-fish variant.",
       "ratingInputs": {
         "edibleAmount": 598
+      },
+      "healthParts": {
+        "nutrients": 3.6,
+        "conditions": 2.6,
+        "excess": 0.3,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.27
       }
     },
     {
@@ -10997,6 +11749,13 @@
       "reviewNote": "Soup preparation.",
       "ratingInputs": {
         "edibleAmount": 682
+      },
+      "healthParts": {
+        "nutrients": 4.2,
+        "conditions": 2.8,
+        "excess": 0.1,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.07
       }
     },
     {
@@ -11088,6 +11847,17 @@
       "reviewNote": "Half of the source's 330 g chicken murtabak, the share of one diner when two split it; the source gives no alternative serving.",
       "ratingInputs": {
         "edibleAmount": 165
+      },
+      "healthParts": {
+        "nutrients": 3.3,
+        "conditions": 2.7,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 258
+          }
+        ]
       }
     },
     {
@@ -11179,6 +11949,13 @@
       "reviewNote": "The source's 611 g murtabak is a sharing size; values are halved to one diner's portion.",
       "ratingInputs": {
         "edibleAmount": 305.5
+      },
+      "healthParts": {
+        "nutrients": 2.3,
+        "conditions": 2.2,
+        "excess": 0.3,
+        "excessNutrient": "saturated-fat",
+        "excessDayShare": 1.35
       }
     },
     {
@@ -11270,6 +12047,11 @@
       "reviewNote": "Mutton filling.",
       "ratingInputs": {
         "edibleAmount": 345
+      },
+      "healthParts": {
+        "nutrients": 2.5,
+        "conditions": 2,
+        "excess": 0
       }
     },
     {
@@ -11361,6 +12143,11 @@
       "reviewNote": "Vegetable filling; the label does not imply dietary certification.",
       "ratingInputs": {
         "edibleAmount": 437
+      },
+      "healthParts": {
+        "nutrients": 2.4,
+        "conditions": 1.5,
+        "excess": 0
       }
     },
     {
@@ -11452,6 +12239,13 @@
       "reviewNote": "Seafood serving; the source groups fish and prawn together.",
       "ratingInputs": {
         "edibleAmount": 587
+      },
+      "healthParts": {
+        "nutrients": 2.3,
+        "conditions": 1.4,
+        "excess": 0.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.22
       }
     },
     {
@@ -11543,6 +12337,13 @@
       "reviewNote": "Mutton serving.",
       "ratingInputs": {
         "edibleAmount": 668.976
+      },
+      "healthParts": {
+        "nutrients": 1.7,
+        "conditions": 1.3,
+        "excess": 0.5,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.54
       }
     },
     {
@@ -11634,6 +12435,11 @@
       "reviewNote": "Vegetable serving; the label does not imply dietary certification.",
       "ratingInputs": {
         "edibleAmount": 518
+      },
+      "healthParts": {
+        "nutrients": 3,
+        "conditions": 1.9,
+        "excess": 0
       }
     },
     {
@@ -11725,6 +12531,11 @@
       "reviewNote": "Masala-filled serving with sambar and chutney.",
       "ratingInputs": {
         "edibleAmount": 271
+      },
+      "healthParts": {
+        "nutrients": 3.9,
+        "conditions": 3.6,
+        "excess": 0
       }
     },
     {
@@ -11816,6 +12627,21 @@
       "reviewNote": "Egg thosai serving.",
       "ratingInputs": {
         "edibleAmount": 146
+      },
+      "healthParts": {
+        "nutrients": 3.5,
+        "conditions": 3.1,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 234
+          },
+          {
+            "nutrient": "saturated-fat",
+            "per100g": 3.6
+          }
+        ]
       }
     },
     {
@@ -11907,6 +12733,21 @@
       "reviewNote": "Ghee thosai serving.",
       "ratingInputs": {
         "edibleAmount": 108
+      },
+      "healthParts": {
+        "nutrients": 2.8,
+        "conditions": 2.2,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 345
+          },
+          {
+            "nutrient": "sodium",
+            "per100g": 591
+          }
+        ]
       }
     },
     {
@@ -11998,6 +12839,25 @@
       "reviewNote": "Semolina thosai (Lab).",
       "ratingInputs": {
         "edibleAmount": 85
+      },
+      "healthParts": {
+        "nutrients": 3.6,
+        "conditions": 3.4,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 240
+          },
+          {
+            "nutrient": "saturated-fat",
+            "per100g": 3.3
+          },
+          {
+            "nutrient": "sodium",
+            "per100g": 436
+          }
+        ]
       }
     },
     {
@@ -12089,6 +12949,25 @@
       "reviewNote": "Large thin paper thosai (Lab).",
       "ratingInputs": {
         "edibleAmount": 50
+      },
+      "healthParts": {
+        "nutrients": 3.1,
+        "conditions": 2.7,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 306
+          },
+          {
+            "nutrient": "saturated-fat",
+            "per100g": 5.5
+          },
+          {
+            "nutrient": "sodium",
+            "per100g": 438
+          }
+        ]
       }
     },
     {
@@ -12180,6 +13059,21 @@
       "reviewNote": "Cheese thosai (Lab).",
       "ratingInputs": {
         "edibleAmount": 130
+      },
+      "healthParts": {
+        "nutrients": 2.9,
+        "conditions": 2.6,
+        "excess": 0,
+        "denseNutrients": [
+          {
+            "nutrient": "energy",
+            "per100g": 268
+          },
+          {
+            "nutrient": "saturated-fat",
+            "per100g": 5.6
+          }
+        ]
       }
     },
     {
@@ -12271,6 +13165,13 @@
       "reviewNote": "Clear-soup bowl of seven mixed boiled and fried pieces without rice or noodles; the boiled clear-soup row is implausible and not used.",
       "ratingInputs": {
         "edibleAmount": 771
+      },
+      "healthParts": {
+        "nutrients": 2.9,
+        "conditions": 1.9,
+        "excess": 0.4,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.38
       }
     },
     {
@@ -12362,6 +13263,13 @@
       "reviewNote": "Clear-soup bowl with seven fried pieces.",
       "ratingInputs": {
         "edibleAmount": 928
+      },
+      "healthParts": {
+        "nutrients": 1.5,
+        "conditions": 1.2,
+        "excess": 0.9,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.85
       }
     },
     {
@@ -12453,6 +13361,13 @@
       "reviewNote": "Laksa bowl with seven boiled pieces.",
       "ratingInputs": {
         "edibleAmount": 815
+      },
+      "healthParts": {
+        "nutrients": 1.5,
+        "conditions": 1.4,
+        "excess": 0.9,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.89
       }
     },
     {
@@ -12544,6 +13459,13 @@
       "reviewNote": "Laksa bowl with seven fried pieces.",
       "ratingInputs": {
         "edibleAmount": 779
+      },
+      "healthParts": {
+        "nutrients": 1.1,
+        "conditions": 1.3,
+        "excess": 0.9,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.93
       }
     },
     {
@@ -12635,6 +13557,13 @@
       "reviewNote": "Laksa bowl with a mixture of boiled and fried pieces.",
       "ratingInputs": {
         "edibleAmount": 797
+      },
+      "healthParts": {
+        "nutrients": 1.3,
+        "conditions": 1.3,
+        "excess": 0.9,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.91
       }
     },
     {
@@ -12726,6 +13655,13 @@
       "reviewNote": "Laksa serving with the source's grouped rice-or-noodle accompaniment.",
       "ratingInputs": {
         "edibleAmount": 997
+      },
+      "healthParts": {
+        "nutrients": 1,
+        "conditions": 1.1,
+        "excess": 0.9,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.91
       }
     },
     {
@@ -12817,6 +13753,11 @@
       "reviewNote": "Dry preparation.",
       "ratingInputs": {
         "edibleAmount": 407
+      },
+      "healthParts": {
+        "nutrients": 3.2,
+        "conditions": 2.1,
+        "excess": 0
       }
     },
     {
@@ -12908,6 +13849,11 @@
       "reviewNote": "Chilli-tossed preparation.",
       "ratingInputs": {
         "edibleAmount": 411
+      },
+      "healthParts": {
+        "nutrients": 3.1,
+        "conditions": 2,
+        "excess": 0
       }
     },
     {
@@ -12999,6 +13945,13 @@
       "reviewNote": "Soup preparation with pork dumplings.",
       "ratingInputs": {
         "edibleAmount": 894
+      },
+      "healthParts": {
+        "nutrients": 3,
+        "conditions": 1.6,
+        "excess": 0.4,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.41
       }
     },
     {
@@ -13090,6 +14043,13 @@
       "reviewNote": "Seafood tom yum soup preparation.",
       "ratingInputs": {
         "edibleAmount": 1057
+      },
+      "healthParts": {
+        "nutrients": 3.3,
+        "conditions": 1.9,
+        "excess": 1.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 2.22
       }
     },
     {
@@ -13181,6 +14141,13 @@
       "reviewNote": "Vegetable soup preparation; the label does not imply dietary certification.",
       "ratingInputs": {
         "edibleAmount": 989
+      },
+      "healthParts": {
+        "nutrients": 3.8,
+        "conditions": 2.2,
+        "excess": 0.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.21
       }
     },
     {
@@ -13272,6 +14239,13 @@
       "reviewNote": "Hand-torn dough pieces, dry (Lab).",
       "ratingInputs": {
         "edibleAmount": 422
+      },
+      "healthParts": {
+        "nutrients": 3.1,
+        "conditions": 1.8,
+        "excess": 0.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.16
       }
     },
     {
@@ -13363,6 +14337,13 @@
       "reviewNote": "Hand-torn dough pieces in soup (Lab).",
       "ratingInputs": {
         "edibleAmount": 901
+      },
+      "healthParts": {
+        "nutrients": 2.5,
+        "conditions": 1.5,
+        "excess": 0.4,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.38
       }
     },
     {
@@ -13464,6 +14445,11 @@
       ],
       "ratingInputs": {
         "edibleAmount": 682.0452
+      },
+      "healthParts": {
+        "nutrients": 4,
+        "conditions": 2.7,
+        "excess": 0
       }
     },
     {
@@ -13565,6 +14551,11 @@
       ],
       "ratingInputs": {
         "edibleAmount": 702
+      },
+      "healthParts": {
+        "nutrients": 2.1,
+        "conditions": 1.4,
+        "excess": 0
       }
     },
     {
@@ -13666,6 +14657,13 @@
       ],
       "ratingInputs": {
         "edibleAmount": 482
+      },
+      "healthParts": {
+        "nutrients": 1.5,
+        "conditions": 1.1,
+        "excess": 0.1,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.09
       }
     },
     {
@@ -13756,6 +14754,11 @@
       "reviewNote": "Roasted duck rice preparation.",
       "ratingInputs": {
         "edibleAmount": 402.9855
+      },
+      "healthParts": {
+        "nutrients": 3.9,
+        "conditions": 2.8,
+        "excess": 0
       }
     },
     {
@@ -13845,6 +14848,11 @@
       "reviewNote": "Rice-only source serving presented as a portion comparison, not a complete-meal recommendation.",
       "ratingInputs": {
         "edibleAmount": 256
+      },
+      "healthParts": {
+        "nutrients": 4.3,
+        "conditions": 3.8,
+        "excess": 0
       }
     },
     {
@@ -13935,6 +14943,13 @@
       "reviewNote": "Dry braised duck noodles (Lab).",
       "ratingInputs": {
         "edibleAmount": 410
+      },
+      "healthParts": {
+        "nutrients": 4.2,
+        "conditions": 2.8,
+        "excess": 0.1,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.12
       }
     },
     {
@@ -14025,6 +15040,11 @@
       "reviewNote": "Dry noodles tossed in gravy (Lab); the row excludes the side bowl of broth (KNOWN_ISSUES).",
       "ratingInputs": {
         "edibleAmount": 298.9008
+      },
+      "healthParts": {
+        "nutrients": 4.3,
+        "conditions": 3.6,
+        "excess": 0
       }
     },
     {
@@ -14116,6 +15136,11 @@
       "reviewNote": "Fish in place of meat (Derived).",
       "ratingInputs": {
         "edibleAmount": 495.2108
+      },
+      "healthParts": {
+        "nutrients": 3.4,
+        "conditions": 2.7,
+        "excess": 0
       }
     },
     {
@@ -14207,6 +15232,11 @@
       "reviewNote": "Two vegetable dishes (Derived).",
       "ratingInputs": {
         "edibleAmount": 580
+      },
+      "healthParts": {
+        "nutrients": 3.2,
+        "conditions": 2.4,
+        "excess": 0
       }
     },
     {
@@ -14298,6 +15328,11 @@
       "reviewNote": "Fried meat in place of meat (Derived).",
       "ratingInputs": {
         "edibleAmount": 515
+      },
+      "healthParts": {
+        "nutrients": 2.7,
+        "conditions": 1.9,
+        "excess": 0
       }
     },
     {
@@ -14389,6 +15424,11 @@
       "reviewNote": "Rice with sambal goreng (Lab).",
       "ratingInputs": {
         "edibleAmount": 469
+      },
+      "healthParts": {
+        "nutrients": 3,
+        "conditions": 1.9,
+        "excess": 0
       }
     },
     {
@@ -14480,6 +15520,13 @@
       "reviewNote": "Chicken set (Lab).",
       "ratingInputs": {
         "edibleAmount": 797
+      },
+      "healthParts": {
+        "nutrients": 1.5,
+        "conditions": 1.2,
+        "excess": 0.3,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.32
       }
     },
     {
@@ -14571,6 +15618,13 @@
       "reviewNote": "Assam pedas fish set (Lab).",
       "ratingInputs": {
         "edibleAmount": 671
+      },
+      "healthParts": {
+        "nutrients": 2,
+        "conditions": 1.3,
+        "excess": 0.2,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.17
       }
     },
     {
@@ -14662,6 +15716,11 @@
       "reviewNote": "Dry-fried vermicelli (Lab); its 13.1 g fibre trips no plausibility rule (KNOWN_ISSUES).",
       "ratingInputs": {
         "edibleAmount": 336.9975
+      },
+      "healthParts": {
+        "nutrients": 3,
+        "conditions": 1.8,
+        "excess": 0
       }
     },
     {
@@ -14753,6 +15812,11 @@
       "reviewNote": "Noodle soup with shrimp dumplings (Lab).",
       "ratingInputs": {
         "edibleAmount": 716
+      },
+      "healthParts": {
+        "nutrients": 4.3,
+        "conditions": 3,
+        "excess": 0
       }
     },
     {
@@ -14842,6 +15906,13 @@
       "reviewNote": "Noodle soup with wantons (Lab).",
       "ratingInputs": {
         "edibleAmount": 678
+      },
+      "healthParts": {
+        "nutrients": 3.5,
+        "conditions": 2.2,
+        "excess": 0.4,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.45
       }
     },
     {
@@ -15197,6 +16268,13 @@
       "reviewNote": "Chicken chop with gravy and tomato spaghetti (Derived); the source labels the 617 g plate one piece.",
       "ratingInputs": {
         "edibleAmount": 617
+      },
+      "healthParts": {
+        "nutrients": 2.8,
+        "conditions": 1.7,
+        "excess": 0.1,
+        "excessNutrient": "sodium",
+        "excessDayShare": 1.08
       }
     },
     {
@@ -15288,6 +16366,11 @@
       "reviewNote": "Set with fries and mashed potato (Lab).",
       "ratingInputs": {
         "edibleAmount": 509
+      },
+      "healthParts": {
+        "nutrients": 2.6,
+        "conditions": 1.8,
+        "excess": 0
       }
     },
     {
@@ -15379,6 +16462,11 @@
       "reviewNote": "Grilled fish with potato, salad and corn (Lab).",
       "ratingInputs": {
         "edibleAmount": 364
+      },
+      "healthParts": {
+        "nutrients": 3.1,
+        "conditions": 2.4,
+        "excess": 0
       }
     },
     {
@@ -15466,6 +16554,11 @@
       "reviewNote": "Sliced fish and vegetables (Lab).",
       "ratingInputs": {
         "edibleAmount": 692
+      },
+      "healthParts": {
+        "nutrients": 4.2,
+        "conditions": 3.2,
+        "excess": 0
       }
     }
   ],
@@ -16476,5 +17569,11 @@
       "notComparableReason": "Food water in grams is not comparable with drinking-water guidance in millilitres."
     }
   ],
+  "dailyReference": {
+    "energyKcal": 2000,
+    "saturatedFatG": 22,
+    "sodiumMg": 2000,
+    "totalSugarG": 50
+  },
   "disclosure": "Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed source serving; recipes and portions vary. Its 1-5 health and condition ratings compare each serving with a meal's share (for a dessert, a snack's share) of general daily guidance from Singapore's Health Promotion Board and the World Health Organization, and with stricter guidance for each condition: they are not diagnoses, treatment advice, Health Promotion Board certifications, or universal judgements. Daily reference ranges are general guidance for Singaporean adults and do not represent individual needs. Total sugar is not the same as added sugar."
 }

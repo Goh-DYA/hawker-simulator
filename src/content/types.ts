@@ -22,9 +22,12 @@ import type {
   interactionPointSchema,
   interactionRoleSchema,
   launchContentSchema,
+  limitNutrientSchema,
   nutritionClassSchema,
   nutritionContentSchema,
+  nutritionDailyReferenceSchema,
   nutritionGuidelineSchema,
+  nutritionHealthPartsSchema,
   nutritionIntentIdSchema,
   nutritionIntentSchema,
   nutritionMetricSchema,
@@ -112,6 +115,12 @@ export type NutritionProfileStatus = ReadonlyDeep<z.output<typeof nutritionProfi
 export type NutritionClass = ReadonlyDeep<z.output<typeof nutritionClassSchema>>;
 
 export type HealthCondition = ReadonlyDeep<z.output<typeof healthConditionSchema>>;
+
+export type LimitNutrient = ReadonlyDeep<z.output<typeof limitNutrientSchema>>;
+
+export type NutritionHealthParts = ReadonlyDeep<z.output<typeof nutritionHealthPartsSchema>>;
+
+export type NutritionDailyReference = ReadonlyDeep<z.output<typeof nutritionDailyReferenceSchema>>;
 
 export type NutritionIntentId = ReadonlyDeep<z.output<typeof nutritionIntentIdSchema>>;
 
