@@ -596,7 +596,7 @@ describe("overall meal Health rating", () => {
     ["dish.mee-soto", "dish.mee-goreng-mamak"],
     ...FRIED_NOODLES.map((dish_id) => ["dish.chicken-congee", dish_id] as const),
     ["dish.masala-thosai", "dish.roti-prata"],
-    ["dish.masala-thosai:thosai-plain", "dish.roti-prata"],
+    ["dish.masala-thosai:thosai-masala", "dish.roti-prata"],
     ["dish.yong-tau-foo:ytf-clear-mixed", "dish.yong-tau-foo:ytf-clear-fried"],
     ["dish.yong-tau-foo:ytf-clear-mixed", "dish.yong-tau-foo:ytf-laksa-mixed"],
     ...["dish.char-kway-teow", "dish.hokkien-prawn-mee", "dish.lor-mee", "dish.nyonya-laksa"].map(
