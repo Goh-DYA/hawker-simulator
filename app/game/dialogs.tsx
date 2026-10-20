@@ -8,11 +8,13 @@
  * the tutorial and tour steps, the settings state and the focus trap; it passes each dialog's
  * section ref as a React 19 `ref` prop, so the trap still installs on the same `section`, and
  * the primary buttons keep `autoFocus`. The Settings switches and sliders are `SettingSwitch`
- * and `SettingSlider`, which hand each change to the shell's `update_setting(key, value)`.
+ * and `SettingSlider`, which hand each change to the shell's `update_setting(key, value)`, and
+ * Settings ends with the game version and last-update note from `src/content/release.ts`.
  * `ServiceReviewDialog` follows the same pattern: the shell decides when it opens, pauses the
  * simulation behind it and installs the modal focus trap on its section.
  */
 import { type ChangeEvent, type Ref, useRef, useState } from "react";
+import { CONTENT_UPDATED_ON, CONTENT_VERSION, format_release_date } from "@/src/content";
 import {
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
@@ -492,7 +494,8 @@ export interface SettingsDialogProps {
 
 /**
  * The Settings dialog: the customer status guide, performance, readability and audio
- * settings, and the local save actions.
+ * settings, the local save actions, and a closing note with the game version and the date of
+ * the last update.
  *
  * @param props - See {@link SettingsDialogProps}.
  * @returns The Settings backdrop and dialog.
@@ -553,6 +556,7 @@ export function SettingsDialog({
             </div>
             <button type="button" className="danger-button" onClick={onOpenReset}>Reset game…</button>
           </fieldset>
+          <p className="settings-version">Hawker Balance version {CONTENT_VERSION} · Last updated <time dateTime={CONTENT_UPDATED_ON}>{format_release_date(CONTENT_UPDATED_ON)}</time></p>
         </div>
         <footer><button type="button" className="primary-button" onClick={onClose}>Done</button></footer>
       </section>

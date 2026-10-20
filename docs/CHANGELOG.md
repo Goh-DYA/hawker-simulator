@@ -44,6 +44,7 @@ Hawker Balance is a complete, free, local-first browser management and nutrition
 
 ### Added
 
+- A small note at the bottom of Settings shows the game version and the date of the last update ("Hawker Balance version 1.6.0 · Last updated 20 October 2026"), both from `src/content/release.ts`, which `LAUNCH_CONTENT` now also takes its version from. Raise the version and the date together.
 - Adaptive uncapped guest demand, rolling 0–100 visit ratings, three daily objectives, permanent centre milestones, and open-ended stall mastery with authored upgrades.
 - Multiple movable boundary entrances/exits with atomic validation, undo, multi-route spawning, and schema-v3 save migration.
 - An undoable, saved Route editor that lets players paint preferred keep-clear walking lanes; guests favour them without losing safe fallback paths.

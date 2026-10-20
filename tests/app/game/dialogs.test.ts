@@ -24,6 +24,7 @@ import {
   type BooleanSettingKey,
   type NumberSettingKey,
 } from "@/app/game/dialogs";
+import { CONTENT_UPDATED_ON, CONTENT_VERSION, format_release_date } from "@/src/content";
 import { DEFAULT_SETTINGS } from "@/src/game/persistence/preferences";
 import type { RuntimeDayReport, RuntimeSettings } from "@/src/game/runtime/types";
 import { SNAPSHOT_FIXTURE } from "./panels/fixtures";
@@ -74,6 +75,17 @@ describe("SettingsDialog", () => {
   it("hands the shell's focus trap its section through the ref", () => {
     const { dialog, ref } = render_settings();
     expect(ref.current).toBe(dialog);
+  });
+
+  it("ends with the game version and the date of the last update", () => {
+    const { dialog } = render_settings();
+    const content = dialog.querySelector(".settings-content")!;
+    const note = content.lastElementChild!;
+    expect([note.className, note.textContent, note.querySelector("time")?.dateTime]).toEqual([
+      "settings-version",
+      `Hawker Balance version ${CONTENT_VERSION} · Last updated ${format_release_date(CONTENT_UPDATED_ON)}`,
+      CONTENT_UPDATED_ON,
+    ]);
   });
 
   it("names the dialog Settings", () => {

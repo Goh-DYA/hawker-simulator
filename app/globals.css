@@ -4044,6 +4044,13 @@ kbd {
   background: #f3eadb;
 }
 
+.settings-version {
+  margin: 14px 0 2px;
+  color: var(--ink-soft);
+  font-size: 0.7rem;
+  text-align: center;
+}
+
 .settings-content legend {
   padding: 0 6px;
   font-family: Georgia, serif;
