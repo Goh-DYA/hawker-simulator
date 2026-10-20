@@ -12,6 +12,7 @@ import { ECONOMY } from "./economy";
 import { ENGLISH_LOCALIZATION } from "./localization";
 import { NUTRITION_CONTENT } from "./nutrition";
 import { PLACEABLES } from "./placeables";
+import { CONTENT_VERSION } from "./release";
 import { STALLS } from "./stalls";
 import type {
   DishDefinition,
@@ -22,7 +23,7 @@ import type {
 
 /** The complete launch content bundle; `version` is reported by `validateContent`. */
 export const LAUNCH_CONTENT = {
-  version: "1.6.0",
+  version: CONTENT_VERSION,
   economy: ECONOMY,
   stalls: STALLS,
   dishes: DISHES,

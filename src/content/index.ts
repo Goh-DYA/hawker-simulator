@@ -23,6 +23,7 @@ export {
   getNutritionVariantFamily,
 } from "./nutrition";
 export { PLACEABLES, PLACEABLE_ENGLISH } from "./placeables";
+export { CONTENT_UPDATED_ON, CONTENT_VERSION, format_release_date } from "./release";
 export { LAUNCH_ROSTER, PLACEABLE_CATEGORY_MINIMUMS } from "./roster";
 export * from "./schemas";
 export { STALLS, STALL_ENGLISH } from "./stalls";
