@@ -290,7 +290,7 @@ describe("launch content", () => {
     const broken = structuredClone(LAUNCH_CONTENT) as unknown as {
       placeables: Array<{ unlockRequirement: { level: number } }>;
     };
-    broken.placeables[0].unlockRequirement.level = 27;
+    broken.placeables[0].unlockRequirement.level = 33;
 
     assert.throws(
       () => validateContent(broken),

@@ -336,7 +336,7 @@ const stallSeeds = [
     purchaseCost: 2_300,
     upgradeLevels: upgrades(1_080),
     unlockRequirement: {
-      level: 7,
+      level: 8,
       reputation: 27,
       prerequisiteIds: ["stall.kopi-canopy"],
     },
@@ -383,7 +383,7 @@ const stallSeeds = [
     purchaseCost: 2_850,
     upgradeLevels: upgrades(1_270),
     unlockRequirement: {
-      level: 8,
+      level: 10,
       reputation: 30,
       prerequisiteIds: ["stall.coconut-lime"],
     },
@@ -430,7 +430,7 @@ const stallSeeds = [
     purchaseCost: 2_900,
     upgradeLevels: upgrades(1_300),
     unlockRequirement: {
-      level: 9,
+      level: 12,
       reputation: 33,
       prerequisiteIds: ["stall.mee-pok-junction"],
     },
@@ -477,7 +477,7 @@ const stallSeeds = [
     purchaseCost: 2_950,
     upgradeLevels: upgrades(1_320),
     unlockRequirement: {
-      level: 10,
+      level: 14,
       reputation: 36,
       prerequisiteIds: ["stall.sunrise-roost"],
     },
@@ -514,7 +514,7 @@ const stallSeeds = [
     purchaseCost: 3_100,
     upgradeLevels: upgrades(1_350),
     unlockRequirement: {
-      level: 11,
+      level: 16,
       reputation: 40,
       prerequisiteIds: ["stall.tiffin-lantern"],
     },
@@ -557,7 +557,7 @@ const stallSeeds = [
     purchaseCost: 3_350,
     upgradeLevels: upgrades(1_450),
     unlockRequirement: {
-      level: 12,
+      level: 18,
       reputation: 43,
       prerequisiteIds: ["stall.jade-ladle"],
     },
@@ -604,7 +604,7 @@ const stallSeeds = [
     purchaseCost: 3_050,
     upgradeLevels: upgrades(1_340),
     unlockRequirement: {
-      level: 14,
+      level: 20,
       reputation: 46,
       prerequisiteIds: ["stall.sweet-monsoon"],
     },
@@ -647,7 +647,7 @@ const stallSeeds = [
     purchaseCost: 3_550,
     upgradeLevels: upgrades(1_520),
     unlockRequirement: {
-      level: 16,
+      level: 22,
       reputation: 49,
       prerequisiteIds: ["stall.satay-meridian"],
     },
@@ -691,7 +691,7 @@ const stallSeeds = [
     purchaseCost: 3_800,
     upgradeLevels: upgrades(1_600),
     unlockRequirement: {
-      level: 18,
+      level: 24,
       reputation: 52,
       prerequisiteIds: ["stall.tamarind-leaf"],
     },
@@ -734,7 +734,7 @@ const stallSeeds = [
     purchaseCost: 4_200,
     upgradeLevels: upgrades(1_720),
     unlockRequirement: {
-      level: 20,
+      level: 26,
       reputation: 54,
       prerequisiteIds: ["stall.straits-hearth"],
     },
@@ -781,7 +781,7 @@ const stallSeeds = [
     purchaseCost: 4_450,
     upgradeLevels: upgrades(1_810),
     unlockRequirement: {
-      level: 22,
+      level: 28,
       reputation: 56,
       prerequisiteIds: ["stall.kopi-canopy"],
     },
@@ -824,7 +824,7 @@ const stallSeeds = [
     purchaseCost: 4_700,
     upgradeLevels: upgrades(1_900),
     unlockRequirement: {
-      level: 24,
+      level: 30,
       reputation: 58,
       prerequisiteIds: ["stall.straits-hearth"],
     },

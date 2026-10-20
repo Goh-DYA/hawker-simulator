@@ -60,15 +60,15 @@ Experience per sale is the price × (1 + quality/5) plus 2 service XP (`SERVICE_
 | Phase | Levels | Player learning | Representative unlocks |
 |---|---:|---|---|
 | Starter | 1–5 | Build, service, tray return, first bottleneck | Sunrise Roost, Coconut & Lime, Kopi Canopy, Cinder Wok, Mee Pok Junction, first expansion |
-| Variety | 6–13 | Menu mix, group seating, queue design | Tiffin Lantern, Sweet Monsoon, Satay Meridian, Pick & Mix, Jade Ladle, Tamarind Leaf, Bamboo Basket |
-| Optimization | 14–21 | Peak flow, ambience, upgrades, seating for reputation | Longan Moon, Lesung Corner, Straits Hearth, Herbal Cauldron, advanced facilities |
-| Mastery | 22–26 | Dense layouts and self-directed goals | Peppercorn Plate, Harbour Ember, the last dishes, final expansions, feature decorations |
+| Variety | 6–15 | Menu mix, group seating, queue design | Tiffin Lantern, Sweet Monsoon, Satay Meridian, Pick & Mix, Jade Ladle |
+| Optimization | 16–25 | Peak flow, ambience, upgrades, seating for reputation | Tamarind Leaf, Bamboo Basket, Longan Moon, Lesung Corner, Straits Hearth, advanced facilities |
+| Mastery | 26–32 | Dense layouts and self-directed goals | Herbal Cauldron, Peppercorn Plate, Harbour Ember, the last dishes, final expansions, feature decorations |
 
-Every required launch stall and catalogue item is earnable by level 26 (`ECONOMY.maxLevel`) without premium payment. Unlocks reveal no more than a manageable group at a time.
+Every required launch stall and catalogue item is earnable by level 32 (`ECONOMY.maxLevel`) without premium payment. Unlocks reveal no more than a manageable group at a time.
 
 ### Stall unlocks
 
-The 18 stalls are authored in `src/content/stalls.ts` in this order, which is their unlock order. The first five keep levels 1, 1, 2, 3 and 4, and level 5 has no stall. Stalls 6-12 take one level each, from 6 to 12. The six late stalls unlock on alternate levels, 14, 16, 18, 20, 22 and 24, so no two stalls share a level except the two starters, and the odd levels from 13 to 23 hold no stall. Reputation is on the content scale of 0-100. The tender day is the earliest operating day the stall's licence is offered (see below). Cost is the purchase price in SGD; the opening dishes are the ones available as soon as the stall unlocks.
+The 18 stalls are authored in `src/content/stalls.ts` in this order, which is their unlock order. The first five keep levels 1, 1, 2, 3 and 4, and level 5 has no stall. Every later stall unlocks on alternate levels, from level 6 to level 30, so no two stalls share a level except the two starters, and no odd level from 5 to 29 holds a stall. Reputation is on the content scale of 0-100. The tender day is the earliest operating day the stall's licence is offered (see below). Cost is the purchase price in SGD; the opening dishes are the ones available as soon as the stall unlocks.
 
 | # | Stall | Level | Reputation | Prerequisite | Tender day | Cost | Opening dishes |
 |---:|---|---:|---:|---|---:|---:|---|
@@ -78,30 +78,30 @@ The 18 stalls are authored in `src/content/stalls.ts` in this order, which is th
 | 4 | Cinder Wok | 3 | 16 | Sunrise Roost | 4 | 2,200 | Char kway teow $5 |
 | 5 | Mee Pok Junction | 4 | 20 | Cinder Wok | 6 | 2,350 | Bak chor mee $5 |
 | 6 | Tiffin Lantern | 6 | 24 | Cinder Wok | 8 | 2,600 | Roti prata set $3, mee goreng mamak $5 |
-| 7 | Sweet Monsoon | 7 | 27 | Kopi Canopy | 10 | 2,300 | Chendol $3, ice kacang $3 |
-| 8 | Satay Meridian | 8 | 30 | Coconut & Lime | 12 | 2,850 | Chicken satay $7, barbecued chicken wings $5 |
-| 9 | Pick & Mix | 9 | 33 | Mee Pok Junction | 14 | 2,900 | Yong tau foo $6, ban mian $5 |
-| 10 | Jade Ladle | 10 | 36 | Sunrise Roost | 16 | 2,950 | Century egg pork porridge $4, fish porridge $6 |
-| 11 | Tamarind Leaf | 11 | 40 | Tiffin Lantern | 18 | 3,100 | Masala thosai $4, idli sambar $3 |
-| 12 | Bamboo Basket | 12 | 43 | Jade Ladle | 20 | 3,350 | Prawn dumpling soup $4, siew mai $4 |
-| 13 | Longan Moon | 14 | 46 | Sweet Monsoon | 23 | 3,050 | Cheng tng $2, orh nee $3 |
-| 14 | Lesung Corner | 16 | 49 | Satay Meridian | 26 | 3,550 | Ayam penyet $7, nasi goreng $6 |
-| 15 | Straits Hearth | 18 | 52 | Tamarind Leaf | 29 | 3,800 | Laksa $6, ayam pongteh $4 |
-| 16 | Herbal Cauldron | 20 | 54 | Straits Hearth | 32 | 4,200 | Bak kut teh $9, duck rice $6 |
-| 17 | Peppercorn Plate | 22 | 56 | Kopi Canopy | 35 | 4,450 | Chicken chop $8, mushroom aglio olio $5 |
-| 18 | Harbour Ember | 24 | 58 | Straits Hearth | 38 | 4,700 | Sambal stingray $12, fish bee hoon soup $6 |
+| 7 | Sweet Monsoon | 8 | 27 | Kopi Canopy | 10 | 2,300 | Chendol $3, ice kacang $3 |
+| 8 | Satay Meridian | 10 | 30 | Coconut & Lime | 12 | 2,850 | Chicken satay $7, barbecued chicken wings $5 |
+| 9 | Pick & Mix | 12 | 33 | Mee Pok Junction | 14 | 2,900 | Yong tau foo $6, ban mian $5 |
+| 10 | Jade Ladle | 14 | 36 | Sunrise Roost | 16 | 2,950 | Century egg pork porridge $4, fish porridge $6 |
+| 11 | Tamarind Leaf | 16 | 40 | Tiffin Lantern | 18 | 3,100 | Masala thosai $4, idli sambar $3 |
+| 12 | Bamboo Basket | 18 | 43 | Jade Ladle | 20 | 3,350 | Prawn dumpling soup $4, siew mai $4 |
+| 13 | Longan Moon | 20 | 46 | Sweet Monsoon | 23 | 3,050 | Cheng tng $2, orh nee $3 |
+| 14 | Lesung Corner | 22 | 49 | Satay Meridian | 26 | 3,550 | Ayam penyet $7, nasi goreng $6 |
+| 15 | Straits Hearth | 24 | 52 | Tamarind Leaf | 29 | 3,800 | Laksa $6, ayam pongteh $4 |
+| 16 | Herbal Cauldron | 26 | 54 | Straits Hearth | 32 | 4,200 | Bak kut teh $9, duck rice $6 |
+| 17 | Peppercorn Plate | 28 | 56 | Kopi Canopy | 35 | 4,450 | Chicken chop $8, mushroom aglio olio $5 |
+| 18 | Harbour Ember | 30 | 58 | Straits Hearth | 38 | 4,700 | Sambal stingray $12, fish bee hoon soup $6 |
 
 Every prerequisite unlocks no later than the stall that depends on it, and the unlock graph has no cycle. Every stall's opening dishes include one at or below the Student Saver's $6.50 mid budget.
 
 ### Dish unlocks
 
-The first five stalls keep their authored dish gates. From stall 6 on, a stall's dishes unlock in pairs in its signature order (the dish it is known for first): dish k of that order, counting from 0, unlocks at the stall's level + ⌊k/2⌋ and the stall's reputation + 2⌊k/2⌋, so the first two dishes open with the stall and the fifth arrives two levels later. The signature order sets only the gates; the `dishIds` lists in `src/content/stalls.ts` were not reordered, and fifth dishes are appended. The highest dish gate is chilli crab at level 26 and reputation 62, which equals `ECONOMY.maxLevel`.
+The first five stalls keep their authored dish gates. From stall 6 on, a stall's dishes unlock in pairs in its signature order (the dish it is known for first): dish k of that order, counting from 0, unlocks at the stall's level + ⌊k/2⌋ and the stall's reputation + 2⌊k/2⌋, so the first two dishes open with the stall and the fifth arrives two levels later. The signature order sets only the gates; the `dishIds` lists in `src/content/stalls.ts` were not reordered, and fifth dishes are appended. The highest dish gate is chilli crab at level 32 and reputation 62, which equals `ECONOMY.maxLevel`.
 
 A stall that an older save has already unlocked keeps its opening dishes even where the new gates are higher than the save has reached: a dish whose level and reputation gates are at or below its own stall's gates is available whenever that stall is unlocked (`resolveStallMenus` and `isDishUnlockedForMenu` in `src/game/runtime/stallMenus.ts`, and the Dishes panel). Every other dish keeps its own gate, so a saved menu dish above its new gate is paused until the centre reaches it.
 
 ### Stall tenders
 
-New stalls also arrive by **stall tender**, one at a time. Beyond the two starter stalls, the next stall licence is offered no earlier than operating day 2, 4, 6, 8, 10, 12, 14, 16, 18 and 20, then 23, 26, 29, 32, 35 and 38 (`STALL_TENDER_DAYS` in `src/game/runtime/rules.ts`, one entry for each of the 16 tendered stalls; `STALL_TENDER_LATE_INTERVAL_DAYS` would add one every four days after that, which 18 stalls never reach), on top of its level, reputation and prerequisite gates. Levels 2 to 4 and the first reputation gates are reached on day 1, while a day's takings are roughly a third to a half of a new stall's price, so without the tender three stalls unlocked at once and the player could not afford to open them. In the round-2 review panel's seeded career runs (AI agents; see [TEST_REPORT.md](../TEST_REPORT.md)), an engaged builder reached each late level gate a few days before its tender (level 14 around day 11-12, level 24 around day 25-27), so such a player usually waits for the tender, while a slower one waits for the level. The tender is counted from how many tendered stalls are already unlocked, so it needs no saved state and never relocks a stall an older save already has. A centre that falls behind the schedule (for example one held back by reputation) catches up on each tender already due once the other gates are met, so an older save far into the game may receive several licences in one reconcile. The Stalls panel labels a stall waiting only for its tender "Tender on day N", and the Next up signpost names it with the day it opens. Placeables and dishes are not tendered.
+New stalls also arrive by **stall tender**, one at a time. Beyond the two starter stalls, the next stall licence is offered no earlier than operating day 2, 4, 6, 8, 10, 12, 14, 16, 18 and 20, then 23, 26, 29, 32, 35 and 38 (`STALL_TENDER_DAYS` in `src/game/runtime/rules.ts`, one entry for each of the 16 tendered stalls; `STALL_TENDER_LATE_INTERVAL_DAYS` would add one every four days after that, which 18 stalls never reach), on top of its level, reputation and prerequisite gates. Levels 2 to 4 and the first reputation gates are reached on day 1, while a day's takings are roughly a third to a half of a new stall's price, so without the tender three stalls unlocked at once and the player could not afford to open them. The round-2 review panel's seeded career runs (AI agents; see [TEST_REPORT.md](../TEST_REPORT.md)) measured how fast levels arrive: an engaged builder reached level 14 around day 11-13, level 24 around day 25-29 and level 30 around day 35-40. Against the alternate-level schedule, such a player usually waits for the tender up to Straits Hearth (level 24, tender day 29) and for the level from Herbal Cauldron on (level 26 around day 29-33, level 30 around day 35-40 against tender days 32-38), while a slower one waits for the level throughout. Those runs used an earlier, denser schedule that unlocked stalls sooner, so on the alternate-level schedule the late levels may arrive a little later; they have not been re-run. The tender is counted from how many tendered stalls are already unlocked, so it needs no saved state and never relocks a stall an older save already has. A centre that falls behind the schedule (for example one held back by reputation) catches up on each tender already due once the other gates are met, so an older save far into the game may receive several licences in one reconcile. The Stalls panel labels a stall waiting only for its tender "Tender on day N", and the Next up signpost names it with the day it opens. Placeables and dishes are not tendered.
 
 A hall with about two seats per stall caps visit ratings, so its peak reputation can sit on the 52-58 band of the late gates: the Straits Hearth chain may then wait on reputation, and the last stall may arrive only after day 40. More seating is the remedy, and the Stalls panel shows the shortfall.
 

@@ -39,18 +39,18 @@ All stall identities are original. Real dish names are descriptive cultural refe
 | 4 | Cinder Wok | Popular, slower batch-cooked wok dishes | Char kway teow; Hokkien mee; fried carrot cake; oyster omelette; beef hor fun | Level 3 |
 | 5 | Mee Pok Junction | Teochew noodle and clear-soup counter | Bak chor mee; fishball mee pok; lor mee; fishball tang hoon soup; chwee kueh | Level 4 |
 | 6 | Tiffin Lantern | Indian-Muslim-inspired griddle, noodle, and rice counter | Roti prata set; mee goreng mamak; chicken murtabak; chicken nasi briyani; roti john | Level 6 |
-| 7 | Sweet Monsoon | Compact local dessert and drinks counter | Chendol; tau huay with toppings; pulut hitam; ice kacang; soya bean milk | Level 7 |
-| 8 | Satay Meridian | Malay-inspired charcoal grill for skewers, chicken, and seafood | Chicken satay (10 sticks); barbecued chicken wings; beef satay (10 sticks); sotong panggang; mutton satay (10 sticks) | Level 8 |
-| 9 | Pick & Mix | Customisable noodle, soup, and vegetable-forward counter | Yong tau foo; ban mian; thunder tea rice; popiah; economic rice | Level 9 |
-| 10 | Jade Ladle | Cantonese porridge counter with steamed rice rolls and fried dough sticks | Century egg pork porridge; fish porridge; minced pork porridge; chee cheong fun; you tiao | Level 10 |
-| 11 | Tamarind Leaf | South Indian vegetable-forward griddle and tiffin counter | Masala thosai; idli sambar; vadai duo; lemon rice; appam | Level 11 |
-| 12 | Bamboo Basket | Cantonese dim sum, steamed small-plate and noodle counter | Prawn dumpling soup; siew mai; char siew bao; lotus leaf rice; wanton mee | Level 12 |
-| 13 | Longan Moon | Compact Teochew-Cantonese tong sui counter ladling sweet soups and pastes | Cheng tng; orh nee; tau suan; green bean soup; black sesame paste | Level 14 |
-| 14 | Lesung Corner | Malay-Indonesian warung for smashed and grilled chicken, fried rice, soto, and salads | Ayam penyet; nasi goreng; mee soto; gado-gado; ayam panggang | Level 16 |
-| 15 | Straits Hearth | Peranakan-inspired premium braises and noodles | Laksa; ayam pongteh; Nonya chap chye; babi pongteh; mee siam; kueh pie tee | Level 18 |
-| 16 | Herbal Cauldron | Heritage broth, braise, and claypot counter | Bak kut teh; duck rice; kway chap; claypot chicken rice; watercress pork rib soup | Level 20 |
-| 17 | Peppercorn Plate | Hainanese-style hawker Western grill serving on hot plates | Chicken chop; mushroom aglio olio; fish and chips; spaghetti bolognese; black pepper steak | Level 22 |
-| 18 | Harbour Ember | Premium seafood grill and soup counter | Sambal stingray; black pepper crab; fish bee hoon soup; prawn noodle soup; chilli crab | Level 24 |
+| 7 | Sweet Monsoon | Compact local dessert and drinks counter | Chendol; tau huay with toppings; pulut hitam; ice kacang; soya bean milk | Level 8 |
+| 8 | Satay Meridian | Malay-inspired charcoal grill for skewers, chicken, and seafood | Chicken satay (10 sticks); barbecued chicken wings; beef satay (10 sticks); sotong panggang; mutton satay (10 sticks) | Level 10 |
+| 9 | Pick & Mix | Customisable noodle, soup, and vegetable-forward counter | Yong tau foo; ban mian; thunder tea rice; popiah; economic rice | Level 12 |
+| 10 | Jade Ladle | Cantonese porridge counter with steamed rice rolls and fried dough sticks | Century egg pork porridge; fish porridge; minced pork porridge; chee cheong fun; you tiao | Level 14 |
+| 11 | Tamarind Leaf | South Indian vegetable-forward griddle and tiffin counter | Masala thosai; idli sambar; vadai duo; lemon rice; appam | Level 16 |
+| 12 | Bamboo Basket | Cantonese dim sum, steamed small-plate and noodle counter | Prawn dumpling soup; siew mai; char siew bao; lotus leaf rice; wanton mee | Level 18 |
+| 13 | Longan Moon | Compact Teochew-Cantonese tong sui counter ladling sweet soups and pastes | Cheng tng; orh nee; tau suan; green bean soup; black sesame paste | Level 20 |
+| 14 | Lesung Corner | Malay-Indonesian warung for smashed and grilled chicken, fried rice, soto, and salads | Ayam penyet; nasi goreng; mee soto; gado-gado; ayam panggang | Level 22 |
+| 15 | Straits Hearth | Peranakan-inspired premium braises and noodles | Laksa; ayam pongteh; Nonya chap chye; babi pongteh; mee siam; kueh pie tee | Level 24 |
+| 16 | Herbal Cauldron | Heritage broth, braise, and claypot counter | Bak kut teh; duck rice; kway chap; claypot chicken rice; watercress pork rib soup | Level 26 |
+| 17 | Peppercorn Plate | Hainanese-style hawker Western grill serving on hot plates | Chicken chop; mushroom aglio olio; fish and chips; spaghetti bolognese; black pepper steak | Level 28 |
+| 18 | Harbour Ember | Premium seafood grill and soup counter | Sambal stingray; black pepper crab; fish bee hoon soup; prawn noodle soup; chilli crab | Level 30 |
 
 The stalls are authored in this order, which a content rule ties to their unlock order; the reputation gates, prerequisites, tender days and dish gates are in [ECONOMY_AND_PROGRESSION.md](ECONOMY_AND_PROGRESSION.md#stall-unlocks).
 
