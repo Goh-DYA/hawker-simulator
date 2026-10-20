@@ -1,8 +1,9 @@
 /**
  * Variant layers for the bowl dishes: fish soup (clear or milky, sliced or fried fish, with or
- * without bee hoon),
+ * without bee hoon), fish porridge (fried or sliced fish),
  * bak chor mee (dry or soup), yong tau foo (clear or laksa broth with boiled, fried, mixed or
- * noodle pieces), ban mian (six ways) and bak kut teh (peppery, dry claypot or herbal).
+ * noodle pieces), ban mian (six ways, plus mee hoon kway dry or in soup) and bak kut teh
+ * (peppery, dry claypot or herbal).
  *
  * Each pours its broth (or sauce) into the bowl's food area first, then lays the noodles and
  * pieces that tell its siblings apart. Bak kut teh also has a side pass, painted after the
@@ -12,9 +13,16 @@ import {
   css,
   fill_ellipse,
   fill_polygon,
+  line,
   linear_gradient,
+  seeded,
+  shade,
   SHADOW_INK,
+  speckle,
   stroke_ellipse,
+  TAU,
+  tint,
+  type PaintContext,
 } from "../../canvas";
 import { at, heap_scale, pieces_left } from "../motif";
 import {
@@ -108,6 +116,10 @@ function paint_fish_slice(q: LayerPaint, x: number, y: number, angle: number): v
 
 /** Milky fish broth soaked into the lower edge of a fried piece. */
 const MILKY_SOAK = 0xd9b98a;
+/** Cantonese congee: silky, broken-down rice porridge. */
+const CONGEE = 0xf2e8cc;
+/** Congee soaked into the lower edge of a fried fish piece. */
+const CONGEE_SOAK = 0xd8c49a;
 
 /**
  * The fish soup layer: clear or milky broth, with or without bee hoon, holding either flat
@@ -173,6 +185,65 @@ export function paint_fish_soup_layer(q: LayerPaint): void {
   const [tx, ty] = at(area, 0.55, 0.35);
   paint_chilli_slice(ctx, tx, ty, 2, 0xd8432a);
   paint_scallions(ctx, area.x, area.y, area.rx * 0.5, q.isLowDetail ? 3 : 5, q.seed ^ 0x11);
+}
+
+/**
+ * The fish porridge layer: silky congee holding a golden heap of battered fried fish pieces
+ * with fried shallots, or flat sliced fish with leafy greens, finished with spring onion.
+ *
+ * @param q - The layer paint.
+ */
+export function paint_porridge_layer(q: LayerPaint): void {
+  const { ctx } = q;
+  const area = food_area("bowl", 0, 0, 1, q.remaining);
+  paint_liquid(ctx, area.x, area.y, area.rx, area.ry, CONGEE, { sheen: 0.35 });
+  if (!q.isLowDetail) {
+    speckle(
+      ctx,
+      area.x - area.rx * 0.7,
+      area.y - area.ry * 0.6,
+      area.rx * 1.4,
+      area.ry * 1.2,
+      10,
+      [0xfbf6e8],
+      q.seed,
+      1,
+    );
+  }
+  if (q.has("fried")) {
+    const pieces = pieces_left(4, q.remaining);
+    for (let piece = 0; piece < pieces; piece += 1) {
+      const [x, y] = at(
+        area,
+        -0.2 + (piece % 2) * 0.42,
+        -0.32 + Math.floor(piece / 2) * 0.42 + (piece % 2) * 0.1,
+      );
+      paint_battered_piece(
+        ctx,
+        x,
+        y,
+        10.4,
+        6.8,
+        -0.4 + piece * 0.5,
+        q.seed ^ (piece * 0x9e37),
+        CONGEE_SOAK,
+        q.isLowDetail,
+      );
+    }
+    const [sx, sy] = at(area, 0.05, 0);
+    paint_dots(ctx, sx, sy, area.rx * 0.5, q.isLowDetail ? 3 : 6, 0.7, SHALLOT, q.seed ^ 0x5b);
+  } else {
+    const slices = pieces_left(3, q.remaining);
+    for (let slice = 0; slice < slices; slice += 1) {
+      const [x, y] = at(area, -0.3 + slice * 0.3, -0.32 + (slice % 2) * 0.32);
+      paint_fish_slice(q, x, y, -0.3 + slice * 0.4);
+    }
+    const [gx, gy] = at(area, -0.45, 0.42);
+    paint_greens(ctx, gx, gy, 8, 0.3, 0x3f8a3a);
+    const [hx, hy] = at(area, 0.45, 0.38);
+    paint_greens(ctx, hx, hy, 7, -2.7, 0x4c8a3c);
+  }
+  paint_scallions(ctx, area.x, area.y - 1, area.rx * 0.5, q.isLowDetail ? 3 : 6, q.seed ^ 0x5c);
 }
 
 /**
@@ -309,6 +380,11 @@ export function paint_yong_tau_foo_layer(q: LayerPaint): void {
 export function paint_ban_mian_layer(q: LayerPaint): void {
   const { ctx } = q;
   const area = food_area("bowl", 0, 0, 1, q.remaining);
+  // Checked before the dry and soup branches, since a mee hoon kway key names one of them too.
+  if (q.has("mee-hoon-kway")) {
+    paint_mee_hoon_kway(q, area);
+    return;
+  }
   const size = heap_scale(q.remaining);
   const isDry = q.has("dry-toss", "chilli-toss");
   if (q.has("tom-yum")) pour(q, area, 0xd8582a, 8);
@@ -393,6 +469,124 @@ export function paint_ban_mian_layer(q: LayerPaint): void {
     1.1,
   );
   paint_scallions(ctx, area.x, area.y, area.rx * 0.5, q.isLowDetail ? 2 : 4, q.seed ^ 0x34);
+}
+
+/**
+ * Paints a torn piece of hand-made dough (mee hoon kway): a flat, ragged sheet of pale dough
+ * with a fold across it.
+ *
+ * @param ctx - The paint context.
+ * @param x - Piece centre x.
+ * @param y - Piece centre y.
+ * @param size - Piece width.
+ * @param angle - Rotation in radians.
+ * @param seed - Outline seed.
+ */
+function paint_torn_dough(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  size: number,
+  angle: number,
+  seed: number,
+): void {
+  const next = seeded(seed);
+  const points: [number, number][] = [];
+  for (let corner = 0; corner < 7; corner += 1) {
+    const turn = (corner / 7) * TAU;
+    const reach = 0.7 + next() * 0.4;
+    points.push([Math.cos(turn) * size * 0.5 * reach, Math.sin(turn) * size * 0.32 * reach]);
+  }
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  fill_polygon(
+    ctx,
+    points.map(([px, py]) => [px + 0.5, py + 0.8] as const),
+    css(SHADOW_INK, 0.22),
+  );
+  fill_polygon(
+    ctx,
+    points,
+    linear_gradient(ctx, -size * 0.5, -size * 0.3, size * 0.5, size * 0.3, [
+      [0, tint(BAN_MIAN, 0.35)],
+      [0.6, BAN_MIAN],
+      [1, shade(BAN_MIAN, 0.25)],
+    ]),
+  );
+  line(
+    ctx,
+    -size * 0.3,
+    -size * 0.05,
+    size * 0.25,
+    size * 0.08,
+    css(shade(BAN_MIAN, 0.35), 0.7),
+    0.5,
+  );
+  ctx.restore();
+}
+
+/**
+ * Paints mee hoon kway: torn pieces of hand-made dough, dry in a dark sauce or in a clear
+ * soup, with ribbons of beaten egg, minced pork, chye sim and fried anchovies.
+ *
+ * @param q - The layer paint.
+ * @param area - The bowl's food area.
+ */
+function paint_mee_hoon_kway(q: LayerPaint, area: FoodArea): void {
+  const { ctx } = q;
+  const isDry = q.has("dry");
+  if (isDry) fill_ellipse(ctx, area.x, area.y, area.rx, area.ry, css(0x5a3a24, 0.85));
+  else pour(q, area, 0xdac99c);
+  const next = seeded(q.seed ^ 0x3a);
+  const pieces = pieces_left(isDry ? 8 : 6, q.remaining);
+  for (let piece = 0; piece < pieces; piece += 1) {
+    const angle = next() * TAU;
+    const reach = Math.sqrt(next()) * 0.62;
+    paint_torn_dough(
+      ctx,
+      area.x + Math.cos(angle) * area.rx * reach,
+      area.y + Math.sin(angle) * area.ry * reach,
+      5.6,
+      next() * Math.PI,
+      q.seed ^ (piece * 0x2b),
+    );
+  }
+  paint_shreds(
+    ctx,
+    area.x + 1,
+    area.y,
+    area.rx * 0.5,
+    q.isLowDetail ? 3 : 6,
+    0xf2d060,
+    q.seed ^ 0x3b,
+    3.4,
+    1.2,
+  );
+  paint_dots(
+    ctx,
+    area.x - 2,
+    area.y - 1,
+    area.rx * 0.3,
+    q.isLowDetail ? 3 : 6,
+    0.8,
+    0x8a5034,
+    q.seed ^ 0x3c,
+  );
+  const [gx, gy] = at(area, 0.5, 0.35);
+  paint_greens(ctx, gx, gy, 8, -2.6, 0x2f7a32);
+  paint_shreds(
+    ctx,
+    area.x - 2,
+    area.y + 2,
+    area.rx * 0.35,
+    q.isLowDetail ? 3 : 6,
+    0xc09a5a,
+    q.seed ^ 0x3d,
+    2.4,
+    1.1,
+  );
+  paint_scallions(ctx, area.x, area.y, area.rx * 0.5, q.isLowDetail ? 2 : 4, q.seed ^ 0x3e);
 }
 
 /**

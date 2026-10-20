@@ -707,7 +707,7 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <span>Dishes &amp; nutrition</span>
 <h2>Menu planning</h2>
 </div>
-<span class="count-badge">67</span>
+<span class="count-badge">91</span>
 <button type="button" class="sheet-close-button" aria-label="Close management sheet">×</button>
 </div>
 <div class="menu-manager">
@@ -721,10 +721,14 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <option value="stall.sweet-monsoon" disabled="">Sweet Monsoon</option>
 <option value="stall.satay-meridian" disabled="">Satay Meridian</option>
 <option value="stall.pick-and-mix" disabled="">Pick &amp; Mix</option>
+<option value="stall.jade-ladle" disabled="">Jade Ladle</option>
 <option value="stall.tamarind-leaf" disabled="">Tamarind Leaf</option>
 <option value="stall.bamboo-basket" disabled="">Bamboo Basket</option>
+<option value="stall.longan-moon" disabled="">Longan Moon</option>
+<option value="stall.lesung-corner" disabled="">Lesung Corner</option>
 <option value="stall.straits-hearth" disabled="">Straits Hearth</option>
 <option value="stall.herbal-cauldron" disabled="">Herbal Cauldron</option>
+<option value="stall.peppercorn-plate" disabled="">Peppercorn Plate</option>
 <option value="stall.harbour-ember" disabled="">Harbour Ember</option>
 </select>
 </label>
@@ -1703,7 +1707,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <span>Food &amp; drink</span>
 <h2>Stalls</h2>
 </div>
-<span class="count-badge">14</span>
+<span class="count-badge">18</span>
 <button type="button" class="sheet-close-button" aria-label="Close management sheet">×</button>
 </div>
 <div class="stall-list" data-testid="stall-catalogue">
@@ -1795,7 +1799,7 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <strong>Tiffin Lantern</strong>
 <small>5 dishes · 76 quality</small>
 </span>
-<em>Level 5</em>
+<em>Level 6</em>
 </button>
 <button type="button" class="stall-card">
 <span class="stall-swatch" data-stall="sweet-monsoon" style="background: linear-gradient(145deg, rgb(181, 23, 158), rgb(205, 231, 127));" aria-hidden="true">▰</span>
@@ -1803,15 +1807,15 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <strong>Sweet Monsoon</strong>
 <small>5 dishes · 72 quality</small>
 </span>
-<em>Level 5</em>
+<em>Level 7</em>
 </button>
 <button type="button" class="stall-card">
 <span class="stall-swatch" data-stall="satay-meridian" style="background: linear-gradient(145deg, rgb(198, 93, 46), rgb(48, 37, 28));" aria-hidden="true">▰</span>
 <span>
 <strong>Satay Meridian</strong>
-<small>4 dishes · 78 quality</small>
+<small>5 dishes · 78 quality</small>
 </span>
-<em>Level 6</em>
+<em>Level 8</em>
 </button>
 <button type="button" class="stall-card">
 <span class="stall-swatch" data-stall="pick-and-mix" style="background: linear-gradient(145deg, rgb(77, 144, 142), rgb(246, 232, 177));" aria-hidden="true">▰</span>
@@ -1819,15 +1823,23 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <strong>Pick &amp; Mix</strong>
 <small>5 dishes · 77 quality</small>
 </span>
-<em>Level 6</em>
+<em>Level 9</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="jade-ladle" style="background: linear-gradient(145deg, rgb(59, 106, 174), rgb(238, 242, 246));" aria-hidden="true">▰</span>
+<span>
+<strong>Jade Ladle</strong>
+<small>5 dishes · 74 quality</small>
+</span>
+<em>Level 10</em>
 </button>
 <button type="button" class="stall-card">
 <span class="stall-swatch" data-stall="tamarind-leaf" style="background: linear-gradient(145deg, rgb(96, 108, 56), rgb(254, 250, 224));" aria-hidden="true">▰</span>
 <span>
 <strong>Tamarind Leaf</strong>
-<small>4 dishes · 78 quality</small>
+<small>5 dishes · 78 quality</small>
 </span>
-<em>Level 7</em>
+<em>Level 11</em>
 </button>
 <button type="button" class="stall-card">
 <span class="stall-swatch" data-stall="bamboo-basket" style="background: linear-gradient(145deg, rgb(47, 107, 79), rgb(200, 70, 48));" aria-hidden="true">▰</span>
@@ -1835,7 +1847,23 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <strong>Bamboo Basket</strong>
 <small>5 dishes · 82 quality</small>
 </span>
-<em>Level 8</em>
+<em>Level 12</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="longan-moon" style="background: linear-gradient(145deg, rgb(126, 87, 194), rgb(246, 235, 217));" aria-hidden="true">▰</span>
+<span>
+<strong>Longan Moon</strong>
+<small>5 dishes · 74 quality</small>
+</span>
+<em>Level 14</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="lesung-corner" style="background: linear-gradient(145deg, rgb(239, 138, 158), rgb(47, 93, 58));" aria-hidden="true">▰</span>
+<span>
+<strong>Lesung Corner</strong>
+<small>5 dishes · 79 quality</small>
+</span>
+<em>Level 16</em>
 </button>
 <button type="button" class="stall-card">
 <span class="stall-swatch" data-stall="straits-hearth" style="background: linear-gradient(145deg, rgb(42, 157, 143), rgb(244, 162, 97));" aria-hidden="true">▰</span>
@@ -1843,23 +1871,31 @@ exports[`HawkerSimulator panels > renders the Stalls panel for a captured runtim
 <strong>Straits Hearth</strong>
 <small>6 dishes · 86 quality</small>
 </span>
-<em>Level 9</em>
+<em>Level 18</em>
 </button>
 <button type="button" class="stall-card">
 <span class="stall-swatch" data-stall="herbal-cauldron" style="background: linear-gradient(145deg, rgb(92, 61, 46), rgb(221, 174, 126));" aria-hidden="true">▰</span>
 <span>
 <strong>Herbal Cauldron</strong>
-<small>4 dishes · 85 quality</small>
+<small>5 dishes · 85 quality</small>
 </span>
-<em>Level 11</em>
+<em>Level 20</em>
+</button>
+<button type="button" class="stall-card">
+<span class="stall-swatch" data-stall="peppercorn-plate" style="background: linear-gradient(145deg, rgb(142, 42, 67), rgb(243, 233, 215));" aria-hidden="true">▰</span>
+<span>
+<strong>Peppercorn Plate</strong>
+<small>5 dishes · 84 quality</small>
+</span>
+<em>Level 22</em>
 </button>
 <button type="button" class="stall-card">
 <span class="stall-swatch" data-stall="harbour-ember" style="background: linear-gradient(145deg, rgb(29, 53, 87), rgb(230, 57, 70));" aria-hidden="true">▰</span>
 <span>
 <strong>Harbour Ember</strong>
-<small>4 dishes · 90 quality</small>
+<small>5 dishes · 90 quality</small>
 </span>
-<em>Level 12</em>
+<em>Level 24</em>
 </button>
 </div>
 </aside>"

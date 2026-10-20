@@ -1,9 +1,10 @@
 /**
  * The nutrition variant cue: the part of a served dish that shows which reviewed variant the
- * stall is serving. Each of the thirteen reviewed families has a layer painter that changes the
+ * stall is serving. Each of the twenty reviewed families has a layer painter that changes the
  * dish itself (the drink's colour and sugar, the protein beside the rice, the broth and pieces
- * in a bowl, the shape of the bread); an unreviewed key falls back to one to three outlined
- * triangles, counted from a stable hash of the key, so an active variant always shows.
+ * in a bowl, the shape of the bread, the sides on a Western plate); an unreviewed key falls back
+ * to one to three outlined triangles, counted from a stable hash of the key, so an active
+ * variant always shows.
  *
  * A family that also serves sides (bak kut teh's rice and you tiao) has a side pass, painted
  * after the vessel's rim and outside its clip. It runs only for a key that orders a side, so
@@ -20,16 +21,25 @@ import {
   paint_bak_kut_teh_sides,
   paint_ban_mian_layer,
   paint_fish_soup_layer,
+  paint_porridge_layer,
   paint_yong_tau_foo_layer,
 } from "./variants/bowls";
 import { paint_murtabak_layer, paint_prata_layer, paint_thosai_layer } from "./variants/breads";
 import { paint_drink_layer } from "./variants/drinks";
 import type { LayerPainter } from "./variants/layer";
 import {
+  paint_mee_siam_layer,
+  paint_prawn_mee_layer,
+  paint_wanton_mee_layer,
+} from "./variants/noodles";
+import {
   paint_briyani_layer,
   paint_carrot_cake_layer,
   paint_duck_rice_layer,
+  paint_economic_rice_layer,
   paint_nasi_lemak_layer,
+  paint_nasi_padang_layer,
+  paint_western_layer,
 } from "./variants/plates";
 
 /** The families with their own reviewed composition. */
@@ -50,6 +60,13 @@ const LAYER_PAINTERS: Readonly<Record<ReviewedFamily, LayerPainter>> = {
   "ban-mian": paint_ban_mian_layer,
   "bak-kut-teh": paint_bak_kut_teh_layer,
   "duck-rice": paint_duck_rice_layer,
+  "prawn-mee": paint_prawn_mee_layer,
+  "economic-rice": paint_economic_rice_layer,
+  "nasi-padang": paint_nasi_padang_layer,
+  "mee-siam": paint_mee_siam_layer,
+  "wanton-mee": paint_wanton_mee_layer,
+  western: paint_western_layer,
+  porridge: paint_porridge_layer,
 };
 
 /** A family's side pass: the key parts that order a side, and the painter that serves them. */

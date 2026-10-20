@@ -22,7 +22,7 @@ describe("launch content", () => {
     assert.equal(report.counts.dishes, LAUNCH_ROSTER.dishes);
     assert.equal(report.counts.placeables, LAUNCH_ROSTER.placeables);
     assert.equal(report.counts.customerArchetypes, LAUNCH_ROSTER.customerArchetypes);
-    assert.equal(report.counts.localizationKeys, 346);
+    assert.equal(report.counts.localizationKeys, 402);
   });
 
   it("ships four new customer personas with distinct demand roles", () => {
@@ -97,6 +97,7 @@ describe("launch content", () => {
         "dish.bbq-chicken-wings",
         "dish.beef-satay-set",
         "dish.sambal-grilled-squid",
+        "dish.mutton-satay-set",
       ],
       "stall.bamboo-basket": [
         "dish.har-gow",
@@ -138,6 +139,8 @@ describe("launch content", () => {
       "dish.thunder-tea-rice",
       "dish.popiah",
       "dish.duck-rice",
+      "dish.gado-gado",
+      "dish.mutton-satay-set",
     ]);
   });
 
@@ -287,7 +290,7 @@ describe("launch content", () => {
     const broken = structuredClone(LAUNCH_CONTENT) as unknown as {
       placeables: Array<{ unlockRequirement: { level: number } }>;
     };
-    broken.placeables[0].unlockRequirement.level = 21;
+    broken.placeables[0].unlockRequirement.level = 27;
 
     assert.throws(
       () => validateContent(broken),

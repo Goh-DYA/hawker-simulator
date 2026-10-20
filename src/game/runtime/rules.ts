@@ -24,7 +24,9 @@ export const MAP_EXPANSION = { addColumns: 4, addRows: 2, minimumLevel: 3 } as c
  * player's takings can keep up with their prices. Tenders past the end of the list follow every
  * `STALL_TENDER_LATE_INTERVAL_DAYS` days.
  */
-export const STALL_TENDER_DAYS: readonly number[] = [2, 4, 6, 8, 10, 12, 14, 17, 20, 23, 26, 30];
+export const STALL_TENDER_DAYS: readonly number[] = [
+  2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 23, 26, 29, 32, 35, 38,
+];
 
 /** Days between stall tenders after the scheduled list runs out. */
 export const STALL_TENDER_LATE_INTERVAL_DAYS = 4;

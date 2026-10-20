@@ -10,13 +10,15 @@
  * out of the runtime closure keeps the drawn output identical: a swapped captured
  * variable, a reordered call or changed float arithmetic moves the digest.
  *
- * `fixtures/gallery-save.json` was generated once from 06ac46f with this harness: a fresh
- * export raised to level 14 with 5 reputation, every definition unlocked and every stall
- * at mastery rank 7, then four map expansions and one of each STALLS and PLACEABLES entry
- * placed through the place tool, scanning rows for the first tile with a clear one-tile
- * margin. Each stall's menu lists its variant-family dishes first, so every reviewed
- * nutrition variant can show on a counter. A save holds one active variant per dish, so
- * scenario (9b) selects every variant in turn.
+ * `fixtures/gallery-save.json` was first generated from 06ac46f: a fresh export raised to
+ * level 14 with 5 reputation, every definition unlocked and every stall at mastery rank 7,
+ * then four map expansions and one of each STALLS and PLACEABLES entry placed through the
+ * place tool, scanning rows for the first tile with a clear one-tile margin. For content
+ * 1.6.0, `gallery.test.ts` (run with `GALLERY_REGENERATE=1`) raised it to the level cap,
+ * expanded the hall twice more and placed the four new stalls the same way. Each stall's
+ * menu lists its variant-family dishes first, so every reviewed nutrition variant can show
+ * on a counter. A save holds one active variant per dish, so scenario (9b) selects every
+ * variant in turn.
  *
  * The literals change only in intentional visual commits. If a refactor makes one fail,
  * the refactor changed what is drawn: fix the code, never the literal or the snapshot.
@@ -107,20 +109,20 @@ const RENDER_DIGESTS = {
     sha256: "918f2bd8a8e7bdd0a3479fc441f66ef3c970dcffd1e8fa5570b9c50bbcba7806",
   },
   gallery: {
-    calls: 768_269,
-    sha256: "8c7ac2c1b974aea891e37f523fa27158cec786a319d9bb635e288e7bb38497ee",
+    calls: 977_794,
+    sha256: "d58d464188b624bb0d7252faf9f006ecee867756eab1fc37e6b3b200b219c5cc",
   },
   galleryVariants: {
-    calls: 61_005,
-    sha256: "937a7b27df264147c74535792ba597c5449efd57f0410648efa9182252e5581f",
+    calls: 120_440,
+    sha256: "4a3b8a6e4a9d708ec4372ee4587d078c94acd4181f88e8c84eb6487052cd0100",
   },
   multiDayFrame480: {
     calls: 225,
     sha256: "704a3431061facfe25c5c1fc254ee3ef47193c84f5dc1c9f6ffbc6a91c08af85",
   },
   multiDayFrame960: {
-    calls: 237,
-    sha256: "782d2d1ec25d48dd80fd7d4cd02c7f602bedcfb34f2befe3f9bd48602680823f",
+    calls: 236,
+    sha256: "2db9c79949f72e9d1a6791604ed29daa6709bd3978ad6edf6250e4037f083d09",
   },
 } satisfies Record<string, RenderLogDigest>;
 

@@ -2,7 +2,8 @@
  * More ingredient primitives for the dish motifs, alongside `parts.ts`: shreds and bean sprouts,
  * leafy greens, scallion rings, sambal dollops, fish cake and sausage slices, mushrooms, tofu
  * puffs, chicken wings and drumsticks, small fried fish, dough-fritter slices and sticks,
- * calamansi halves, shaved-ice mounds and spoons.
+ * calamansi halves, shaved-ice mounds and spoons, fries, century egg wedges, steamed rice rolls,
+ * smashed fried chicken and grilled cuts (steak, chicken chop, fish fillet).
  *
  * Each is a pure Canvas 2D painter in world pixels, lit from the north-west with a small cast
  * shadow to the south-east, and flat round things are foreshortened by `FLAT_RATIO` so they lie
@@ -25,7 +26,7 @@ import {
   tint,
   type PaintContext,
 } from "../canvas";
-import { FLAT_RATIO, paint_gloss, WHITE } from "./parts";
+import { FLAT_RATIO, paint_battered_piece, paint_gloss, WHITE } from "./parts";
 
 /**
  * A row of chopped chicken or duck: each piece's skin top (width and foreshortened length),
@@ -985,4 +986,276 @@ export function paint_slice_row(
     fill_rounded_rect(ctx, left + 0.6, top + 1, 0.9, length * 0.5, 0.4, css(WHITE, gloss));
     ctx.restore();
   }
+}
+
+/** Fries: golden potato batons, with their lit face and browned tips. */
+const FRIES = { potato: 0xe8b84a, lit: 0xf6dc8a, tip: 0xb87a2a } as const;
+
+/**
+ * Lays a heap of fries: golden potato batons crossed over each other, each with a lit top face
+ * and a browned tip, in seeded directions. Fewer batons are left as the serving is eaten.
+ *
+ * @param ctx - The paint context.
+ * @param x - Heap centre x.
+ * @param y - Heap centre y.
+ * @param radius - Heap radius.
+ * @param count - Number of batons (6 to 9 on a full serving).
+ * @param seed - Placement seed.
+ */
+export function paint_fries(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  radius: number,
+  count: number,
+  seed: number,
+): void {
+  const next = seeded(seed);
+  for (let baton = 0; baton < count; baton += 1) {
+    const angle = (next() - 0.5) * 1.6 + (baton % 2 ? 0.5 : -0.5);
+    const distance = Math.sqrt(next()) * radius * 0.6;
+    const place = next() * TAU;
+    const length = radius * (0.9 + next() * 0.35);
+    ctx.save();
+    ctx.translate(x + Math.cos(place) * distance, y + Math.sin(place) * distance * FLAT_RATIO);
+    ctx.rotate(angle);
+    fill_rounded_rect(ctx, -length / 2 + 0.4, -0.6, length, 1.9, 0.6, css(SHADOW_INK, 0.24));
+    fill_rounded_rect(
+      ctx,
+      -length / 2,
+      -1,
+      length,
+      1.9,
+      0.6,
+      linear_gradient(ctx, 0, -1, 0, 0.9, [
+        [0, FRIES.lit],
+        [0.5, FRIES.potato],
+        [1, shade(FRIES.potato, 0.25)],
+      ]),
+    );
+    fill_rounded_rect(ctx, length / 2 - 1.1, -1, 1.1, 1.9, 0.5, css(FRIES.tip, 0.8));
+    ctx.restore();
+  }
+}
+
+/** Century egg: the translucent amber-black jelly of its white and its grey-green yolk. */
+const CENTURY_EGG = { jelly: 0x3a2618, amber: 0x8a5a2a, yolk: 0x5a6646, core: 0x34402e } as const;
+
+/**
+ * Paints a wedge of century egg: the dark, translucent amber jelly of the white round a
+ * creamy grey-green yolk, with a glassy highlight.
+ *
+ * @param ctx - The paint context.
+ * @param x - Wedge centre x.
+ * @param y - Wedge centre y.
+ * @param size - Wedge length.
+ * @param angle - Rotation in radians, the point towards +x.
+ */
+export function paint_century_egg_wedge(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  size: number,
+  angle: number,
+): void {
+  const half = size / 2;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  const trace = (dx: number, dy: number) => {
+    ctx.beginPath();
+    ctx.moveTo(half + dx, dy);
+    ctx.quadraticCurveTo(-half * 0.2 + dx, -half * 0.95 + dy, -half + dx, -half * 0.25 + dy);
+    ctx.quadraticCurveTo(-half * 1.05 + dx, half * 0.45 + dy, -half * 0.2 + dx, half * 0.6 + dy);
+    ctx.closePath();
+  };
+  trace(0.5, 0.8);
+  ctx.fillStyle = css(SHADOW_INK, 0.26);
+  ctx.fill();
+  trace(0, 0);
+  ctx.fillStyle = linear_gradient(ctx, -half, -half, half, half, [
+    [0, CENTURY_EGG.amber],
+    [0.55, CENTURY_EGG.jelly],
+    [1, shade(CENTURY_EGG.jelly, 0.3)],
+  ]);
+  ctx.fill();
+  fill_ellipse(ctx, -half * 0.35, 0, half * 0.42, half * 0.3, css(CENTURY_EGG.yolk));
+  fill_ellipse(ctx, -half * 0.4, 0.1, half * 0.2, half * 0.15, css(CENTURY_EGG.core));
+  fill_ellipse(ctx, half * 0.15, -half * 0.3, half * 0.3, half * 0.08, css(WHITE, 0.45));
+  ctx.restore();
+}
+
+/** Chee cheong fun: the pale, glossy steamed rice sheet. */
+const RICE_ROLL = 0xf4efe4;
+
+/**
+ * Paints a steamed rice-sheet roll (chee cheong fun): a soft, pale cylinder lying at an angle,
+ * with the folds of the sheet across it and its rolled layers showing at the cut end.
+ *
+ * @param ctx - The paint context.
+ * @param x - Roll centre x.
+ * @param y - Roll centre y.
+ * @param length - Roll length.
+ * @param angle - Rotation in radians.
+ */
+export function paint_rice_roll(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  length: number,
+  angle: number,
+): void {
+  const half = length / 2;
+  const thickness = 4.4;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  fill_rounded_rect(
+    ctx,
+    -half + 0.6,
+    -thickness / 2 + 1,
+    length,
+    thickness,
+    thickness / 2,
+    css(SHADOW_INK, 0.22),
+  );
+  fill_rounded_rect(
+    ctx,
+    -half,
+    -thickness / 2,
+    length,
+    thickness,
+    thickness / 2,
+    linear_gradient(ctx, 0, -thickness / 2, 0, thickness / 2, [
+      [0, WHITE],
+      [0.45, RICE_ROLL],
+      [1, shade(RICE_ROLL, 0.2)],
+    ]),
+  );
+  for (const along of [-0.35, 0.1, 0.5]) {
+    line(
+      ctx,
+      along * half,
+      -thickness / 2 + 0.5,
+      along * half + 0.6,
+      thickness / 2 - 0.5,
+      css(shade(RICE_ROLL, 0.3), 0.55),
+      0.45,
+    );
+  }
+  stroke_ellipse(ctx, half - 1.2, 0, 1.1, thickness / 2 - 0.4, css(shade(RICE_ROLL, 0.28)), 0.45);
+  fill_rounded_rect(
+    ctx,
+    -half + 1.4,
+    -thickness / 2 + 0.6,
+    length * 0.55,
+    0.7,
+    0.3,
+    css(WHITE, 0.7),
+  );
+  ctx.restore();
+}
+
+/**
+ * Paints smashed fried chicken (ayam penyet): a battered piece flattened wide by the pestle, at
+ * 1.4 times its height across, with sambal pressed into the crust.
+ *
+ * @param ctx - The paint context.
+ * @param x - Piece centre x.
+ * @param y - Piece centre y.
+ * @param height - Piece height; the width is 1.4 times it.
+ * @param angle - Tilt in radians.
+ * @param seed - Outline and crumb seed.
+ * @param is_low_detail - True for the lower-end frame.
+ */
+export function paint_smashed_chicken(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  height: number,
+  angle: number,
+  seed: number,
+  is_low_detail: boolean,
+): void {
+  paint_battered_piece(ctx, x, y, height * 1.4, height, angle, seed, 0x8a4a22, is_low_detail);
+  // The cracks where the pestle split the crust.
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.lineCap = "round";
+  line(ctx, -height * 0.3, -height * 0.15, height * 0.1, height * 0.05, css(0x7a4418, 0.7), 0.5);
+  line(ctx, height * 0.1, height * 0.05, height * 0.35, -height * 0.2, css(0x7a4418, 0.7), 0.5);
+  ctx.restore();
+}
+
+/**
+ * Paints a grilled cut (a steak, a chicken chop, a fish fillet): a broad, rounded slab lit from
+ * the north-west, with its seared side showing to the south-east, dark diagonal grill marks
+ * across the top and a glaze highlight.
+ *
+ * @param ctx - The paint context.
+ * @param x - Cut centre x.
+ * @param y - Cut centre y.
+ * @param width - Cut length.
+ * @param height - Cut depth, foreshortened.
+ * @param angle - Tilt in radians.
+ * @param colour_value - The seared surface colour.
+ * @param marks - Number of grill marks.
+ */
+export function paint_grilled_cut(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  angle: number,
+  colour_value: number,
+  marks: number,
+): void {
+  const half_width = width / 2;
+  const half_height = height / 2;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  fill_ellipse(ctx, 0.8, 1.4, half_width, half_height, css(SHADOW_INK, 0.26));
+  fill_ellipse(ctx, 0, 1, half_width, half_height, css(shade(colour_value, 0.4)));
+  fill_ellipse(
+    ctx,
+    0,
+    0,
+    half_width,
+    half_height,
+    radial_gradient(ctx, -half_width * 0.3, -half_height * 0.35, 0.3, half_width * 1.1, [
+      [0, tint(colour_value, 0.3)],
+      [0.65, colour_value],
+      [1, shade(colour_value, 0.3)],
+    ]),
+  );
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(0, 0, half_width - 0.4, half_height - 0.4, 0, 0, TAU);
+  ctx.clip();
+  ctx.lineCap = "round";
+  for (let mark = 0; mark < marks; mark += 1) {
+    const along = ((mark + 0.5) / marks - 0.5) * width * 0.9;
+    line(
+      ctx,
+      along - half_height * 0.5,
+      -half_height,
+      along + half_height * 0.5,
+      half_height,
+      css(shade(colour_value, 0.6), 0.85),
+      0.9,
+    );
+  }
+  ctx.restore();
+  paint_gloss(
+    ctx,
+    -half_width * 0.3,
+    -half_height * 0.35,
+    half_width * 0.3,
+    half_height * 0.16,
+    0.45,
+  );
+  ctx.restore();
 }

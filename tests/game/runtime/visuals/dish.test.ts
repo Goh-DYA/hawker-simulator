@@ -17,7 +17,7 @@ describe("code-native dish visual recipes", () => {
   it("gives every dish a unique, recognisable real-life serving profile", () => {
     const recipes = DISHES.map(visualRecipeForDish);
 
-    assert.equal(recipes.length, 67);
+    assert.equal(recipes.length, 91);
     assert.equal(new Set(recipes.map((recipe) => recipe.contractKey)).size, DISHES.length);
     assert.equal(
       new Set(recipes.map((recipe) => recipe.presentation.semanticKey)).size,
@@ -33,7 +33,8 @@ describe("code-native dish visual recipes", () => {
       assert.equal(recipe.steam, DISHES[index]?.steamEffect);
       assert.ok(recipe.portionColour > 0);
       assert.equal(recipe.presentation.source, "catalogue");
-      assert.ok(recipe.presentation.ingredientCues.length >= 2);
+      // A dish whose source row names one thing (you tiao, green bean soup) has one cue.
+      assert.ok(recipe.presentation.ingredientCues.length >= 1);
       assert.ok(recipe.presentation.detailCues.length >= 1);
       assert.doesNotMatch(recipe.presentation.motif, /generic|catalogue/);
     }
@@ -122,6 +123,14 @@ describe("code-native dish visual recipes", () => {
     assert.ok(
       recipes.get("dish.claypot-chicken-rice")?.presentation.detailCues.includes("claypot-crust"),
     );
+    assert.equal(
+      recipes.get("dish.chicken-chop")?.presentation.vessel,
+      "cast-iron-hot-plate",
+    );
+    assert.equal(
+      recipes.get("dish.black-pepper-steak")?.presentation.vessel,
+      "cast-iron-hot-plate",
+    );
   });
 
   it("gives every reviewed nutrition variant a non-colour composition contract", () => {
@@ -166,6 +175,13 @@ describe("code-native dish visual recipes", () => {
         "ban-mian",
         "bak-kut-teh",
         "duck-rice",
+        "prawn-mee",
+        "economic-rice",
+        "nasi-padang",
+        "mee-siam",
+        "wanton-mee",
+        "western",
+        "porridge",
       ]),
     );
     assert.equal(variantVisualFamilyForKey("future-variant"), "fallback");

@@ -1,13 +1,14 @@
 /**
- * Soup and porridge motifs: chicken congee, soto ayam, sayur lodeh with lontong, fishball tang
- * hoon soup, kway chap and the prawn dumplings in light soup. (Sliced fish soup, yong tau
- * foo and bak kut teh paint their broth and pieces in their variant layers.)
+ * Soup and porridge motifs: chicken congee, century egg and minced pork porridges, soto ayam,
+ * mee soto, sayur lodeh with lontong, fishball tang hoon soup, kway chap, the prawn dumplings in
+ * light soup and watercress pork rib soup. (Sliced fish soup, fish porridge, yong tau foo and
+ * bak kut teh paint their broth and pieces in their variant layers.)
  *
  * Each paints the broth's surface inside the bowl first, darker towards the rim with a sheen
  * and oil beads where the dish has them, then floats its pieces on top.
  */
 import { speckle } from "../../canvas";
-import { at, heap_scale, pieces_left, type Motif, type MotifPaint } from "../motif";
+import { at, heap_scale, paint_in_layer, pieces_left, type Motif, type MotifPaint } from "../motif";
 import {
   paint_ball,
   paint_chunk,
@@ -17,20 +18,30 @@ import {
   paint_herb_flecks,
   paint_liquid,
   paint_noodles,
+  paint_rib,
   paint_slice,
   SAMBAL,
   SHALLOT,
 } from "../parts";
 import {
+  paint_century_egg_wedge,
   paint_dollop,
   paint_fish_cake,
   paint_greens,
+  paint_lime_half,
   paint_scallions,
   paint_shreds,
   paint_sprouts,
   paint_tofu_puff,
   paint_youtiao,
 } from "../toppings";
+
+/** Cantonese congee: silky, broken-down rice porridge. */
+const CONGEE = 0xf2e8cc;
+/** Minced pork simmered in porridge: pale pink-brown crumbs. */
+const MINCED_PORK = 0xb88466;
+/** Watercress soup: a clear, faintly green-gold pork stock. */
+const WATERCRESS_BROTH = 0xc2b47a;
 
 /**
  * Cantonese chicken congee: silky rice porridge with shredded chicken, ginger, fried shallots,
@@ -285,11 +296,181 @@ function paint_har_gow(p: MotifPaint): void {
 }
 
 /**
- * A no-op motif for dishes whose variant layer paints the broth and every piece.
+ * Pours a bowl of Cantonese congee: the silky porridge with a speckle of broken rice grains.
  *
- * @returns Nothing.
+ * @param p - The motif paint.
  */
-const paint_in_layer: Motif = () => undefined;
+function pour_congee(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  paint_liquid(ctx, area.x, area.y, area.rx, area.ry, CONGEE, { sheen: 0.35 });
+  if (!isLowDetail) {
+    speckle(
+      ctx,
+      area.x - area.rx * 0.7,
+      area.y - area.ry * 0.6,
+      area.rx * 1.4,
+      area.ry * 1.2,
+      10,
+      [0xfbf6e8],
+      seed,
+      1,
+    );
+  }
+}
+
+/**
+ * Century egg and pork porridge: silky congee with wedges of dark, translucent century egg,
+ * minced pork and spring onion.
+ *
+ * @param p - The motif paint.
+ */
+function paint_century_egg_porridge(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  pour_congee(p);
+  const size = heap_scale(p.remaining);
+  paint_dots(
+    ctx,
+    area.x - 1,
+    area.y + 1,
+    area.rx * 0.45 * size,
+    isLowDetail ? 5 : 10,
+    0.9,
+    MINCED_PORK,
+    seed ^ 0x71,
+  );
+  const wedges = pieces_left(4, p.remaining);
+  for (let wedge = 0; wedge < wedges; wedge += 1) {
+    const [x, y] = at(area, -0.4 + (wedge % 2) * 0.7, -0.32 + Math.floor(wedge / 2) * 0.55);
+    paint_century_egg_wedge(ctx, x, y, 5.2, -0.6 + wedge * 1.1);
+  }
+  paint_scallions(ctx, area.x, area.y - 1, area.rx * 0.45, isLowDetail ? 3 : 6, seed ^ 0x72);
+}
+
+/**
+ * Minced pork porridge: congee with crumbs of minced pork, spring onion and rounds of crisp
+ * dough fritter.
+ *
+ * @param p - The motif paint.
+ */
+function paint_minced_pork_porridge(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  pour_congee(p);
+  const size = heap_scale(p.remaining);
+  paint_dots(
+    ctx,
+    area.x - 1,
+    area.y,
+    area.rx * 0.55 * size,
+    isLowDetail ? 7 : 14,
+    1,
+    MINCED_PORK,
+    seed ^ 0x81,
+  );
+  paint_dots(
+    ctx,
+    area.x - 1,
+    area.y,
+    area.rx * 0.4 * size,
+    isLowDetail ? 3 : 6,
+    0.6,
+    0xd8a88a,
+    seed ^ 0x82,
+  );
+  const rounds = pieces_left(3, p.remaining);
+  for (let round = 0; round < rounds; round += 1) {
+    const [x, y] = at(area, 0.5 - round * 0.12, -0.4 + round * 0.38);
+    paint_youtiao(ctx, x, y, 4.6);
+  }
+  paint_scallions(ctx, area.x - 1, area.y - 1, area.rx * 0.5, isLowDetail ? 3 : 6, seed ^ 0x83);
+}
+
+/**
+ * Mee soto: yellow noodles in a spiced, turmeric-gold soto broth with shredded chicken, fried
+ * shallots and a lime half.
+ *
+ * @param p - The motif paint.
+ */
+function paint_mee_soto(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  paint_liquid(ctx, area.x, area.y, area.rx, area.ry, 0xd9a53a, {
+    sheen: 0.28,
+    oil: isLowDetail ? 3 : 8,
+    oilColour: 0xf2c25a,
+    seed,
+  });
+  const size = heap_scale(p.remaining);
+  paint_noodles(
+    ctx,
+    area.x - 1,
+    area.y + 1,
+    area.rx * 0.55 * size,
+    0xe8c050,
+    seed ^ 0x91,
+    1.5,
+    isLowDetail,
+  );
+  paint_shreds(
+    ctx,
+    area.x + 1,
+    area.y - 1,
+    area.rx * 0.42 * size,
+    isLowDetail ? 4 : 8,
+    0xf0dcb8,
+    seed ^ 0x92,
+    4,
+    1.4,
+  );
+  paint_dots(ctx, area.x, area.y, area.rx * 0.5, isLowDetail ? 3 : 7, 0.65, SHALLOT, seed ^ 0x93);
+  if (p.remaining > 0.5) {
+    const [lx, ly] = at(area, 0.55, 0.4);
+    paint_lime_half(ctx, lx, ly, 2.4, 0xd8e06a);
+  }
+  paint_herb_flecks(
+    ctx,
+    area.x - 2,
+    area.y,
+    area.rx * 0.4,
+    isLowDetail ? 2 : 4,
+    0x4e9a3e,
+    seed ^ 0x94,
+  );
+}
+
+/**
+ * Watercress pork rib soup: pork ribs and dark watercress in a clear stock, with red dates
+ * and wolfberries floating in it.
+ *
+ * @param p - The motif paint.
+ */
+function paint_watercress_pork_rib_soup(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  paint_liquid(ctx, area.x, area.y, area.rx, area.ry, WATERCRESS_BROTH, { sheen: 0.32 });
+  const sprigs = pieces_left(5, p.remaining);
+  for (let sprig = 0; sprig < sprigs; sprig += 1) {
+    const [x, y] = at(area, -0.55 + sprig * 0.27, 0.42 - (sprig % 2) * 0.3);
+    paint_greens(ctx, x, y, 8.4, -0.6 + sprig * 0.9, 0x2f6a2a);
+  }
+  const ribs = pieces_left(2, p.remaining);
+  for (let rib = 0; rib < ribs; rib += 1) {
+    const [x, y] = at(area, -0.25 + rib * 0.5, -0.32 + rib * 0.12);
+    paint_rib(ctx, x, y, 7.6, 4.8, -0.2 + rib * 0.35, 0xb88a6a, WATERCRESS_BROTH);
+  }
+  const dates = pieces_left(2, p.remaining);
+  for (let date = 0; date < dates; date += 1) {
+    const [x, y] = at(area, 0.55 - date * 0.95, -0.05 + date * 0.1);
+    paint_ball(ctx, x, y, 1.4, 0x9a2a1e);
+  }
+  paint_dots(
+    ctx,
+    area.x + 1,
+    area.y,
+    area.rx * 0.55,
+    isLowDetail ? 3 : 6,
+    0.7,
+    0xe0482a,
+    seed ^ 0xa1,
+  );
+}
 
 /** The soup and porridge motifs, keyed by dish ID without the `dish.` prefix. */
 export const SOUP_MOTIFS: Readonly<Record<string, Motif>> = {
@@ -302,4 +483,9 @@ export const SOUP_MOTIFS: Readonly<Record<string, Motif>> = {
   "sliced-fish-soup": paint_in_layer,
   "yong-tau-foo": paint_in_layer,
   "bak-kut-teh": paint_in_layer,
+  "century-egg-porridge": paint_century_egg_porridge,
+  "fish-porridge": paint_in_layer,
+  "minced-pork-porridge": paint_minced_pork_porridge,
+  "mee-soto": paint_mee_soto,
+  "watercress-pork-rib-soup": paint_watercress_pork_rib_soup,
 };

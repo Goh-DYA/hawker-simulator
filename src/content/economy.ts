@@ -8,7 +8,7 @@ import type { EconomyDefinition } from "./types";
 export const ECONOMY = {
   startingCash: 4_200,
   startingReputation: 8,
-  maxLevel: 20,
+  maxLevel: 26,
   maxReputation: 100,
   minimumVisitEarnings: 2,
   starterRequiredSeats: 4,

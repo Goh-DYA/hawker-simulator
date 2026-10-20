@@ -14,12 +14,12 @@ import type { PlaceableCategory } from "./types";
  * which is a minimum.
  */
 export const LAUNCH_ROSTER = {
-  stalls: 14,
-  dishes: 67,
+  stalls: 18,
+  dishes: 91,
   placeables: 80,
   customerArchetypes: 12,
   nutritionSourceSnapshots: 2,
-  nutritionVariantFamilies: 14,
+  nutritionVariantFamilies: 23,
   nutritionIntents: 5,
   nutritionGuidelines: 11,
 } as const;

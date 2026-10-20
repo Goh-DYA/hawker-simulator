@@ -1,7 +1,8 @@
 /**
  * Variant layers for the griddle breads: roti prata (plain, two plain, or the folded egg
- * parcels with onion and cheese), murtabak squares with their filling showing at the cut, and
- * masala thosai folded, rolled, with egg or glossed with ghee.
+ * parcels with onion and cheese), murtabak squares with their filling showing at the cut (a
+ * shared half is one row of them), and thosai folded over masala, rolled plain, with egg,
+ * glossed with ghee, lacy rawa, a tall paper cone or folded over melted cheese.
  */
 import {
   css,
@@ -30,6 +31,10 @@ const MURTABAK_CRUST = 0xc8853a;
 const THOSAI = 0xd69a3d;
 /** Potato masala yellow. */
 const MASALA = 0xe8b83a;
+/** Rawa thosai: the paler, grainy semolina crepe. */
+const RAWA = 0xdcb064;
+/** Melted cheese. */
+const MELTED_CHEESE = 0xf2c14e;
 
 /**
  * Paints an egg prata: a square-folded parcel of crisp dough with the egg showing through and
@@ -186,11 +191,14 @@ export function paint_murtabak_layer(q: LayerPaint): void {
   const { ctx } = q;
   const area = food_area("platter", 0, 0, 1, q.remaining);
   const filling = q.has("vegetable") ? 0x5f9a4a : q.has("mutton") ? 0x6a3a2a : 0xd2a05a;
-  const squares = pieces_left(6, q.remaining);
+  // A half murtabak, shared, is one row of three squares.
+  const isHalf = q.has("half");
+  const squares = pieces_left(isHalf ? 3 : 6, q.remaining);
   for (let square = 0; square < squares; square += 1) {
     const column = square % 3;
     const row = Math.floor(square / 3);
-    const [x, y] = at(area, -0.75 + column * 0.45 + row * 0.08, -0.45 + row * 0.62);
+    const top = isHalf ? -0.15 : -0.45;
+    const [x, y] = at(area, -0.75 + column * 0.45 + row * 0.08, top + row * 0.62);
     paint_murtabak_square(ctx, x, y, filling);
   }
   if (q.has("vegetable")) {
@@ -290,8 +298,13 @@ export function paint_thosai_layer(q: LayerPaint): void {
     paint_lace(ctx, x, y, radius, q.seed, q.isLowDetail ? 4 : 9);
     return;
   }
+  if (q.has("paper-cone")) {
+    paint_paper_cone(q, x, y, radius);
+    return;
+  }
   const isGhee = q.has("ghee-gloss");
-  const crepe = isGhee ? 0xc98a2e : THOSAI;
+  const isRawa = q.has("rawa");
+  const crepe = isGhee ? 0xc98a2e : isRawa ? RAWA : THOSAI;
   ctx.save();
   ctx.shadowBlur = 2;
   ctx.shadowOffsetX = 1;
@@ -306,6 +319,23 @@ export function paint_thosai_layer(q: LayerPaint): void {
   ctx.fill();
   ctx.restore();
   paint_lace(ctx, x, y, radius, q.seed, q.isLowDetail ? 4 : 10);
+  if (isRawa) paint_rawa_holes(q, x, y, radius);
+  if (q.has("cheese")) {
+    // Melted cheese oozing out along the fold, with drips running down the crepe.
+    fill_rounded_rect(ctx, x - radius * 0.8, y + 0.4, radius * 1.6, 2.4, 1.2, css(MELTED_CHEESE));
+    for (const along of [-0.5, -0.05, 0.4]) {
+      fill_ellipse(ctx, x + along * radius, y + 2.9, 1.3, 1.8, css(MELTED_CHEESE));
+    }
+    fill_rounded_rect(
+      ctx,
+      x - radius * 0.6,
+      y + 0.8,
+      radius * 0.7,
+      0.6,
+      0.3,
+      css(tint(MELTED_CHEESE, 0.5)),
+    );
+  }
   if (q.has("masala")) {
     for (let lump = 0; lump < 3; lump += 1) {
       paint_dollop(
@@ -334,4 +364,97 @@ export function paint_thosai_layer(q: LayerPaint): void {
     paint_gloss(ctx, x - radius * 0.3, y + radius * 0.15, radius * 0.35, 1.2, 0.75, 0);
     paint_gloss(ctx, x + radius * 0.35, y + radius * 0.3, radius * 0.25, 0.9, 0.6, 0);
   }
+}
+
+/**
+ * Paints the lacy holes of a rawa thosai: the semolina batter sets in an open net, so the
+ * crepe is pierced by small holes that show the leaf beneath, with flecks of shallot and chilli.
+ *
+ * @param q - The layer paint.
+ * @param x - Fold centre x.
+ * @param y - Fold y.
+ * @param radius - Half the crepe's width.
+ */
+function paint_rawa_holes(q: LayerPaint, x: number, y: number, radius: number): void {
+  const { ctx } = q;
+  const next = seeded(q.seed ^ 0x7d);
+  const holes = q.isLowDetail ? 9 : 18;
+  for (let hole = 0; hole < holes; hole += 1) {
+    const angle = Math.PI * (0.08 + next() * 0.84);
+    const reach = 0.25 + next() * 0.68;
+    fill_ellipse(
+      ctx,
+      x + Math.cos(angle) * radius * reach,
+      y + Math.sin(angle) * radius * 0.62 * reach,
+      0.5 + next() * 0.5,
+      0.35 + next() * 0.3,
+      css(0x3d6a35, 0.85),
+    );
+  }
+  paint_dots(
+    ctx,
+    x,
+    y + radius * 0.25,
+    radius * 0.5,
+    q.isLowDetail ? 2 : 4,
+    0.5,
+    0x8a3a5a,
+    q.seed ^ 0x7e,
+  );
+  paint_dots(
+    ctx,
+    x,
+    y + radius * 0.25,
+    radius * 0.5,
+    q.isLowDetail ? 1 : 3,
+    0.45,
+    0xc8302a,
+    q.seed ^ 0x7f,
+  );
+}
+
+/**
+ * Paints a paper thosai: the thin, crisp crepe rolled into a tall golden cone standing on the
+ * leaf, its spiral seam showing.
+ *
+ * @param q - The layer paint.
+ * @param x - Cone base centre x.
+ * @param y - Cone base y.
+ * @param radius - The crepe's half width, which sets the cone's height.
+ */
+function paint_paper_cone(q: LayerPaint, x: number, y: number, radius: number): void {
+  const { ctx } = q;
+  const height = radius * 1.35;
+  const half = radius * 0.42;
+  const base_y = y + 3;
+  const apex_y = base_y - height;
+  fill_ellipse(ctx, x + 1.2, base_y + 1, half * 1.3, 2.2, css(SHADOW_INK, 0.28));
+  ctx.beginPath();
+  ctx.moveTo(x - half, base_y);
+  ctx.lineTo(x + 0.4, apex_y);
+  ctx.lineTo(x + half, base_y);
+  ctx.ellipse(x, base_y, half, 1.8, 0, 0, Math.PI, false);
+  ctx.closePath();
+  ctx.fillStyle = linear_gradient(ctx, x - half, 0, x + half, 0, [
+    [0, tint(THOSAI, 0.4)],
+    [0.45, THOSAI],
+    [1, shade(THOSAI, 0.35)],
+  ]);
+  ctx.fill();
+  for (let turn = 1; turn <= 3; turn += 1) {
+    const t = turn / 4;
+    const row_y = base_y - height * t;
+    const row_half = half * (1 - t);
+    line(
+      ctx,
+      x - row_half,
+      row_y + 1.2,
+      x + row_half,
+      row_y - 0.6,
+      css(shade(THOSAI, 0.4), 0.7),
+      0.6,
+    );
+  }
+  paint_lace(ctx, x, apex_y + height * 0.55, half * 0.8, q.seed, q.isLowDetail ? 3 : 6);
+  line(ctx, x - half * 0.3, base_y - 1, x + 0.1, apex_y + 2, css(WHITE, 0.4), 0.7);
 }

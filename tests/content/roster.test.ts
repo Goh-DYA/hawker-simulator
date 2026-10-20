@@ -15,12 +15,12 @@ import { collect_issues, create_draft } from "./fixtures";
 describe("LAUNCH_ROSTER", () => {
   it("pins the launch record counts", () => {
     expect(LAUNCH_ROSTER).toEqual({
-      stalls: 14,
-      dishes: 67,
+      stalls: 18,
+      dishes: 91,
       placeables: 80,
       customerArchetypes: 12,
       nutritionSourceSnapshots: 2,
-      nutritionVariantFamilies: 14,
+      nutritionVariantFamilies: 23,
       nutritionIntents: 5,
       nutritionGuidelines: 11,
     });

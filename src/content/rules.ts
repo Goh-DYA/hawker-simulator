@@ -46,6 +46,12 @@ export const MIN_STARTER_STALLS = 2;
  */
 export const PLAUSIBLE_VISITS_PER_LEVEL = 120;
 
+/**
+ * The archetype whose mid budget every stall's opening menu must reach: each stall opens
+ * with at least one dish a Student Saver can afford.
+ */
+export const OPENING_MENU_BUDGET_ARCHETYPE_ID = "customer.student-saver";
+
 const increment = <T extends string>(record: Record<T, number>, key: T): void => {
   record[key] += 1;
 };
@@ -573,6 +579,17 @@ export const check_progression = (
     }
   }
 
+  content.stalls.forEach((stall, index) => {
+    const previous = content.stalls[index - 1];
+    if (!previous) return;
+    const level = stall.unlockRequirement.level;
+    const previous_level = previous.unlockRequirement.level;
+    check(
+      previous_level < level || (previous_level === 1 && level === 1),
+      `${stall.id} must unlock at a later level than ${previous.id}, the stall authored before it.`,
+    );
+  });
+
   const visitedUnlocks = new Set<string>();
   const activeUnlockPath = new Set<string>();
   const visitUnlock = (id: string): void => {
@@ -671,6 +688,31 @@ export const check_economy = (
         cheapestTrayReturn,
     "Recovery grant cannot restore a minimum table, seats, and waste facility.",
   );
+
+  const budget_archetype = content.customerArchetypes.find(
+    (archetype) => archetype.id === OPENING_MENU_BUDGET_ARCHETYPE_ID,
+  );
+  check(Boolean(budget_archetype), `${OPENING_MENU_BUDGET_ARCHETYPE_ID} is missing.`);
+  if (budget_archetype) {
+    const [low, high] = budget_archetype.budgetRange;
+    const mid_budget = (low + high) / 2;
+    for (const stall of content.stalls) {
+      const opening_prices = stall.dishIds
+        .map((dishId) => dishById.get(dishId))
+        .filter(
+          (dish) =>
+            dish !== undefined &&
+            dish.unlockRequirement.level <= stall.unlockRequirement.level &&
+            dish.unlockRequirement.reputation <= stall.unlockRequirement.reputation,
+        )
+        .map((dish) => dish?.price ?? Number.POSITIVE_INFINITY);
+      if (opening_prices.length === 0) continue;
+      check(
+        Math.min(...opening_prices) <= mid_budget,
+        `${stall.id} opens with no dish at or below the Student Saver budget ($${mid_budget.toFixed(2)}).`,
+      );
+    }
+  }
 
   for (const stall of content.stalls) {
     const plausibleCashAtUnlock =

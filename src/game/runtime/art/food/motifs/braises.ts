@@ -1,7 +1,8 @@
 /**
- * Nonya and dim sum motifs: ayam pongteh, chap chye and babi pongteh plated in their gravies,
- * kueh pie tee's crisp pastry cups, and the siew mai and char siew bao standing in their bamboo
- * steamers.
+ * Nonya, dim sum and plated-snack motifs: ayam pongteh, chap chye and babi pongteh plated in
+ * their gravies, kueh pie tee's crisp pastry cups, the siew mai and char siew bao standing in
+ * their bamboo steamers, chee cheong fun's rice rolls under sweet sauce, and gado-gado under its
+ * peanut gravy.
  */
 import {
   css,
@@ -19,20 +20,34 @@ import { at, heap_scale, pieces_left, type Motif, type MotifPaint } from "../mot
 import {
   paint_bun,
   paint_chunk,
+  paint_dots,
+  paint_egg_half,
+  paint_gloss,
   paint_herb_flecks,
   paint_leaf,
   paint_liquid,
   paint_prawn,
   paint_sauce_cup,
   paint_slice,
+  paint_tofu,
   WHITE,
 } from "../parts";
-import { paint_dollop, paint_mushroom, paint_shreds } from "../toppings";
+import {
+  paint_dollop,
+  paint_mushroom,
+  paint_rice_roll,
+  paint_shreds,
+  paint_sprouts,
+} from "../toppings";
 
 /** Kueh pie tee's crisp fried pastry shell and its braised turnip filling. */
 const PIE_TEE = { shell: 0xd9a441, filling: 0xe6d3a2 } as const;
 /** The glossy brown-red barbecued pork filling that shows where a char siew bao splits. */
 const CHAR_SIEW_FILLING = 0x9a3424;
+/** Chee cheong fun's dark sweet sauce. */
+const SWEET_SAUCE = 0x6b3a1e;
+/** Gado-gado's thick peanut gravy. */
+const PEANUT_GRAVY = 0xb8803e;
 
 /**
  * Paints a braise's gravy spread on the plate: a glossy pool a little smaller than the food
@@ -366,6 +381,83 @@ function paint_char_siew_bao(p: MotifPaint): void {
   });
 }
 
+/**
+ * Chee cheong fun: three soft steamed rice-sheet rolls side by side under a drizzle of dark
+ * sweet sauce, shining with sesame oil and sprinkled with sesame seeds.
+ *
+ * @param p - The motif paint.
+ */
+function paint_chee_cheong_fun(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  const rolls = pieces_left(3, p.remaining);
+  const length = area.rx * 1.45;
+  ctx.save();
+  ctx.lineCap = "round";
+  for (let roll = 0; roll < rolls; roll += 1) {
+    const [x, y] = at(area, (roll - 1) * 0.06, -0.5 + roll * 0.5);
+    paint_rice_roll(ctx, x, y, length, -0.1);
+    // A ribbon of sweet sauce squeezed along the top of each roll.
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(-0.1);
+    ctx.beginPath();
+    ctx.moveTo(-length * 0.4, -0.6);
+    for (let wave = 1; wave <= 4; wave += 1) {
+      const wave_x = -length * 0.4 + (length * 0.8 * wave) / 4;
+      ctx.quadraticCurveTo(wave_x - length * 0.1, wave % 2 ? -1.8 : 0.4, wave_x, -0.6);
+    }
+    ctx.strokeStyle = css(SWEET_SAUCE, 0.92);
+    ctx.lineWidth = 1.1;
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+  // The sauce pools a little at the rolls' foot; sesame oil shines and seeds are scattered.
+  const [px, py] = at(area, 0.4, -0.25 + rolls * 0.3);
+  paint_liquid(ctx, px, py, 3.4, 1.7, SWEET_SAUCE, { sheen: 0.5, alpha: 0.85 });
+  paint_gloss(ctx, area.x - 2, area.y - 1, 4, 0.7, 0.45);
+  paint_dots(ctx, area.x, area.y, area.rx * 0.6, isLowDetail ? 3 : 7, 0.45, 0xf4ead0, seed ^ 0x82);
+}
+
+/**
+ * Gado-gado: golden fried beancurd, halved hard-boiled egg, ketupat rice cakes, boiled green
+ * beans and beansprouts, under a thick peanut gravy.
+ *
+ * @param p - The motif paint.
+ */
+function paint_gado_gado(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  const size = heap_scale(p.remaining);
+  paint_sprouts(ctx, area.x - 2, area.y + 2, area.rx * 0.7 * size, isLowDetail ? 4 : 8, seed);
+  const beans = pieces_left(4, p.remaining);
+  for (let bean = 0; bean < beans; bean += 1) {
+    const [x, y] = at(area, -0.8 + bean * 0.12, 0.3 + (bean % 2) * 0.2);
+    line(ctx, x, y, x + 5, y - 2.4, css(0x2f6a26), 1.5);
+    line(ctx, x + 0.4, y - 0.4, x + 4.2, y - 2.2, css(0x6aa64a, 0.8), 0.5);
+  }
+  // The thick peanut gravy smothers the middle of the plate.
+  paint_liquid(ctx, area.x, area.y, area.rx * 0.62 * size, area.ry * 0.6 * size, PEANUT_GRAVY, {
+    sheen: 0.4,
+  });
+  const cakes = pieces_left(3, p.remaining);
+  for (let cake = 0; cake < cakes; cake += 1) {
+    const [x, y] = at(area, 0.25 + cake * 0.22, 0.42 - (cake % 2) * 0.28);
+    paint_chunk(ctx, x, y, 3.6, 0xf1ecd8, 0.2 * cake, { gloss: 0.35, edge: 0.5 });
+  }
+  const tofu = pieces_left(2, p.remaining);
+  for (let piece = 0; piece < tofu; piece += 1) {
+    const [x, y] = at(area, -0.42 + piece * 0.4, -0.3 + piece * 0.1);
+    paint_tofu(ctx, x, y, 4.6, 3.8, 0xd8a04a);
+  }
+  if (p.remaining > 0.5) {
+    const [ex, ey] = at(area, 0.4, -0.4);
+    paint_egg_half(ctx, ex, ey, 3.2);
+  }
+  const [gx, gy] = at(area, -0.1, 0.05);
+  paint_dollop(ctx, gx, gy, 2.6 * size, PEANUT_GRAVY, seed ^ 0x92);
+  paint_dots(ctx, gx, gy, 3, isLowDetail ? 2 : 5, 0.5, 0x7a4a1e, seed ^ 0x93);
+}
+
 /** The braise and dim sum motifs, keyed by dish ID without the `dish.` prefix. */
 export const BRAISE_MOTIFS: Readonly<Record<string, Motif>> = {
   "ayam-buah-keluak": paint_ayam_pongteh,
@@ -374,4 +466,6 @@ export const BRAISE_MOTIFS: Readonly<Record<string, Motif>> = {
   "kueh-pie-tee": paint_kueh_pie_tee,
   "siew-mai": paint_siew_mai_basket,
   "char-siew-bao": paint_char_siew_bao,
+  "chee-cheong-fun": paint_chee_cheong_fun,
+  "gado-gado": paint_gado_gado,
 };

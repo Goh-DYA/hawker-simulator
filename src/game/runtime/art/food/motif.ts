@@ -3,7 +3,8 @@
  * area of its vessel, plus the small placement helpers the motif modules share.
  *
  * Motifs place everything relative to the food area, so the same motif fits a plate, a bowl or
- * a platter, and they read `remaining` to take pieces away as the serving is eaten.
+ * a platter, and they read `remaining` to take pieces away as the serving is eaten. A dish whose
+ * variant layer paints the whole serving uses the empty `paint_in_layer` motif.
  */
 import type { PaintContext } from "../canvas";
 import type { FoodArea } from "./parts";
@@ -29,6 +30,14 @@ export interface MotifPaint {
 
 /** A dish motif painter. */
 export type Motif = (paint: MotifPaint) => void;
+
+/**
+ * The motif of a dish whose variant layer paints the whole serving (its base, pieces and
+ * garnish), so the dish itself adds nothing under the layer.
+ *
+ * @returns Nothing.
+ */
+export const paint_in_layer: Motif = () => undefined;
 
 /**
  * Converts a position given in food-area units (-1 to 1 across each radius) to pixels.

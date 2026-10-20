@@ -8,13 +8,14 @@
  *
  * The output suite runs `buildNutritionContent` end to end on `fixtures/varied.csv` and
  * pins the sha256 of the exact text the CLI writes. The fixture has one row per mapped
- * food with distinct values, one Trace value (Kopi O kosong sugar), one quarantined row
- * (Mee rebus, saturated fat above total fat), one grouped number (Laksa sodium), one `-`
- * nutrient (Lor mee calcium), one `-` default serving label (Popiah), the manifest's
- * scaled mappings, the rows of its three composites, and component and drink-base rows
- * that make the paired-component and drink-family plausibility rules withhold values. It
- * has no `Food Subgroup` column, so the outlier fence is covered by the unit tests in
- * `plausibility.test.ts`.
+ * food with distinct values (the rows added for content 1.6.0 are their source rows scaled
+ * by 0.90-1.02, keeping the source's Trace cells), a Trace sugar in Kopi O kosong, one
+ * quarantined row (Mee rebus, saturated fat above total fat), one grouped number (Laksa
+ * sodium), one `-` nutrient (Lor mee calcium), one `-` default serving label (Popiah),
+ * the manifest's scaled mappings, the rows of its seven composites, and component and
+ * drink-base rows that make the paired-component and drink-family plausibility rules
+ * withhold values. It has no `Food Subgroup` column, so the outlier fence is covered by the
+ * unit tests in `plausibility.test.ts`.
  *
  * If a refactor makes either suite fail, the refactor changed importer output: fix the
  * code, never the literal or the fixture.
@@ -36,7 +37,7 @@ import {
 } from "@/tools/nutrition/importer.mjs";
 
 /** sha256 of `${JSON.stringify(content, null, 2)}\n` for the varied fixture. */
-const VARIED_OUTPUT_SHA256 = "9b6345ad0230aa87b59512424d746e0aa63fb15246b8dfc1bcfdc0aeb052ff0e";
+const VARIED_OUTPUT_SHA256 = "0d8bb5a073ccc906c6e9220eebfac62f53d8689505a8de0e2ce03f7fb5a4ff29";
 
 /** Guideline rows for the 11 nutrients the importer recognises, in source order. */
 const GUIDELINE_ROWS = [
@@ -186,11 +187,37 @@ describe("nutrition importer output golden", () => {
         "dish.mee-siam",
         "dish.kopi:kopi-c",
         "dish.kopi:kopi-o",
+        "dish.kopi:kopi-c-siu-dai",
+        "dish.kopi:kopi-o-siu-dai",
         "dish.teh-tarik:teh-c",
       ],
-      composites: ["dish.soya-tofu-rice", "dish.roti-prata", "dish.nyonya-laksa"],
+      composites: [
+        "dish.soya-tofu-rice",
+        "dish.roti-prata",
+        "dish.nyonya-laksa",
+        "dish.bak-kut-teh",
+        "dish.bak-kut-teh:bak-kut-teh-soup",
+        "dish.bak-kut-teh:bak-kut-teh-herbal",
+        "dish.bak-kut-teh:bak-kut-teh-dry",
+      ],
       quarantined: ["dish.mee-rebus"],
-      traced: ["dish.kopi:kopi-o-kosong"],
+      traced: [
+        "dish.century-egg-porridge",
+        "dish.minced-pork-porridge",
+        "dish.chee-cheong-fun",
+        "dish.cheng-tng",
+        "dish.green-bean-soup",
+        "dish.nasi-goreng",
+        "dish.mee-soto",
+        "dish.ayam-panggang",
+        "dish.kopi:kopi-o-kosong",
+        "dish.kopi:kopi-c-siu-dai",
+        "dish.teh-tarik:teh-c-siu-dai",
+        "dish.duck-rice:duck-noodles-dry",
+        "dish.prawn-noodle-soup:prawn-noodles-dry",
+        "dish.wanton-mee:wanton-mee-soup",
+        "dish.fish-porridge:fish-porridge-sliced",
+      ],
       hasScaledMapping: true,
     });
   });

@@ -5,8 +5,9 @@
  * and the digest of its calls is compared: dishes against each other, eaten thirds against the
  * full serving, each variant's cue against the fallback branch and against its siblings (also at
  * one fixed seed, so a sibling cannot pass on seed jitter alone). So each composition is proven
- * by what it paints rather than by source text. The variant side pass paints only for a key
- * that orders a side, and the hot plate is painted from an in-test dish until content uses it.
+ * by what it paints rather than by source text. Every launch dish has its own explicit motif,
+ * the variant side pass paints only for a key that orders a side, and the hot plate is painted
+ * from an in-test dish as well as under the chicken chop.
  *
  * The geometry is checked on real pixels, painted with `@napi-rs/canvas` (the gallery tool's
  * canvas) into a texture with a transparent margin round it: nothing may paint outside the dish
@@ -20,7 +21,7 @@ import { DISHES, NUTRITION_CONTENT, getNutritionVariantFamily } from "@/src/cont
 import type { PaintContext } from "@/src/game/runtime/art/canvas";
 import { includes_any, paint_variant_cue, plan_dish } from "@/src/game/runtime/art/food";
 import { paint_variant_sides } from "@/src/game/runtime/art/food/cues";
-import { DEFAULT_LAYER_KEYS } from "@/src/game/runtime/art/food/motifs";
+import { DEFAULT_LAYER_KEYS, DISH_MOTIFS } from "@/src/game/runtime/art/food/motifs";
 import { food_area, vessel_scale, type VesselKind } from "@/src/game/runtime/art/food/vessels";
 import { DISH_SIZE, type DishPaintSpec, type PaintFrame } from "@/src/game/runtime/art/specs";
 import {
@@ -161,6 +162,13 @@ const REVIEWED_FAMILIES: readonly DishVariantVisualFamily[] = [
   "ban-mian",
   "bak-kut-teh",
   "duck-rice",
+  "prawn-mee",
+  "economic-rice",
+  "nasi-padang",
+  "mee-siam",
+  "wanton-mee",
+  "western",
+  "porridge",
 ];
 
 /**
@@ -353,7 +361,7 @@ describe("dish serving draw output", () => {
     }
     const duplicates = [...ids_by_digest.values()].filter((ids) => ids.length > 1);
 
-    expect(DISHES.length).toBe(67);
+    expect(DISHES.length).toBe(91);
     expect(duplicates).toEqual([]);
   });
 
@@ -449,6 +457,7 @@ describe("dish serving painted pixels", () => {
     expect(relative_width("dish.siew-mai")).toBeCloseTo(0.6, 1);
     expect(relative_width("dish.kopi")).toBeCloseTo(0.55, 1);
     expect(relative_width("dish.chicken-satay-set")).toBeGreaterThanOrEqual(1);
+    expect(relative_width("dish.chicken-chop")).toBeGreaterThanOrEqual(1);
   });
 
   it("keeps a tall glass at its full height", () => {
@@ -483,7 +492,7 @@ describe("variant side pass", () => {
     frame: FRAMES[0] as PaintFrame,
   });
 
-  it("paints nothing for every key the content uses today", () => {
+  it("paints sides only for the bak kut teh keys that order them", () => {
     const keys = [
       ...NUTRITION_CONTENT.variantFamilies.flatMap((family) =>
         family.variants.map((variant) => variant.visualKey),
@@ -491,7 +500,14 @@ describe("variant side pass", () => {
       ...Object.values(DEFAULT_LAYER_KEYS),
     ];
 
-    for (const key of keys) expect(record_sides(key), key).toEqual([]);
+    for (const key of keys) {
+      const orders_sides =
+        variantVisualFamilyForKey(key) === "bak-kut-teh" && includes_any(key, ["rice", "youtiao"]);
+
+      if (orders_sides) expect(record_sides(key).length, key).toBeGreaterThan(0);
+      else expect(record_sides(key), key).toEqual([]);
+    }
+    expect(record_sides("bak-kut-teh-pepper-soup")).toEqual([]);
   });
 
   it("paints a side bowl of rice and a you tiao stick for a key that orders both", () => {
@@ -569,6 +585,16 @@ describe("hot plate vessel", () => {
     const hot_plate = measure_solid(rasterise_dish(hot_plate_spec()));
 
     expect(hot_plate.width / plate.width).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("dish motifs", () => {
+  it("give every launch dish its own explicit motif", () => {
+    const missing = DISHES.map((dish) => dish.id.replace(/^dish\./, "")).filter(
+      (key) => !Object.hasOwn(DISH_MOTIFS, key),
+    );
+
+    expect(missing).toEqual([]);
   });
 });
 

@@ -1,9 +1,11 @@
 /**
- * Grill and seafood motifs: chicken and beef satay, barbecued wings, sotong panggang (grilled
- * squid), sambal stingray and black pepper crab.
+ * Grill and seafood motifs: chicken, beef and mutton satay, barbecued wings, sotong panggang
+ * (grilled squid), sambal stingray, black pepper and chilli crab, ayam panggang and black
+ * pepper steak. (Chicken chop and fish and chips paint the whole plate in their variant layer.)
  *
  * Satay lies as a row of skewers beside its peanut sauce, wings and squid lie on their platter
- * or leaf, and the stingray and the quarter crab each fill their dish as one bold silhouette.
+ * or leaf, the stingray and the quarter crab each fill their dish as one bold silhouette, and
+ * the grilled chicken and the steak lie seared and glazed beside their rice or sides.
  */
 import {
   css,
@@ -16,20 +18,31 @@ import {
   tint,
   type PaintContext,
 } from "../../canvas";
-import { at, heap_scale, pieces_left, type Motif, type MotifPaint } from "../motif";
+import { at, heap_scale, paint_in_layer, pieces_left, type Motif, type MotifPaint } from "../motif";
 import {
   paint_chunk,
   paint_dots,
   paint_gloss,
   paint_leaf,
   paint_liquid,
+  paint_rice_mound,
   paint_sauce_cup,
   paint_skewer,
   PEANUT,
   SAMBAL,
   WHITE,
 } from "../parts";
-import { paint_dollop, paint_lime_half, paint_slivers, paint_wing } from "../toppings";
+import {
+  paint_dollop,
+  paint_drumstick,
+  paint_greens,
+  paint_grilled_cut,
+  paint_lime_half,
+  paint_scallions,
+  paint_shreds,
+  paint_slivers,
+  paint_wing,
+} from "../toppings";
 
 /** The stingray wing's fan: the angles its ridges span, from east round towards the south. */
 const STINGRAY_FAN = { start: 0.02, end: 1.2 } as const;
@@ -39,16 +52,19 @@ const SQUID = { paste: 0xd0643a, char: 0x4a1e10 } as const;
 const CRAB = { shell: 0xc04a28, meat: 0xf4e8d8, sauce: 0x4a2c1c } as const;
 /** The pale, translucent cartilage comb left once the flesh is eaten off the wing. */
 const STINGRAY_CARTILAGE = 0xeadcc0;
+/** Chilli crab's thick red chilli gravy and the ribbons of egg stirred through it. */
+const CHILLI_CRAB = { gravy: 0xd2502f, egg: 0xf8e08a } as const;
 
 /**
- * Lays a set of satay: a row of skewers, the peanut sauce bowl, cucumber, red onion and
- * ketupat rice cake.
+ * Lays a set of satay: a row of skewers and the peanut sauce bowl, with cucumber, red onion and
+ * ketupat rice cake when the set comes with sides.
  *
  * @param p - The motif paint.
  * @param meat - The glazed meat colour.
- * @param isCubed - True for square-cut beef, false for rounded chicken.
+ * @param isCubed - True for square-cut beef or mutton, false for rounded chicken.
+ * @param has_sides - False for a set served with its sauce alone.
  */
-function paint_satay(p: MotifPaint, meat: number, isCubed: boolean): void {
+function paint_satay(p: MotifPaint, meat: number, isCubed: boolean, has_sides = true): void {
   const { ctx, area, seed, isLowDetail } = p;
   const skewers = pieces_left(5, p.remaining);
   for (let skewer = 0; skewer < skewers; skewer += 1) {
@@ -60,6 +76,7 @@ function paint_satay(p: MotifPaint, meat: number, isCubed: boolean): void {
   const [sx, sy] = at(area, 0.72, -0.3);
   paint_sauce_cup(ctx, sx, sy, 4.4, 0xb8682c);
   paint_dots(ctx, sx, sy - 0.4, 2.2, isLowDetail ? 2 : 4, 0.6, PEANUT, seed ^ 0x11);
+  if (!has_sides) return;
   const [cx, cy] = at(area, 0.55, 0.55);
   paint_chunk(ctx, cx, cy, 3, 0xdcecbd, 0.3, { gloss: 0.3, edge: 0.6 });
   paint_chunk(ctx, cx + 3.4, cy + 0.6, 3, 0xc96a8a, -0.2, { gloss: 0.3 });
@@ -82,6 +99,15 @@ function paint_chicken_satay(p: MotifPaint): void {
  */
 function paint_beef_satay(p: MotifPaint): void {
   paint_satay(p, 0x6c3a24, true);
+}
+
+/**
+ * Mutton satay: dark, spiced square-cut mutton with its peanut gravy, the sauce alone beside it.
+ *
+ * @param p - The motif paint.
+ */
+function paint_mutton_satay(p: MotifPaint): void {
+  paint_satay(p, 0x7a4a32, true, false);
 }
 
 /**
@@ -461,6 +487,111 @@ function paint_black_pepper_crab(p: MotifPaint): void {
   }
 }
 
+/**
+ * Chilli crab: a quarter crab and its big claw in a thick red chilli gravy laced with ribbons
+ * of egg. Each eaten third takes the legs, then cracks into the body.
+ *
+ * @param p - The motif paint.
+ */
+function paint_chilli_crab(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  const size = heap_scale(p.remaining);
+  paint_liquid(
+    ctx,
+    area.x,
+    area.y + 1,
+    area.rx * 0.95 * size,
+    area.ry * 0.9 * size,
+    CHILLI_CRAB.gravy,
+    { sheen: 0.4, oil: isLowDetail ? 3 : 6, oilColour: 0xe8783a, seed: seed ^ 0x51 },
+  );
+  if (p.remaining > 0.5) {
+    const [bx, by] = at(area, 0.72, 0.42);
+    paint_quarter_crab(ctx, bx, by, 15 * Math.max(0.85, size));
+  } else {
+    for (let shard = 0; shard < 2; shard += 1) {
+      const [sx, sy] = at(area, 0.05 + shard * 0.35, -0.1 + shard * 0.2);
+      paint_chunk(ctx, sx, sy, 3.6, CRAB.shell, 0.5 + shard, { radius: 1, gloss: 0.4 });
+    }
+  }
+  const [cx, cy] = at(area, -0.42, 0.3);
+  paint_crab_claw(ctx, cx, cy, 14, -0.35);
+  paint_shreds(
+    ctx,
+    area.x - 1,
+    area.y + 1,
+    area.rx * 0.7 * size,
+    isLowDetail ? 7 : 14,
+    CHILLI_CRAB.egg,
+    seed ^ 0x52,
+    2.8,
+    0.75,
+  );
+  paint_scallions(ctx, area.x - 2, area.y - 2, area.rx * 0.4, isLowDetail ? 2 : 4, seed ^ 0x53);
+}
+
+/**
+ * Ayam panggang: a chicken leg marinated in spice paste and grilled to a dark, glossy red
+ * glaze with char stripes, lying over a mound of white rice.
+ *
+ * @param p - The motif paint.
+ */
+function paint_ayam_panggang(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  const size = heap_scale(p.remaining);
+  const [rx, ry] = at(area, -0.38, -0.12);
+  paint_rice_mound(
+    ctx,
+    rx,
+    ry,
+    area.rx * 0.5 * size,
+    area.ry * 0.62 * size,
+    0xf6f1e4,
+    seed,
+    isLowDetail,
+  );
+  const [lx, ly] = at(area, 0.22, 0.12);
+  const leg = 15 * Math.max(0.7, size);
+  const angle = -0.35;
+  paint_drumstick(ctx, lx, ly, leg, angle, 0x9a4a22);
+  ctx.save();
+  ctx.translate(lx, ly);
+  ctx.rotate(angle);
+  ctx.lineCap = "round";
+  for (let stripe = 0; stripe < 3; stripe += 1) {
+    const along = (-0.3 + stripe * 0.15) * leg;
+    line(ctx, along - 0.8, -leg * 0.18, along + 0.8, leg * 0.18, css(0x3a1608, 0.75), 0.9);
+  }
+  ctx.restore();
+  paint_gloss(ctx, lx - leg * 0.2, ly - leg * 0.12, leg * 0.16, 0.8, 0.55);
+  const [gx, gy] = at(area, 0.62, -0.55);
+  paint_leaf(ctx, gx, gy, 5, -0.4, 0x4f8a3a);
+}
+
+/**
+ * Black pepper steak: a grilled beef steak on a sizzling hot plate with roast potato wedges and
+ * vegetables, the black pepper sauce served on the side in its own cup.
+ *
+ * @param p - The motif paint.
+ */
+function paint_black_pepper_steak(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  const size = heap_scale(p.remaining);
+  const [sx, sy] = at(area, -0.2, -0.05);
+  paint_grilled_cut(ctx, sx, sy, 15 * size, 9.6 * size, -0.12, 0x5a3a2a, 4);
+  const wedges = pieces_left(3, p.remaining);
+  for (let wedge = 0; wedge < wedges; wedge += 1) {
+    const [wx, wy] = at(area, -0.6 + wedge * 0.32, 0.62 - (wedge % 2) * 0.12);
+    paint_chunk(ctx, wx, wy, 3.6, 0xe2b65c, 0.5 * wedge - 0.4, { radius: 1.4, gloss: 0.35 });
+  }
+  const [gx, gy] = at(area, 0.62, 0.42);
+  paint_greens(ctx, gx, gy, 7, -2.6, 0x3f8a3a);
+  paint_dots(ctx, gx - 1, gy - 1, 2, isLowDetail ? 2 : 4, 0.8, 0xe8782a, seed ^ 0x61);
+  const [cx, cy] = at(area, 0.68, -0.5);
+  paint_sauce_cup(ctx, cx, cy, 3.6, 0x3a2418);
+  paint_dots(ctx, cx, cy - 0.2, 1.8, isLowDetail ? 3 : 6, 0.4, 0x0e0a08, seed ^ 0x62);
+}
+
 /** The grill and seafood motifs, keyed by dish ID without the `dish.` prefix. */
 export const GRILL_MOTIFS: Readonly<Record<string, Motif>> = {
   "chicken-satay-set": paint_chicken_satay,
@@ -469,4 +600,10 @@ export const GRILL_MOTIFS: Readonly<Record<string, Motif>> = {
   "sambal-grilled-squid": paint_sotong_panggang,
   "sambal-stingray": paint_sambal_stingray,
   "black-pepper-crab": paint_black_pepper_crab,
+  "mutton-satay-set": paint_mutton_satay,
+  "chilli-crab": paint_chilli_crab,
+  "ayam-panggang": paint_ayam_panggang,
+  "black-pepper-steak": paint_black_pepper_steak,
+  "chicken-chop": paint_in_layer,
+  "fish-and-chips": paint_in_layer,
 };

@@ -86,6 +86,10 @@ exports[`createHawkerRuntime rendering > (9a) draws the gallery save on boot 1`]
   "1558 142 #17352e 0 guests",
   "1846 190 #17352e 0 guests",
   "214 526 #17352e 0 guests",
+  "2086 238 #17352e 0 guests",
+  "2038 382 #17352e 0 guests",
+  "2086 574 #17352e 0 guests",
+  "2134 766 #17352e 0 guests",
 ]
 `;
 
@@ -105,6 +109,10 @@ exports[`createHawkerRuntime rendering > (9b) draws every reviewed variant on th
   "1558 142 #17352e 0 guests",
   "1846 190 #17352e 0 guests",
   "214 526 #17352e 0 guests",
+  "2086 238 #17352e 0 guests",
+  "2038 382 #17352e 0 guests",
+  "2086 574 #17352e 0 guests",
+  "2134 766 #17352e 0 guests",
 ]
 `;
 
@@ -116,7 +124,7 @@ exports[`createHawkerRuntime rendering > (10) draws frames 480 and 960 of the tw
   ],
   "960": [
     "262 190 #17352e 0 guests",
-    "646 190 #17352e 1 guest",
+    "646 190 #17352e 0 guests",
   ],
 }
 `;

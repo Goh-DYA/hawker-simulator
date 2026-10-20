@@ -51,6 +51,7 @@ const STEEL_PLATE_DISHES: ReadonlySet<string> = new Set([
   "idli-sambar",
   "vadai-set",
   "lemon-rice",
+  "appam",
 ]);
 
 /** The painted band on plates and bowls, by food form, so dish families share their crockery. */
@@ -67,8 +68,9 @@ const BAND_BY_FORM: Readonly<Record<DishVisualRecipe["foodForm"], number>> = {
 
 /**
  * Chooses the vessel a dish is painted in: the recipe's profile, with the claypot for claypot
- * dishes, stainless steel under the banana leaf for South Indian sets, and a plain plate under
- * the lotus leaf parcel (the parcel is its own leaf).
+ * dishes, a bowl for the soup variant of a dish plated dry (wanton mee), stainless steel under
+ * the banana leaf for South Indian sets, and a plain plate under the lotus leaf parcel (the
+ * parcel is its own leaf).
  *
  * @param dishKey - The dish ID without the `dish.` prefix.
  * @param recipe - The dish recipe.
@@ -83,6 +85,8 @@ function choose_vessel(
   let kind = VESSEL_BY_PROFILE[recipe.presentation.vessel];
   if (dishKey === "claypot-chicken-rice" || includes_any(layerKey ?? "", ["dry-claypot"])) {
     kind = "claypot";
+  } else if (kind === "plate" && layerKey?.endsWith("-soup")) {
+    kind = "bowl";
   } else if (kind === "leaf-plate" && STEEL_PLATE_DISHES.has(dishKey)) {
     kind = "steel-leaf-plate";
   } else if (dishKey === "lotus-leaf-rice") {
