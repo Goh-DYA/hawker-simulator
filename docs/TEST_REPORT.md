@@ -1,7 +1,7 @@
 # Test Report
 
 Report date: 2026-10-20
-Build/commit: Content `1.7.0` working source; working source validated with Node.js TODO-GATE; commit/publication record pending
+Build/commit: Content `1.7.0` working source; working source validated with Node.js `v22.22.0`; commit/publication record pending
 Release verdict: **NO-GO pending exact-production browser/offline QA and required human reviews**
 
 This document owns the dated test and gate evidence; other documents link here instead of restating results (see the [documentation index](README.md)). Release blockers are listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md), and content counts in [CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md#roster-counts).
@@ -16,11 +16,11 @@ Gate results on the landed source:
 
 | Check | Result |
 |---|---|
-| Date and Node.js version | TODO-GATE |
-| `CI=true npm run test:release`: typecheck, lint with no warnings, Vitest files / tests, Vinext build, rendered-output/offline-shell assertions | TODO-GATE |
-| `npm run build:vercel` (native Next.js Vercel build) | TODO-GATE |
-| Service-worker build ID (Linux build) | TODO-GATE |
-| `benchmark-80-agents` mean and p95 per fixed step | TODO-GATE |
+| Date and Node.js version | 2026-10-20, Node.js `v22.22.0` (Linux) |
+| `CI=true npm run test:release`: typecheck, lint with no warnings, Vitest files / tests, Vinext build, rendered-output/offline-shell assertions | **Pass**: typecheck, lint with no warnings, 108 Vitest files / 1,364 tests (1 skipped: the gallery-fixture generator, which runs only with `GALLERY_REGENERATE=1`), the Vinext build, and 2/2 rendered-output/offline-shell assertions |
+| `npm run build:vercel` (native Next.js Vercel build) | **Pass** |
+| Service-worker build ID (Linux build) | `8141b65fca55` |
+| `benchmark-80-agents` mean and p95 per fixed step | 0.167 ms and 0.192 ms |
 
 The generated nutrition snapshot is review revision 5, `dataVersion` `sg-1bc212db6eda-c87987b4281c-r5` (sha256 `c4dce8eb58dbae5d02aa70ee28a2504ff13ae1c34326b421b0fcbcb3ad963f4e`): 171 released profiles (0 quarantined) across 23 variant families for 91 dishes, with `healthParts` on all 147 meal profiles and a top-level `dailyReference`. It differs from the round-3 panel chair's reference output (sha256 `87a66486f93bf47d22ba3ffc49d898ac351f4e90890f2fb25d75bf4e7fd63d5d`) only in the thosai family: the plain and masala thosai profiles exchange their profile IDs, variant IDs and review notes, and every rating, part and other profile is identical. The goldens moved intentionally, each in the commit that moved it, with the reason in its message: the generated nutrition sha, the content goldens, the importer's varied-fixture sha, the runtime fresh-export, re-import, open-run, multi-day and pressure core hashes and the input test's core hash (guests' outcome snapshots copy `healthRating`), the runtime and Dishes-panel snapshots, the gallery save's data version and stored thosai default, the gallery-variants render digest (the plain thosai painting) and the content version.
 

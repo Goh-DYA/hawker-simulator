@@ -39,7 +39,7 @@ The review also fixed these parity rules, which the test asserts:
 
 Two price-health acceptance checks guard against charging for health. Re-check them whenever prices or the rating model change:
 
-1. Across all dishes, the Spearman correlation between price and Health rating is at most zero. It is −0.421 today, across the 91 dishes of content `1.6.0`.
+1. Across all dishes, the Spearman correlation between price and Health rating is at most zero. It is −0.366 today, across the 91 dishes of content `1.6.0`.
 2. At least half of the dishes rated 3.5 or above cost no more than a Student Saver's mid budget ($6.50). Today 15 of 16 do; the exception is sotong panggang at $10.
 
 Two content rules in `src/content/rules.ts` keep new stalls in line with these checks and with the unlock order:

@@ -7,7 +7,7 @@
  */
 
 /** The content version, as `major.minor.patch`. */
-export const CONTENT_VERSION = "1.6.0";
+export const CONTENT_VERSION = "1.7.0";
 
 /** The date of the last update, as an ISO 8601 calendar date (`YYYY-MM-DD`). */
 export const CONTENT_UPDATED_ON = "2026-10-20";
