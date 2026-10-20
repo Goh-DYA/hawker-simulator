@@ -3,8 +3,9 @@
  *
  * Every launch dish and every reviewed nutrition variant is painted into a recording context,
  * and the digest of its calls is compared: dishes against each other, eaten thirds against the
- * full serving, each variant's cue against the fallback branch and against its siblings. So
- * each composition is proven by what it paints rather than by source text.
+ * full serving, each variant's cue against the fallback branch and against its siblings (also at
+ * one fixed seed, so a sibling cannot pass on seed jitter alone). So each composition is proven
+ * by what it paints rather than by source text.
  *
  * The geometry is checked on real pixels, painted with `@napi-rs/canvas` (the gallery tool's
  * canvas) into a texture with a transparent margin round it: nothing may paint outside the dish
@@ -161,10 +162,18 @@ const REVIEWED_FAMILIES: readonly DishVariantVisualFamily[] = [
 ];
 
 /**
- * Sibling variants whose cues draw identically. Empty: the yong tau foo "mixed" variants float
- * both boiled and fried pieces, so they differ from the all-fried and laksa "boiled" variants.
+ * Sibling variants whose cues draw identically, with their own seeds or at
+ * {@link FIXED_CUE_SEED}. Empty: the yong tau foo "mixed" variants float both boiled and fried
+ * pieces, so they differ from the all-fried and laksa "boiled" variants.
  */
 const KNOWN_IDENTICAL_SIBLINGS: readonly (readonly string[])[] = [];
+
+/**
+ * The seed every cue is painted with in the fixed-seed sibling test. A cue's own seed is a hash
+ * of its key, so two keys that select the same painter branches still digest differently; held
+ * fixed, only the branches the key's parts select can tell siblings apart.
+ */
+const FIXED_CUE_SEED = 7;
 
 /** The frames every dish must paint in. */
 const FRAMES: readonly PaintFrame[] = [
@@ -191,12 +200,36 @@ const VESSEL_KINDS: readonly VesselKind[] = [
  *
  * @param visual_key - The variant's visual key.
  * @param family - The visual family branch to paint with.
+ * @param seed - A seed override, or undefined for the key's own seed.
  * @returns The sha256 of the recorded paint calls.
  */
-function digest_cue(visual_key: string, family: DishVariantVisualFamily): string {
+function digest_cue(visual_key: string, family: DishVariantVisualFamily, seed?: number): string {
   const recording = create_recording_context();
-  paint_variant_cue(recording.ctx, visual_key, family, 18, 18, 1);
+  paint_variant_cue(recording.ctx, visual_key, family, 18, 18, 1, { seed });
   return recording.digest();
+}
+
+/**
+ * Groups the sibling variants of each variant family whose cues paint identically.
+ *
+ * @param seed - A seed override for every cue, or undefined for each key's own seed.
+ * @returns The groups of two or more identical sibling keys, family by family.
+ */
+function find_identical_siblings(seed?: number): string[][] {
+  const identical_groups: string[][] = [];
+  for (const family of NUTRITION_CONTENT.variantFamilies) {
+    const keys_by_digest = new Map<string, string[]>();
+    for (const variant of family.variants) {
+      const digest = digest_cue(
+        variant.visualKey,
+        variantVisualFamilyForKey(variant.visualKey),
+        seed,
+      );
+      keys_by_digest.set(digest, [...(keys_by_digest.get(digest) ?? []), variant.visualKey]);
+    }
+    identical_groups.push(...[...keys_by_digest.values()].filter((keys) => keys.length > 1));
+  }
+  return identical_groups;
 }
 
 /**
@@ -238,21 +271,24 @@ describe("nutrition variant cue draw output", () => {
   });
 
   it("draws sibling variants of one dish differently, apart from the pinned pairs", () => {
-    const identical_groups: string[][] = [];
-    for (const family of NUTRITION_CONTENT.variantFamilies) {
-      const keys_by_digest = new Map<string, string[]>();
-      for (const variant of family.variants) {
-        const digest = digest_cue(variant.visualKey, variantVisualFamilyForKey(variant.visualKey));
-        keys_by_digest.set(digest, [...(keys_by_digest.get(digest) ?? []), variant.visualKey]);
-      }
-      identical_groups.push(...[...keys_by_digest.values()].filter((keys) => keys.length > 1));
-    }
+    expect(find_identical_siblings()).toEqual(KNOWN_IDENTICAL_SIBLINGS);
+  });
 
-    expect(identical_groups).toEqual(KNOWN_IDENTICAL_SIBLINGS);
+  it("draws sibling variants of one dish differently at one fixed seed", () => {
+    expect(find_identical_siblings(FIXED_CUE_SEED)).toEqual(KNOWN_IDENTICAL_SIBLINGS);
   });
 
   it("paints the same cue identically twice", () => {
     expect(digest_cue("teh-pulled-foam", "drink")).toBe(digest_cue("teh-pulled-foam", "drink"));
+  });
+
+  it("paints a cue with its key's own seed unless a seed is given", () => {
+    const key = "bak-chor-dry-sauce";
+
+    expect(digest_cue(key, "bak-chor", FIXED_CUE_SEED)).toBe(
+      digest_cue(key, "bak-chor", FIXED_CUE_SEED),
+    );
+    expect(digest_cue(key, "bak-chor", FIXED_CUE_SEED)).not.toBe(digest_cue(key, "bak-chor"));
   });
 });
 
