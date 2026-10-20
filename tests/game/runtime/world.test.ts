@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { STALLS } from "@/src/content";
+import { ECONOMY, STALLS } from "@/src/content";
 import { OPERATING_DAY_MS, type GameState } from "@/src/game/core";
 import { buildCatalog } from "@/src/game/runtime/catalog";
 import {
@@ -21,7 +21,7 @@ const { catalog: AUTHORED_CATALOG } = buildCatalog();
 /** Core reputation that clears every authored stall's reputation gate. */
 const MAX_CORE_REPUTATION = 5;
 /** Level that clears every authored stall's level gate. */
-const MAX_LEVEL = 20;
+const MAX_LEVEL = ECONOMY.maxLevel;
 
 /** A fresh centre that meets every stall's level and reputation gate on the given day. */
 function grown_state(day: number): GameState {

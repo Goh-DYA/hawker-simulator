@@ -28,9 +28,11 @@ export const EXPECTED_GUIDELINE_FILE_SHA256 =
  * The review revision of the mappings and the rating model. It is part of the generated
  * `dataVersion`, so raising it when either changes resets saved dish-variant choices to
  * the reviewed defaults, even though the source files are unchanged. Revision 2 adopted
- * the guideline-anchored ratings and realistic hawker servings.
+ * the guideline-anchored ratings and realistic hawker servings. Revision 4 added the four new
+ * stalls' dishes and nine families, and moved four defaults (black carrot cake, fried fish bee
+ * hoon, yong tau foo with noodles, bak kut teh with rice and you tiao) below a healthier option.
  */
-export const NUTRITION_REVIEW_REVISION = 3;
+export const NUTRITION_REVIEW_REVISION = 4;
 
 /**
  * The number of adult daily guideline rows the reviewed guideline file holds. It matches
@@ -77,12 +79,17 @@ export const SNACK_RATED_DISH_IDS = new Set([
   "dish.chendol",
   "dish.tau-huay",
   "dish.pulut-hitam",
+  "dish.cheng-tng",
+  "dish.orh-nee",
+  "dish.tau-suan",
+  "dish.green-bean-soup",
+  "dish.black-sesame-paste",
 ]);
 
 /**
  * Borrowed source rows the importer accepts, and only as a non-first entry of a composite's
  * `components`: a single ingredient the source has no Lab, NIP or Derived row for. Each one is
- * named in its mapping notes and listed with its values in KNOWN_ISSUES.
+ * named in its mapping notes and listed with its values in KNOWN_ISSUES (q).
  */
 export const BORROWED_COMPONENT_ALLOWLIST = new Set(["Cooked white rice"]);
 
@@ -162,10 +169,9 @@ export const PRIMARY_PROFILE_MAPPINGS = [
   ),
   released(
     "dish.fried-carrot-cake",
-    "Fried carrot cake (white)",
+    "Fried carrot cake (black)",
     "meal",
-    "White carrot cake is the game's default recipe; black is available as a reviewed variant.",
-    "curated-synonym",
+    "Black carrot cake, glazed in sweet dark soy, is the default order; the savoury white style is the reviewed variant that rates higher.",
   ),
   released(
     "dish.oyster-omelette",
@@ -293,9 +299,9 @@ export const PRIMARY_PROFILE_MAPPINGS = [
   ),
   released(
     "dish.sliced-fish-soup",
-    "Sliced fish beehoon soup (no milk)",
+    "Fried fish beehoon soup (no milk)",
     "meal",
-    "The no-milk beehoon preparation matches the default game bowl.",
+    "Fried fish bee hoon in clear soup is the default bowl. The Derived row is the Lab clear fried-fish soup plus 1.25 servings of thick beehoon, and its description names deep-fried sliced fish pieces, so the bowl paints fried fish.",
     "curated-synonym",
   ),
   released(
@@ -425,9 +431,9 @@ export const PRIMARY_PROFILE_MAPPINGS = [
   ),
   released(
     "dish.yong-tau-foo",
-    "Yong tau foo (clear soup, 7 pieces, mixed)",
+    "Yong tau foo (clear soup, with rice/noodles)",
     "meal",
-    "The clear-soup bowl with seven mixed pieces is the game's default yong tau foo serving; the boiled row reports 82 kcal and 5.7 g protein for seven stuffed pieces and is not used.",
+    "Seven pieces in clear soup with thick bee hoon or rice is the usual lunch order (Derived, with the source's grouped rice-or-noodle accompaniment); the pieces-only bowl is the reviewed variant that rates higher. The boiled clear-soup row reports 82 kcal and 5.7 g protein for seven stuffed pieces and is not used.",
   ),
   released(
     "dish.ban-mian",
@@ -450,12 +456,22 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     1,
     "1 roll (191 g)",
   ),
-  released(
-    "dish.bak-kut-teh",
-    "Bak kut teh (soup)",
-    "meal",
-    "The soup preparation is the game's default bak kut teh serving.",
-  ),
+  {
+    ...released(
+      "dish.bak-kut-teh",
+      "Bak kut teh (soup)",
+      "meal",
+      "Composite: the Lab peppery 'Bak kut teh (soup)' bowl (574 g), 'Cooked white rice' (row 1422, Borrowed, the CSV's own 200 g bowl, no multiplier) and half of the Lab 117 g 'You tiao' stick, the usual hawker meal. The rice is a single-ingredient component because the source has no Lab, NIP or Derived plain cooked rice (KNOWN_ISSUES (q)).",
+      "curated-synonym",
+      1,
+      "1 bowl with rice and half a you tiao (833 g)",
+    ),
+    components: [
+      { foodName: "Bak kut teh (soup)", multiplier: 1 },
+      { foodName: "Cooked white rice", multiplier: 1 },
+      { foodName: "You tiao", multiplier: 0.5 },
+    ],
+  },
   released(
     "dish.duck-rice",
     "Braised duck rice set (with egg and tau kwa)",
@@ -561,6 +577,145 @@ export const PRIMARY_PROFILE_MAPPINGS = [
     "The soup preparation is the game's default prawn noodle bowl.",
     "curated-synonym",
   ),
+  released(
+    "dish.century-egg-porridge",
+    "Century egg and pork porridge",
+    "meal",
+    "Exact named Lab porridge bowl.",
+  ),
+  released(
+    "dish.fish-porridge",
+    "Fried fish porridge",
+    "meal",
+    "Fried fish porridge is the default bowl (Lab; deep-fried sliced fish pieces); the Lab sliced-fish bowl is the reviewed variant that rates higher.",
+    "curated-synonym",
+  ),
+  released(
+    "dish.minced-pork-porridge",
+    "Minced pork porridge",
+    "meal",
+    "Exact named Lab porridge bowl.",
+  ),
+  released(
+    "dish.chee-cheong-fun",
+    "Chee cheong fun (plain)",
+    "meal",
+    "The plain rice rolls with sweet sauce (Lab); the source labels its one 262 g serving one roll, which is a hawker plate of rolls.",
+    "exact",
+    1,
+    "1 plate (262 g)",
+  ),
+  released("dish.you-tiao", "You tiao", "meal", "Exact named Lab fried dough stick at the source's one-stick serving."),
+  released("dish.cheng-tng", "Cheng tng", "meal", "Exact named Lab dessert bowl, rated as a snack."),
+  released("dish.orh-nee", "Orh nee", "meal", "Exact named Lab dessert bowl, rated as a snack."),
+  released("dish.tau-suan", "Tau suan", "meal", "Exact named Lab dessert bowl, rated as a snack."),
+  released(
+    "dish.green-bean-soup",
+    "Green bean soup",
+    "meal",
+    "Exact named Lab dessert bowl, rated as a snack.",
+  ),
+  released(
+    "dish.black-sesame-paste",
+    "Black sesame paste",
+    "meal",
+    "Exact named Lab dessert bowl, rated as a snack; its calcium is withheld by the source fence and shown as unavailable.",
+  ),
+  released(
+    "dish.ayam-penyet",
+    "Ayam penyet with rice",
+    "meal",
+    "Exact named Lab plate with rice.",
+  ),
+  released(
+    "dish.nasi-goreng",
+    "Nasi goreng",
+    "meal",
+    "Exact named Lab plate; the source reports sugar as trace (KNOWN_ISSUES).",
+  ),
+  released(
+    "dish.mee-soto",
+    "Mee soto",
+    "meal",
+    "Exact named Lab bowl; its 14.1 g fibre trips no plausibility rule (KNOWN_ISSUES).",
+  ),
+  released(
+    "dish.gado-gado",
+    "Gado gado",
+    "meal",
+    "Exact named Lab plate; the source does not report sugar, so the rating imputes it (KNOWN_ISSUES).",
+  ),
+  released(
+    "dish.ayam-panggang",
+    "Ayam panggang with rice",
+    "meal",
+    "Exact named Lab plate (750 g, 86% edible). Its rating reflects the large analysed plate and sweet marinade, not grilling against frying; the source's 189 g piece is the chicken alone, so no smaller plate is available.",
+  ),
+  released(
+    "dish.chicken-chop",
+    "Chicken chop with fries and coleslaw",
+    "meal",
+    "Exact named Lab set; the default hawker Western plate.",
+  ),
+  released(
+    "dish.aglio-olio",
+    "Aglio olio",
+    "meal",
+    "Exact named Lab plate; its 13.8 g fibre trips no plausibility rule (KNOWN_ISSUES).",
+  ),
+  released(
+    "dish.fish-and-chips",
+    "Fish and chips",
+    "meal",
+    "Exact named plate; the source row is Derived and no Lab fish and chips row exists.",
+  ),
+  released(
+    "dish.spaghetti-bolognese",
+    "Beef bolognese",
+    "meal",
+    "The source names the Lab spaghetti plate by its beef bolognese sauce.",
+    "curated-synonym",
+  ),
+  released(
+    "dish.black-pepper-steak",
+    "Black pepper steak",
+    "meal",
+    "Exact named Lab plate; its 49 g carbohydrate and 7.9 g fibre show the usual potato and vegetable sides.",
+  ),
+  released(
+    "dish.mutton-satay-set",
+    "Mutton satay with sauce",
+    "meal",
+    "The source reports one skewer with sauce (Derived, as the beef and chicken satay); values are scaled to the game's ten-skewer serving.",
+    "scaled-exact",
+    10,
+    "10 sticks (190 g)",
+  ),
+  released(
+    "dish.appam",
+    "Appam",
+    "meal",
+    "The source reports one 72 g appam with no alternative serving; values are scaled to the usual two-piece order.",
+    "scaled-exact",
+    2,
+    "2 pieces (144 g)",
+  ),
+  released(
+    "dish.watercress-pork-rib-soup",
+    "Pork ribs and watercress soup",
+    "meal",
+    "The source names the Lab bowl by its pork ribs first.",
+    "curated-synonym",
+  ),
+  released(
+    "dish.chilli-crab",
+    "Chilli crab",
+    "meal",
+    "The source reports one pincer; values are scaled to the source's alternative quarter-crab serving, as for black pepper crab.",
+    "scaled-exact",
+    384 / 177,
+    "1 quarter crab (384 g)",
+  ),
 ];
 
 /**
@@ -610,6 +765,8 @@ export const VARIANT_FAMILY_MAPPINGS = [
       variant("kopi-c-kosong", "Kopi C kosong", "Kopi C kosong", 7, "kopi-evaporated-milk-no-sugar", "Kopi C without added sugar."),
       variant("kopi-o", "Kopi O", "Kopi O", 7, "kopi-black-two-sugar", "Black kopi with sugar."),
       variant("kopi-o-kosong", "Kopi O kosong", "Kopi O kosong", 7, "kopi-black-no-sugar", "Black kopi without added sugar."),
+      variant("kopi-c-siu-dai", "Kopi C siu dai", "Kopi C siu dai", 7, "kopi-evaporated-milk-one-sugar", "Kopi C with less sugar (Derived)."),
+      variant("kopi-o-siu-dai", "Kopi O siu dai", "Kopi O siu dai", 7, "kopi-black-one-sugar", "Black kopi with less sugar (Derived)."),
     ],
   },
   {
@@ -623,6 +780,9 @@ export const VARIANT_FAMILY_MAPPINGS = [
       variant("teh-c-kosong", "Teh C kosong", "Teh C kosong", 7, "teh-evaporated-milk-no-sugar", "Teh C without added sugar."),
       variant("teh-o", "Teh O", "Teh O", 7, "teh-black-two-sugar", "Black tea with sugar."),
       variant("teh-o-kosong", "Teh O kosong", "Teh O kosong", 7, "teh-black-no-sugar", "Black tea without added sugar."),
+      variant("teh-c-siu-dai", "Teh C siu dai", "Teh C siu dai", 7, "teh-evaporated-milk-one-sugar", "Teh C with less sugar (Derived)."),
+      variant("teh-o-siu-dai", "Teh O siu dai", "Teh O siu dai", 7, "teh-black-one-sugar", "Black tea with less sugar (Derived)."),
+      variant("teh-halia", "Teh halia", "Teh halia", 7, "teh-milk-ginger", "Ginger milk tea (Derived)."),
     ],
   },
   {
@@ -639,10 +799,10 @@ export const VARIANT_FAMILY_MAPPINGS = [
   },
   {
     dishId: "dish.fried-carrot-cake",
-    defaultVariantId: "carrot-cake-white",
+    defaultVariantId: "carrot-cake-black",
     variants: [
-      variant("carrot-cake-white", "White carrot cake", "Fried carrot cake (white)", 1, "carrot-cake-white-egg", "Default white preparation."),
-      variant("carrot-cake-black", "Black carrot cake", "Fried carrot cake (black)", 2, "carrot-cake-black-sauce", "Sweet dark-soy preparation."),
+      variant("carrot-cake-black", "Black carrot cake", "Fried carrot cake (black)", 1, "carrot-cake-black-sauce", "Default sweet dark-soy preparation."),
+      variant("carrot-cake-white", "White carrot cake", "Fried carrot cake (white)", 2, "carrot-cake-white-egg", "Savoury white preparation without sweet dark soy."),
     ],
   },
   {
@@ -658,12 +818,13 @@ export const VARIANT_FAMILY_MAPPINGS = [
   },
   {
     dishId: "dish.sliced-fish-soup",
-    defaultVariantId: "fish-soup-beehoon-no-milk",
+    defaultVariantId: "fish-soup-fried-beehoon-no-milk",
     variants: [
-      variant("fish-soup-beehoon-no-milk", "Fish beehoon, no milk", "Sliced fish beehoon soup (no milk)", 1, "fish-beehoon-clear", "Default clear soup with beehoon."),
-      variant("fish-soup-beehoon-milk", "Fried fish beehoon with milk", "Fried fish beehoon soup (with milk)", 2, "fish-fried-beehoon-milky", "Milky soup with the default bowl's 250 g of thick beehoon: the Derived row is the Lab milky fried-fish soup plus 1.25 thick beehoon, built the same way as the clear default; the milky sliced-fish Lab soup is not a like-for-like partner of the clear sliced-fish Lab soup (1,405 vs 2,407 mg sodium).", "curated-synonym"),
-      variant("fish-soup-sliced-no-milk", "Fried fish soup, no milk", "Fried fish soup (no milk)", 4, "fish-fried-clear", "Clear fried-fish soup without noodles; the sliced-fish row states 84 kcal against about 154 kcal from its own macronutrients, so the reviewed fried-fish bowl stands in.", "curated-synonym"),
-      variant("fish-soup-sliced-milk", "Fried fish soup with milk", "Fried fish soup (with milk)", 7, "fish-fried-milky", "Milky fried-fish soup without noodles, the Lab pair of the clear fried-fish variant.", "curated-synonym"),
+      variant("fish-soup-fried-beehoon-no-milk", "Fried fish bee hoon, clear", "Fried fish beehoon soup (no milk)", 1, "fish-fried-beehoon-clear", "Default clear fried-fish bowl with thick beehoon: the Derived row is the Lab clear fried-fish soup plus 1.25 thick beehoon.", "curated-synonym"),
+      variant("fish-soup-beehoon-no-milk", "Sliced fish bee hoon, clear", "Sliced fish beehoon soup (no milk)", 2, "fish-beehoon-clear", "Fresh sliced fish with thick beehoon in clear soup (Derived), the like-for-like option to the fried default.", "curated-synonym"),
+      variant("fish-soup-beehoon-milk", "Fried fish bee hoon with milk", "Fried fish beehoon soup (with milk)", 4, "fish-fried-beehoon-milky", "Milky soup with the default bowl's 250 g of thick beehoon: the Derived row is the Lab milky fried-fish soup plus 1.25 thick beehoon, built the same way as the clear default; the milky sliced-fish Lab soup is not a like-for-like partner of the clear sliced-fish Lab soup (1,405 vs 2,407 mg sodium).", "curated-synonym"),
+      variant("fish-soup-sliced-no-milk", "Fried fish soup, clear (no noodles)", "Fried fish soup (no milk)", 7, "fish-fried-clear", "Clear fried-fish soup without noodles (the ID predates the fried row); the sliced-fish row states 84 kcal against about 154 kcal from its own macronutrients, so the reviewed fried-fish bowl stands in.", "curated-synonym"),
+      variant("fish-soup-sliced-milk", "Fried fish soup with milk (no noodles)", "Fried fish soup (with milk)", 7, "fish-fried-milky", "Milky fried-fish soup without noodles (the ID predates the fried row), the Lab pair of the clear fried-fish variant.", "curated-synonym"),
     ],
   },
   {
@@ -679,8 +840,9 @@ export const VARIANT_FAMILY_MAPPINGS = [
     defaultVariantId: "murtabak-chicken",
     variants: [
       variant("murtabak-chicken", "Chicken murtabak", "Murtabak (chicken)", 1, "murtabak-chicken", "Default chicken filling."),
-      variant("murtabak-chicken-mushroom-cheese", "Chicken, mushroom and cheese murtabak", "Murtabak (chicken, mushroom, cheese)", 2, "murtabak-chicken-mushroom-cheese", "The source's 611 g murtabak is a sharing size; values are halved to one diner's portion.", "scaled-exact", 0.5, "1/2 murtabak (306 g)"),
-      variant("murtabak-mutton", "Mutton murtabak", "Murtabak (mutton)", 4, "murtabak-mutton", "Mutton filling."),
+      variant("murtabak-chicken-half", "Chicken murtabak, half (shared)", "Murtabak (chicken)", 2, "murtabak-chicken-half", "Half of the source's 330 g chicken murtabak, the share of one diner when two split it; the source gives no alternative serving.", "scaled-exact", 0.5, "1/2 murtabak, shared (165 g)"),
+      variant("murtabak-chicken-mushroom-cheese", "Chicken, mushroom and cheese murtabak", "Murtabak (chicken, mushroom, cheese)", 4, "murtabak-chicken-mushroom-cheese", "The source's 611 g murtabak is a sharing size; values are halved to one diner's portion.", "scaled-exact", 0.5, "1/2 murtabak (306 g)"),
+      variant("murtabak-mutton", "Mutton murtabak", "Murtabak (mutton)", 7, "murtabak-mutton", "Mutton filling."),
       variant("murtabak-vegetable", "Vegetable murtabak", "Murtabak (vegetable)", 7, "murtabak-vegetable", "Vegetable filling; the label does not imply dietary certification."),
     ],
   },
@@ -702,16 +864,19 @@ export const VARIANT_FAMILY_MAPPINGS = [
       variant("thosai-plain", "Plain thosai", "Thosai", 2, "thosai-plain-roll", "Plain thosai serving."),
       variant("thosai-egg", "Egg thosai", "Thosai (egg)", 4, "thosai-egg-centre", "Egg thosai serving."),
       variant("thosai-ghee", "Ghee thosai", "Thosai (ghee)", 7, "thosai-ghee-gloss", "Ghee thosai serving."),
+      variant("thosai-rawa", "Rawa thosai", "Rawa thosai", 7, "thosai-rawa-lacy", "Semolina thosai (Lab)."),
+      variant("thosai-paper", "Paper thosai", "Paper thosai", 7, "thosai-paper-cone", "Large thin paper thosai (Lab)."),
+      variant("thosai-cheese", "Cheese thosai", "Thosai (cheese)", 7, "thosai-cheese-melt", "Cheese thosai (Lab)."),
     ],
   },
   {
     dishId: "dish.yong-tau-foo",
-    defaultVariantId: "ytf-clear-mixed",
+    defaultVariantId: "ytf-clear-noodles",
     variants: [
-      variant("ytf-clear-mixed", "Clear soup, mixed pieces", "Yong tau foo (clear soup, 7 pieces, mixed)", 1, "ytf-clear-mixed", "Default clear-soup bowl with a mixture of boiled and fried pieces; the boiled clear-soup row is implausible and not used."),
-      variant("ytf-clear-fried", "Clear soup, fried pieces", "Yong tau foo (clear soup, 7 pieces, fried)", 2, "ytf-clear-fried", "Clear-soup bowl with seven fried pieces."),
-      variant("ytf-laksa-boiled", "Laksa, boiled pieces", "Yong tau foo (laksa, 7 pieces, boiled)", 4, "ytf-laksa-boiled", "Laksa bowl with seven boiled pieces."),
-      variant("ytf-clear-noodles", "Clear soup with rice or noodles", "Yong tau foo (clear soup, with rice/noodles)", 7, "ytf-clear-noodles", "Clear-soup serving with the source's grouped rice-or-noodle accompaniment."),
+      variant("ytf-clear-noodles", "Clear soup with bee hoon or rice", "Yong tau foo (clear soup, with rice/noodles)", 1, "ytf-clear-noodles", "Default clear-soup lunch bowl with the source's grouped rice-or-noodle accompaniment (Derived)."),
+      variant("ytf-clear-mixed", "Clear soup, pieces only", "Yong tau foo (clear soup, 7 pieces, mixed)", 2, "ytf-clear-mixed", "Clear-soup bowl of seven mixed boiled and fried pieces without rice or noodles; the boiled clear-soup row is implausible and not used."),
+      variant("ytf-clear-fried", "Clear soup, fried pieces", "Yong tau foo (clear soup, 7 pieces, fried)", 4, "ytf-clear-fried", "Clear-soup bowl with seven fried pieces."),
+      variant("ytf-laksa-boiled", "Laksa, boiled pieces", "Yong tau foo (laksa, 7 pieces, boiled)", 7, "ytf-laksa-boiled", "Laksa bowl with seven boiled pieces."),
       variant("ytf-laksa-fried", "Laksa, fried pieces", "Yong tau foo (laksa, 7 pieces, fried)", 7, "ytf-laksa-fried", "Laksa bowl with seven fried pieces."),
       variant("ytf-laksa-mixed", "Laksa, mixed pieces", "Yong tau foo (laksa, 7 pieces, mixed)", 7, "ytf-laksa-mixed", "Laksa bowl with a mixture of boiled and fried pieces."),
       variant("ytf-laksa-noodles", "Laksa with rice or noodles", "Yong tau foo (laksa, with rice/noodles)", 7, "ytf-laksa-noodles", "Laksa serving with the source's grouped rice-or-noodle accompaniment."),
@@ -727,15 +892,43 @@ export const VARIANT_FAMILY_MAPPINGS = [
       variant("pork-dumpling-ban-mian", "Pork dumpling ban mian", "Pork dumpling ban mian (soup)", 7, "ban-mian-pork-dumpling", "Soup preparation with pork dumplings."),
       variant("seafood-tom-yum-ban-mian", "Seafood tom yum ban mian", "Seafood tom yum ban mian (soup)", 7, "ban-mian-tom-yum", "Seafood tom yum soup preparation."),
       variant("vegetable-ban-mian", "Vegetable ban mian", "Vegetable ban mian (soup)", 7, "ban-mian-vegetable", "Vegetable soup preparation; the label does not imply dietary certification."),
+      variant("mee-hoon-kway-dry", "Mee hoon kway, dry", "Mee hoon kway (dry)", 7, "ban-mian-mee-hoon-kway-dry", "Hand-torn dough pieces, dry (Lab)."),
+      variant("mee-hoon-kway-soup", "Mee hoon kway soup", "Mee hoon kway (soup)", 7, "ban-mian-mee-hoon-kway-soup", "Hand-torn dough pieces in soup (Lab)."),
     ],
   },
   {
     dishId: "dish.bak-kut-teh",
-    defaultVariantId: "bak-kut-teh-soup",
+    defaultVariantId: "bak-kut-teh-rice-you-tiao",
     variants: [
-      variant("bak-kut-teh-soup", "Bak kut teh soup", "Bak kut teh (soup)", 1, "bak-kut-teh-pepper-soup", "Default peppery soup preparation."),
-      variant("bak-kut-teh-dry", "Dry bak kut teh", "Bak kut teh (dry)", 2, "bak-kut-teh-dry-claypot", "Dry braised preparation."),
-      variant("bak-kut-teh-herbal", "Herbal bak kut teh", "Herbal bak kut teh (Malaysian)", 4, "bak-kut-teh-herbal-broth", "Herbal Malaysian-style preparation as named by the source."),
+      {
+        ...variant("bak-kut-teh-rice-you-tiao", "With rice and half a you tiao", "Bak kut teh (soup)", 1, "bak-kut-teh-rice-youtiao", "Default meal: the Lab peppery soup, 'Cooked white rice' (row 1422, Borrowed, the CSV's own 200 g bowl, no multiplier) and half a Lab you tiao stick.", "curated-synonym", 1, "1 bowl with rice and half a you tiao (833 g)"),
+        components: [
+          { foodName: "Bak kut teh (soup)", multiplier: 1 },
+          { foodName: "Cooked white rice", multiplier: 1 },
+          { foodName: "You tiao", multiplier: 0.5 },
+        ],
+      },
+      {
+        ...variant("bak-kut-teh-soup", "With rice, no you tiao", "Bak kut teh (soup)", 2, "bak-kut-teh-rice", "The Lab peppery soup with 'Cooked white rice' (row 1422, Borrowed, the CSV's own 200 g bowl, no multiplier), without the you tiao; the ID now carries the rice.", "curated-synonym", 1, "1 bowl with rice (774 g)"),
+        components: [
+          { foodName: "Bak kut teh (soup)", multiplier: 1 },
+          { foodName: "Cooked white rice", multiplier: 1 },
+        ],
+      },
+      {
+        ...variant("bak-kut-teh-herbal", "Herbal bak kut teh with rice", "Herbal bak kut teh (Malaysian)", 4, "bak-kut-teh-herbal-broth-rice", "The source's Lab Malaysian-style herbal bowl with 'Cooked white rice' (row 1422, Borrowed, the CSV's own 200 g bowl, no multiplier); its larger cut and meat portion, not the herbs, drive the gap (KNOWN_ISSUES (p)).", "curated-synonym", 1, "1 bowl with rice (702 g)"),
+        components: [
+          { foodName: "Herbal bak kut teh (Malaysian)", multiplier: 1 },
+          { foodName: "Cooked white rice", multiplier: 1 },
+        ],
+      },
+      {
+        ...variant("bak-kut-teh-dry", "Dry bak kut teh with rice", "Bak kut teh (dry)", 7, "bak-kut-teh-dry-claypot-rice", "The Lab dry braised claypot with 'Cooked white rice' (row 1422, Borrowed, the CSV's own 200 g bowl, no multiplier).", "curated-synonym", 1, "1 bowl with rice (482 g)"),
+        components: [
+          { foodName: "Bak kut teh (dry)", multiplier: 1 },
+          { foodName: "Cooked white rice", multiplier: 1 },
+        ],
+      },
     ],
   },
   {
@@ -744,7 +937,88 @@ export const VARIANT_FAMILY_MAPPINGS = [
     variants: [
       variant("duck-rice-braised", "Braised duck rice with egg and tau kwa", "Braised duck rice set (with egg and tau kwa)", 1, "duck-rice-braised-egg-tofu", "Default complete braised duck rice set."),
       variant("duck-rice-roasted", "Roasted duck rice", "Roasted duck rice", 2, "duck-rice-roasted", "Roasted duck rice preparation."),
-      variant("duck-rice-rice-only", "Braised duck rice, rice only", "Braised duck rice set (rice only)", 4, "duck-rice-rice-only", "Rice-only source serving presented as a portion comparison, not a complete-meal recommendation."),
+      variant("duck-rice-rice-only", "Braised rice with gravy (no duck)", "Braised duck rice set (rice only)", 4, "duck-rice-rice-only", "Rice-only source serving presented as a portion comparison, not a complete-meal recommendation."),
+      variant("duck-noodles-dry", "Braised duck noodles, dry", "Braised duck noodles (dry)", 7, "duck-rice-noodles-dry", "Dry braised duck noodles (Lab)."),
+    ],
+  },
+  {
+    dishId: "dish.prawn-noodle-soup",
+    defaultVariantId: "prawn-noodles-soup",
+    variants: [
+      variant("prawn-noodles-soup", "Prawn mee, soup", "Prawn noodles (soup)", 1, "prawn-mee-soup", "Default soup bowl."),
+      variant("prawn-noodles-dry", "Prawn mee, dry", "Prawn noodles (dry)", 2, "prawn-mee-dry", "Dry noodles tossed in gravy (Lab); the row excludes the side bowl of broth (KNOWN_ISSUES)."),
+    ],
+  },
+  {
+    dishId: "dish.economic-rice",
+    defaultVariantId: "economic-rice-veg-meat",
+    variants: [
+      variant("economic-rice-veg-meat", "1 veg, 1 meat", "Economic rice (1 vegetable, 1 meat)", 1, "eco-rice-veg-meat", "Default plate (Derived)."),
+      variant("economic-rice-veg-fish", "1 veg, 1 fish", "Economic rice (1 vegetable, 1 fish)", 2, "eco-rice-veg-fish", "Fish in place of meat (Derived)."),
+      variant("economic-rice-two-veg", "2 veg", "Economic rice (2 vegetables)", 4, "eco-rice-two-veg", "Two vegetable dishes (Derived)."),
+      variant("economic-rice-veg-fried-meat", "1 veg, 1 fried meat", "Economic rice (1 vegetable, 1 fried meat)", 7, "eco-rice-veg-fried-meat", "Fried meat in place of meat (Derived)."),
+    ],
+  },
+  {
+    dishId: "dish.nasi-padang",
+    defaultVariantId: "nasi-padang-beef",
+    variants: [
+      variant("nasi-padang-beef", "Beef rendang", "Nasi padang (beef set)", 1, "padang-beef-rendang", "Default beef set."),
+      variant("nasi-padang-sambal-goreng", "Sambal goreng (tempeh, long beans, tofu)", "Nasi padang (sambal goreng)", 2, "padang-sambal-goreng", "Rice with sambal goreng (Lab)."),
+      variant("nasi-padang-chicken", "Chicken", "Nasi padang (chicken set)", 4, "padang-chicken", "Chicken set (Lab)."),
+      variant("nasi-padang-assam-pedas", "Assam pedas fish", "Nasi padang (assam pedas)", 7, "padang-assam-pedas", "Assam pedas fish set (Lab)."),
+    ],
+  },
+  {
+    dishId: "dish.mee-siam",
+    defaultVariantId: "mee-siam-gravy",
+    variants: [
+      variant("mee-siam-gravy", "Gravy", "Mee siam", 1, "mee-siam-gravy", "Default gravy bowl."),
+      variant("mee-siam-fried", "Mee siam goreng (fried dry)", "Fried mee siam", 2, "mee-siam-fried", "Dry-fried vermicelli (Lab); its 13.1 g fibre trips no plausibility rule (KNOWN_ISSUES)."),
+    ],
+  },
+  {
+    dishId: "dish.wanton-mee",
+    defaultVariantId: "wanton-mee-dry",
+    variants: [
+      variant("wanton-mee-dry", "Dry", "Wanton noodles (dry)", 1, "wanton-mee-dry", "Default dry toss; the row excludes the side bowl of broth (KNOWN_ISSUES)."),
+      variant("sui-kow-mee-soup", "Sui kow noodle soup", "Shrimp dumpling noodles (soup)", 2, "wanton-mee-sui-kow-soup", "Noodle soup with shrimp dumplings (Lab)."),
+      variant("wanton-mee-soup", "Wanton noodle soup", "Wanton noodles (soup)", 4, "wanton-mee-soup", "Noodle soup with wantons (Lab)."),
+    ],
+  },
+  {
+    dishId: "dish.soya-bean-milk",
+    defaultVariantId: "soy-milk-regular",
+    variants: [
+      variant("soy-milk-regular", "Sweetened", "Soy milk (no topping)", 1, "soy-milk-sweet", "Default sweetened cup (Derived).", "curated-synonym"),
+      variant("soy-milk-less-sugar", "Less sweet", "Soy milk (less sugar, no topping)", 2, "soy-milk-one-sugar", "Less-sugar cup (Derived)."),
+      variant("soy-milk-grass-jelly", "With grass jelly", "Soy milk with grass jelly", 4, "soy-milk-grass-jelly", "Sweetened cup with grass jelly (Derived)."),
+      variant("soy-milk-no-sugar", "No sugar (kosong)", "Soy milk (no sugar, no topping)", 7, "soy-milk-no-sugar", "Unsweetened cup (Derived)."),
+    ],
+  },
+  {
+    dishId: "dish.chicken-chop",
+    defaultVariantId: "chicken-chop-fries-coleslaw",
+    variants: [
+      variant("chicken-chop-fries-coleslaw", "With fries and coleslaw", "Chicken chop with fries and coleslaw", 1, "western-chop-fries-coleslaw", "Default set (Lab)."),
+      variant("chicken-chop-spaghetti", "With tomato spaghetti", "Chicken chop spaghetti", 2, "western-chop-spaghetti", "Chicken chop with gravy and tomato spaghetti (Derived); the source labels the 617 g plate one piece.", "exact", 1, "1 plate (617 g)"),
+      variant("chicken-chop-fries-mash", "With fries and mash", "Chicken chop with fries and mash", 4, "western-chop-fries-mash", "Set with fries and mashed potato (Lab)."),
+    ],
+  },
+  {
+    dishId: "dish.fish-and-chips",
+    defaultVariantId: "fish-and-chips",
+    variants: [
+      variant("fish-and-chips", "Fried fish and chips", "Fish and chips", 1, "western-fish-chips", "Default battered fish and fries (Derived)."),
+      variant("grilled-fish-set", "Grilled fish with potato, salad, and corn", "Grilled fish with potato and vegetables", 2, "western-fish-grilled-potato-salad-corn", "Grilled fish with potato, salad and corn (Lab)."),
+    ],
+  },
+  {
+    dishId: "dish.fish-porridge",
+    defaultVariantId: "fish-porridge-fried",
+    variants: [
+      variant("fish-porridge-fried", "Fried fish", "Fried fish porridge", 1, "porridge-fish-fried", "Default fried-fish bowl (Lab).", "curated-synonym"),
+      variant("fish-porridge-sliced", "Sliced fish", "Sliced fish porridge", 2, "porridge-fish-sliced", "Sliced fish and vegetables (Lab)."),
     ],
   },
 ];

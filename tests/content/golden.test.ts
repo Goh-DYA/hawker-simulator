@@ -24,22 +24,22 @@ import {
 } from "@/src/content";
 
 /** sha256 of `JSON.stringify` of the combined launch data. */
-const CONTENT_SHA256 = "9f6bb65d337aa965ddf1365dab58ae4aadf9e650055e362aa24e564558475c63";
+const CONTENT_SHA256 = "57cf6feb94fc2f2d20d7691e2d12eee86c9b4a4ac73f1c2889ff44bf88ae3c99";
 
 /** sha256 of `JSON.stringify` of each part of {@link CONTENT_SHA256}, as a diff aid. */
 const CONTENT_PART_SHA256 = {
-  stalls: "74e76735a94dc25c10274066d1f37078618102ef8a3f49dd3e49a2dc209829bb",
-  dishes: "7c646d7d1ce56453351c899858fc045ad60a412979fe85070c0b2b7ec573b0c8",
+  stalls: "247ba5b967db662340d31a1ebccfed449a7025fde9dc1570ff543b1770a7523f",
+  dishes: "d802ce7240cd5e243cedd33907296488c489e078b883a7598cddc79f08e682dd",
   placeables: "5244912bfba4e749105eb988e6af89961d0affbdc0eea8a855490e7428e00dfe",
   customerArchetypes: "511a1cc7425691baa23464b197a4925468701f4d7db3933a19c1250e7d028856",
-  localizationEntries: "4cabda0d2a1fce8ae148facec620fc3059e07f57027d0381d1da1f6e69360558",
+  localizationEntries: "55166cd8270307d9c5d0d3306fa7476fa027572f15543b2c8687158e7a6c4ba3",
 } as const;
 
 /** sha256 of `JSON.stringify(LAUNCH_CONTENT)`, which adds the economy and nutrition data. */
-const LAUNCH_CONTENT_SHA256 = "4ac78365f1e71a4247fa91d2753ab961642fef5b01539cc9ad758e13e58dc3b3";
+const LAUNCH_CONTENT_SHA256 = "9582500f1d81fac4986fc6f260e4197e483c093ce01a4f349c3c8810d305f94b";
 
 /** sha256 of `JSON.stringify(validateContent())`. */
-const VALIDATION_REPORT_SHA256 = "963205a7e7ae0bacca7c797e873e58dfb68f2bc269d17941d4ce6964cbc94b93";
+const VALIDATION_REPORT_SHA256 = "116be56b9f0e44178837daf6ba5f74bbb15a8a5979f25518dd90e00bc8b4866d";
 
 function hash_json(value: unknown): string {
   return createHash("sha256").update(JSON.stringify(value), "utf8").digest("hex");

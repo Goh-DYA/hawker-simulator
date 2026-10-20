@@ -32,7 +32,7 @@ const LATE_STALL_ID = "stall.herbal-cauldron";
 /** The late stall's opening dish, gated at the stall's own level and reputation. */
 const LATE_OPENING_DISH_ID = "dish.bak-kut-teh";
 /** One of the late stall's dishes gated above the stall itself. */
-const LATE_LATER_DISH_ID = "dish.duck-rice";
+const LATE_LATER_DISH_ID = "dish.kway-chap";
 
 const AUTHORED_CATALOG = buildCatalog().catalog;
 
@@ -182,8 +182,8 @@ describe("load_runtime_save", () => {
 
     expect(loaded.isRecovered).toBe(false);
     expect({ width: loaded.state.map.width, height: loaded.state.map.height }).toEqual({
-      width: 40,
-      height: 24,
+      width: 48,
+      height: 28,
     });
   });
 });

@@ -1,6 +1,7 @@
 /**
  * Griddle, toast and steamed-cake motifs: fried carrot cake, oyster omelette, roti prata,
- * murtabak, roti john, kaya toast, masala thosai, idli with sambar, vadai, chwee kueh and popiah.
+ * murtabak, roti john, kaya toast, masala thosai, idli with sambar, vadai, appam, chwee kueh,
+ * popiah and you tiao.
  *
  * Prata, murtabak, thosai and carrot cake paint only their side dishes here (the curry cup,
  * pickled onions or chutneys); their variant layers lay the bread or cake itself.
@@ -19,10 +20,11 @@ import {
   tint,
   type PaintContext,
 } from "../../canvas";
-import { at, pieces_left, type Motif, type MotifPaint } from "../motif";
+import { at, heap_scale, pieces_left, type Motif, type MotifPaint } from "../motif";
 import {
   FLAT_RATIO,
   paint_dots,
+  paint_flatbread_round,
   paint_fried_ring,
   paint_gloss,
   paint_herb_flecks,
@@ -32,7 +34,7 @@ import {
   PORCELAIN,
   WHITE,
 } from "../parts";
-import { paint_dollop, paint_slivers } from "../toppings";
+import { paint_dollop, paint_slivers, paint_youtiao_stick } from "../toppings";
 
 /** Fish curry, as served with prata and murtabak. */
 const CURRY = 0xc8642a;
@@ -701,6 +703,99 @@ function paint_popiah(p: MotifPaint): void {
   }
 }
 
+/**
+ * You tiao: a pair of long golden fried dough sticks lying side by side, each two strands joined
+ * along a pale seam with blistered crisp ridges. Eating takes one stick, then shortens the other.
+ *
+ * @param p - The motif paint.
+ */
+function paint_you_tiao(p: MotifPaint): void {
+  const { ctx, area, isLowDetail } = p;
+  const sticks = p.remaining > 0.5 ? 2 : 1;
+  const length = 20 * (p.remaining > 0.5 ? 1 : 0.7);
+  for (let stick = 0; stick < sticks; stick += 1) {
+    const [x, y] = at(area, -0.05 + stick * 0.1, -0.22 + stick * 0.5);
+    paint_youtiao_stick(
+      ctx,
+      x,
+      y,
+      p.remaining < 1 && stick === 1 ? 15 : length,
+      -0.32,
+      isLowDetail,
+    );
+  }
+}
+
+/** Appam: the lacy, crisp golden rim and the thick, soft white centre. */
+const APPAM = { rim: 0xd49a48, centre: 0xf6efdc } as const;
+
+/**
+ * Paints one appam: a bowl-shaped rice and coconut pancake seen from above, its thin rim crisp,
+ * golden and lacy with holes, its centre thick, soft and white.
+ *
+ * @param ctx - The paint context.
+ * @param x - Centre x.
+ * @param y - Centre y.
+ * @param radius - Rim radius.
+ * @param seed - Lace seed.
+ * @param isLowDetail - True to paint fewer lace holes.
+ */
+function paint_appam_hopper(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  radius: number,
+  seed: number,
+  isLowDetail: boolean,
+): void {
+  paint_flatbread_round(ctx, x, y, radius, APPAM.rim, seed);
+  const next = seeded(seed ^ 0x5a);
+  const holes = isLowDetail ? 7 : 14;
+  for (let hole = 0; hole < holes; hole += 1) {
+    const angle = (hole / holes) * TAU + next() * 0.3;
+    const reach = radius * (0.68 + next() * 0.2);
+    fill_ellipse(
+      ctx,
+      x + Math.cos(angle) * reach,
+      y + Math.sin(angle) * reach * FLAT_RATIO,
+      0.55 + next() * 0.4,
+      0.4 + next() * 0.25,
+      css(shade(APPAM.rim, 0.5), 0.75),
+    );
+  }
+  const centre_rx = radius * 0.5;
+  const centre_ry = centre_rx * FLAT_RATIO;
+  fill_ellipse(ctx, x + 0.3, y + 0.7, centre_rx, centre_ry, css(shade(APPAM.rim, 0.25), 0.6));
+  fill_ellipse(
+    ctx,
+    x,
+    y,
+    centre_rx,
+    centre_ry,
+    radial_gradient(ctx, x - centre_rx * 0.3, y - centre_ry * 0.3, 0.3, centre_rx * 1.1, [
+      [0, WHITE],
+      [0.6, APPAM.centre],
+      [1, shade(APPAM.centre, 0.15)],
+    ]),
+  );
+}
+
+/**
+ * Appam: two bowl-shaped rice and coconut pancakes, lacy and crisp at the rim and soft in the
+ * centre, on banana leaf over a steel plate.
+ *
+ * @param p - The motif paint.
+ */
+function paint_appam(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  const size = heap_scale(p.remaining);
+  const hoppers = pieces_left(2, p.remaining);
+  for (let hopper = 0; hopper < hoppers; hopper += 1) {
+    const [x, y] = at(area, -0.38 + hopper * 0.72, -0.18 + hopper * 0.32);
+    paint_appam_hopper(ctx, x, y, area.rx * 0.5 * size, seed ^ (hopper * 0x2f), isLowDetail);
+  }
+}
+
 /** The griddle and South Indian motifs, keyed by dish ID without the `dish.` prefix. */
 export const GRIDDLE_MOTIFS: Readonly<Record<string, Motif>> = {
   "fried-carrot-cake": paint_fried_carrot_cake,
@@ -714,4 +809,6 @@ export const GRIDDLE_MOTIFS: Readonly<Record<string, Motif>> = {
   "kaya-toast": paint_kaya_toast,
   "roti-john": paint_roti_john,
   "chwee-kueh": paint_chwee_kueh,
+  appam: paint_appam,
+  "you-tiao": paint_you_tiao,
 };

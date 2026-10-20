@@ -849,28 +849,41 @@ exports[`createHawkerRuntime > (1) exports a fresh centre built from the real co
     "stall.sweet-monsoon": [],
     "stall.satay-meridian": [],
     "stall.pick-and-mix": [],
+    "stall.jade-ladle": [],
     "stall.tamarind-leaf": [],
     "stall.bamboo-basket": [],
+    "stall.longan-moon": [],
+    "stall.lesung-corner": [],
     "stall.straits-hearth": [],
     "stall.herbal-cauldron": [],
+    "stall.peppercorn-plate": [],
     "stall.harbour-ember": [],
   },
-  "nutritionDataVersion": "sg-1bc212db6eda-c87987b4281c-r3",
+  "nutritionDataVersion": "sg-1bc212db6eda-c87987b4281c-r4",
   "activeDishVariants": {
     "dish.kopi": "kopi-default",
     "dish.teh-tarik": "teh-tarik",
     "dish.nasi-lemak": "nasi-lemak-chicken-wing",
-    "dish.fried-carrot-cake": "carrot-cake-white",
+    "dish.fried-carrot-cake": "carrot-cake-black",
     "dish.roti-prata": "prata-two-plain-curry",
-    "dish.sliced-fish-soup": "fish-soup-beehoon-no-milk",
+    "dish.sliced-fish-soup": "fish-soup-fried-beehoon-no-milk",
     "dish.bak-chor-mee": "bak-chor-mee-dry",
     "dish.chicken-murtabak": "murtabak-chicken",
     "dish.nasi-briyani": "briyani-chicken",
     "dish.masala-thosai": "thosai-masala",
-    "dish.yong-tau-foo": "ytf-clear-mixed",
+    "dish.yong-tau-foo": "ytf-clear-noodles",
     "dish.ban-mian": "ban-mian-soup",
-    "dish.bak-kut-teh": "bak-kut-teh-soup",
+    "dish.bak-kut-teh": "bak-kut-teh-rice-you-tiao",
     "dish.duck-rice": "duck-rice-braised",
+    "dish.prawn-noodle-soup": "prawn-noodles-soup",
+    "dish.economic-rice": "economic-rice-veg-meat",
+    "dish.nasi-padang": "nasi-padang-beef",
+    "dish.mee-siam": "mee-siam-gravy",
+    "dish.wanton-mee": "wanton-mee-dry",
+    "dish.soya-bean-milk": "soy-milk-regular",
+    "dish.chicken-chop": "chicken-chop-fries-coleslaw",
+    "dish.fish-and-chips": "fish-and-chips",
+    "dish.fish-porridge": "fish-porridge-fried",
   },
 }
 `;
@@ -985,27 +998,40 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
     "stall.sweet-monsoon": [],
     "stall.satay-meridian": [],
     "stall.pick-and-mix": [],
+    "stall.jade-ladle": [],
     "stall.tamarind-leaf": [],
     "stall.bamboo-basket": [],
+    "stall.longan-moon": [],
+    "stall.lesung-corner": [],
     "stall.straits-hearth": [],
     "stall.herbal-cauldron": [],
+    "stall.peppercorn-plate": [],
     "stall.harbour-ember": [],
   },
   "activeDishVariants": {
     "dish.kopi": "kopi-default",
     "dish.teh-tarik": "teh-tarik",
     "dish.nasi-lemak": "nasi-lemak-chicken-wing",
-    "dish.fried-carrot-cake": "carrot-cake-white",
+    "dish.fried-carrot-cake": "carrot-cake-black",
     "dish.roti-prata": "prata-two-plain-curry",
-    "dish.sliced-fish-soup": "fish-soup-beehoon-no-milk",
+    "dish.sliced-fish-soup": "fish-soup-fried-beehoon-no-milk",
     "dish.bak-chor-mee": "bak-chor-mee-dry",
     "dish.chicken-murtabak": "murtabak-chicken",
     "dish.nasi-briyani": "briyani-chicken",
     "dish.masala-thosai": "thosai-masala",
-    "dish.yong-tau-foo": "ytf-clear-mixed",
+    "dish.yong-tau-foo": "ytf-clear-noodles",
     "dish.ban-mian": "ban-mian-soup",
-    "dish.bak-kut-teh": "bak-kut-teh-soup",
+    "dish.bak-kut-teh": "bak-kut-teh-rice-you-tiao",
     "dish.duck-rice": "duck-rice-braised",
+    "dish.prawn-noodle-soup": "prawn-noodles-soup",
+    "dish.economic-rice": "economic-rice-veg-meat",
+    "dish.nasi-padang": "nasi-padang-beef",
+    "dish.mee-siam": "mee-siam-gravy",
+    "dish.wanton-mee": "wanton-mee-dry",
+    "dish.soya-bean-milk": "soy-milk-regular",
+    "dish.chicken-chop": "chicken-chop-fries-coleslaw",
+    "dish.fish-and-chips": "fish-and-chips",
+    "dish.fish-porridge": "fish-porridge-fried",
   },
   "nutritionFamilies": [
     {
@@ -1150,7 +1176,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.5,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.2857,
+              "lower-total-sugar-drink": 0.2727,
             },
           },
         },
@@ -1220,7 +1246,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.6,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.5714,
+              "lower-total-sugar-drink": 0.4545,
             },
           },
         },
@@ -1291,7 +1317,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 5,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.7857,
+              "lower-total-sugar-drink": 0.8182,
             },
           },
         },
@@ -1362,7 +1388,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.7,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.6429,
+              "lower-total-sugar-drink": 0.5455,
             },
           },
         },
@@ -1433,6 +1459,147 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             },
             "intentFits": {
               "lower-total-sugar-drink": 1,
+            },
+          },
+        },
+        {
+          "id": "kopi-c-siu-dai",
+          "label": "Kopi C siu dai",
+          "unlockRank": 7,
+          "profileId": "dish.kopi:kopi-c-siu-dai",
+          "visualKey": "kopi-evaporated-milk-one-sugar",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 regular cup (250 ml)",
+            "energyKcal": {
+              "status": "known",
+              "value": 113,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 2.08,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 3.53,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 1.88,
+            },
+            "transFatG": {
+              "status": "trace",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 17.9,
+            },
+            "dietaryFibreG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "sodiumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 10.7,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 75,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 0.45,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 232.42,
+            },
+            "healthRating": 4,
+            "conditionRatings": {
+              "high-cholesterol": 4.5,
+              "obesity": 3.4,
+              "diabetes": 3.9,
+              "hypertension": 4.8,
+            },
+            "intentFits": {
+              "lower-total-sugar-drink": 0.5909,
+            },
+          },
+        },
+        {
+          "id": "kopi-o-siu-dai",
+          "label": "Kopi O siu dai",
+          "unlockRank": 7,
+          "profileId": "dish.kopi:kopi-o-siu-dai",
+          "visualKey": "kopi-black-one-sugar",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 regular cup (250 ml)",
+            "energyKcal": {
+              "status": "known",
+              "value": 70,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 0.35,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 0,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 0,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 17.08,
+            },
+            "dietaryFibreG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "sodiumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 10.65,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 5,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 0.6,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 237.35,
+            },
+            "healthRating": 4,
+            "conditionRatings": {
+              "high-cholesterol": 4.7,
+              "obesity": 3.9,
+              "diabetes": 3.9,
+              "hypertension": 4.8,
+            },
+            "intentFits": {
+              "lower-total-sugar-drink": 0.6364,
             },
           },
         },
@@ -1511,7 +1678,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.5,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.4286,
+              "lower-total-sugar-drink": 0.3636,
             },
           },
         },
@@ -1582,7 +1749,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.4,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.1429,
+              "lower-total-sugar-drink": 0.1818,
             },
           },
         },
@@ -1653,7 +1820,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.6,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.5,
+              "lower-total-sugar-drink": 0.4091,
             },
           },
         },
@@ -1723,7 +1890,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.5,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.3571,
+              "lower-total-sugar-drink": 0.3182,
             },
           },
         },
@@ -1793,7 +1960,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 5,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.8571,
+              "lower-total-sugar-drink": 0.8636,
             },
           },
         },
@@ -1864,7 +2031,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.8,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.7143,
+              "lower-total-sugar-drink": 0.6818,
             },
           },
         },
@@ -1935,7 +2102,219 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 5,
             },
             "intentFits": {
-              "lower-total-sugar-drink": 0.9286,
+              "lower-total-sugar-drink": 0.9545,
+            },
+          },
+        },
+        {
+          "id": "teh-c-siu-dai",
+          "label": "Teh C siu dai",
+          "unlockRank": 7,
+          "profileId": "dish.teh-tarik:teh-c-siu-dai",
+          "visualKey": "teh-evaporated-milk-one-sugar",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 regular cup (250 ml)",
+            "energyKcal": {
+              "status": "known",
+              "value": 63,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 1.53,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 2.18,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 1.28,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.03,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 9.48,
+            },
+            "dietaryFibreG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "sodiumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 8.15,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 58,
+            },
+            "ironMg": {
+              "status": "trace",
+            },
+            "waterG": {
+              "status": "known",
+              "value": 239.43,
+            },
+            "healthRating": 4.3,
+            "conditionRatings": {
+              "high-cholesterol": 4.8,
+              "obesity": 4.1,
+              "diabetes": 4.3,
+              "hypertension": 4.9,
+            },
+            "intentFits": {
+              "lower-total-sugar-drink": 0.7727,
+            },
+          },
+        },
+        {
+          "id": "teh-o-siu-dai",
+          "label": "Teh O siu dai",
+          "unlockRank": 7,
+          "profileId": "dish.teh-tarik:teh-o-siu-dai",
+          "visualKey": "teh-black-one-sugar",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 regular cup (250 ml)",
+            "energyKcal": {
+              "status": "known",
+              "value": 43,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 0,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 0,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 0,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 10.33,
+            },
+            "dietaryFibreG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "sodiumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 9.45,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 5,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 0.18,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 242.98,
+            },
+            "healthRating": 4.2,
+            "conditionRatings": {
+              "high-cholesterol": 4.7,
+              "obesity": 4.3,
+              "diabetes": 4.1,
+              "hypertension": 4.8,
+            },
+            "intentFits": {
+              "lower-total-sugar-drink": 0.7273,
+            },
+          },
+        },
+        {
+          "id": "teh-halia",
+          "label": "Teh halia",
+          "unlockRank": 7,
+          "profileId": "dish.teh-tarik:teh-halia",
+          "visualKey": "teh-milk-ginger",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 regular cup (250 ml)",
+            "energyKcal": {
+              "status": "known",
+              "value": 145,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 1,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 3.28,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 1.73,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.03,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 27.45,
+            },
+            "dietaryFibreG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "sodiumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 25.15,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 33,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 0.28,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 227.48,
+            },
+            "healthRating": 2.3,
+            "conditionRatings": {
+              "high-cholesterol": 4.1,
+              "obesity": 2.3,
+              "diabetes": 1.8,
+              "hypertension": 4.3,
+            },
+            "intentFits": {
+              "lower-total-sugar-drink": 0.0909,
             },
           },
         },
@@ -2014,10 +2393,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.7,
             },
             "intentFits": {
-              "lighter-energy": 0.1818,
-              "protein-forward": 0.8182,
-              "fibre-forward": 0.6667,
-              "sodium-aware": 0.4646,
+              "lighter-energy": 0.1986,
+              "protein-forward": 0.8014,
+              "fibre-forward": 0.6783,
+              "sodium-aware": 0.4384,
             },
           },
         },
@@ -2088,10 +2467,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.4,
             },
             "intentFits": {
-              "lighter-energy": 0.0909,
-              "protein-forward": 0.8586,
-              "fibre-forward": 0.6875,
-              "sodium-aware": 0.3939,
+              "lighter-energy": 0.1027,
+              "protein-forward": 0.8356,
+              "fibre-forward": 0.6923,
+              "sodium-aware": 0.3904,
             },
           },
         },
@@ -2162,10 +2541,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.2,
             },
             "intentFits": {
-              "lighter-energy": 0.0202,
-              "protein-forward": 0.9697,
-              "fibre-forward": 0.7813,
-              "sodium-aware": 0.3434,
+              "lighter-energy": 0.0308,
+              "protein-forward": 0.9521,
+              "fibre-forward": 0.7692,
+              "sodium-aware": 0.3219,
             },
           },
         },
@@ -2236,10 +2615,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 2.2,
             },
             "intentFits": {
-              "lighter-energy": 0.3838,
-              "protein-forward": 0.4444,
-              "fibre-forward": 0.5521,
-              "sodium-aware": 0.5657,
+              "lighter-energy": 0.3699,
+              "protein-forward": 0.4452,
+              "fibre-forward": 0.5455,
+              "sodium-aware": 0.5342,
             },
           },
         },
@@ -2310,10 +2689,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.8,
             },
             "intentFits": {
-              "lighter-energy": 0.2727,
-              "protein-forward": 0.6364,
-              "fibre-forward": 0.5521,
-              "sodium-aware": 0.4949,
+              "lighter-energy": 0.2877,
+              "protein-forward": 0.6301,
+              "fibre-forward": 0.5455,
+              "sodium-aware": 0.4795,
             },
           },
         },
@@ -2381,10 +2760,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 3.8,
             },
             "intentFits": {
-              "lighter-energy": 0.7576,
-              "protein-forward": 0.101,
-              "fibre-forward": 0.2396,
-              "sodium-aware": 0.7677,
+              "lighter-energy": 0.7397,
+              "protein-forward": 0.1164,
+              "fibre-forward": 0.2238,
+              "sodium-aware": 0.7534,
             },
           },
         },
@@ -2393,91 +2772,17 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
     {
       "dishId": "dish.fried-carrot-cake",
       "starRating": 4.3,
-      "defaultVariantId": "carrot-cake-white",
-      "activeVariantId": "carrot-cake-white",
+      "defaultVariantId": "carrot-cake-black",
+      "activeVariantId": "carrot-cake-black",
       "variants": [
-        {
-          "id": "carrot-cake-white",
-          "label": "White carrot cake",
-          "unlockRank": 1,
-          "profileId": "dish.fried-carrot-cake",
-          "visualKey": "carrot-cake-white-egg",
-          "unlocked": true,
-          "selected": true,
-          "profile": {
-            "status": "released",
-            "servingLabel": "1 plate (321 g)",
-            "energyKcal": {
-              "status": "known",
-              "value": 478,
-            },
-            "proteinG": {
-              "status": "known",
-              "value": 11.17,
-            },
-            "totalFatG": {
-              "status": "known",
-              "value": 23.11,
-            },
-            "saturatedFatG": {
-              "status": "known",
-              "value": 7.29,
-            },
-            "transFatG": {
-              "status": "known",
-              "value": 0.06,
-            },
-            "carbohydrateG": {
-              "status": "known",
-              "value": 56.18,
-            },
-            "dietaryFibreG": {
-              "status": "known",
-              "value": 7,
-            },
-            "sodiumMg": {
-              "status": "known",
-              "value": 1573,
-            },
-            "totalSugarG": {
-              "status": "known",
-              "value": 0.64,
-            },
-            "calciumMg": {
-              "status": "known",
-              "value": 51,
-            },
-            "ironMg": {
-              "status": "known",
-              "value": 2.02,
-            },
-            "waterG": {
-              "status": "known",
-              "value": 222.93,
-            },
-            "healthRating": 2.6,
-            "conditionRatings": {
-              "high-cholesterol": 3.1,
-              "obesity": 3.8,
-              "diabetes": 4.4,
-              "hypertension": 1.9,
-            },
-            "intentFits": {
-              "lighter-energy": 0.5909,
-              "protein-forward": 0.1717,
-              "fibre-forward": 0.5833,
-              "sodium-aware": 0.4747,
-            },
-          },
-        },
         {
           "id": "carrot-cake-black",
           "label": "Black carrot cake",
-          "unlockRank": 2,
-          "profileId": "dish.fried-carrot-cake:carrot-cake-black",
+          "unlockRank": 1,
+          "profileId": "dish.fried-carrot-cake",
           "visualKey": "carrot-cake-black-sauce",
-          "unlocked": false,
-          "selected": false,
+          "unlocked": true,
+          "selected": true,
           "profile": {
             "status": "released",
             "servingLabel": "1 plate (331 g)",
@@ -2537,10 +2842,84 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.6,
             },
             "intentFits": {
-              "lighter-energy": 0.4747,
-              "protein-forward": 0.202,
-              "fibre-forward": 0.8438,
-              "sodium-aware": 0.3737,
+              "lighter-energy": 0.4521,
+              "protein-forward": 0.2192,
+              "fibre-forward": 0.8322,
+              "sodium-aware": 0.3699,
+            },
+          },
+        },
+        {
+          "id": "carrot-cake-white",
+          "label": "White carrot cake",
+          "unlockRank": 2,
+          "profileId": "dish.fried-carrot-cake:carrot-cake-white",
+          "visualKey": "carrot-cake-white-egg",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (321 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 478,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 11.17,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 23.11,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 7.29,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.06,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 56.18,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 7,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1573,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 0.64,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 51,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 2.02,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 222.93,
+            },
+            "healthRating": 2.6,
+            "conditionRatings": {
+              "high-cholesterol": 3.1,
+              "obesity": 3.8,
+              "diabetes": 4.4,
+              "hypertension": 1.9,
+            },
+            "intentFits": {
+              "lighter-energy": 0.5788,
+              "protein-forward": 0.1849,
+              "fibre-forward": 0.5944,
+              "sodium-aware": 0.4521,
             },
           },
         },
@@ -2619,10 +2998,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.2222,
-              "protein-forward": 0.3737,
-              "fibre-forward": 0.8958,
-              "sodium-aware": 0.1616,
+              "lighter-energy": 0.2466,
+              "protein-forward": 0.3836,
+              "fibre-forward": 0.8671,
+              "sodium-aware": 0.1301,
             },
           },
         },
@@ -2693,10 +3072,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 2.4,
             },
             "intentFits": {
-              "lighter-energy": 0.8586,
-              "protein-forward": 0.0808,
-              "fibre-forward": 0.125,
-              "sodium-aware": 0.9394,
+              "lighter-energy": 0.8699,
+              "protein-forward": 0.1027,
+              "fibre-forward": 0.1259,
+              "sodium-aware": 0.911,
             },
           },
         },
@@ -2767,10 +3146,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 3.5,
             },
             "intentFits": {
-              "lighter-energy": 0.798,
-              "protein-forward": 0.2222,
-              "fibre-forward": 0.5313,
-              "sodium-aware": 0.899,
+              "lighter-energy": 0.7945,
+              "protein-forward": 0.2329,
+              "fibre-forward": 0.5315,
+              "sodium-aware": 0.8801,
             },
           },
         },
@@ -2841,10 +3220,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 3.9,
             },
             "intentFits": {
-              "lighter-energy": 0.7121,
-              "protein-forward": 0.2424,
-              "fibre-forward": 0.1458,
-              "sodium-aware": 0.9192,
+              "lighter-energy": 0.7055,
+              "protein-forward": 0.2603,
+              "fibre-forward": 0.1399,
+              "sodium-aware": 0.8973,
             },
           },
         },
@@ -2915,10 +3294,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 2.9,
             },
             "intentFits": {
-              "lighter-energy": 0.6111,
-              "protein-forward": 0.4242,
-              "fibre-forward": 0.1667,
-              "sodium-aware": 0.7424,
+              "lighter-energy": 0.5993,
+              "protein-forward": 0.4178,
+              "fibre-forward": 0.1538,
+              "sodium-aware": 0.7363,
             },
           },
         },
@@ -2927,17 +3306,91 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
     {
       "dishId": "dish.sliced-fish-soup",
       "starRating": 4.2,
-      "defaultVariantId": "fish-soup-beehoon-no-milk",
-      "activeVariantId": "fish-soup-beehoon-no-milk",
+      "defaultVariantId": "fish-soup-fried-beehoon-no-milk",
+      "activeVariantId": "fish-soup-fried-beehoon-no-milk",
       "variants": [
         {
-          "id": "fish-soup-beehoon-no-milk",
-          "label": "Fish beehoon, no milk",
+          "id": "fish-soup-fried-beehoon-no-milk",
+          "label": "Fried fish bee hoon, clear",
           "unlockRank": 1,
           "profileId": "dish.sliced-fish-soup",
-          "visualKey": "fish-beehoon-clear",
+          "visualKey": "fish-fried-beehoon-clear",
           "unlocked": true,
           "selected": true,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl (793 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 555,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 22.36,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 20.86,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 6.26,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 77.24,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 5.87,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 2427,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 4.76,
+            },
+            "calciumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "ironMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 2.4,
+            "conditionRatings": {
+              "high-cholesterol": 3.3,
+              "obesity": 3.3,
+              "diabetes": 3,
+              "hypertension": 1.2,
+            },
+            "intentFits": {
+              "lighter-energy": 0.5068,
+              "protein-forward": 0.4726,
+              "fibre-forward": 0.479,
+              "sodium-aware": 0.1781,
+            },
+          },
+        },
+        {
+          "id": "fish-soup-beehoon-no-milk",
+          "label": "Sliced fish bee hoon, clear",
+          "unlockRank": 2,
+          "profileId": "dish.sliced-fish-soup:fish-soup-beehoon-no-milk",
+          "visualKey": "fish-beehoon-clear",
+          "unlocked": false,
+          "selected": false,
           "profile": {
             "status": "released",
             "servingLabel": "1 bowl (811 g)",
@@ -2997,17 +3450,17 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.4,
             },
             "intentFits": {
-              "lighter-energy": 0.7121,
-              "protein-forward": 0.4343,
-              "fibre-forward": 0.4896,
-              "sodium-aware": 0.2222,
+              "lighter-energy": 0.7055,
+              "protein-forward": 0.4247,
+              "fibre-forward": 0.5035,
+              "sodium-aware": 0.1849,
             },
           },
         },
         {
           "id": "fish-soup-beehoon-milk",
-          "label": "Fried fish beehoon with milk",
-          "unlockRank": 2,
+          "label": "Fried fish bee hoon with milk",
+          "unlockRank": 4,
           "profileId": "dish.sliced-fish-soup:fish-soup-beehoon-milk",
           "visualKey": "fish-fried-beehoon-milky",
           "unlocked": false,
@@ -3071,17 +3524,17 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.4343,
-              "protein-forward": 0.4545,
-              "fibre-forward": 0.6458,
-              "sodium-aware": 0.1717,
+              "lighter-energy": 0.4178,
+              "protein-forward": 0.4521,
+              "fibre-forward": 0.6573,
+              "sodium-aware": 0.1438,
             },
           },
         },
         {
           "id": "fish-soup-sliced-no-milk",
-          "label": "Fried fish soup, no milk",
-          "unlockRank": 4,
+          "label": "Fried fish soup, clear (no noodles)",
+          "unlockRank": 7,
           "profileId": "dish.sliced-fish-soup:fish-soup-sliced-no-milk",
           "visualKey": "fish-fried-clear",
           "unlocked": false,
@@ -3145,16 +3598,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.2,
             },
             "intentFits": {
-              "lighter-energy": 0.8889,
-              "protein-forward": 0.3333,
-              "fibre-forward": 0.2604,
-              "sodium-aware": 0.2525,
+              "lighter-energy": 0.9041,
+              "protein-forward": 0.3562,
+              "fibre-forward": 0.2517,
+              "sodium-aware": 0.2055,
             },
           },
         },
         {
           "id": "fish-soup-sliced-milk",
-          "label": "Fried fish soup with milk",
+          "label": "Fried fish soup with milk (no noodles)",
           "unlockRank": 7,
           "profileId": "dish.sliced-fish-soup:fish-soup-sliced-milk",
           "visualKey": "fish-fried-milky",
@@ -3219,10 +3672,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.8081,
-              "protein-forward": 0.3232,
-              "fibre-forward": 0.3542,
-              "sodium-aware": 0.1818,
+              "lighter-energy": 0.8219,
+              "protein-forward": 0.3356,
+              "fibre-forward": 0.3776,
+              "sodium-aware": 0.1507,
             },
           },
         },
@@ -3300,10 +3753,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 2,
             },
             "intentFits": {
-              "lighter-energy": 0.5152,
-              "protein-forward": 0.4646,
-              "fibre-forward": 0.9063,
-              "sodium-aware": 0.4545,
+              "lighter-energy": 0.5,
+              "protein-forward": 0.4589,
+              "fibre-forward": 0.8811,
+              "sodium-aware": 0.4315,
             },
           },
         },
@@ -3372,10 +3825,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.6,
             },
             "intentFits": {
-              "lighter-energy": 0.5253,
-              "protein-forward": 0.8384,
-              "fibre-forward": 0.8646,
-              "sodium-aware": 0.298,
+              "lighter-energy": 0.5137,
+              "protein-forward": 0.8219,
+              "fibre-forward": 0.8462,
+              "sodium-aware": 0.2842,
             },
           },
         },
@@ -3454,17 +3907,91 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 2.1,
             },
             "intentFits": {
-              "lighter-energy": 0.1515,
-              "protein-forward": 0.8889,
-              "fibre-forward": 0.4375,
-              "sodium-aware": 0.5758,
+              "lighter-energy": 0.1712,
+              "protein-forward": 0.8562,
+              "fibre-forward": 0.4685,
+              "sodium-aware": 0.5479,
+            },
+          },
+        },
+        {
+          "id": "murtabak-chicken-half",
+          "label": "Chicken murtabak, half (shared)",
+          "unlockRank": 2,
+          "profileId": "dish.chicken-murtabak:murtabak-chicken-half",
+          "visualKey": "murtabak-chicken-half",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1/2 murtabak, shared (165 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 425.5,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 21.27,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 24.305,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 10.89,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 30.625,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 2.79,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 676.5,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 3.3,
+            },
+            "calciumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "ironMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 2.5,
+            "conditionRatings": {
+              "high-cholesterol": 2,
+              "obesity": 3,
+              "diabetes": 4.3,
+              "hypertension": 3.2,
+            },
+            "intentFits": {
+              "lighter-energy": 0.6644,
+              "protein-forward": 0.4384,
+              "fibre-forward": 0.2168,
+              "sodium-aware": 0.8082,
             },
           },
         },
         {
           "id": "murtabak-chicken-mushroom-cheese",
           "label": "Chicken, mushroom and cheese murtabak",
-          "unlockRank": 2,
+          "unlockRank": 4,
           "profileId": "dish.chicken-murtabak:murtabak-chicken-mushroom-cheese",
           "visualKey": "murtabak-chicken-mushroom-cheese",
           "unlocked": false,
@@ -3528,17 +4055,17 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 2.7,
             },
             "intentFits": {
-              "lighter-energy": 0.101,
-              "protein-forward": 1,
-              "fibre-forward": 0.3333,
-              "sodium-aware": 0.6566,
+              "lighter-energy": 0.1164,
+              "protein-forward": 0.9863,
+              "fibre-forward": 0.3636,
+              "sodium-aware": 0.6575,
             },
           },
         },
         {
           "id": "murtabak-mutton",
           "label": "Mutton murtabak",
-          "unlockRank": 4,
+          "unlockRank": 7,
           "profileId": "dish.chicken-murtabak:murtabak-mutton",
           "visualKey": "murtabak-mutton",
           "unlocked": false,
@@ -3602,10 +4129,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 2.2,
             },
             "intentFits": {
-              "lighter-energy": 0.1616,
-              "protein-forward": 0.9394,
-              "fibre-forward": 0.3438,
-              "sodium-aware": 0.596,
+              "lighter-energy": 0.1849,
+              "protein-forward": 0.8836,
+              "fibre-forward": 0.3706,
+              "sodium-aware": 0.5822,
             },
           },
         },
@@ -3676,10 +4203,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.5,
             },
             "intentFits": {
-              "lighter-energy": 0.197,
-              "protein-forward": 0.4747,
-              "fibre-forward": 0.8229,
-              "sodium-aware": 0.4444,
+              "lighter-energy": 0.2089,
+              "protein-forward": 0.4658,
+              "fibre-forward": 0.8182,
+              "sodium-aware": 0.4247,
             },
           },
         },
@@ -3758,10 +4285,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.0303,
-              "protein-forward": 0.9596,
-              "fibre-forward": 0.9688,
-              "sodium-aware": 0.1313,
+              "lighter-energy": 0.0411,
+              "protein-forward": 0.9247,
+              "fibre-forward": 0.972,
+              "sodium-aware": 0.1027,
             },
           },
         },
@@ -3832,10 +4359,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.1313,
-              "protein-forward": 0.8283,
-              "fibre-forward": 0.5729,
-              "sodium-aware": 0.2121,
+              "lighter-energy": 0.1507,
+              "protein-forward": 0.8151,
+              "fibre-forward": 0.5804,
+              "sodium-aware": 0.1712,
             },
           },
         },
@@ -3906,10 +4433,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0,
-              "protein-forward": 0.9091,
-              "fibre-forward": 0.9792,
-              "sodium-aware": 0.101,
+              "lighter-energy": 0.0068,
+              "protein-forward": 0.8699,
+              "fibre-forward": 0.979,
+              "sodium-aware": 0.0753,
             },
           },
         },
@@ -3980,10 +4507,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.6,
             },
             "intentFits": {
-              "lighter-energy": 0.3434,
-              "protein-forward": 0.404,
-              "fibre-forward": 0.6146,
-              "sodium-aware": 0.404,
+              "lighter-energy": 0.3356,
+              "protein-forward": 0.3973,
+              "fibre-forward": 0.6294,
+              "sodium-aware": 0.3973,
             },
           },
         },
@@ -4062,10 +4589,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 3.2,
             },
             "intentFits": {
-              "lighter-energy": 0.6566,
-              "protein-forward": 0.1818,
-              "fibre-forward": 0.75,
-              "sodium-aware": 0.6768,
+              "lighter-energy": 0.6575,
+              "protein-forward": 0.1918,
+              "fibre-forward": 0.7483,
+              "sodium-aware": 0.6781,
             },
           },
         },
@@ -4136,10 +4663,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4,
             },
             "intentFits": {
-              "lighter-energy": 0.697,
-              "protein-forward": 0.1515,
-              "fibre-forward": 0.3854,
-              "sodium-aware": 0.8889,
+              "lighter-energy": 0.6918,
+              "protein-forward": 0.1712,
+              "fibre-forward": 0.3986,
+              "sodium-aware": 0.8699,
             },
           },
         },
@@ -4210,10 +4737,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 2.9,
             },
             "intentFits": {
-              "lighter-energy": 0.7778,
-              "protein-forward": 0.2121,
-              "fibre-forward": 0.1875,
-              "sodium-aware": 0.7778,
+              "lighter-energy": 0.7808,
+              "protein-forward": 0.226,
+              "fibre-forward": 0.1678,
+              "sodium-aware": 0.7808,
             },
           },
         },
@@ -4284,10 +4811,232 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 2.3,
             },
             "intentFits": {
-              "lighter-energy": 0.7374,
-              "protein-forward": 0.0707,
-              "fibre-forward": 0.1771,
-              "sodium-aware": 0.8485,
+              "lighter-energy": 0.726,
+              "protein-forward": 0.0959,
+              "fibre-forward": 0.1608,
+              "sodium-aware": 0.8356,
+            },
+          },
+        },
+        {
+          "id": "thosai-rawa",
+          "label": "Rawa thosai",
+          "unlockRank": 7,
+          "profileId": "dish.masala-thosai:thosai-rawa",
+          "visualKey": "thosai-rawa-lacy",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 piece (85 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 204,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 4.2,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 5.88,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 2.8,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 33.52,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 0.87,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 371,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 0.93,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 11,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 0.92,
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3.6,
+              "obesity": 3.4,
+              "diabetes": 3.4,
+              "hypertension": 3.3,
+            },
+            "intentFits": {
+              "lighter-energy": 0.9658,
+              "protein-forward": 0.0342,
+              "fibre-forward": 0.0909,
+              "sodium-aware": 0.9178,
+            },
+          },
+        },
+        {
+          "id": "thosai-paper",
+          "label": "Paper thosai",
+          "unlockRank": 7,
+          "profileId": "dish.masala-thosai:thosai-paper",
+          "visualKey": "thosai-paper-cone",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 piece (50 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 153,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 3.2,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 5.4,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 2.75,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 22.9,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 1.35,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 219,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 0.7,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 7,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 0.35,
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 2.4,
+            "conditionRatings": {
+              "high-cholesterol": 2.5,
+              "obesity": 2.8,
+              "diabetes": 3.2,
+              "hypertension": 3.1,
+            },
+            "intentFits": {
+              "lighter-energy": 0.9932,
+              "protein-forward": 0.0205,
+              "fibre-forward": 0.1049,
+              "sodium-aware": 0.9384,
+            },
+          },
+        },
+        {
+          "id": "thosai-cheese",
+          "label": "Cheese thosai",
+          "unlockRank": 7,
+          "profileId": "dish.masala-thosai:thosai-cheese",
+          "visualKey": "thosai-cheese-melt",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 piece (130 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 348,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 12.56,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 11.86,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 7.33,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 47.85,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 2.94,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1097,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 4.04,
+            },
+            "calciumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "ironMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 2.1,
+            "conditionRatings": {
+              "high-cholesterol": 2.5,
+              "obesity": 3,
+              "diabetes": 3.3,
+              "hypertension": 2.3,
+            },
+            "intentFits": {
+              "lighter-energy": 0.7603,
+              "protein-forward": 0.2123,
+              "fibre-forward": 0.2343,
+              "sodium-aware": 0.6507,
             },
           },
         },
@@ -4296,17 +5045,91 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
     {
       "dishId": "dish.yong-tau-foo",
       "starRating": 4.1,
-      "defaultVariantId": "ytf-clear-mixed",
-      "activeVariantId": "ytf-clear-mixed",
+      "defaultVariantId": "ytf-clear-noodles",
+      "activeVariantId": "ytf-clear-noodles",
       "variants": [
         {
-          "id": "ytf-clear-mixed",
-          "label": "Clear soup, mixed pieces",
+          "id": "ytf-clear-noodles",
+          "label": "Clear soup with bee hoon or rice",
           "unlockRank": 1,
           "profileId": "dish.yong-tau-foo",
-          "visualKey": "ytf-clear-mixed",
+          "visualKey": "ytf-clear-noodles",
           "unlocked": true,
           "selected": true,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl (971 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 845,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 26.9,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 38.06,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 11.75,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.19,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 95.64,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 8.64,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 2777,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 8.64,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 126,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 2.52,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 660.57,
+            },
+            "healthRating": 1.1,
+            "conditionRatings": {
+              "high-cholesterol": 1.8,
+              "obesity": 1.9,
+              "diabetes": 1,
+              "hypertension": 1,
+            },
+            "intentFits": {
+              "lighter-energy": 0.1918,
+              "protein-forward": 0.5959,
+              "fibre-forward": 0.7902,
+              "sodium-aware": 0.1096,
+            },
+          },
+        },
+        {
+          "id": "ytf-clear-mixed",
+          "label": "Clear soup, pieces only",
+          "unlockRank": 2,
+          "profileId": "dish.yong-tau-foo:ytf-clear-mixed",
+          "visualKey": "ytf-clear-mixed",
+          "unlocked": false,
+          "selected": false,
           "profile": {
             "status": "released",
             "servingLabel": "1 bowl (771 g)",
@@ -4366,17 +5189,17 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.4848,
-              "protein-forward": 0.4848,
-              "fibre-forward": 0.6042,
-              "sodium-aware": 0.1515,
+              "lighter-energy": 0.4726,
+              "protein-forward": 0.4795,
+              "fibre-forward": 0.6224,
+              "sodium-aware": 0.1164,
             },
           },
         },
         {
           "id": "ytf-clear-fried",
           "label": "Clear soup, fried pieces",
-          "unlockRank": 2,
+          "unlockRank": 4,
           "profileId": "dish.yong-tau-foo:ytf-clear-fried",
           "visualKey": "ytf-clear-fried",
           "unlocked": false,
@@ -4440,17 +5263,17 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.0101,
-              "protein-forward": 0.899,
-              "fibre-forward": 0.8854,
-              "sodium-aware": 0.0707,
+              "lighter-energy": 0.0137,
+              "protein-forward": 0.863,
+              "fibre-forward": 0.8601,
+              "sodium-aware": 0.0548,
             },
           },
         },
         {
           "id": "ytf-laksa-boiled",
           "label": "Laksa, boiled pieces",
-          "unlockRank": 4,
+          "unlockRank": 7,
           "profileId": "dish.yong-tau-foo:ytf-laksa-boiled",
           "visualKey": "ytf-laksa-boiled",
           "unlocked": false,
@@ -4514,84 +5337,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.2323,
-              "protein-forward": 0.7374,
-              "fibre-forward": 0.3125,
-              "sodium-aware": 0.0404,
-            },
-          },
-        },
-        {
-          "id": "ytf-clear-noodles",
-          "label": "Clear soup with rice or noodles",
-          "unlockRank": 7,
-          "profileId": "dish.yong-tau-foo:ytf-clear-noodles",
-          "visualKey": "ytf-clear-noodles",
-          "unlocked": false,
-          "selected": false,
-          "profile": {
-            "status": "released",
-            "servingLabel": "1 bowl (971 g)",
-            "energyKcal": {
-              "status": "known",
-              "value": 845,
-            },
-            "proteinG": {
-              "status": "known",
-              "value": 26.9,
-            },
-            "totalFatG": {
-              "status": "known",
-              "value": 38.06,
-            },
-            "saturatedFatG": {
-              "status": "known",
-              "value": 11.75,
-            },
-            "transFatG": {
-              "status": "known",
-              "value": 0.19,
-            },
-            "carbohydrateG": {
-              "status": "known",
-              "value": 95.64,
-            },
-            "dietaryFibreG": {
-              "status": "known",
-              "value": 8.64,
-            },
-            "sodiumMg": {
-              "status": "known",
-              "value": 2777,
-            },
-            "totalSugarG": {
-              "status": "known",
-              "value": 8.64,
-            },
-            "calciumMg": {
-              "status": "known",
-              "value": 126,
-            },
-            "ironMg": {
-              "status": "known",
-              "value": 2.52,
-            },
-            "waterG": {
-              "status": "known",
-              "value": 660.57,
-            },
-            "healthRating": 1.1,
-            "conditionRatings": {
-              "high-cholesterol": 1.8,
-              "obesity": 1.9,
-              "diabetes": 1,
-              "hypertension": 1,
-            },
-            "intentFits": {
-              "lighter-energy": 0.1717,
-              "protein-forward": 0.6061,
-              "fibre-forward": 0.7917,
-              "sodium-aware": 0.1414,
+              "lighter-energy": 0.2671,
+              "protein-forward": 0.7329,
+              "fibre-forward": 0.3357,
+              "sodium-aware": 0.0342,
             },
           },
         },
@@ -4662,10 +5411,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.1111,
-              "protein-forward": 0.8485,
-              "fibre-forward": 0.7083,
-              "sodium-aware": 0.0101,
+              "lighter-energy": 0.1233,
+              "protein-forward": 0.8288,
+              "fibre-forward": 0.7063,
+              "sodium-aware": 0.0137,
             },
           },
         },
@@ -4736,10 +5485,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.2121,
-              "protein-forward": 0.8081,
-              "fibre-forward": 0.4688,
-              "sodium-aware": 0.0303,
+              "lighter-energy": 0.2226,
+              "protein-forward": 0.7945,
+              "fibre-forward": 0.4965,
+              "sodium-aware": 0.0274,
             },
           },
         },
@@ -4810,10 +5559,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.0404,
-              "protein-forward": 0.8687,
-              "fibre-forward": 0.6563,
-              "sodium-aware": 0.0202,
+              "lighter-energy": 0.0479,
+              "protein-forward": 0.8425,
+              "fibre-forward": 0.6713,
+              "sodium-aware": 0.0205,
             },
           },
         },
@@ -4889,10 +5638,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.3,
             },
             "intentFits": {
-              "lighter-energy": 0.4646,
-              "protein-forward": 0.5556,
-              "fibre-forward": 0.5208,
-              "sodium-aware": 0.2727,
+              "lighter-energy": 0.4384,
+              "protein-forward": 0.5445,
+              "fibre-forward": 0.5245,
+              "sodium-aware": 0.2295,
             },
           },
         },
@@ -4963,10 +5712,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.6,
             },
             "intentFits": {
-              "lighter-energy": 0.3333,
-              "protein-forward": 0.6465,
-              "fibre-forward": 0.6979,
-              "sodium-aware": 0.3636,
+              "lighter-energy": 0.3288,
+              "protein-forward": 0.637,
+              "fibre-forward": 0.6993,
+              "sodium-aware": 0.363,
             },
           },
         },
@@ -5037,10 +5786,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.6,
             },
             "intentFits": {
-              "lighter-energy": 0.3131,
-              "protein-forward": 0.7071,
-              "fibre-forward": 0.8021,
-              "sodium-aware": 0.4141,
+              "lighter-energy": 0.3219,
+              "protein-forward": 0.7123,
+              "fibre-forward": 0.7972,
+              "sodium-aware": 0.4041,
             },
           },
         },
@@ -5111,10 +5860,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.404,
-              "protein-forward": 0.6869,
-              "fibre-forward": 0.2188,
-              "sodium-aware": 0.1212,
+              "lighter-energy": 0.3904,
+              "protein-forward": 0.6986,
+              "fibre-forward": 0.2028,
+              "sodium-aware": 0.0959,
             },
           },
         },
@@ -5185,9 +5934,9 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.4444,
-              "protein-forward": 0.7525,
-              "fibre-forward": 0.625,
+              "lighter-energy": 0.4247,
+              "protein-forward": 0.7432,
+              "fibre-forward": 0.6364,
               "sodium-aware": 0,
             },
           },
@@ -5259,10 +6008,158 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 1.2,
             },
             "intentFits": {
-              "lighter-energy": 0.5354,
-              "protein-forward": 0.5657,
-              "fibre-forward": 0.4583,
-              "sodium-aware": 0.2424,
+              "lighter-energy": 0.524,
+              "protein-forward": 0.5548,
+              "fibre-forward": 0.4895,
+              "sodium-aware": 0.1986,
+            },
+          },
+        },
+        {
+          "id": "mee-hoon-kway-dry",
+          "label": "Mee hoon kway, dry",
+          "unlockRank": 7,
+          "profileId": "dish.ban-mian:mee-hoon-kway-dry",
+          "visualKey": "ban-mian-mee-hoon-kway-dry",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl (422 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 603,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 26.54,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 17.94,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 7.01,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 84.1,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 5.49,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 2313,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 12.28,
+            },
+            "calciumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "ironMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 2,
+            "conditionRatings": {
+              "high-cholesterol": 2.9,
+              "obesity": 2.9,
+              "diabetes": 1.3,
+              "hypertension": 1.2,
+            },
+            "intentFits": {
+              "lighter-energy": 0.4589,
+              "protein-forward": 0.589,
+              "fibre-forward": 0.4545,
+              "sodium-aware": 0.2295,
+            },
+          },
+        },
+        {
+          "id": "mee-hoon-kway-soup",
+          "label": "Mee hoon kway soup",
+          "unlockRank": 7,
+          "profileId": "dish.ban-mian:mee-hoon-kway-soup",
+          "visualKey": "ban-mian-mee-hoon-kway-soup",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl (901 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 883,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 37.21,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 27.03,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 9.46,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.09,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 122.99,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 11.8,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 2766,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 3.6,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 162,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 3.6,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 704.13,
+            },
+            "healthRating": 1.3,
+            "conditionRatings": {
+              "high-cholesterol": 2.1,
+              "obesity": 2,
+              "diabetes": 1.8,
+              "hypertension": 1,
+            },
+            "intentFits": {
+              "lighter-energy": 0.137,
+              "protein-forward": 0.8082,
+              "fibre-forward": 0.9021,
+              "sodium-aware": 0.1233,
             },
           },
         },
@@ -5271,100 +6168,253 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
     {
       "dishId": "dish.bak-kut-teh",
       "starRating": 4.4,
-      "defaultVariantId": "bak-kut-teh-soup",
-      "activeVariantId": "bak-kut-teh-soup",
+      "defaultVariantId": "bak-kut-teh-rice-you-tiao",
+      "activeVariantId": "bak-kut-teh-rice-you-tiao",
       "variants": [
         {
-          "id": "bak-kut-teh-soup",
-          "label": "Bak kut teh soup",
+          "id": "bak-kut-teh-rice-you-tiao",
+          "label": "With rice and half a you tiao",
           "unlockRank": 1,
           "profileId": "dish.bak-kut-teh",
-          "visualKey": "bak-kut-teh-pepper-soup",
+          "visualKey": "bak-kut-teh-rice-youtiao",
           "unlocked": true,
           "selected": true,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl (574 g)",
+            "servingLabel": "1 bowl with rice and half a you tiao (833 g)",
             "energyKcal": {
               "status": "known",
-              "value": 217,
+              "value": 705.5,
             },
             "proteinG": {
               "status": "known",
-              "value": 19.62,
+              "value": 29.535,
             },
             "totalFatG": {
               "status": "known",
-              "value": 15.18,
+              "value": 27.38,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 10.9,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 82.815,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 2.27,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 2166.5,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 0.8,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 97,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 0.8,
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 1.7,
+            "conditionRatings": {
+              "high-cholesterol": 2,
+              "obesity": 2.3,
+              "diabetes": 2.3,
+              "hypertension": 1.2,
+            },
+            "intentFits": {
+              "lighter-energy": 0.2945,
+              "protein-forward": 0.6575,
+              "fibre-forward": 0.1748,
+              "sodium-aware": 0.2603,
+            },
+          },
+        },
+        {
+          "id": "bak-kut-teh-soup",
+          "label": "With rice, no you tiao",
+          "unlockRank": 2,
+          "profileId": "dish.bak-kut-teh:bak-kut-teh-soup",
+          "visualKey": "bak-kut-teh-rice",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl with rice (774 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 477,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 25,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 15.74,
             },
             "saturatedFatG": {
               "status": "known",
               "value": 5.59,
             },
             "transFatG": {
-              "status": "trace",
+              "status": "unavailable",
+              "reason": "not-reported",
             },
             "carbohydrateG": {
-              "status": "trace",
+              "status": "known",
+              "value": 56.4,
             },
             "dietaryFibreG": {
-              "status": "trace",
+              "status": "known",
+              "value": 0.8,
             },
             "sodiumMg": {
               "status": "known",
-              "value": 1788,
+              "value": 1790,
             },
             "totalSugarG": {
-              "status": "trace",
+              "status": "known",
+              "value": 0.1,
             },
             "calciumMg": {
               "status": "known",
-              "value": 29,
+              "value": 49,
             },
             "ironMg": {
-              "status": "trace",
+              "status": "known",
+              "value": 0.4,
             },
             "waterG": {
-              "status": "known",
-              "value": 442.28,
+              "status": "unavailable",
+              "reason": "not-reported",
             },
-            "healthRating": 2.9,
+            "healthRating": 3,
             "conditionRatings": {
               "high-cholesterol": 3.4,
-              "obesity": 5,
-              "diabetes": 4.9,
+              "obesity": 4,
+              "diabetes": 3.6,
               "hypertension": 1.7,
             },
             "intentFits": {
-              "lighter-energy": 0.9394,
-              "protein-forward": 0.3838,
-              "fibre-forward": 0.0417,
-              "sodium-aware": 0.3838,
+              "lighter-energy": 0.589,
+              "protein-forward": 0.5137,
+              "fibre-forward": 0.0734,
+              "sodium-aware": 0.3836,
+            },
+          },
+        },
+        {
+          "id": "bak-kut-teh-herbal",
+          "label": "Herbal bak kut teh with rice",
+          "unlockRank": 4,
+          "profileId": "dish.bak-kut-teh:bak-kut-teh-herbal",
+          "visualKey": "bak-kut-teh-herbal-broth-rice",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl with rice (702 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 978,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 53.32,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 52.97,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 20.63,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 70.56,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 0.8,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1272,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 10.94,
+            },
+            "calciumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "ironMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 1.1,
+            "conditionRatings": {
+              "high-cholesterol": 1.4,
+              "obesity": 1.7,
+              "diabetes": 1,
+              "hypertension": 2.3,
+            },
+            "intentFits": {
+              "lighter-energy": 0.0753,
+              "protein-forward": 0.9384,
+              "fibre-forward": 0.0734,
+              "sodium-aware": 0.589,
             },
           },
         },
         {
           "id": "bak-kut-teh-dry",
-          "label": "Dry bak kut teh",
-          "unlockRank": 2,
+          "label": "Dry bak kut teh with rice",
+          "unlockRank": 7,
           "profileId": "dish.bak-kut-teh:bak-kut-teh-dry",
-          "visualKey": "bak-kut-teh-dry-claypot",
+          "visualKey": "bak-kut-teh-dry-claypot-rice",
           "unlocked": false,
           "selected": false,
           "profile": {
             "status": "released",
-            "servingLabel": "1 bowl (282 g)",
+            "servingLabel": "1 bowl with rice (482 g)",
             "energyKcal": {
               "status": "known",
-              "value": 677,
+              "value": 937,
             },
             "proteinG": {
               "status": "known",
-              "value": 45.15,
+              "value": 50.53,
             },
             "totalFatG": {
               "status": "known",
-              "value": 41.93,
+              "value": 42.49,
             },
             "saturatedFatG": {
               "status": "known",
@@ -5376,19 +6426,19 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             },
             "carbohydrateG": {
               "status": "known",
-              "value": 29.58,
+              "value": 85.98,
             },
             "dietaryFibreG": {
               "status": "known",
-              "value": 6.23,
+              "value": 7.03,
             },
             "sodiumMg": {
               "status": "known",
-              "value": 2171,
+              "value": 2173,
             },
             "totalSugarG": {
               "status": "known",
-              "value": 22.36,
+              "value": 22.46,
             },
             "calciumMg": {
               "status": "unavailable",
@@ -5404,90 +6454,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
             },
             "healthRating": 1,
             "conditionRatings": {
-              "high-cholesterol": 1.4,
-              "obesity": 1.9,
-              "diabetes": 2.3,
+              "high-cholesterol": 1.2,
+              "obesity": 1.4,
+              "diabetes": 1,
               "hypertension": 1,
             },
             "intentFits": {
-              "lighter-energy": 0.3232,
-              "protein-forward": 0.9192,
-              "fibre-forward": 0.4792,
-              "sodium-aware": 0.2828,
-            },
-          },
-        },
-        {
-          "id": "bak-kut-teh-herbal",
-          "label": "Herbal bak kut teh",
-          "unlockRank": 4,
-          "profileId": "dish.bak-kut-teh:bak-kut-teh-herbal",
-          "visualKey": "bak-kut-teh-herbal-broth",
-          "unlocked": false,
-          "selected": false,
-          "profile": {
-            "status": "released",
-            "servingLabel": "1 bowl (502 g)",
-            "energyKcal": {
-              "status": "known",
-              "value": 718,
-            },
-            "proteinG": {
-              "status": "known",
-              "value": 47.94,
-            },
-            "totalFatG": {
-              "status": "known",
-              "value": 52.41,
-            },
-            "saturatedFatG": {
-              "status": "known",
-              "value": 20.63,
-            },
-            "transFatG": {
-              "status": "unavailable",
-              "reason": "not-reported",
-            },
-            "carbohydrateG": {
-              "status": "known",
-              "value": 14.16,
-            },
-            "dietaryFibreG": {
-              "status": "known",
-              "value": 0,
-            },
-            "sodiumMg": {
-              "status": "known",
-              "value": 1270,
-            },
-            "totalSugarG": {
-              "status": "known",
-              "value": 10.84,
-            },
-            "calciumMg": {
-              "status": "unavailable",
-              "reason": "not-reported",
-            },
-            "ironMg": {
-              "status": "unavailable",
-              "reason": "not-reported",
-            },
-            "waterG": {
-              "status": "unavailable",
-              "reason": "not-reported",
-            },
-            "healthRating": 1.5,
-            "conditionRatings": {
-              "high-cholesterol": 1.6,
-              "obesity": 1.9,
-              "diabetes": 3,
-              "hypertension": 2.3,
-            },
-            "intentFits": {
-              "lighter-energy": 0.2626,
-              "protein-forward": 0.9293,
-              "fibre-forward": 0.0417,
-              "sodium-aware": 0.6061,
+              "lighter-energy": 0.089,
+              "protein-forward": 0.9178,
+              "fibre-forward": 0.6014,
+              "sodium-aware": 0.2534,
             },
           },
         },
@@ -5564,10 +6540,10 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 2.1,
             },
             "intentFits": {
-              "lighter-energy": 0.3535,
-              "protein-forward": 0.697,
-              "fibre-forward": 0.8333,
-              "sodium-aware": 0.5152,
+              "lighter-energy": 0.3425,
+              "protein-forward": 0.7055,
+              "fibre-forward": 0.8252,
+              "sodium-aware": 0.4932,
             },
           },
         },
@@ -5637,16 +6613,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 4.5,
             },
             "intentFits": {
-              "lighter-energy": 0.303,
-              "protein-forward": 0.7273,
-              "fibre-forward": 0.2292,
-              "sodium-aware": 0.8384,
+              "lighter-energy": 0.3151,
+              "protein-forward": 0.726,
+              "fibre-forward": 0.2098,
+              "sodium-aware": 0.8288,
             },
           },
         },
         {
           "id": "duck-rice-rice-only",
-          "label": "Braised duck rice, rice only",
+          "label": "Braised rice with gravy (no duck)",
           "unlockRank": 4,
           "profileId": "dish.duck-rice:duck-rice-rice-only",
           "visualKey": "duck-rice-rice-only",
@@ -5709,10 +6685,2056 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "hypertension": 3.7,
             },
             "intentFits": {
-              "lighter-energy": 0.6768,
-              "protein-forward": 0.1111,
-              "fibre-forward": 0.4167,
-              "sodium-aware": 0.7071,
+              "lighter-energy": 0.6781,
+              "protein-forward": 0.1301,
+              "fibre-forward": 0.4336,
+              "sodium-aware": 0.6986,
+            },
+          },
+        },
+        {
+          "id": "duck-noodles-dry",
+          "label": "Braised duck noodles, dry",
+          "unlockRank": 7,
+          "profileId": "dish.duck-rice:duck-noodles-dry",
+          "visualKey": "duck-rice-noodles-dry",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (410 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 492,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 21.03,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 11.69,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 3.16,
+            },
+            "transFatG": {
+              "status": "trace",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 75.65,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 4.55,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 2239,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 1.43,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 41,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 2.38,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 295.41,
+            },
+            "healthRating": 3.1,
+            "conditionRatings": {
+              "high-cholesterol": 4.9,
+              "obesity": 3.9,
+              "diabetes": 3.3,
+              "hypertension": 1.5,
+            },
+            "intentFits": {
+              "lighter-energy": 0.5548,
+              "protein-forward": 0.4315,
+              "fibre-forward": 0.3566,
+              "sodium-aware": 0.2466,
+            },
+          },
+        },
+      ],
+    },
+    {
+      "dishId": "dish.prawn-noodle-soup",
+      "starRating": 4.2,
+      "defaultVariantId": "prawn-noodles-soup",
+      "activeVariantId": "prawn-noodles-soup",
+      "variants": [
+        {
+          "id": "prawn-noodles-soup",
+          "label": "Prawn mee, soup",
+          "unlockRank": 1,
+          "profileId": "dish.prawn-noodle-soup",
+          "visualKey": "prawn-mee-soup",
+          "unlocked": true,
+          "selected": true,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl (732 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 478,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 24.29,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 8.34,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 2.97,
+            },
+            "transFatG": {
+              "status": "trace",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 77.57,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 5.87,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 3378,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 0.72,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 254,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 2.61,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 603.9,
+            },
+            "healthRating": 2.7,
+            "conditionRatings": {
+              "high-cholesterol": 5,
+              "obesity": 4.1,
+              "diabetes": 3.4,
+              "hypertension": 1,
+            },
+            "intentFits": {
+              "lighter-energy": 0.5788,
+              "protein-forward": 0.5,
+              "fibre-forward": 0.479,
+              "sodium-aware": 0.0685,
+            },
+          },
+        },
+        {
+          "id": "prawn-noodles-dry",
+          "label": "Prawn mee, dry",
+          "unlockRank": 2,
+          "profileId": "dish.prawn-noodle-soup:prawn-noodles-dry",
+          "visualKey": "prawn-mee-dry",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl (396 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 389,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 14.97,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 9.71,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 3.35,
+            },
+            "transFatG": {
+              "status": "trace",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 60.38,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 3.38,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1321,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 3.59,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 54,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 1.2,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 209.83,
+            },
+            "healthRating": 3.4,
+            "conditionRatings": {
+              "high-cholesterol": 4.8,
+              "obesity": 5,
+              "diabetes": 3.9,
+              "hypertension": 2.7,
+            },
+            "intentFits": {
+              "lighter-energy": 0.7055,
+              "protein-forward": 0.274,
+              "fibre-forward": 0.2797,
+              "sodium-aware": 0.5616,
+            },
+          },
+        },
+      ],
+    },
+    {
+      "dishId": "dish.economic-rice",
+      "starRating": 4,
+      "defaultVariantId": "economic-rice-veg-meat",
+      "activeVariantId": "economic-rice-veg-meat",
+      "variants": [
+        {
+          "id": "economic-rice-veg-meat",
+          "label": "1 veg, 1 meat",
+          "unlockRank": 1,
+          "profileId": "dish.economic-rice",
+          "visualKey": "eco-rice-veg-meat",
+          "unlocked": true,
+          "selected": true,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (553 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 697,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 34.51,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 27.48,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 9.68,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.17,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 75.37,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 7.91,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1454,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 5.03,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 138,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 3.65,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 272.35,
+            },
+            "healthRating": 2.2,
+            "conditionRatings": {
+              "high-cholesterol": 2.2,
+              "obesity": 2.3,
+              "diabetes": 2.8,
+              "hypertension": 2.1,
+            },
+            "intentFits": {
+              "lighter-energy": 0.3014,
+              "protein-forward": 0.7534,
+              "fibre-forward": 0.7203,
+              "sodium-aware": 0.5137,
+            },
+          },
+        },
+        {
+          "id": "economic-rice-veg-fish",
+          "label": "1 veg, 1 fish",
+          "unlockRank": 2,
+          "profileId": "dish.economic-rice:economic-rice-veg-fish",
+          "visualKey": "eco-rice-veg-fish",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (497 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 609,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 27.09,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 23.67,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 9.06,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.15,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 70.32,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 6.98,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1278,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 2.62,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 163,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 3.81,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 231.36,
+            },
+            "healthRating": 2.5,
+            "conditionRatings": {
+              "high-cholesterol": 2.5,
+              "obesity": 2.9,
+              "diabetes": 3.4,
+              "hypertension": 2.5,
+            },
+            "intentFits": {
+              "lighter-energy": 0.4452,
+              "protein-forward": 0.6027,
+              "fibre-forward": 0.5874,
+              "sodium-aware": 0.5753,
+            },
+          },
+        },
+        {
+          "id": "economic-rice-two-veg",
+          "label": "2 veg",
+          "unlockRank": 4,
+          "profileId": "dish.economic-rice:economic-rice-two-veg",
+          "visualKey": "eco-rice-two-veg",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (580 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 626,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 15.25,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 26.8,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 10.73,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.23,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 78.3,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 10.32,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1346,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 4,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 220,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 4.06,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 315.98,
+            },
+            "healthRating": 2.2,
+            "conditionRatings": {
+              "high-cholesterol": 2.1,
+              "obesity": 2.7,
+              "diabetes": 3,
+              "hypertension": 2.3,
+            },
+            "intentFits": {
+              "lighter-energy": 0.3973,
+              "protein-forward": 0.2877,
+              "fibre-forward": 0.8741,
+              "sodium-aware": 0.5548,
+            },
+          },
+        },
+        {
+          "id": "economic-rice-veg-fried-meat",
+          "label": "1 veg, 1 fried meat",
+          "unlockRank": 7,
+          "profileId": "dish.economic-rice:economic-rice-veg-fried-meat",
+          "visualKey": "eco-rice-veg-fried-meat",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (515 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 803,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 35.43,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 37.18,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 13.6,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.21,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 79.93,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 7.42,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1251,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 7.26,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 149,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 4.69,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 219.29,
+            },
+            "healthRating": 1.9,
+            "conditionRatings": {
+              "high-cholesterol": 1.8,
+              "obesity": 1.9,
+              "diabetes": 1.8,
+              "hypertension": 2.4,
+            },
+            "intentFits": {
+              "lighter-energy": 0.2329,
+              "protein-forward": 0.7808,
+              "fibre-forward": 0.6434,
+              "sodium-aware": 0.6096,
+            },
+          },
+        },
+      ],
+    },
+    {
+      "dishId": "dish.nasi-padang",
+      "starRating": 4.2,
+      "defaultVariantId": "nasi-padang-beef",
+      "activeVariantId": "nasi-padang-beef",
+      "variants": [
+        {
+          "id": "nasi-padang-beef",
+          "label": "Beef rendang",
+          "unlockRank": 1,
+          "profileId": "dish.nasi-padang",
+          "visualKey": "padang-beef-rendang",
+          "unlocked": true,
+          "selected": true,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (544 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 1028,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 64.14,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 44.23,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 17.52,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 97.27,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 12.19,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1523,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 5.98,
+            },
+            "calciumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "ironMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 1.2,
+            "conditionRatings": {
+              "high-cholesterol": 1.5,
+              "obesity": 1.9,
+              "diabetes": 1.4,
+              "hypertension": 1.7,
+            },
+            "intentFits": {
+              "lighter-energy": 0.0548,
+              "protein-forward": 0.9658,
+              "fibre-forward": 0.9091,
+              "sodium-aware": 0.4863,
+            },
+          },
+        },
+        {
+          "id": "nasi-padang-sambal-goreng",
+          "label": "Sambal goreng (tempeh, long beans, tofu)",
+          "unlockRank": 2,
+          "profileId": "dish.nasi-padang:nasi-padang-sambal-goreng",
+          "visualKey": "padang-sambal-goreng",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (469 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 821,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 29.88,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 35.5,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 11.21,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 102.48,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 14.68,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1126,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 6,
+            },
+            "calciumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "ironMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 2.2,
+            "conditionRatings": {
+              "high-cholesterol": 1.9,
+              "obesity": 1.9,
+              "diabetes": 1.6,
+              "hypertension": 2.8,
+            },
+            "intentFits": {
+              "lighter-energy": 0.2226,
+              "protein-forward": 0.6781,
+              "fibre-forward": 0.965,
+              "sodium-aware": 0.637,
+            },
+          },
+        },
+        {
+          "id": "nasi-padang-chicken",
+          "label": "Chicken",
+          "unlockRank": 4,
+          "profileId": "dish.nasi-padang:nasi-padang-chicken",
+          "visualKey": "padang-chicken",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (797 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 1443,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 108.71,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 68.54,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 24.23,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 104.09,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 13.79,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 2630,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 10.76,
+            },
+            "calciumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "ironMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 1,
+            "conditionRatings": {
+              "high-cholesterol": 1.4,
+              "obesity": 1.7,
+              "diabetes": 1,
+              "hypertension": 1,
+            },
+            "intentFits": {
+              "lighter-energy": 0,
+              "protein-forward": 1,
+              "fibre-forward": 0.9371,
+              "sodium-aware": 0.137,
+            },
+          },
+        },
+        {
+          "id": "nasi-padang-assam-pedas",
+          "label": "Assam pedas fish",
+          "unlockRank": 7,
+          "profileId": "dish.nasi-padang:nasi-padang-assam-pedas",
+          "visualKey": "padang-assam-pedas",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (671 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 1107,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 59.38,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 49.05,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 17.24,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 112.33,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 13.82,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 2342,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 5.37,
+            },
+            "calciumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "ironMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 1,
+            "conditionRatings": {
+              "high-cholesterol": 1.5,
+              "obesity": 1.8,
+              "diabetes": 1.3,
+              "hypertension": 1,
+            },
+            "intentFits": {
+              "lighter-energy": 0.0308,
+              "protein-forward": 0.9589,
+              "fibre-forward": 0.9441,
+              "sodium-aware": 0.2123,
+            },
+          },
+        },
+      ],
+    },
+    {
+      "dishId": "dish.mee-siam",
+      "starRating": 3.9,
+      "defaultVariantId": "mee-siam-gravy",
+      "activeVariantId": "mee-siam-gravy",
+      "variants": [
+        {
+          "id": "mee-siam-gravy",
+          "label": "Gravy",
+          "unlockRank": 1,
+          "profileId": "dish.mee-siam",
+          "visualKey": "mee-siam-gravy",
+          "unlocked": true,
+          "selected": true,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (731 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 864,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 23.09,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 30.49,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 11.18,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.07,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 124.15,
+            },
+            "dietaryFibreG": {
+              "status": "unavailable",
+              "reason": "implausible-source",
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 3754,
+            },
+            "totalSugarG": {
+              "status": "unavailable",
+              "reason": "implausible-source",
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 240,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 4.57,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 538.71,
+            },
+            "healthRating": 1,
+            "conditionRatings": {
+              "high-cholesterol": 1.5,
+              "obesity": 1.4,
+              "diabetes": 1,
+              "hypertension": 1,
+            },
+            "intentFits": {
+              "lighter-energy": 0.1438,
+              "protein-forward": 0.4863,
+              "sodium-aware": 0.0411,
+            },
+          },
+        },
+        {
+          "id": "mee-siam-fried",
+          "label": "Mee siam goreng (fried dry)",
+          "unlockRank": 2,
+          "profileId": "dish.mee-siam:mee-siam-fried",
+          "visualKey": "mee-siam-fried",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (343 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 596,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 16.14,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 24.26,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 6.91,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.1,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 78.52,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 13.08,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1837,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 16.34,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 101,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 5.22,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 212.48,
+            },
+            "healthRating": 2,
+            "conditionRatings": {
+              "high-cholesterol": 2.9,
+              "obesity": 2.6,
+              "diabetes": 1.3,
+              "hypertension": 1.6,
+            },
+            "intentFits": {
+              "lighter-energy": 0.4658,
+              "protein-forward": 0.3151,
+              "fibre-forward": 0.9231,
+              "sodium-aware": 0.3562,
+            },
+          },
+        },
+      ],
+    },
+    {
+      "dishId": "dish.wanton-mee",
+      "starRating": 4.4,
+      "defaultVariantId": "wanton-mee-dry",
+      "activeVariantId": "wanton-mee-dry",
+      "variants": [
+        {
+          "id": "wanton-mee-dry",
+          "label": "Dry",
+          "unlockRank": 1,
+          "profileId": "dish.wanton-mee",
+          "visualKey": "wanton-mee-dry",
+          "unlocked": true,
+          "selected": true,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl (388 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 625,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 33.72,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 21.34,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 7.14,
+            },
+            "transFatG": {
+              "status": "trace",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 74.11,
+            },
+            "dietaryFibreG": {
+              "status": "trace",
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1564,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 9.12,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 70,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 2.72,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 253.17,
+            },
+            "healthRating": 2.3,
+            "conditionRatings": {
+              "high-cholesterol": 2.8,
+              "obesity": 2.8,
+              "diabetes": 1.6,
+              "hypertension": 1.9,
+            },
+            "intentFits": {
+              "lighter-energy": 0.4041,
+              "protein-forward": 0.7432,
+              "fibre-forward": 0.0315,
+              "sodium-aware": 0.4589,
+            },
+          },
+        },
+        {
+          "id": "sui-kow-mee-soup",
+          "label": "Sui kow noodle soup",
+          "unlockRank": 2,
+          "profileId": "dish.wanton-mee:sui-kow-mee-soup",
+          "visualKey": "wanton-mee-sui-kow-soup",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl (716 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 444,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 26.49,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 6.44,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 2.86,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 69.17,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 1.43,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1840,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 0,
+            },
+            "calciumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "ironMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 3.2,
+            "conditionRatings": {
+              "high-cholesterol": 4.9,
+              "obesity": 4.5,
+              "diabetes": 3.4,
+              "hypertension": 1.8,
+            },
+            "intentFits": {
+              "lighter-energy": 0.6301,
+              "protein-forward": 0.5822,
+              "fibre-forward": 0.1119,
+              "sodium-aware": 0.3493,
+            },
+          },
+        },
+        {
+          "id": "wanton-mee-soup",
+          "label": "Wanton noodle soup",
+          "unlockRank": 4,
+          "profileId": "dish.wanton-mee:wanton-mee-soup",
+          "visualKey": "wanton-mee-soup",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl (678 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 644,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 49.36,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 13.56,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 4.34,
+            },
+            "transFatG": {
+              "status": "trace",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 81.36,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 7.12,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 2895,
+            },
+            "totalSugarG": {
+              "status": "trace",
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 95,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 3.12,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 527.15,
+            },
+            "healthRating": 2.2,
+            "conditionRatings": {
+              "high-cholesterol": 3.9,
+              "obesity": 2.9,
+              "diabetes": 3,
+              "hypertension": 1,
+            },
+            "intentFits": {
+              "lighter-energy": 0.3767,
+              "protein-forward": 0.911,
+              "fibre-forward": 0.6084,
+              "sodium-aware": 0.089,
+            },
+          },
+        },
+      ],
+    },
+    {
+      "dishId": "dish.soya-bean-milk",
+      "starRating": 3.7,
+      "defaultVariantId": "soy-milk-regular",
+      "activeVariantId": "soy-milk-regular",
+      "variants": [
+        {
+          "id": "soy-milk-regular",
+          "label": "Sweetened",
+          "unlockRank": 1,
+          "profileId": "dish.soya-bean-milk",
+          "visualKey": "soy-milk-sweet",
+          "unlocked": true,
+          "selected": true,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 cup (450 ml)",
+            "energyKcal": {
+              "status": "known",
+              "value": 248,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 15.3,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 7.83,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 1.22,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 29.25,
+            },
+            "dietaryFibreG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "sodiumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 23.22,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 54,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 2.21,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 409.59,
+            },
+            "healthRating": 3.5,
+            "conditionRatings": {
+              "high-cholesterol": 4.4,
+              "obesity": 2.3,
+              "diabetes": 2.8,
+              "hypertension": 4.6,
+            },
+            "intentFits": {
+              "lower-total-sugar-drink": 0.2273,
+            },
+          },
+        },
+        {
+          "id": "soy-milk-less-sugar",
+          "label": "Less sweet",
+          "unlockRank": 2,
+          "profileId": "dish.soya-bean-milk:soy-milk-less-sugar",
+          "visualKey": "soy-milk-one-sugar",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 cup (450 ml)",
+            "energyKcal": {
+              "status": "known",
+              "value": 194,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 15.97,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 7.52,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 1.22,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 15.44,
+            },
+            "dietaryFibreG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "sodiumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 13.01,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 54,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 2.16,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 418.86,
+            },
+            "healthRating": 4.3,
+            "conditionRatings": {
+              "high-cholesterol": 4.6,
+              "obesity": 2.8,
+              "diabetes": 4,
+              "hypertension": 4.8,
+            },
+            "intentFits": {
+              "lower-total-sugar-drink": 0.5,
+            },
+          },
+        },
+        {
+          "id": "soy-milk-grass-jelly",
+          "label": "With grass jelly",
+          "unlockRank": 4,
+          "profileId": "dish.soya-bean-milk:soy-milk-grass-jelly",
+          "visualKey": "soy-milk-grass-jelly",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 cup (450 ml)",
+            "energyKcal": {
+              "status": "known",
+              "value": 194,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 9.04,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 4.32,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 0.72,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 28.85,
+            },
+            "dietaryFibreG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "sodiumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 26.82,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 36,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 1.67,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 418.91,
+            },
+            "healthRating": 3.2,
+            "conditionRatings": {
+              "high-cholesterol": 4.4,
+              "obesity": 2.3,
+              "diabetes": 2.5,
+              "hypertension": 4.5,
+            },
+            "intentFits": {
+              "lower-total-sugar-drink": 0.0455,
+            },
+          },
+        },
+        {
+          "id": "soy-milk-no-sugar",
+          "label": "No sugar (kosong)",
+          "unlockRank": 7,
+          "profileId": "dish.soya-bean-milk:soy-milk-no-sugar",
+          "visualKey": "soy-milk-no-sugar",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 cup (450 ml)",
+            "energyKcal": {
+              "status": "known",
+              "value": 158,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 16.43,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 7.83,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 1.35,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 5.72,
+            },
+            "dietaryFibreG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "sodiumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 1.98,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 54,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 2.21,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 423.63,
+            },
+            "healthRating": 5,
+            "conditionRatings": {
+              "high-cholesterol": 4.8,
+              "obesity": 3.5,
+              "diabetes": 5,
+              "hypertension": 5,
+            },
+            "intentFits": {
+              "lower-total-sugar-drink": 0.9091,
+            },
+          },
+        },
+      ],
+    },
+    {
+      "dishId": "dish.chicken-chop",
+      "starRating": 4.3,
+      "defaultVariantId": "chicken-chop-fries-coleslaw",
+      "activeVariantId": "chicken-chop-fries-coleslaw",
+      "variants": [
+        {
+          "id": "chicken-chop-fries-coleslaw",
+          "label": "With fries and coleslaw",
+          "unlockRank": 1,
+          "profileId": "dish.chicken-chop",
+          "visualKey": "western-chop-fries-coleslaw",
+          "unlocked": true,
+          "selected": true,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 set (454 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 931,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 64.7,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 56.98,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 20.66,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 39.32,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 3.63,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1562,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 6.58,
+            },
+            "calciumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "ironMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 1.3,
+            "conditionRatings": {
+              "high-cholesterol": 1.6,
+              "obesity": 1.8,
+              "diabetes": 3.4,
+              "hypertension": 1.6,
+            },
+            "intentFits": {
+              "lighter-energy": 0.0959,
+              "protein-forward": 0.9726,
+              "fibre-forward": 0.3007,
+              "sodium-aware": 0.4658,
+            },
+          },
+        },
+        {
+          "id": "chicken-chop-spaghetti",
+          "label": "With tomato spaghetti",
+          "unlockRank": 2,
+          "profileId": "dish.chicken-chop:chicken-chop-spaghetti",
+          "visualKey": "western-chop-spaghetti",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (617 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 802,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 53.62,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 29.12,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 9.56,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 80.95,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 7.47,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 2166,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 0,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 86,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 6.79,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 436.96,
+            },
+            "healthRating": 1.7,
+            "conditionRatings": {
+              "high-cholesterol": 2.2,
+              "obesity": 2,
+              "diabetes": 2.6,
+              "hypertension": 1.2,
+            },
+            "intentFits": {
+              "lighter-energy": 0.2397,
+              "protein-forward": 0.9452,
+              "fibre-forward": 0.6643,
+              "sodium-aware": 0.2671,
+            },
+          },
+        },
+        {
+          "id": "chicken-chop-fries-mash",
+          "label": "With fries and mash",
+          "unlockRank": 4,
+          "profileId": "dish.chicken-chop:chicken-chop-fries-mash",
+          "visualKey": "western-chop-fries-mash",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 set (509 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 784,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 48.36,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 37.67,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 14.76,
+            },
+            "transFatG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 63.12,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 5.14,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1878,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 0,
+            },
+            "calciumMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "ironMg": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 1.6,
+            "conditionRatings": {
+              "high-cholesterol": 1.7,
+              "obesity": 1.9,
+              "diabetes": 3.3,
+              "hypertension": 1.3,
+            },
+            "intentFits": {
+              "lighter-energy": 0.2534,
+              "protein-forward": 0.8767,
+              "fibre-forward": 0.4406,
+              "sodium-aware": 0.3356,
+            },
+          },
+        },
+      ],
+    },
+    {
+      "dishId": "dish.fish-and-chips",
+      "starRating": 4,
+      "defaultVariantId": "fish-and-chips",
+      "activeVariantId": "fish-and-chips",
+      "variants": [
+        {
+          "id": "fish-and-chips",
+          "label": "Fried fish and chips",
+          "unlockRank": 1,
+          "profileId": "dish.fish-and-chips",
+          "visualKey": "western-fish-chips",
+          "unlocked": true,
+          "selected": true,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (345 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 911,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 27.12,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 57.44,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 21.42,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.31,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 70.86,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 5.07,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1559,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 3.52,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 52,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 2.73,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 181.37,
+            },
+            "healthRating": 1.2,
+            "conditionRatings": {
+              "high-cholesterol": 1.6,
+              "obesity": 1.8,
+              "diabetes": 2.6,
+              "hypertension": 1.6,
+            },
+            "intentFits": {
+              "lighter-energy": 0.1096,
+              "protein-forward": 0.6096,
+              "fibre-forward": 0.4231,
+              "sodium-aware": 0.4726,
+            },
+          },
+        },
+        {
+          "id": "grilled-fish-set",
+          "label": "Grilled fish with potato, salad, and corn",
+          "unlockRank": 2,
+          "profileId": "dish.fish-and-chips:grilled-fish-set",
+          "visualKey": "western-fish-grilled-potato-salad-corn",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 plate (364 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 859,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 51.87,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 50.96,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 12.3,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.22,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 48.41,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 7.9,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 746,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 7.28,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 80,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 1.93,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 207.84,
+            },
+            "healthRating": 2.3,
+            "conditionRatings": {
+              "high-cholesterol": 1.8,
+              "obesity": 1.8,
+              "diabetes": 3.4,
+              "hypertension": 3.9,
+            },
+            "intentFits": {
+              "lighter-energy": 0.1575,
+              "protein-forward": 0.9315,
+              "fibre-forward": 0.7133,
+              "sodium-aware": 0.774,
+            },
+          },
+        },
+      ],
+    },
+    {
+      "dishId": "dish.fish-porridge",
+      "starRating": 4,
+      "defaultVariantId": "fish-porridge-fried",
+      "activeVariantId": "fish-porridge-fried",
+      "variants": [
+        {
+          "id": "fish-porridge-fried",
+          "label": "Fried fish",
+          "unlockRank": 1,
+          "profileId": "dish.fish-porridge",
+          "visualKey": "porridge-fish-fried",
+          "unlocked": true,
+          "selected": true,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl (660 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 455,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 29.63,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 15.18,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 6.86,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.07,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 49.5,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 3.23,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 2257,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 6.6,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 73,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 1.19,
+            },
+            "waterG": {
+              "status": "unavailable",
+              "reason": "not-reported",
+            },
+            "healthRating": 2.6,
+            "conditionRatings": {
+              "high-cholesterol": 3.2,
+              "obesity": 4.3,
+              "diabetes": 3.6,
+              "hypertension": 1.2,
+            },
+            "intentFits": {
+              "lighter-energy": 0.6164,
+              "protein-forward": 0.6644,
+              "fibre-forward": 0.2587,
+              "sodium-aware": 0.2397,
+            },
+          },
+        },
+        {
+          "id": "fish-porridge-sliced",
+          "label": "Sliced fish",
+          "unlockRank": 2,
+          "profileId": "dish.fish-porridge:fish-porridge-sliced",
+          "visualKey": "porridge-fish-sliced",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 bowl (692 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 318,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 18.2,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 5.54,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 1.66,
+            },
+            "transFatG": {
+              "status": "trace",
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 49.48,
+            },
+            "dietaryFibreG": {
+              "status": "trace",
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1861,
+            },
+            "totalSugarG": {
+              "status": "trace",
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 42,
+            },
+            "ironMg": {
+              "status": "trace",
+            },
+            "waterG": {
+              "status": "known",
+              "value": 612.77,
+            },
+            "healthRating": 3.2,
+            "conditionRatings": {
+              "high-cholesterol": 5,
+              "obesity": 5,
+              "diabetes": 3.9,
+              "hypertension": 1.8,
+            },
+            "intentFits": {
+              "lighter-energy": 0.8116,
+              "protein-forward": 0.3493,
+              "fibre-forward": 0.0315,
+              "sodium-aware": 0.3425,
             },
           },
         },
@@ -5904,6 +8926,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
       "requiredRank": 2,
     },
     {
+      "definitionId": "stall.jade-ladle",
+      "points": 0,
+      "rank": 1,
+      "upgradeLevel": 1,
+      "nextUpgradeCost": 1320,
+      "requiredRank": 2,
+    },
+    {
       "definitionId": "stall.tamarind-leaf",
       "points": 0,
       "rank": 1,
@@ -5920,6 +8950,22 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
       "requiredRank": 2,
     },
     {
+      "definitionId": "stall.longan-moon",
+      "points": 0,
+      "rank": 1,
+      "upgradeLevel": 1,
+      "nextUpgradeCost": 1340,
+      "requiredRank": 2,
+    },
+    {
+      "definitionId": "stall.lesung-corner",
+      "points": 0,
+      "rank": 1,
+      "upgradeLevel": 1,
+      "nextUpgradeCost": 1520,
+      "requiredRank": 2,
+    },
+    {
       "definitionId": "stall.straits-hearth",
       "points": 0,
       "rank": 1,
@@ -5933,6 +8979,14 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
       "rank": 1,
       "upgradeLevel": 1,
       "nextUpgradeCost": 1720,
+      "requiredRank": 2,
+    },
+    {
+      "definitionId": "stall.peppercorn-plate",
+      "points": 0,
+      "rank": 1,
+      "upgradeLevel": 1,
+      "nextUpgradeCost": 1810,
       "requiredRank": 2,
     },
     {

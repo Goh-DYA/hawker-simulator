@@ -120,6 +120,35 @@ describe("validateContent rule groups", () => {
     ]);
   });
 
+  it("progression: reports a stall authored before a stall that unlocks earlier", () => {
+    const draft = create_draft();
+    const [first_index, second_index] = [
+      draft.stalls.findIndex((stall) => stall.id === "stall.longan-moon"),
+      draft.stalls.findIndex((stall) => stall.id === "stall.lesung-corner"),
+    ];
+    [draft.stalls[first_index], draft.stalls[second_index]] = [
+      draft.stalls[second_index],
+      draft.stalls[first_index],
+    ];
+
+    expect(collect_issues(draft)).toEqual([
+      "stall.longan-moon must unlock at a later level than stall.lesung-corner, the stall authored before it.",
+    ]);
+  });
+
+  it("economy: reports a stall that opens with no dish a Student Saver can afford", () => {
+    const draft = create_draft();
+    for (const dish of draft.dishes) {
+      if (dish.id === "dish.century-egg-porridge" || dish.id === "dish.fish-porridge") {
+        dish.price = 7;
+      }
+    }
+
+    expect(collect_issues(draft)).toEqual([
+      "stall.jade-ladle opens with no dish at or below the Student Saver budget ($6.50).",
+    ]);
+  });
+
   it("customer: reports an inverted budget range", () => {
     const draft = create_draft();
     const [low, high] = draft.customerArchetypes[0].budgetRange;

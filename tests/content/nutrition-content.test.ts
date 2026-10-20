@@ -14,7 +14,7 @@ import {
   getNutritionVariantFamily,
   validateContent,
 } from "@/src/content/index";
-import { SNACK_RATED_DISH_IDS } from "@/tools/nutrition/manifest.mjs";
+import { BORROWED_COMPONENT_ALLOWLIST, SNACK_RATED_DISH_IDS } from "@/tools/nutrition/manifest.mjs";
 
 const VARIANT_FAMILY_DISHES = [
   "dish.kopi",
@@ -31,23 +31,41 @@ const VARIANT_FAMILY_DISHES = [
   "dish.ban-mian",
   "dish.bak-kut-teh",
   "dish.duck-rice",
+  "dish.prawn-noodle-soup",
+  "dish.economic-rice",
+  "dish.nasi-padang",
+  "dish.mee-siam",
+  "dish.wanton-mee",
+  "dish.soya-bean-milk",
+  "dish.chicken-chop",
+  "dish.fish-and-chips",
+  "dish.fish-porridge",
 ];
 
 const VARIANT_IDS: Readonly<Record<string, readonly string[]>> = {
-  "dish.kopi": ["kopi-default", "kopi-siu-dai", "kopi-c", "kopi-c-kosong", "kopi-o", "kopi-o-kosong"],
-  "dish.teh-tarik": ["teh-tarik", "teh", "teh-siu-dai", "teh-c", "teh-c-kosong", "teh-o", "teh-o-kosong"],
+  "dish.kopi": ["kopi-default", "kopi-siu-dai", "kopi-c", "kopi-c-kosong", "kopi-o", "kopi-o-kosong", "kopi-c-siu-dai", "kopi-o-siu-dai"],
+  "dish.teh-tarik": ["teh-tarik", "teh", "teh-siu-dai", "teh-c", "teh-c-kosong", "teh-o", "teh-o-kosong", "teh-c-siu-dai", "teh-o-siu-dai", "teh-halia"],
   "dish.nasi-lemak": ["nasi-lemak-chicken-wing", "nasi-lemak-chicken-cutlet", "nasi-lemak-wing-cutlet", "nasi-lemak-egg-ikan-bilis-peanut", "nasi-lemak-fish", "nasi-lemak-rice-only"],
-  "dish.fried-carrot-cake": ["carrot-cake-white", "carrot-cake-black"],
+  "dish.fried-carrot-cake": ["carrot-cake-black", "carrot-cake-white"],
   "dish.roti-prata": ["prata-two-plain-curry", "prata-plain", "prata-egg", "prata-egg-onion", "prata-egg-onion-cheese"],
-  "dish.sliced-fish-soup": ["fish-soup-beehoon-no-milk", "fish-soup-beehoon-milk", "fish-soup-sliced-no-milk", "fish-soup-sliced-milk"],
+  "dish.sliced-fish-soup": ["fish-soup-fried-beehoon-no-milk", "fish-soup-beehoon-no-milk", "fish-soup-beehoon-milk", "fish-soup-sliced-no-milk", "fish-soup-sliced-milk"],
   "dish.bak-chor-mee": ["bak-chor-mee-dry", "bak-chor-mee-soup"],
-  "dish.chicken-murtabak": ["murtabak-chicken", "murtabak-chicken-mushroom-cheese", "murtabak-mutton", "murtabak-vegetable"],
+  "dish.chicken-murtabak": ["murtabak-chicken", "murtabak-chicken-half", "murtabak-chicken-mushroom-cheese", "murtabak-mutton", "murtabak-vegetable"],
   "dish.nasi-briyani": ["briyani-chicken", "briyani-fish-prawn", "briyani-mutton", "briyani-vegetable"],
-  "dish.masala-thosai": ["thosai-masala", "thosai-plain", "thosai-egg", "thosai-ghee"],
-  "dish.yong-tau-foo": ["ytf-clear-mixed", "ytf-clear-fried", "ytf-laksa-boiled", "ytf-clear-noodles", "ytf-laksa-fried", "ytf-laksa-mixed", "ytf-laksa-noodles"],
-  "dish.ban-mian": ["ban-mian-soup", "ban-mian-dry", "chilli-ban-mian", "pork-dumpling-ban-mian", "seafood-tom-yum-ban-mian", "vegetable-ban-mian"],
-  "dish.bak-kut-teh": ["bak-kut-teh-soup", "bak-kut-teh-dry", "bak-kut-teh-herbal"],
-  "dish.duck-rice": ["duck-rice-braised", "duck-rice-roasted", "duck-rice-rice-only"],
+  "dish.masala-thosai": ["thosai-masala", "thosai-plain", "thosai-egg", "thosai-ghee", "thosai-rawa", "thosai-paper", "thosai-cheese"],
+  "dish.yong-tau-foo": ["ytf-clear-noodles", "ytf-clear-mixed", "ytf-clear-fried", "ytf-laksa-boiled", "ytf-laksa-fried", "ytf-laksa-mixed", "ytf-laksa-noodles"],
+  "dish.ban-mian": ["ban-mian-soup", "ban-mian-dry", "chilli-ban-mian", "pork-dumpling-ban-mian", "seafood-tom-yum-ban-mian", "vegetable-ban-mian", "mee-hoon-kway-dry", "mee-hoon-kway-soup"],
+  "dish.bak-kut-teh": ["bak-kut-teh-rice-you-tiao", "bak-kut-teh-soup", "bak-kut-teh-herbal", "bak-kut-teh-dry"],
+  "dish.duck-rice": ["duck-rice-braised", "duck-rice-roasted", "duck-rice-rice-only", "duck-noodles-dry"],
+  "dish.prawn-noodle-soup": ["prawn-noodles-soup", "prawn-noodles-dry"],
+  "dish.economic-rice": ["economic-rice-veg-meat", "economic-rice-veg-fish", "economic-rice-two-veg", "economic-rice-veg-fried-meat"],
+  "dish.nasi-padang": ["nasi-padang-beef", "nasi-padang-sambal-goreng", "nasi-padang-chicken", "nasi-padang-assam-pedas"],
+  "dish.mee-siam": ["mee-siam-gravy", "mee-siam-fried"],
+  "dish.wanton-mee": ["wanton-mee-dry", "sui-kow-mee-soup", "wanton-mee-soup"],
+  "dish.soya-bean-milk": ["soy-milk-regular", "soy-milk-less-sugar", "soy-milk-grass-jelly", "soy-milk-no-sugar"],
+  "dish.chicken-chop": ["chicken-chop-fries-coleslaw", "chicken-chop-spaghetti", "chicken-chop-fries-mash"],
+  "dish.fish-and-chips": ["fish-and-chips", "grilled-fish-set"],
+  "dish.fish-porridge": ["fish-porridge-fried", "fish-porridge-sliced"],
 };
 
 describe("nutrition content", () => {
@@ -57,7 +75,7 @@ describe("nutrition content", () => {
     );
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
-      "134473de1e418882d1a3d45f91969809d2716e1eb670ea70f98c1b20fc3cb5b0",
+      "b0cd79d05beb67303add9b0f9bc8a28b63b756305203d0470a12737ef7016b9b",
     );
   });
 
@@ -67,12 +85,12 @@ describe("nutrition content", () => {
     assert.equal(LAUNCH_CONTENT.version, "1.5.0");
     assert.equal(LAUNCH_CONTENT.nutrition, NUTRITION_CONTENT);
     assert.equal(NUTRITION_CONTENT.schemaVersion, 2);
-    assert.equal(report.counts.nutritionProfiles, 116);
+    assert.equal(report.counts.nutritionProfiles, 171);
     assert.equal(
       report.counts.nutritionVariantFamilies,
       LAUNCH_ROSTER.nutritionVariantFamilies,
     );
-    assert.equal(NUTRITION_CONTENT.dataVersion, "sg-1bc212db6eda-c87987b4281c-r3");
+    assert.equal(NUTRITION_CONTENT.dataVersion, "sg-1bc212db6eda-c87987b4281c-r4");
     assert.deepEqual(
       NUTRITION_CONTENT.sourceSnapshots.map((snapshot) => snapshot.rowCount),
       [2_689, 11],
@@ -104,7 +122,7 @@ describe("nutrition content", () => {
     );
   });
 
-  it("ships fourteen approved variant families with deterministic mastery ranks", () => {
+  it("ships twenty-three approved variant families with deterministic mastery ranks", () => {
     assert.deepEqual(
       NUTRITION_CONTENT.variantFamilies.map((family) => family.dishId),
       VARIANT_FAMILY_DISHES,
@@ -134,7 +152,7 @@ describe("nutrition content", () => {
           family.variants.map((variant) => variant.visualKey),
         ),
       ).size,
-      63,
+      103,
     );
   });
 
@@ -276,7 +294,15 @@ describe("nutrition content", () => {
       NUTRITION_CONTENT.profiles
         .filter((profile) => (profile.components?.length ?? 0) >= 2)
         .map((profile) => profile.id),
-      ["dish.soya-tofu-rice", "dish.roti-prata", "dish.nyonya-laksa"],
+      [
+        "dish.soya-tofu-rice",
+        "dish.roti-prata",
+        "dish.nyonya-laksa",
+        "dish.bak-kut-teh",
+        "dish.bak-kut-teh:bak-kut-teh-soup",
+        "dish.bak-kut-teh:bak-kut-teh-herbal",
+        "dish.bak-kut-teh:bak-kut-teh-dry",
+      ],
     );
     assert.deepEqual(
       NUTRITION_CONTENT.profiles
@@ -284,6 +310,7 @@ describe("nutrition content", () => {
         .map((profile) => profile.id)
         .sort(),
       [
+        "dish.black-sesame-paste",
         "dish.claypot-chicken-rice",
         "dish.kopi",
         "dish.lor-mee",
@@ -368,15 +395,15 @@ describe("nutrition content", () => {
 
   it("resolves default and selected variant profiles through public helpers", () => {
     const family = getNutritionVariantFamily("dish.fried-carrot-cake");
-    assert.equal(family?.defaultVariantId, "carrot-cake-white");
+    assert.equal(family?.defaultVariantId, "carrot-cake-black");
     assert.equal(
       getNutritionVariant("dish.fried-carrot-cake")?.id,
-      "carrot-cake-white",
+      "carrot-cake-black",
     );
     assert.equal(
-      getNutritionProfile("dish.fried-carrot-cake", "carrot-cake-black")
+      getNutritionProfile("dish.fried-carrot-cake", "carrot-cake-white")
         ?.provenance?.sourceFoodName,
-      "Fried carrot cake (black)",
+      "Fried carrot cake (white)",
     );
     assert.equal(
       getNutritionProfile("dish.fried-carrot-cake", "invalid-variant")?.id,
@@ -396,5 +423,92 @@ describe("nutrition content", () => {
     }
     assert.match(NUTRITION_CONTENT.disclosure, /not medical or dietary advice/i);
     assert.match(NUTRITION_CONTENT.disclosure, /Total sugar is not the same as added sugar/);
+  });
+});
+
+describe("variant family defaults", () => {
+  const profile_of = (profile_id: string) => {
+    const profile = NUTRITION_CONTENT.profiles.find((candidate) => candidate.id === profile_id);
+    assert.ok(profile, `missing profile ${profile_id}`);
+    return profile;
+  };
+
+  it.each(NUTRITION_CONTENT.variantFamilies.map((family) => [family.dishId, family] as const))(
+    "%s: the default rates strictly below another option and leaves a real tuning move",
+    (_dish_id, family) => {
+      const default_variant = family.variants.find(
+        (variant) => variant.id === family.defaultVariantId,
+      );
+      assert.ok(default_variant);
+      const default_profile = profile_of(default_variant.profileId);
+      const others = family.variants
+        .filter((variant) => variant.id !== family.defaultVariantId)
+        .map((variant) => profile_of(variant.profileId));
+      const best_other = Math.max(...others.map((profile) => profile.healthRating));
+      assert.ok(default_profile.healthRating < best_other, "default ties or tops its family");
+      const has_tuning_move = others.some((profile) => {
+        if (profile.healthRating - default_profile.healthRating >= 0.3 - 1e-9) return true;
+        if (profile.healthRating < default_profile.healthRating) return false;
+        return Object.entries(profile.conditionRatings).some(
+          ([condition, rating]) =>
+            rating -
+              default_profile.conditionRatings[
+                condition as keyof typeof default_profile.conditionRatings
+              ] >=
+            0.5 - 1e-9,
+        );
+      });
+      assert.ok(has_tuning_move, "no option is 0.3 higher or 0.5 higher on a condition");
+    },
+  );
+
+  it("maps no source row at the same multiplier and components twice", () => {
+    const keys = NUTRITION_CONTENT.profiles.map((profile) =>
+      JSON.stringify([
+        profile.provenance?.sourceFoodName,
+        profile.provenance?.multiplier,
+        profile.components ?? [],
+      ]),
+    );
+    assert.equal(new Set(keys).size, keys.length);
+  });
+
+  it("withholds no limit nutrient without a stand-in and leaves none unreported in a new meal", () => {
+    const limit_metrics = ["energyKcal", "saturatedFatG", "totalSugarG", "sodiumMg"] as const;
+    // Meal profiles whose source leaves a limit nutrient unreported: four kept from 1.5.0
+    // and gado gado's sugar, KNOWN_ISSUES (o).
+    const unreported_allowed = new Set([
+      "dish.oyster-omelette:totalSugarG",
+      "dish.chap-chye:totalSugarG",
+      "dish.roti-john:totalSugarG",
+      "dish.kueh-pie-tee:totalSugarG",
+      "dish.gado-gado:totalSugarG",
+    ]);
+    for (const profile of NUTRITION_CONTENT.profiles) {
+      for (const metric of limit_metrics) {
+        const value = profile.nutrients[metric];
+        if (value.status !== "unavailable") continue;
+        if (value.reason === "implausible-source") {
+          const fence_reason = (profile.withheldReasons ?? []).find(
+            (reason) => reason.includes(metric) && reason.includes("far-out fence"),
+          );
+          assert.equal(fence_reason, undefined, `${profile.id} ${metric} has no stand-in`);
+        }
+        if (value.reason === "not-reported" && profile.nutritionClass === "meal") {
+          assert.ok(unreported_allowed.has(`${profile.id}:${metric}`), `${profile.id} ${metric}`);
+        }
+      }
+    }
+  });
+
+  it("uses a Borrowed row only as an allowlisted later component of a composite", () => {
+    for (const profile of NUTRITION_CONTENT.profiles) {
+      assert.notEqual(profile.provenance?.sourceDataType, "Borrowed", profile.id);
+      for (const [index, component] of (profile.components ?? []).entries()) {
+        if (!BORROWED_COMPONENT_ALLOWLIST.has(component.foodName)) continue;
+        assert.ok(index > 0, `${profile.id} leads with ${component.foodName}`);
+      }
+    }
+    assert.deepEqual([...BORROWED_COMPONENT_ALLOWLIST], ["Cooked white rice"]);
   });
 });

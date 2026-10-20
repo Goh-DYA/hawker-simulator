@@ -1,9 +1,11 @@
 /**
- * Drink and dessert motifs: kopi and teh tarik (whose variant layers pour the drink),
- * sugarcane juice, barley water, soya bean milk, ice kacang, chendol, tau huay and pulut hitam.
+ * Drink and dessert motifs: kopi, teh tarik and soya bean milk (whose variant layers pour the
+ * drink), sugarcane juice, barley water, ice kacang, chendol, tau huay, pulut hitam and the tong
+ * sui: cheng tng, orh nee, tau suan, green bean soup and black sesame paste.
  *
  * Drinks fill their cup or glass to a level that drops as they are drunk; shaved-ice desserts
- * rise above the bowl's rim in a dome streaked with syrup.
+ * rise above the bowl's rim in a dome streaked with syrup; the sweet soups and pastes fill their
+ * bowl with the pieces floating in them.
  */
 import {
   css,
@@ -14,16 +16,25 @@ import {
   stroke_ellipse,
   type PaintContext,
 } from "../../canvas";
-import { at, heap_scale, pieces_left, type Motif, type MotifPaint } from "../motif";
+import { at, heap_scale, paint_in_layer, pieces_left, type Motif, type MotifPaint } from "../motif";
 import {
+  paint_ball,
   paint_citrus_wedge,
   paint_dots,
   paint_drizzle,
+  paint_gloss,
   paint_ice_cube,
   paint_liquid,
   paint_straw,
 } from "../parts";
-import { paint_ice_mound, paint_shreds, paint_spoon, trace_ice_mound } from "../toppings";
+import {
+  paint_dollop,
+  paint_ice_mound,
+  paint_shreds,
+  paint_spoon,
+  paint_youtiao,
+  trace_ice_mound,
+} from "../toppings";
 import type { FoodArea } from "../parts";
 import { paint_glass_drink } from "../vessels";
 
@@ -35,8 +46,10 @@ const TAU_HUAY_SYRUP = 0xb5742c;
 const BEANCURD = 0xf6eed6;
 /** Cloudy, pale gold barley water. */
 const BARLEY_WATER = 0xe2d4a4;
-/** Creamy off-white soy milk. */
-const SOY_MILK = 0xefe6cf;
+/** Cheng tng's clear rock-sugar syrup. */
+const CLEAR_SYRUP = 0xe9d9a8;
+/** Orh nee's smooth yam paste. */
+const YAM_PASTE = 0x9a86a6;
 
 /**
  * Kopi's saucer furniture: the teaspoon resting on the saucer. The variant layer pours the
@@ -125,44 +138,6 @@ function paint_barley_drink(p: MotifPaint): void {
     );
   }
   paint_glass_straw(p, surface, 0xe8eef0);
-}
-
-/**
- * Soya bean milk: a tall glass of creamy, opaque off-white soy milk with a thin ring of fine
- * bubbles round the surface and a red straw, served chilled without ice.
- *
- * @param p - The motif paint.
- */
-function paint_soya_bean_milk(p: MotifPaint): void {
-  const { ctx } = p;
-  const surface = paint_glass_drink(ctx, p.cx, p.cy, 1, p.remaining, SOY_MILK);
-  stroke_ellipse(
-    ctx,
-    surface.x,
-    surface.y,
-    surface.rx - 0.8,
-    surface.ry - 0.4,
-    css(0xfffaf0, 0.95),
-    1.1,
-  );
-  const next_ring = p.isLowDetail ? 6 : 12;
-  for (let bubble = 0; bubble < next_ring; bubble += 1) {
-    const angle = (bubble / next_ring) * Math.PI * 2 + 0.3;
-    fill_ellipse(
-      ctx,
-      surface.x + Math.cos(angle) * (surface.rx - 1.2),
-      surface.y + Math.sin(angle) * (surface.ry - 0.5),
-      0.55,
-      0.4,
-      css(0xffffff, 0.9),
-    );
-  }
-  // Condensation beading on the cold glass.
-  ctx.save();
-  ctx.globalAlpha = 0.7;
-  paint_dots(ctx, surface.x - 2, surface.y + 9, 3.4, p.isLowDetail ? 3 : 6, 0.45, 0xffffff, p.seed);
-  ctx.restore();
-  paint_glass_straw(p, surface, 0xd8423a);
 }
 
 /**
@@ -418,15 +393,177 @@ function paint_pulut_hitam(p: MotifPaint): void {
   ctx.restore();
 }
 
+/**
+ * Cheng tng: a clear, pale rock-sugar syrup with lotus seeds, brown dried longan and frilly
+ * white fungus.
+ *
+ * @param p - The motif paint.
+ */
+function paint_cheng_tng(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  paint_liquid(ctx, area.x, area.y, area.rx, area.ry, CLEAR_SYRUP, { sheen: 0.45 });
+  paint_shreds(
+    ctx,
+    area.x - 2,
+    area.y + 1,
+    area.rx * 0.45,
+    isLowDetail ? 4 : 8,
+    0xf8f2e2,
+    seed ^ 0x11,
+    3.2,
+    1.6,
+  );
+  const seeds = pieces_left(4, p.remaining);
+  for (let lotus = 0; lotus < seeds; lotus += 1) {
+    const [x, y] = at(area, -0.45 + lotus * 0.3, -0.3 + (lotus % 2) * 0.45);
+    paint_ball(ctx, x, y, 1.7, 0xf2e6c4);
+  }
+  const longans = pieces_left(3, p.remaining);
+  for (let longan = 0; longan < longans; longan += 1) {
+    const [x, y] = at(area, 0.5 - longan * 0.22, 0.3 - longan * 0.3);
+    paint_ball(ctx, x, y, 1.6, 0x8a5a2e);
+  }
+}
+
+/**
+ * Orh nee: smooth purple yam paste under a heavy sheen of oil, topped with gingko nuts and a
+ * scoop of mashed pumpkin.
+ *
+ * @param p - The motif paint.
+ */
+function paint_orh_nee(p: MotifPaint): void {
+  const { ctx, area, seed } = p;
+  paint_liquid(ctx, area.x, area.y, area.rx, area.ry, YAM_PASTE, { sheen: 0.6 });
+  paint_gloss(ctx, area.x + area.rx * 0.2, area.y + area.ry * 0.25, area.rx * 0.35, 0.9, 0.5);
+  const size = heap_scale(p.remaining);
+  const [px, py] = at(area, 0.25, -0.15);
+  paint_dollop(ctx, px, py, 3.6 * size, 0xe8902a, seed ^ 0x21);
+  const nuts = pieces_left(3, p.remaining);
+  for (let nut = 0; nut < nuts; nut += 1) {
+    const [x, y] = at(area, -0.45 + nut * 0.18, -0.25 + nut * 0.28);
+    paint_ball(ctx, x, y, 1.6, 0xe8d27a);
+  }
+}
+
+/**
+ * Tau suan: golden split mung beans in a thick, glossy sweet soup, topped with rounds of crisp
+ * dough fritter.
+ *
+ * @param p - The motif paint.
+ */
+function paint_tau_suan(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  paint_liquid(ctx, area.x, area.y, area.rx, area.ry, 0xe8c766, { sheen: 0.5 });
+  const size = heap_scale(p.remaining);
+  paint_dots(
+    ctx,
+    area.x,
+    area.y,
+    area.rx * 0.75 * size,
+    isLowDetail ? 8 : 18,
+    0.8,
+    0xf4d878,
+    seed ^ 0x31,
+  );
+  paint_dots(
+    ctx,
+    area.x,
+    area.y,
+    area.rx * 0.7 * size,
+    isLowDetail ? 4 : 8,
+    0.6,
+    0xc89a2e,
+    seed ^ 0x32,
+  );
+  const rounds = pieces_left(3, p.remaining);
+  for (let round = 0; round < rounds; round += 1) {
+    const [x, y] = at(area, -0.35 + round * 0.38, -0.2 + (round % 2) * 0.35);
+    paint_youtiao(ctx, x, y, 5);
+  }
+}
+
+/**
+ * Green bean soup: whole green beans simmered soft in a sweet, olive-green soup.
+ *
+ * @param p - The motif paint.
+ */
+function paint_green_bean_soup(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  paint_liquid(ctx, area.x, area.y, area.rx, area.ry, 0x9db46a, { sheen: 0.32 });
+  const size = heap_scale(p.remaining);
+  paint_dots(
+    ctx,
+    area.x,
+    area.y,
+    area.rx * 0.8 * size,
+    isLowDetail ? 10 : 22,
+    0.85,
+    0x5a7a2a,
+    seed ^ 0x41,
+  );
+  paint_dots(
+    ctx,
+    area.x - 1,
+    area.y,
+    area.rx * 0.6 * size,
+    isLowDetail ? 4 : 9,
+    0.75,
+    0x8aa848,
+    seed ^ 0x42,
+  );
+}
+
+/**
+ * Black sesame paste: a thick, inky-black sweet paste with a glossy grey swirl.
+ *
+ * @param p - The motif paint.
+ */
+function paint_black_sesame_paste(p: MotifPaint): void {
+  const { ctx, area, seed, isLowDetail } = p;
+  paint_liquid(ctx, area.x, area.y, area.rx, area.ry, 0x2e2a28, { sheen: 0.4 });
+  speckle(
+    ctx,
+    area.x - area.rx * 0.8,
+    area.y - area.ry * 0.7,
+    area.rx * 1.6,
+    area.ry * 1.4,
+    isLowDetail ? 6 : 14,
+    [0x4a4440, 0x1e1a18],
+    seed,
+    0.9,
+  );
+  const size = heap_scale(p.remaining);
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  for (let turn = 0; turn <= 18; turn += 1) {
+    const angle = turn * 0.55;
+    const radius = (0.6 + turn * 0.24) * size;
+    const x = area.x + Math.cos(angle) * radius;
+    const y = area.y + Math.sin(angle) * radius * 0.7;
+    if (turn === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = css(0x8a8580, 0.85);
+  ctx.lineWidth = 1.1;
+  ctx.stroke();
+  ctx.restore();
+}
+
 /** The drink and dessert motifs, keyed by dish ID without the `dish.` prefix. */
 export const SWEET_MOTIFS: Readonly<Record<string, Motif>> = {
   kopi: paint_kopi,
   "sugarcane-juice": paint_sugarcane_juice,
   "teh-tarik": paint_teh_tarik,
   "barley-drink": paint_barley_drink,
-  "soya-bean-milk": paint_soya_bean_milk,
+  "soya-bean-milk": paint_in_layer,
   "ice-kacang": paint_ice_kacang,
   chendol: paint_chendol,
   "tau-huay": paint_tau_huay,
   "pulut-hitam": paint_pulut_hitam,
+  "cheng-tng": paint_cheng_tng,
+  "orh-nee": paint_orh_nee,
+  "tau-suan": paint_tau_suan,
+  "green-bean-soup": paint_green_bean_soup,
+  "black-sesame-paste": paint_black_sesame_paste,
 };

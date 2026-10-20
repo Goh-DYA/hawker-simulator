@@ -154,10 +154,14 @@ export const STALL_ART_BY_ID: Readonly<Record<string, StallArt>> = {
   "stall.sweet-monsoon": { roof: "sweet-monsoon", workspace: "sweet-monsoon" },
   "stall.satay-meridian": { roof: "satay", workspace: "satay" },
   "stall.pick-and-mix": { roof: "awning", workspace: "generic" },
+  "stall.jade-ladle": { roof: "jade-ladle", workspace: "generic" },
   "stall.tamarind-leaf": { roof: "tamarind", workspace: "tamarind" },
   "stall.bamboo-basket": { roof: "bamboo-basket", workspace: "bamboo-basket" },
+  "stall.longan-moon": { roof: "longan-moon", workspace: "generic" },
+  "stall.lesung-corner": { roof: "lesung", workspace: "generic" },
   "stall.straits-hearth": { roof: "straits", workspace: "straits" },
   "stall.herbal-cauldron": { roof: "awning", workspace: "generic" },
+  "stall.peppercorn-plate": { roof: "peppercorn", workspace: "generic" },
   "stall.harbour-ember": { roof: "harbour", workspace: "harbour" },
 };
 

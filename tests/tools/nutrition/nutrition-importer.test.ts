@@ -141,8 +141,8 @@ describe("nutrition CSV importer", () => {
     assert.deepEqual(second, first);
     assert.equal(JSON.stringify(second), JSON.stringify(first));
     assert.equal(first.schemaVersion, 2);
-    assert.equal(first.profiles.length, 116);
-    assert.equal(first.variantFamilies.length, 14);
+    assert.equal(first.profiles.length, 171);
+    assert.equal(first.variantFamilies.length, 23);
 
     const foodOnlyRefresh = buildNutritionContent({
       foodText,

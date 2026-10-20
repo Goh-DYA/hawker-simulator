@@ -9,8 +9,8 @@ import { displayDishIdsForStall } from "@/src/game/runtime/render/stall";
 const DISH_BY_ID = new Map(DISHES.map((dish) => [dish.id, dish]));
 
 describe("stall food prop selection", () => {
-  it("selects reciprocal food props for all fourteen stalls", () => {
-    expect(STALLS).toHaveLength(14);
+  it("selects reciprocal food props for all eighteen stalls", () => {
+    expect(STALLS).toHaveLength(18);
 
     for (const stall of STALLS) {
       const displayIds = displayDishIdsForStall(stall, stall.dishIds);

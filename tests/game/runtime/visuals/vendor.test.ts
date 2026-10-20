@@ -15,7 +15,7 @@ describe("code-native stall vendor visual recipes", () => {
   it("gives every stall vendor a deterministic and materially distinct work profile", () => {
     const recipes = STALLS.map(visualRecipeForStallVendor);
 
-    assert.equal(recipes.length, 14);
+    assert.equal(recipes.length, 18);
     assert.deepEqual(recipes, STALLS.map(visualRecipeForStallVendor));
     assert.equal(new Set(recipes.map((recipe) => recipe.contractKey)).size, STALLS.length);
     assert.equal(new Set(recipes.map((recipe) => recipe.renderSignature)).size, STALLS.length);
