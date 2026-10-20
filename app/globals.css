@@ -5023,6 +5023,47 @@ kbd {
   background: #edf7ef;
 }
 
+.health-parts-details > p,
+.health-parts-details > ul {
+  margin: 6px 0 4px;
+  color: var(--ink);
+  font-size: 0.53rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.health-parts-details > ul {
+  display: grid;
+  gap: 3px;
+  padding: 0;
+  list-style: none;
+}
+
+.health-parts-details > ul > li {
+  padding: 4px 6px;
+  border-left: 3px solid #5b8ea1;
+  border-radius: 5px;
+  background: #edf3f4;
+}
+
+.health-parts-details .health-parts-heading {
+  margin-top: 8px;
+  color: #25596a;
+  font-weight: 900;
+}
+
+.health-parts-details .health-parts-note {
+  color: var(--ink-soft);
+}
+
+.health-parts-details .health-parts-excess {
+  padding: 5px 7px;
+  border-left: 3px solid #b5652b;
+  border-radius: 5px;
+  background: #fbf0e6;
+  font-weight: 800;
+}
+
 .nutrition-data-state {
   grid-column: 1 / -1;
   margin: 0;
@@ -5521,6 +5562,13 @@ kbd {
   margin: 7px 0 0;
   font-size: 0.53rem;
   line-height: 1.5;
+}
+
+.nutrition-disclosure h3 {
+  margin: 9px 0 0;
+  color: #25596a;
+  font-size: 0.55rem;
+  font-weight: 900;
 }
 
 .focus-panel {
