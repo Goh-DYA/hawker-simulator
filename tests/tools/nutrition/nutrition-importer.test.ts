@@ -3,6 +3,7 @@ import { describe, it } from "vitest";
 
 import {
   addHealthRatings,
+  assert_borrowed_parts_allowed,
   buildNutritionContent,
   canonicalRowHash,
   computeRelativeFits,
@@ -391,6 +392,46 @@ describe("nutrition CSV importer", () => {
     assert.throws(
       () => extractPreservedGuidelines(preserved),
       /snapshot metadata is invalid/,
+    );
+  });
+
+  it("accepts a Borrowed row only as an allowlisted later component of a composite", () => {
+    const source_types: Record<string, string> = {
+      "Bak kut teh (soup)": "Lab Analysis",
+      "Cooked white rice": "Borrowed",
+      "Borrowed broth": "Borrowed",
+    };
+    const source_type_of = (food_name: string) => source_types[food_name];
+    const parts = (...names: string[]) => names.map((foodName) => ({ foodName }));
+
+    assert.doesNotThrow(() =>
+      assert_borrowed_parts_allowed(
+        parts("Bak kut teh (soup)", "Cooked white rice"),
+        source_type_of,
+        "dish.bak-kut-teh",
+      ),
+    );
+    assert.throws(
+      () =>
+        assert_borrowed_parts_allowed(
+          parts("Cooked white rice", "Bak kut teh (soup)"),
+          source_type_of,
+          "dish.bak-kut-teh",
+        ),
+      /dish\.bak-kut-teh uses the Borrowed row "Cooked white rice" outside an allowed composite component\./,
+    );
+    assert.throws(
+      () => assert_borrowed_parts_allowed(parts("Cooked white rice"), source_type_of, "dish.rice"),
+      /Borrowed row "Cooked white rice"/,
+    );
+    assert.throws(
+      () =>
+        assert_borrowed_parts_allowed(
+          parts("Bak kut teh (soup)", "Borrowed broth"),
+          source_type_of,
+          "dish.bak-kut-teh",
+        ),
+      /Borrowed row "Borrowed broth"/,
     );
   });
 
