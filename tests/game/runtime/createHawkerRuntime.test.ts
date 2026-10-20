@@ -33,7 +33,7 @@ vi.mock("phaser", async () => (await import("./fixtures")).PHASER_STUB_MODULE);
 const FRAME_MS = 100;
 
 /** sha256 of `JSON.stringify(exportState())` for a fresh centre. */
-const FRESH_EXPORT_SHA256 = "e02f7155ccbc48488dd2df58d5614287866fa07467269490f0d46abfddb0201c";
+const FRESH_EXPORT_SHA256 = "1c5a4e9899a93749404c9d104d0cc4bd661f0f86d261c2f2e4962b6f6ac3d298";
 /**
  * sha256 of `JSON.stringify(exportState())` after importing the fresh centre's save. It
  * differs from {@link FRESH_EXPORT_SHA256} only in key order: loading a save rebuilds each
@@ -41,7 +41,7 @@ const FRESH_EXPORT_SHA256 = "e02f7155ccbc48488dd2df58d5614287866fa07467269490f0d
  * later positions.
  */
 const REIMPORTED_FRESH_EXPORT_SHA256 =
-  "d3b7d75bb2e02563d4f3e2f24db0aaa6263430d85f12a434ee31e1c4e462e265";
+  "e3f02a074c33187a7d97d51420822028b45810a018a15589cea613fbbb45976b";
 
 const OPEN_RUN_FRAMES = 600;
 /** sha256 of `JSON.stringify(exportState().core)` after each frame count, at speed 1. */

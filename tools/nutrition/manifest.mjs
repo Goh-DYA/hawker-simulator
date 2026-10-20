@@ -223,9 +223,9 @@ export const PRIMARY_PROFILE_MAPPINGS = [
   ),
   released(
     "dish.masala-thosai",
-    "Masala thosai",
+    "Thosai",
     "meal",
-    "Exact named dish match.",
+    "Plain thosai with chutney and sambar, the stall's default order; masala thosai is a variant option.",
   ),
   released(
     "dish.idli-sambar",
@@ -861,10 +861,10 @@ export const VARIANT_FAMILY_MAPPINGS = [
   },
   {
     dishId: "dish.masala-thosai",
-    defaultVariantId: "thosai-masala",
+    defaultVariantId: "thosai-plain",
     variants: [
-      variant("thosai-masala", "Masala thosai", "Masala thosai", 1, "thosai-masala-fold", "Default masala-filled serving."),
-      variant("thosai-plain", "Plain thosai", "Thosai", 2, "thosai-plain-roll", "Plain thosai serving."),
+      variant("thosai-plain", "Plain thosai", "Thosai", 1, "thosai-plain-roll", "Default plain serving with chutney and sambar."),
+      variant("thosai-masala", "Masala thosai", "Masala thosai", 2, "thosai-masala-fold", "Masala-filled serving with sambar and chutney."),
       variant("thosai-egg", "Egg thosai", "Thosai (egg)", 4, "thosai-egg-centre", "Egg thosai serving."),
       variant("thosai-ghee", "Ghee thosai", "Thosai (ghee)", 7, "thosai-ghee-gloss", "Ghee thosai serving."),
       variant("thosai-rawa", "Rawa thosai", "Rawa thosai", 7, "thosai-rawa-lacy", "Semolina thosai (Lab)."),

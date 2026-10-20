@@ -14,7 +14,6 @@ import {
   getNutritionVariantFamily,
   validateContent,
 } from "@/src/content/index";
-import { HEALTH_MATCH_THRESHOLD } from "@/src/game/core/nutrition";
 import { BORROWED_COMPONENT_ALLOWLIST, SNACK_RATED_DISH_IDS } from "@/tools/nutrition/manifest.mjs";
 
 const VARIANT_FAMILY_DISHES = [
@@ -53,7 +52,7 @@ const VARIANT_IDS: Readonly<Record<string, readonly string[]>> = {
   "dish.bak-chor-mee": ["bak-chor-mee-dry", "bak-chor-mee-soup"],
   "dish.chicken-murtabak": ["murtabak-chicken", "murtabak-chicken-half", "murtabak-chicken-mushroom-cheese", "murtabak-mutton", "murtabak-vegetable"],
   "dish.nasi-briyani": ["briyani-chicken", "briyani-fish-prawn", "briyani-mutton", "briyani-vegetable"],
-  "dish.masala-thosai": ["thosai-masala", "thosai-plain", "thosai-egg", "thosai-ghee", "thosai-rawa", "thosai-paper", "thosai-cheese"],
+  "dish.masala-thosai": ["thosai-plain", "thosai-masala", "thosai-egg", "thosai-ghee", "thosai-rawa", "thosai-paper", "thosai-cheese"],
   "dish.yong-tau-foo": ["ytf-clear-noodles", "ytf-clear-mixed", "ytf-clear-fried", "ytf-laksa-boiled", "ytf-laksa-fried", "ytf-laksa-mixed", "ytf-laksa-noodles"],
   "dish.ban-mian": ["ban-mian-soup", "ban-mian-dry", "chilli-ban-mian", "pork-dumpling-ban-mian", "seafood-tom-yum-ban-mian", "vegetable-ban-mian", "mee-hoon-kway-dry", "mee-hoon-kway-soup"],
   "dish.bak-kut-teh": ["bak-kut-teh-rice-you-tiao", "bak-kut-teh-soup", "bak-kut-teh-herbal", "bak-kut-teh-dry"],
@@ -76,7 +75,7 @@ describe("nutrition content", () => {
     );
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
-      "797177064cf3edcf8c3a5849b9bd359fdef3b6167da2fa9f8399962644353366",
+      "4cd112ca19a3688564d7ae7aa7493338f12f77fdabf7bccf1471eba2ca7fad8a",
     );
   });
 
@@ -427,34 +426,16 @@ describe("nutrition content", () => {
   });
 });
 
-/**
- * Variant families whose default may rate at or above every other option overall, each with
- * its recorded reason (ADR 0009; the near-tie table in docs/design/NUTRITION_DATA.md). The
- * list is closed: adding a family needs a recorded reason there and a CHANGELOG line, and an
- * entry must be removed once its family passes again.
- */
-const C4_EXCEPTIONS: Readonly<Record<string, string>> = {
-  "dish.masala-thosai":
-    "Plain thosai is lower than masala on all four limit nutrients per serving (402 against 439 kcal, 4.4 against 6.2 g saturated fat, 501 against 1,070 mg sodium, 1.1 against 1.2 g sugar). Masala rates higher overall (3.794 against 3.711 unrounded) through its sambar fibre (8.1 against 4.9 g) and its lower energy density (162 against 258 kcal per 100 g). The tuning lever is the condition ratings: plain thosai lifts hypertension from 3.2 to 4.0 and cholesterol from 3.4 to 3.8. It is a trade, not a dominance: plain thosai lowers obesity from 4.5 to 3.2 and diabetes from 4.3 to 3.6, because its serving is denser (258 against 162 kcal per 100 g) and lower in fibre.",
-};
-
-/** Mastery rank by which a recorded exception's condition lever must be unlocked. */
-const C4_EXCEPTION_LEVER_RANK = 2;
-
-/** Largest drop in displayed overall rating, in tenths, that an exception's lever may cost. */
-const C4_EXCEPTION_MAX_COST_TENTHS = 1;
-
 describe("variant family defaults", () => {
   const profile_of = (profile_id: string) => {
     const profile = NUTRITION_CONTENT.profiles.find((candidate) => candidate.id === profile_id);
     assert.ok(profile, `missing profile ${profile_id}`);
     return profile;
   };
-  const to_tenths = (rating: number) => Math.round(rating * 10);
 
   it.each(NUTRITION_CONTENT.variantFamilies.map((family) => [family.dishId, family] as const))(
     "%s: the default rates strictly below another option and leaves a real tuning move",
-    (dish_id, family) => {
+    (_dish_id, family) => {
       const default_variant = family.variants.find(
         (variant) => variant.id === family.defaultVariantId,
       );
@@ -465,28 +446,6 @@ describe("variant family defaults", () => {
       );
       const others = other_variants.map((variant) => profile_of(variant.profileId));
       const best_other = Math.max(...others.map((profile) => profile.healthRating));
-      if (Object.hasOwn(C4_EXCEPTIONS, dish_id)) {
-        assert.ok(
-          default_profile.healthRating >= best_other,
-          "the family passes again: remove its C4_EXCEPTIONS entry",
-        );
-        const has_condition_lever = other_variants.some((variant) => {
-          if (variant.unlockRank > C4_EXCEPTION_LEVER_RANK) return false;
-          const profile = profile_of(variant.profileId);
-          const cost_tenths =
-            to_tenths(default_profile.healthRating) - to_tenths(profile.healthRating);
-          if (cost_tenths > C4_EXCEPTION_MAX_COST_TENTHS) return false;
-          return Object.entries(profile.conditionRatings).some(
-            ([condition, rating]) =>
-              rating >= HEALTH_MATCH_THRESHOLD &&
-              default_profile.conditionRatings[
-                condition as keyof typeof default_profile.conditionRatings
-              ] < HEALTH_MATCH_THRESHOLD,
-          );
-        });
-        assert.ok(has_condition_lever, "no early option lifts a condition to a match at a 0.1 cost");
-        return;
-      }
       assert.ok(default_profile.healthRating < best_other, "default ties or tops its family");
       const has_tuning_move = others.some((profile) => {
         if (profile.healthRating - default_profile.healthRating >= 0.3 - 1e-9) return true;

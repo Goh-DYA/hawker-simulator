@@ -1751,90 +1751,90 @@
       "status": "released",
       "nutritionClass": "meal",
       "serving": {
-        "amount": 271,
+        "amount": 156,
         "unit": "g",
-        "label": "1 piece (271 g)"
+        "label": "1 piece (156 g)"
       },
       "nutrients": {
         "energyKcal": {
           "status": "known",
-          "value": 439
+          "value": 402
         },
         "proteinG": {
           "status": "known",
-          "value": 11.76
+          "value": 10.92
         },
         "totalFatG": {
           "status": "known",
-          "value": 15.72
+          "value": 11.54
         },
         "saturatedFatG": {
           "status": "known",
-          "value": 6.15
+          "value": 4.35
         },
         "transFatG": {
           "status": "known",
-          "value": 0.11
+          "value": 0.03
         },
         "carbohydrateG": {
           "status": "known",
-          "value": 62.19
+          "value": 63.88
         },
         "totalSugarG": {
           "status": "known",
-          "value": 1.22
+          "value": 1.09
         },
         "dietaryFibreG": {
           "status": "known",
-          "value": 8.13
+          "value": 4.93
         },
         "sodiumMg": {
           "status": "known",
-          "value": 1070
+          "value": 501
         },
         "calciumMg": {
           "status": "known",
-          "value": 43
+          "value": 22
         },
         "ironMg": {
           "status": "known",
-          "value": 2.2
+          "value": 1.59
         },
         "waterG": {
           "status": "known",
-          "value": 175.61
+          "value": 66.85
         }
       },
-      "healthRating": 3.8,
+      "healthRating": 3.7,
       "conditionRatings": {
-        "high-cholesterol": 3.4,
-        "obesity": 4.5,
-        "diabetes": 4.3,
-        "hypertension": 3.2
+        "high-cholesterol": 3.8,
+        "obesity": 3.2,
+        "diabetes": 3.6,
+        "hypertension": 4
       },
       "intentFits": {
-        "lighter-energy": 0.6575,
-        "protein-forward": 0.1918,
-        "fibre-forward": 0.7483,
-        "sodium-aware": 0.6781
+        "lighter-energy": 0.6918,
+        "protein-forward": 0.1712,
+        "fibre-forward": 0.3986,
+        "sodium-aware": 0.8699
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
         "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
         "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
-        "sourceRowNumber": 1029,
-        "sourceFoodName": "Masala thosai",
-        "sourceRowSha256": "5281698ed6874d07821369565eaa3a3cc34d2691e0768eafeb5a20add4b987f4",
+        "sourceRowNumber": 1033,
+        "sourceFoodName": "Thosai",
+        "sourceRowSha256": "69e24651dc6971ba910bcf865a419892b99aaef1bdc1fe88b9142b729f801294",
         "sourceDataType": "Lab Analysis",
         "mappingKind": "exact",
         "multiplier": 1,
-        "reviewNote": "Exact named dish match."
+        "reviewNote": "Plain thosai with chutney and sambar, the stall's default order; masala thosai is a variant option."
       },
-      "reviewNote": "Exact named dish match.",
+      "reviewNote": "Plain thosai with chutney and sambar, the stall's default order; masala thosai is a variant option.",
       "ratingInputs": {
-        "edibleAmount": 271
+        "edibleAmount": 156
       },
-      "variantId": "thosai-masala"
+      "variantId": "thosai-plain"
     },
     {
       "id": "dish.idli-sambar",
@@ -11637,94 +11637,94 @@
       }
     },
     {
-      "id": "dish.masala-thosai:thosai-plain",
+      "id": "dish.masala-thosai:thosai-masala",
       "dishId": "dish.masala-thosai",
-      "variantId": "thosai-plain",
+      "variantId": "thosai-masala",
       "status": "released",
       "nutritionClass": "meal",
       "serving": {
-        "amount": 156,
+        "amount": 271,
         "unit": "g",
-        "label": "1 piece (156 g)"
+        "label": "1 piece (271 g)"
       },
       "nutrients": {
         "energyKcal": {
           "status": "known",
-          "value": 402
+          "value": 439
         },
         "proteinG": {
           "status": "known",
-          "value": 10.92
+          "value": 11.76
         },
         "totalFatG": {
           "status": "known",
-          "value": 11.54
+          "value": 15.72
         },
         "saturatedFatG": {
           "status": "known",
-          "value": 4.35
+          "value": 6.15
         },
         "transFatG": {
           "status": "known",
-          "value": 0.03
+          "value": 0.11
         },
         "carbohydrateG": {
           "status": "known",
-          "value": 63.88
+          "value": 62.19
         },
         "totalSugarG": {
           "status": "known",
-          "value": 1.09
+          "value": 1.22
         },
         "dietaryFibreG": {
           "status": "known",
-          "value": 4.93
+          "value": 8.13
         },
         "sodiumMg": {
           "status": "known",
-          "value": 501
+          "value": 1070
         },
         "calciumMg": {
           "status": "known",
-          "value": 22
+          "value": 43
         },
         "ironMg": {
           "status": "known",
-          "value": 1.59
+          "value": 2.2
         },
         "waterG": {
           "status": "known",
-          "value": 66.85
+          "value": 175.61
         }
       },
-      "healthRating": 3.7,
+      "healthRating": 3.8,
       "conditionRatings": {
-        "high-cholesterol": 3.8,
-        "obesity": 3.2,
-        "diabetes": 3.6,
-        "hypertension": 4
+        "high-cholesterol": 3.4,
+        "obesity": 4.5,
+        "diabetes": 4.3,
+        "hypertension": 3.2
       },
       "intentFits": {
-        "lighter-energy": 0.6918,
-        "protein-forward": 0.1712,
-        "fibre-forward": 0.3986,
-        "sodium-aware": 0.8699
+        "lighter-energy": 0.6575,
+        "protein-forward": 0.1918,
+        "fibre-forward": 0.7483,
+        "sodium-aware": 0.6781
       },
       "provenance": {
         "snapshotId": "food-1bc212db6eda",
         "sourceFile": "food_nutrition_sgfoodid_combined_nutrition_subset.csv",
         "sourceFileSha256": "1bc212db6eda06c29a5f8a1ddfe8a0ca82b02a71ffc34c07ced45d8b2f9b273e",
-        "sourceRowNumber": 1033,
-        "sourceFoodName": "Thosai",
-        "sourceRowSha256": "69e24651dc6971ba910bcf865a419892b99aaef1bdc1fe88b9142b729f801294",
+        "sourceRowNumber": 1029,
+        "sourceFoodName": "Masala thosai",
+        "sourceRowSha256": "5281698ed6874d07821369565eaa3a3cc34d2691e0768eafeb5a20add4b987f4",
         "sourceDataType": "Lab Analysis",
         "mappingKind": "exact",
         "multiplier": 1,
-        "reviewNote": "Plain thosai serving."
+        "reviewNote": "Masala-filled serving with sambar and chutney."
       },
-      "reviewNote": "Plain thosai serving.",
+      "reviewNote": "Masala-filled serving with sambar and chutney.",
       "ratingInputs": {
-        "edibleAmount": 156
+        "edibleAmount": 271
       }
     },
     {
@@ -15855,21 +15855,21 @@
     },
     {
       "dishId": "dish.masala-thosai",
-      "defaultVariantId": "thosai-masala",
+      "defaultVariantId": "thosai-plain",
       "variants": [
-        {
-          "id": "thosai-masala",
-          "name": "Masala thosai",
-          "profileId": "dish.masala-thosai",
-          "unlockRank": 1,
-          "visualKey": "thosai-masala-fold"
-        },
         {
           "id": "thosai-plain",
           "name": "Plain thosai",
-          "profileId": "dish.masala-thosai:thosai-plain",
-          "unlockRank": 2,
+          "profileId": "dish.masala-thosai",
+          "unlockRank": 1,
           "visualKey": "thosai-plain-roll"
+        },
+        {
+          "id": "thosai-masala",
+          "name": "Masala thosai",
+          "profileId": "dish.masala-thosai:thosai-masala",
+          "unlockRank": 2,
+          "visualKey": "thosai-masala-fold"
         },
         {
           "id": "thosai-egg",

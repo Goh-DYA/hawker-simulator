@@ -109,12 +109,12 @@ const RENDER_DIGESTS = {
     sha256: "918f2bd8a8e7bdd0a3479fc441f66ef3c970dcffd1e8fa5570b9c50bbcba7806",
   },
   gallery: {
-    calls: 977_794,
-    sha256: "d58d464188b624bb0d7252faf9f006ecee867756eab1fc37e6b3b200b219c5cc",
+    calls: 977_628,
+    sha256: "31e55d3cff37b130f037d88128fd26a62f6fa1740435a712bd6c122e20f4df6e",
   },
   galleryVariants: {
-    calls: 120_440,
-    sha256: "4a3b8a6e4a9d708ec4372ee4587d078c94acd4181f88e8c84eb6487052cd0100",
+    calls: 120_606,
+    sha256: "39423e53cced168a303bb41243211f215cadf627c69e1f7f67253f3aeae1f1cf",
   },
   multiDayFrame480: {
     calls: 225,

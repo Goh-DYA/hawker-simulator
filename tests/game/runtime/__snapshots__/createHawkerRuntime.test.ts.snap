@@ -870,7 +870,7 @@ exports[`createHawkerRuntime > (1) exports a fresh centre built from the real co
     "dish.bak-chor-mee": "bak-chor-mee-dry",
     "dish.chicken-murtabak": "murtabak-chicken",
     "dish.nasi-briyani": "briyani-chicken",
-    "dish.masala-thosai": "thosai-masala",
+    "dish.masala-thosai": "thosai-plain",
     "dish.yong-tau-foo": "ytf-clear-noodles",
     "dish.ban-mian": "ban-mian-soup",
     "dish.bak-kut-teh": "bak-kut-teh-rice-you-tiao",
@@ -1018,7 +1018,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
     "dish.bak-chor-mee": "bak-chor-mee-dry",
     "dish.chicken-murtabak": "murtabak-chicken",
     "dish.nasi-briyani": "briyani-chicken",
-    "dish.masala-thosai": "thosai-masala",
+    "dish.masala-thosai": "thosai-plain",
     "dish.yong-tau-foo": "ytf-clear-noodles",
     "dish.ban-mian": "ban-mian-soup",
     "dish.bak-kut-teh": "bak-kut-teh-rice-you-tiao",
@@ -4519,91 +4519,17 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
     {
       "dishId": "dish.masala-thosai",
       "starRating": 4,
-      "defaultVariantId": "thosai-masala",
-      "activeVariantId": "thosai-masala",
+      "defaultVariantId": "thosai-plain",
+      "activeVariantId": "thosai-plain",
       "variants": [
-        {
-          "id": "thosai-masala",
-          "label": "Masala thosai",
-          "unlockRank": 1,
-          "profileId": "dish.masala-thosai",
-          "visualKey": "thosai-masala-fold",
-          "unlocked": true,
-          "selected": true,
-          "profile": {
-            "status": "released",
-            "servingLabel": "1 piece (271 g)",
-            "energyKcal": {
-              "status": "known",
-              "value": 439,
-            },
-            "proteinG": {
-              "status": "known",
-              "value": 11.76,
-            },
-            "totalFatG": {
-              "status": "known",
-              "value": 15.72,
-            },
-            "saturatedFatG": {
-              "status": "known",
-              "value": 6.15,
-            },
-            "transFatG": {
-              "status": "known",
-              "value": 0.11,
-            },
-            "carbohydrateG": {
-              "status": "known",
-              "value": 62.19,
-            },
-            "dietaryFibreG": {
-              "status": "known",
-              "value": 8.13,
-            },
-            "sodiumMg": {
-              "status": "known",
-              "value": 1070,
-            },
-            "totalSugarG": {
-              "status": "known",
-              "value": 1.22,
-            },
-            "calciumMg": {
-              "status": "known",
-              "value": 43,
-            },
-            "ironMg": {
-              "status": "known",
-              "value": 2.2,
-            },
-            "waterG": {
-              "status": "known",
-              "value": 175.61,
-            },
-            "healthRating": 3.8,
-            "conditionRatings": {
-              "high-cholesterol": 3.4,
-              "obesity": 4.5,
-              "diabetes": 4.3,
-              "hypertension": 3.2,
-            },
-            "intentFits": {
-              "lighter-energy": 0.6575,
-              "protein-forward": 0.1918,
-              "fibre-forward": 0.7483,
-              "sodium-aware": 0.6781,
-            },
-          },
-        },
         {
           "id": "thosai-plain",
           "label": "Plain thosai",
-          "unlockRank": 2,
-          "profileId": "dish.masala-thosai:thosai-plain",
+          "unlockRank": 1,
+          "profileId": "dish.masala-thosai",
           "visualKey": "thosai-plain-roll",
-          "unlocked": false,
-          "selected": false,
+          "unlocked": true,
+          "selected": true,
           "profile": {
             "status": "released",
             "servingLabel": "1 piece (156 g)",
@@ -4667,6 +4593,80 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "protein-forward": 0.1712,
               "fibre-forward": 0.3986,
               "sodium-aware": 0.8699,
+            },
+          },
+        },
+        {
+          "id": "thosai-masala",
+          "label": "Masala thosai",
+          "unlockRank": 2,
+          "profileId": "dish.masala-thosai:thosai-masala",
+          "visualKey": "thosai-masala-fold",
+          "unlocked": false,
+          "selected": false,
+          "profile": {
+            "status": "released",
+            "servingLabel": "1 piece (271 g)",
+            "energyKcal": {
+              "status": "known",
+              "value": 439,
+            },
+            "proteinG": {
+              "status": "known",
+              "value": 11.76,
+            },
+            "totalFatG": {
+              "status": "known",
+              "value": 15.72,
+            },
+            "saturatedFatG": {
+              "status": "known",
+              "value": 6.15,
+            },
+            "transFatG": {
+              "status": "known",
+              "value": 0.11,
+            },
+            "carbohydrateG": {
+              "status": "known",
+              "value": 62.19,
+            },
+            "dietaryFibreG": {
+              "status": "known",
+              "value": 8.13,
+            },
+            "sodiumMg": {
+              "status": "known",
+              "value": 1070,
+            },
+            "totalSugarG": {
+              "status": "known",
+              "value": 1.22,
+            },
+            "calciumMg": {
+              "status": "known",
+              "value": 43,
+            },
+            "ironMg": {
+              "status": "known",
+              "value": 2.2,
+            },
+            "waterG": {
+              "status": "known",
+              "value": 175.61,
+            },
+            "healthRating": 3.8,
+            "conditionRatings": {
+              "high-cholesterol": 3.4,
+              "obesity": 4.5,
+              "diabetes": 4.3,
+              "hypertension": 3.2,
+            },
+            "intentFits": {
+              "lighter-energy": 0.6575,
+              "protein-forward": 0.1918,
+              "fibre-forward": 0.7483,
+              "sodium-aware": 0.6781,
             },
           },
         },
