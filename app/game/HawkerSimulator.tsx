@@ -139,6 +139,7 @@ const INITIAL_SNAPSHOT: RuntimeSnapshot = {
   stallMenus: defaultStallMenusForProgression({
     level: INITIAL_LEVEL,
     reputation: INITIAL_REPUTATION,
+    unlockedDefinitionIds: [],
   }),
   activeDishVariants: {},
   nutritionFamilies: [],

@@ -4,13 +4,14 @@
  * The panels moved out of the `HawkerSimulator` shell with their markup unchanged; shared
  * formatters from `display.ts` replaced some inline expressions. The fixture-snapshot cases pin the menu rows'
  * order, IDs, offer state and reasons, so a drift fails here, close to the panel, as well as
- * in the component goldens.
+ * in the component goldens. The owned-stall cases check that a stall the centre has unlocked
+ * offers its opening dishes below their own level and reputation, as the runtime's menus do.
  */
 import { createElement } from "react";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { humanize_id, money } from "@/app/game/display";
+import { humanize_id, localize, money } from "@/app/game/display";
 import { build_menu_rows, MenuPanel } from "@/app/game/panels/menu";
 import { DISHES, STALLS } from "@/src/content";
 import type { RuntimeSnapshot } from "@/src/game/runtime/types";
@@ -18,6 +19,19 @@ import { count_occurrences, NO_CONTROLLER, SNAPSHOT_FIXTURE } from "./fixtures";
 
 /** The stall whose menu the fixture has started planning. */
 const MENU_STALL = STALLS.find((stall) => stall.id === "stall.sunrise-roost")!;
+/** A stall with two opening dishes gated at its own level 5, and later dishes above it. */
+const OWNED_STALL = STALLS.find((stall) => stall.id === "stall.sweet-monsoon")!;
+/** The owned stall's dishes gated no later than the stall itself. */
+const OWNED_OPENING_DISH_IDS = ["dish.chendol", "dish.ice-kacang"];
+/** A level 1 centre at the starting reputation that already owns the stall, with its menu empty. */
+const OWNED_STALL_SNAPSHOT: RuntimeSnapshot = {
+  ...SNAPSHOT_FIXTURE,
+  level: 1,
+  reputation: 8,
+  peakReputation: 8,
+  unlockedContentIds: [...SNAPSHOT_FIXTURE.unlockedContentIds, OWNED_STALL.id],
+  stallMenus: { ...SNAPSHOT_FIXTURE.stallMenus, [OWNED_STALL.id]: [] },
+};
 
 /**
  * Render the Dishes panel for one stall against a snapshot.
@@ -91,7 +105,48 @@ describe("build_menu_rows", () => {
   });
 });
 
+describe("build_menu_rows for an owned stall below its dishes' gates", () => {
+  it("offers the stall's opening dishes and keeps its later dishes locked", () => {
+    const { rows } = build_menu_rows(
+      OWNED_STALL,
+      OWNED_STALL_SNAPSHOT,
+      OWNED_STALL_SNAPSHOT.nutritionFamilies,
+    );
+
+    expect(rows.map((row) => [row.dish.id, row.unavailableReason])).toEqual(
+      rows.map((row) => [
+        row.dish.id,
+        OWNED_OPENING_DISH_IDS.includes(row.dish.id)
+          ? undefined
+          : `Level ${row.dish.unlockRequirement.level}`,
+      ]),
+    );
+  });
+
+  it("locks the opening dishes too while the stall is not unlocked", () => {
+    const snapshot = { ...OWNED_STALL_SNAPSHOT, unlockedContentIds: [] };
+    const { rows } = build_menu_rows(OWNED_STALL, snapshot, snapshot.nutritionFamilies);
+
+    expect(rows.every((row) => row.unavailableReason !== undefined)).toBe(true);
+  });
+});
+
 describe("MenuPanel", () => {
+  it("shows an owned stall's opening dishes as offerable below their own gates", () => {
+    const html = render_menu_panel(OWNED_STALL_SNAPSHOT, OWNED_STALL.id);
+    const opening_names = OWNED_OPENING_DISH_IDS.map((dish_id) =>
+      localize(DISHES.find((dish) => dish.id === dish_id)!.nameKey),
+    );
+
+    expect([
+      opening_names.map((name) => html.includes(`aria-label="Offer ${name}"`)),
+      count_occurrences(html, ", unavailable: Level "),
+    ]).toEqual([
+      opening_names.map(() => true),
+      OWNED_STALL.dishIds.length - OWNED_OPENING_DISH_IDS.length,
+    ]);
+  });
+
   it("labels each dish row by its title's ID", () => {
     const html = render_menu_panel(SNAPSHOT_FIXTURE, MENU_STALL.id);
     const { rows } = build_menu_rows(

@@ -4,7 +4,8 @@
  * `build_menu_rows` is the pure per-dish view model (offer state, gating, the unavailable
  * reason, the generated IDs, the active nutrition variant, its profile and the Star rating),
  * and `MenuPanel` renders the stall picker, the Nutrition Lens toggle and one row per dish
- * from it. The `HawkerSimulator` shell keeps the chosen stall, the lens and the Variant Lab
+ * from it. The gating keeps an unlocked stall's opening dishes offered, as the runtime's menus
+ * do. The `HawkerSimulator` shell keeps the chosen stall, the lens and the Variant Lab
  * state behind the callbacks. The markup, its IDs (`dish-menu-title-…`, `dish-menu-reason-…`),
  * ARIA attributes and copy are the shell's former inline markup. Each row shows the serving the
  * runtime painted in its active variant once it is in `previewUrls`, and keeps its CSS preview
@@ -98,7 +99,7 @@ export function build_menu_rows(
   const rows = DISHES.filter((dish) => dish.stallIds.includes(stall.id)).map((dish) => {
     const checked = activeMenu.includes(dish.id);
     const preview = dishPreview(dish);
-    const gated = !is_requirement_met(dish.unlockRequirement, snapshot);
+    const gated = !is_requirement_met(dish.unlockRequirement, snapshot, stall);
     const atCapacity = !checked && activeMenu.length >= menuSlots;
     const unavailableReason = gated
       ? unlockLabel(dish, snapshot.level, get_unlock_reputation(snapshot), snapshot.unlockedContentIds)
