@@ -57,7 +57,7 @@ describe("nutrition content", () => {
     );
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
-      "25c307e33332347bb05e8c422a2d6d757059a203a5f4c4417ca8ff884e168568",
+      "134473de1e418882d1a3d45f91969809d2716e1eb670ea70f98c1b20fc3cb5b0",
     );
   });
 

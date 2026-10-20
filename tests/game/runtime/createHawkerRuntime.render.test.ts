@@ -111,8 +111,8 @@ const RENDER_DIGESTS = {
     sha256: "8c7ac2c1b974aea891e37f523fa27158cec786a319d9bb635e288e7bb38497ee",
   },
   galleryVariants: {
-    calls: 60_314,
-    sha256: "260ec5214d29b54e2cee3f407aa8c9539a9e5d09a1c3e9e04f2181405aa1a045",
+    calls: 61_005,
+    sha256: "937a7b27df264147c74535792ba597c5449efd57f0410648efa9182252e5581f",
   },
   multiDayFrame480: {
     calls: 225,

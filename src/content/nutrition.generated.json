@@ -10705,21 +10705,21 @@
           "name": "Fried fish beehoon with milk",
           "profileId": "dish.sliced-fish-soup:fish-soup-beehoon-milk",
           "unlockRank": 2,
-          "visualKey": "fish-beehoon-milky"
+          "visualKey": "fish-fried-beehoon-milky"
         },
         {
           "id": "fish-soup-sliced-no-milk",
           "name": "Fried fish soup, no milk",
           "profileId": "dish.sliced-fish-soup:fish-soup-sliced-no-milk",
           "unlockRank": 4,
-          "visualKey": "fish-slices-clear"
+          "visualKey": "fish-fried-clear"
         },
         {
           "id": "fish-soup-sliced-milk",
           "name": "Fried fish soup with milk",
           "profileId": "dish.sliced-fish-soup:fish-soup-sliced-milk",
           "unlockRank": 7,
-          "visualKey": "fish-slices-milky"
+          "visualKey": "fish-fried-milky"
         }
       ]
     },
