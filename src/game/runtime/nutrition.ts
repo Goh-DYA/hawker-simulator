@@ -5,13 +5,15 @@
  * customer's dish choice in plain language, and resolves the player's nutrition variant choices
  * against the variants their stall ranks unlock. It also builds the nutrition parts of the HUD
  * snapshot: the variant families, today's nutrition pulse and the selected customer's summary.
- * The module is free of Phaser.
+ * Only the HUD summary carries a meal's generated Health rating parts, so they never enter the
+ * core profile or a save. The module is free of Phaser.
  */
 import {
   NUTRITION_CONTENT,
   STALLS,
   getNutritionProfile,
   getNutritionVariantFamily,
+  type NutritionHealthParts,
 } from "@/src/content";
 import type {
   Customer,
@@ -59,6 +61,16 @@ export function coreNutritionProfile(
 }
 
 /**
+ * The generated parts of each meal profile's Health rating, by profile ID. The HUD summary reads
+ * them here rather than from the core profile, so they never enter the simulation or a save.
+ */
+const HEALTH_PARTS_BY_PROFILE_ID: ReadonlyMap<string, NutritionHealthParts> = new Map(
+  NUTRITION_CONTENT.profiles.flatMap((profile) =>
+    profile.healthParts ? [[profile.id, profile.healthParts] as const] : [],
+  ),
+);
+
+/**
  * Returns a visual key only for a reviewed member of a real variant family.
  *
  * @param dishId - Dish whose variant family is searched, if any.
@@ -79,7 +91,8 @@ export function nutritionVisualKeyForVariant(
  * Summarises a core nutrition profile for the HUD and inspector snapshots.
  *
  * @param profile - Core profile, or `undefined` when the dish has none.
- * @returns The runtime summary, or `undefined` when there is no profile.
+ * @returns The runtime summary, with the meal's Health rating parts looked up by profile ID, or
+ *   `undefined` when there is no profile.
  */
 export function runtimeNutritionProfile(
   profile: CoreNutritionProfile | undefined,
@@ -101,6 +114,7 @@ export function runtimeNutritionProfile(
     ironMg: profile.nutrients.ironMg,
     waterG: profile.nutrients.waterG,
     healthRating: profile.healthRating,
+    healthParts: HEALTH_PARTS_BY_PROFILE_ID.get(profile.id),
     conditionRatings: profile.conditionRatings
       ? { ...profile.conditionRatings }
       : undefined,
