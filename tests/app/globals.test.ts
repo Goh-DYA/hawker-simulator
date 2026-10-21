@@ -20,6 +20,18 @@ function read_styles(): Promise<string> {
   return readFile(STYLES_URL, "utf8");
 }
 
+/**
+ * @param styles - The stylesheet text.
+ * @param selector - The exact selector line that opens a top-level rule, without the brace.
+ * @returns The declarations of that rule.
+ * @throws Error If no top-level rule opens with that selector.
+ */
+function read_rule(styles: string, selector: string): string {
+  const start = styles.indexOf(`\n${selector} {\n`);
+  if (start === -1) throw new Error(`No rule opens with ${selector}`);
+  return styles.slice(start, styles.indexOf("\n}", start));
+}
+
 describe("global stylesheet", () => {
   it("styles stall upgrade actions on the same scale as the queue manager", async () => {
     const styles = await read_styles();
@@ -53,6 +65,49 @@ describe("global stylesheet", () => {
 
     expect(styles).toContain(".activity-list article");
     expect(styles).toContain(".dock-unread");
+  });
+
+  // A selected guest's inspector shares the management panel with the open section. The
+  // section's wrappers must scroll rather than spill, or their rows paint over the inspector
+  // (the Dishes panel's rows did, until the stall picker was changed).
+  it("keeps every management section clear of the guest inspector below it", async () => {
+    const styles = await read_styles();
+    const inspector = read_rule(styles, ".customer-nutrition-inspector");
+
+    expect({
+      inspector: [
+        inspector.includes("flex: 0 1 auto;"),
+        inspector.includes("max-height: 50%;"),
+        inspector.includes("overflow-y: auto;"),
+      ],
+      menu: ["overflow-y: auto;", "flex: 1 1 0;"].every((declaration) =>
+        read_rule(styles, ".menu-manager").includes(declaration),
+      ),
+      activity: read_rule(styles, ".activity-panel").includes("flex: 1 1 0;"),
+      focus: read_rule(styles, ".focus-panel").includes("flex: 1 1 0;"),
+      lists: read_rule(
+        styles,
+        ".catalogue-grid,\n.stall-list,\n.dish-list,\n.insights-list,\n.activity-list",
+      ).includes("flex: 1 1 0;"),
+    }).toEqual({
+      inspector: [true, true, true],
+      menu: true,
+      activity: true,
+      focus: true,
+      lists: true,
+    });
+  });
+
+  // With the inspector open, the Dishes panel scrolls its stall picker and dish rows as one, and
+  // the lists drop the bottom room the inspector already fills, so a whole dish row can show.
+  it("gives the Dishes menu one scroller beside the guest inspector", async () => {
+    const styles = await read_styles();
+    const beside_inspector = ".catalogue-panel:has(.customer-nutrition-inspector)";
+
+    expect([
+      read_rule(styles, `${beside_inspector} .menu-manager .dish-list`).includes("overflow: visible;"),
+      styles.includes(`${beside_inspector} :is(`),
+    ]).toEqual([true, true]);
   });
 
   it("turns the management panel into a full-width sheet on compact screens", async () => {
