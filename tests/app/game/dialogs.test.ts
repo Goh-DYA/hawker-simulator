@@ -82,7 +82,7 @@ describe("TutorialDialog", () => {
    */
   function render_tutorial(step: TutorialStep) {
     const ref = createRef<HTMLElement>();
-    const callbacks = { onFinish: vi.fn(), onStepChange: vi.fn() };
+    const callbacks = { onFinish: vi.fn(), onStartPractice: vi.fn(), onStepChange: vi.fn() };
     render(createElement(TutorialDialog, { ref, step, ...callbacks }));
     const dialog = within(document.body).getByRole("dialog");
     return { dialog, ref, callbacks };
@@ -135,16 +135,63 @@ describe("TutorialDialog", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Skip tutorial" }));
     expect(callbacks.onStepChange).toHaveBeenCalledWith(2);
     expect(callbacks.onFinish).toHaveBeenCalledWith(false);
+    expect(within(dialog).queryByRole("button", { name: "Try a practice day" })).toBeNull();
   });
 
-  it("opens the centre from the last card's primary button", () => {
+  it("offers a practice day in place of the skip on the last card", () => {
     const { dialog, callbacks } = render_tutorial(4);
+    expect(within(dialog).queryByRole("button", { name: "Skip tutorial" })).toBeNull();
+    const callout = within(dialog).getByRole("complementary", { name: "New to games like this?" });
+    expect(within(callout).getByRole("button", { name: "Try a practice day" }).className).toBe(
+      "practice-button",
+    );
+    fireEvent.click(within(dialog).getByRole("button", { name: "Try a practice day" }));
     fireEvent.click(within(dialog).getByRole("button", { name: "Start playing" }));
+    expect(callbacks.onStartPractice).toHaveBeenCalledTimes(1);
     expect(callbacks.onFinish).toHaveBeenCalledWith(true);
   });
 });
 
 describe("SettingsDialog", () => {
+  it("leaves the save buttons on, with no practice note, outside practice", () => {
+    const { dialog } = render_settings();
+    expect([
+      ["Export save", "Import save", "Reset game…"].map(
+        (name) => (within(dialog).getByRole("button", { name }) as HTMLButtonElement).disabled,
+      ),
+      dialog.querySelector(".settings-practice-note"),
+    ]).toEqual([[false, false, false], null]);
+  });
+
+  it("turns the save buttons off and describes them with the note during practice", () => {
+    const callbacks = {
+      onUpdateSetting: vi.fn(),
+      onClose: vi.fn(),
+      onExportSave: vi.fn(),
+      onImportSave: vi.fn(),
+      onOpenReset: vi.fn(),
+    };
+    const { container } = render(
+      createElement(SettingsDialog, {
+        ref: createRef<HTMLElement>(),
+        settings: CUSTOM_SETTINGS,
+        isResetOpen: false,
+        isPractice: true,
+        ...callbacks,
+      }),
+    );
+    const reset = within(container).getByRole("button", { name: "Reset game…" });
+    fireEvent.click(reset);
+    expect({
+      disabled: (reset as HTMLButtonElement).disabled,
+      description: reset.getAttribute("aria-describedby"),
+      note: container.querySelector("#settings-practice-note")?.textContent?.startsWith(
+        "This is a practice day",
+      ),
+      calls: callbacks.onOpenReset.mock.calls.length,
+    }).toEqual({ disabled: true, description: "settings-practice-note", note: true, calls: 0 });
+  });
+
   it("hands the shell's focus trap its section through the ref", () => {
     const { dialog, ref } = render_settings();
     expect(ref.current).toBe(dialog);
@@ -289,6 +336,7 @@ describe("HelpDialog", () => {
     const callbacks = {
       onClose: vi.fn(),
       onReplayTutorial: vi.fn(),
+      onStartPractice: vi.fn(),
       onReplayNutritionTour: vi.fn(),
     };
     render(createElement(HelpDialog, { ref, ...callbacks }));
@@ -309,11 +357,14 @@ describe("HelpDialog", () => {
     expect(keys).toEqual(["Drag", "Wheel", "R", "Esc", "Space", "U", "Menu", "Guest"]);
   });
 
-  it.each<[string, "onClose" | "onReplayTutorial" | "onReplayNutritionTour"]>([
+  it.each<
+    [string, "onClose" | "onReplayTutorial" | "onReplayNutritionTour" | "onStartPractice"]
+  >([
     ["Close help", "onClose"],
     ["Back to centre", "onClose"],
     ["Replay tutorial", "onReplayTutorial"],
     ["Replay nutrition tour", "onReplayNutritionTour"],
+    ["Practice day with a guide", "onStartPractice"],
   ])("calls %s's callback, %s", (name, callback) => {
     const { dialog, callbacks } = render_help();
     fireEvent.click(within(dialog).getByRole("button", { name }));

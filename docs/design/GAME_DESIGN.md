@@ -171,6 +171,8 @@ The player cannot enter a hard fail state: starter essentials are protected from
 
 The first-session tutorial teaches camera, place a table and seats, place a stall, inspect reachability, open, follow one customer, read one bottleneck, save, and reopen build mode. A separately persisted nutrition tour teaches Menu Planning and customer inspection without replaying the legacy tutorial. Each tour has Skip and Replay. The tutorial and tour copy uses short sentences and plain words, so a young player new to management games can follow it: each card is a short lead-in and a few one-sentence points with a small icon each, never a run-on paragraph.
 
+The optional practice day is a guided, hands-on version of the tutorial for players who learn by doing. It runs one in-game day on a fresh, throwaway centre while the player's own centre waits unchanged and nothing is saved. A coach card beside a glowing ring points at each part of the screen in turn and asks for one small action at a time (buy and place a stool, open the centre, watch three guests buy a meal, inspect a guest, open Dishes and Insights, fast-forward to the Service Review). Every task can be skipped, the coach can be folded away, and Exit practice returns to the player's own centre at any time. It is offered on the tutorial's last card and in Help.
+
 ### Difficulty and quality modes
 
 Difficulty comes from denser arrival patterns, varied preferences, and competing spatial goals—not punitive timers. Standard quality targets 60 FPS with normal effects and crowd animation. Lower-end quality targets 30 FPS with reduced particles, decorative motion, audio concurrency, and off-screen update frequency; game rules and rewards remain identical.

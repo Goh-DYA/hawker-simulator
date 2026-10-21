@@ -87,6 +87,8 @@ At load, the store returns the `active` and `backup` payloads whose envelopes ar
 
 Reset requires confirmation, cancels and settles the autosave queue, deletes both save slots and resets the tutorial and nutrition-tour preferences. It does not touch the service-worker caches.
 
+The guided practice day (`app/game/practice.ts` for the steps and checks, `app/game/coach.tsx` for the coach) swaps centres without touching the save format. Starting it cancels the autosave queue, saves the player's centre, keeps a second `exportState()` payload and the current speed in memory, sets a shell ref that makes `onPersistentChange` drop every write, and then calls the runtime's `reset()`, whose own persistent change is dropped too. While the ref is set, Save now only shows a notice, and Settings turns off export, import and reset (its `isPractice` prop) with a note that says why; the handlers keep the same guard. Exiting calls `importState()` with the kept payload, returns to the select tool at the kept speed and clears the ref; if the import fails, practice stays on so the practice centre is never saved over the player's. A reload during practice therefore loads the player's centre from its last save.
+
 ## Offline and update model
 
 The service worker `public/sw.js` names its shell and runtime caches after a build ID stamped by `tools/stamp-service-worker.mjs`. Installation precaches the core shell (`/`, the offline page, the manifest and the icon). Runtime caching is same-origin only; navigations go to the network and fall back to the cached shell or the offline page. Activation deletes the application caches of other build IDs and claims open clients.

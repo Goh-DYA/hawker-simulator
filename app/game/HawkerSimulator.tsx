@@ -10,7 +10,9 @@
  * opens: for every report day that appears during play, at any speed, pausing the simulation
  * until the review closes. Behind another dialog or the Variant Lab the review waits, marked
  * unread in the Focus panel, and opens as soon as that closes. Until the runtime publishes its first snapshot, the UI
- * renders from `INITIAL_SNAPSHOT`, which is also what server rendering shows.
+ * renders from `INITIAL_SNAPSHOT`, which is also what server rendering shows. It also runs the
+ * optional guided practice day: it keeps the player's own centre in memory, swaps in a fresh
+ * one, drops every save until the player exits, and then loads the player's centre back.
  */
 
 import {
@@ -100,6 +102,15 @@ import { ActionStrip, BottomDock, DebugPanel, TopBar, ToastStack, WorldToolbar }
 import { MenuPanel } from "./panels/menu";
 import { ActivityPanel, FocusPanel, InsightsPanel, ObjectiveCard } from "./panels/overview";
 import { NextUnlockSignpost, TodayStrip } from "./panels/today";
+import { PracticeCoach } from "./coach";
+import {
+  advance_practice,
+  PRACTICE_FINISH_STEP,
+  PRACTICE_NOT_SAVED_MESSAGE,
+  PRACTICE_START,
+  type PracticeProgress,
+  record_practice_baseline,
+} from "./practice";
 
 const INITIAL_LEVEL = 1;
 const INITIAL_REPUTATION = ECONOMY.startingReputation;
@@ -207,6 +218,11 @@ export function HawkerSimulator() {
   const should_resync_review_ref = useRef(false);
   const seen_report_day_ref = useRef<number | undefined>(undefined);
   const review_resume_speed_ref = useRef<GameSpeed | undefined>(undefined);
+  // While the practice day runs, the player's own centre waits here and nothing is saved. The
+  // ref is set before the runtime swaps centres, because the swap reports a persistent change
+  // synchronously, before React re-renders.
+  const is_practice_ref = useRef(false);
+  const practice_return_ref = useRef<{ state: unknown; speed: GameSpeed } | undefined>(undefined);
 
   const [snapshot, setSnapshot] = useState(INITIAL_SNAPSHOT);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -230,6 +246,7 @@ export function HawkerSimulator() {
   const [debugOpen, setDebugOpen] = useState(false);
   const [is_review_open, set_is_review_open] = useState(false);
   const [is_review_unread, set_is_review_unread] = useState(false);
+  const [practice, set_practice] = useState<PracticeProgress>();
   const debugEnabled = useSyncExternalStore(
     subscribeToStaticValue,
     getDebugSnapshot,
@@ -244,6 +261,7 @@ export function HawkerSimulator() {
     setActivityEntries,
     activityUnread,
     setActivityUnread,
+    clearToasts,
   } = useAnnouncer(panel === "activity");
   const persist_preference = usePreferenceWriter(reportStorageIssue);
 
@@ -282,9 +300,11 @@ export function HawkerSimulator() {
         autosaveState: current.autosaveState,
       }));
       track_service_review(nextSnapshot);
+      set_practice((current) => record_practice_baseline(current, nextSnapshot));
     },
     onEvent: announce,
     onPersistentChange(state) {
+      if (is_practice_ref.current) return;
       get_autosave().schedule(state);
     },
     onFlush() {
@@ -529,6 +549,8 @@ export function HawkerSimulator() {
     controllerRef.current?.selectBuildItem(item.id);
     controllerRef.current?.setBuildTool("place");
     audioRef.current?.play("ui");
+    // On a phone the management sheet covers the map, so close it to place the item.
+    if (compactManagement) setManagementOpen(false);
   }
 
   function chooseTool(tool: BuildTool) {
@@ -596,6 +618,10 @@ export function HawkerSimulator() {
   }
 
   async function saveNow(): Promise<boolean> {
+    if (is_practice_ref.current) {
+      announce_not_saved();
+      return false;
+    }
     get_autosave().cancel();
     const state = controllerRef.current?.exportState();
     if (!state) return false;
@@ -609,11 +635,16 @@ export function HawkerSimulator() {
   }
 
   async function applyReadyUpdate() {
+    if (is_practice_ref.current && !exit_practice()) return;
     if (!(await saveNow())) return;
     await activate_waiting_update();
   }
 
   function downloadSave() {
+    if (is_practice_ref.current) {
+      announce_not_saved();
+      return;
+    }
     const state = controllerRef.current?.exportState();
     if (!state) return;
     const link = document.createElement("a");
@@ -629,6 +660,10 @@ export function HawkerSimulator() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
+    if (is_practice_ref.current) {
+      announce_not_saved();
+      return;
+    }
     try {
       get_autosave().cancel();
       const payload = importSave(await file.text());
@@ -672,6 +707,119 @@ export function HawkerSimulator() {
       "Nutrition tour progress could not be reset.",
     );
     announce({ kind: "info", message: "A fresh centre is ready." });
+  }
+
+  /**
+   * Tell the player that the practice day saves, loads and resets nothing, unless that notice is
+   * already on screen.
+   */
+  function announce_not_saved() {
+    if (toasts.some((toast) => toast.message === PRACTICE_NOT_SAVED_MESSAGE)) return;
+    announce({ kind: "info", message: PRACTICE_NOT_SAVED_MESSAGE, importance: "important" });
+  }
+
+  /**
+   * Start the guided practice day on a fresh, throwaway centre. The player's own centre is
+   * saved first and kept in memory, and nothing is saved until the player exits. Starting again
+   * while practising only takes the guide back to its first step.
+   *
+   * @param should_finish_nutrition_tour - Whether to mark the nutrition tour as seen, because
+   *   the practice day covers the same two ratings (set when the tutorial starts practice).
+   */
+  async function start_practice(should_finish_nutrition_tour: boolean) {
+    if (should_finish_nutrition_tour) await finishNutritionTour();
+    if (is_practice_ref.current) {
+      set_practice((current) => current && { ...current, stepIndex: 0, isCollapsed: false });
+      return;
+    }
+    const controller = controllerRef.current;
+    if (!controller) {
+      announce({ kind: "warning", message: "The game is still loading. Try again in a moment." });
+      return;
+    }
+    get_autosave().cancel();
+    try {
+      await get_autosave().save(controller.exportState());
+    } catch {
+      // The autosave queue has logged and announced the failure. Practice still starts: the
+      // copy kept in memory below is what comes back when the player exits.
+    }
+    // A second start that waited on the same save must not keep the practice centre as the
+    // player's own.
+    if (is_practice_ref.current) return;
+    get_autosave().cancel();
+    practice_return_ref.current = { state: controller.exportState(), speed: snapshot.speed };
+    is_practice_ref.current = true;
+    should_resync_review_ref.current = true;
+    review_resume_speed_ref.current = undefined;
+    set_is_review_open(false);
+    set_is_review_unread(false);
+    setSelectedId(undefined);
+    setActivityEntries([]);
+    setActivityUnread(0);
+    clearToasts();
+    // Set before the reset, so the fresh centre's first snapshot becomes the baseline.
+    set_practice(PRACTICE_START);
+    controller.reset();
+    announce({
+      kind: "info",
+      message: "Practice day started. Nothing here is saved.",
+      importance: "important",
+    });
+  }
+
+  /**
+   * Leave the practice day and load the player's own centre back as it was.
+   *
+   * @returns Whether the player's centre came back; on failure practice stays on, so the
+   *   practice centre is never saved over it.
+   */
+  function exit_practice(): boolean {
+    const saved = practice_return_ref.current;
+    const controller = controllerRef.current;
+    if (!saved || !controller) return false;
+    should_resync_review_ref.current = true;
+    review_resume_speed_ref.current = undefined;
+    set_is_review_open(false);
+    set_is_review_unread(false);
+    try {
+      controller.importState(saved.state);
+    } catch (error) {
+      should_resync_review_ref.current = false;
+      report_failure("practice exit failed", error);
+      announce({
+        kind: "error",
+        message: "Your centre could not be loaded back. Reload the page to open your last save.",
+      });
+      return false;
+    }
+    practice_return_ref.current = undefined;
+    is_practice_ref.current = false;
+    controller.setBuildTool("select");
+    controller.selectBuildItem(undefined);
+    controller.selectCustomer(undefined);
+    controller.setSpeed(saved.speed);
+    setSelectedId(undefined);
+    setActivityEntries([]);
+    setActivityUnread(0);
+    clearToasts();
+    set_practice(undefined);
+    announce({
+      kind: "success",
+      message: "Welcome back to your own centre!",
+      importance: "important",
+    });
+    return true;
+  }
+
+  /** Move the practice guide on one step, pausing the game when it reaches the finish card. */
+  function advance_practice_step() {
+    if (!practice) return;
+    const next = advance_practice(practice);
+    if (next.stepIndex === PRACTICE_FINISH_STEP && practice.stepIndex !== PRACTICE_FINISH_STEP) {
+      controllerRef.current?.setSpeed(0);
+    }
+    set_practice(next);
   }
 
   function update_setting<K extends keyof RuntimeSettings>(key: K, value: RuntimeSettings[K]) {
@@ -850,6 +998,16 @@ export function HawkerSimulator() {
 
           <ActionStrip
             snapshot={snapshot}
+            practice={
+              practice
+                ? {
+                    isGuideHidden: practice.isCollapsed,
+                    onShowGuide: () =>
+                      set_practice((current) => current && { ...current, isCollapsed: false }),
+                    onExit: () => void exit_practice(),
+                  }
+                : undefined
+            }
             controllerRef={controllerRef}
             onChooseTool={chooseTool}
             onToggleCentre={toggleCentre}
@@ -1008,6 +1166,9 @@ export function HawkerSimulator() {
           ref={tutorialDialogRef}
           step={tutorialStep}
           onFinish={(openCentre) => void finishTutorial(openCentre)}
+          onStartPractice={() => {
+            void finishTutorial(false).then(() => start_practice(true));
+          }}
           onStepChange={setTutorialStep}
         />
       ) : null}
@@ -1050,9 +1211,13 @@ export function HawkerSimulator() {
           isResetOpen={resetOpen}
           onUpdateSetting={update_setting}
           onClose={() => setSettingsOpen(false)}
+          isPractice={practice !== undefined}
           onExportSave={downloadSave}
           onImportSave={uploadSave}
-          onOpenReset={() => setResetOpen(true)}
+          onOpenReset={() => {
+            if (is_practice_ref.current) announce_not_saved();
+            else setResetOpen(true);
+          }}
         />
       ) : null}
 
@@ -1062,6 +1227,7 @@ export function HawkerSimulator() {
           onClose={() => setHelpOpen(false)}
           onReplayTutorial={() => { setHelpOpen(false); setTutorialStep(0); }}
           onReplayNutritionTour={() => { setHelpOpen(false); setNutritionTourStep(0); }}
+          onStartPractice={() => { setHelpOpen(false); void start_practice(false); }}
         />
       ) : null}
 
@@ -1070,6 +1236,27 @@ export function HawkerSimulator() {
           ref={resetDialogRef}
           onCancel={() => setResetOpen(false)}
           onConfirm={() => void confirmReset()}
+        />
+      ) : null}
+
+      {practice && !interfaceInert ? (
+        <PracticeCoach
+          progress={practice}
+          context={{
+            snapshot,
+            baseline: practice.baseline,
+            panel,
+            isPanelVisible: !compactManagement || managementSheetOpen,
+            hasOpenDialog: interfaceInert,
+          }}
+          onNext={advance_practice_step}
+          onCollapsedChange={(is_collapsed) => {
+            // On a phone an open sheet covers the action strip, where the folded coach's
+            // controls go, so folding closes it.
+            if (is_collapsed && compactManagement) closeManagementSheet();
+            set_practice((current) => current && { ...current, isCollapsed: is_collapsed });
+          }}
+          onExit={() => void exit_practice()}
         />
       ) : null}
 
