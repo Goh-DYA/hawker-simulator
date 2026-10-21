@@ -708,7 +708,7 @@ describe("HawkerSimulator panel contents", () => {
     ]).toEqual([true, "Compare health, popularity, and every nutrient per listed serving."]);
   });
 
-  it("labels a dish row by its title and names its nutrition and recipe buttons", async () => {
+  it("labels a dish row by its title and names its rating, nutrition and recipe buttons", async () => {
     const panel = open_dock_tab(await boot_running_centre(), "Dishes");
     fireEvent.change(require_element(panel, ".menu-stall-picker select"), {
       target: { value: "stall.coconut-lime" },
@@ -720,6 +720,7 @@ describe("HawkerSimulator panel contents", () => {
         .getAllByRole("button")
         .map((button) => [button.getAttribute("aria-label"), button.textContent]),
     ).toEqual([
+      ["Why this health rating", "i"],
       ["View nutrition for Nasi Lemak", "View nutrition"],
       ["Tune recipe for Nasi Lemak", "Tune recipe"],
     ]);

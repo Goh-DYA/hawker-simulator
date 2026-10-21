@@ -235,22 +235,22 @@ describe("runtime nutrition profile summary", () => {
     },
   );
 
-  // The card explains a meal's Health rating from these parts. They are display data, so the
-  // core profile (which guests copy and saves keep) must never carry them.
-  it("adds each meal's Health rating parts to the summary but never to the core profile", () => {
+  // The Health rating's tooltip lists these reasons. They are display data, so the core profile
+  // (which guests copy and saves keep) must never carry them.
+  it("adds each profile's health reasons to the summary but never to the core profile", () => {
     const results = NUTRITION_CONTENT.profiles.map((profile) => {
       const core = coreNutritionProfile(profile);
       return {
         id: profile.id,
-        isCoreFree: core !== undefined && !("healthParts" in core),
-        isCarried: runtimeNutritionProfile(core)?.healthParts === profile.healthParts,
+        isCoreFree: core !== undefined && !("healthReasons" in core),
+        isCarried: runtimeNutritionProfile(core)?.healthReasons === profile.healthReasons,
       };
     });
 
     expect([
       results.filter((result) => !result.isCoreFree).map((result) => result.id),
       results.filter((result) => !result.isCarried).map((result) => result.id),
-      NUTRITION_CONTENT.profiles.some((profile) => profile.healthParts !== undefined),
+      NUTRITION_CONTENT.profiles.some((profile) => profile.healthReasons !== undefined),
     ]).toEqual([[], [], true]);
   });
 });

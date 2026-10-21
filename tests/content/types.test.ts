@@ -26,6 +26,10 @@ import type {
   GridPoint,
   healthConditionSchema,
   HealthCondition,
+  healthReasonFactorSchema,
+  HealthReasonFactor,
+  healthReasonLevelSchema,
+  HealthReasonLevel,
   interactionPointSchema,
   InteractionPoint,
   launchContentSchema,
@@ -38,8 +42,8 @@ import type {
   NutritionDailyReference,
   nutritionGuidelineSchema,
   NutritionGuideline,
-  nutritionHealthPartsSchema,
-  NutritionHealthParts,
+  nutritionHealthReasonSchema,
+  NutritionHealthReason,
   nutritionIntentIdSchema,
   NutritionIntentId,
   nutritionIntentSchema,
@@ -115,7 +119,9 @@ describe("content types", () => {
     expectTypeOf<Parsed<typeof nutritionProvenanceSchema>>().toEqualTypeOf<NutritionProvenance>();
     expectTypeOf<Parsed<typeof nutritionValueSchema>>().toEqualTypeOf<NutritionValue>();
     expectTypeOf<Parsed<typeof nutritionNutrientsSchema>>().toEqualTypeOf<NutritionNutrients>();
-    expectTypeOf<Parsed<typeof nutritionHealthPartsSchema>>().toEqualTypeOf<NutritionHealthParts>();
+    expectTypeOf<
+      Parsed<typeof nutritionHealthReasonSchema>
+    >().toEqualTypeOf<NutritionHealthReason>();
     expectTypeOf<
       Parsed<typeof nutritionDailyReferenceSchema>
     >().toEqualTypeOf<NutritionDailyReference>();
@@ -140,5 +146,7 @@ describe("content types", () => {
     expectTypeOf<Parsed<typeof nutritionIntentIdSchema>>().toEqualTypeOf<NutritionIntentId>();
     expectTypeOf<Parsed<typeof healthConditionSchema>>().toEqualTypeOf<HealthCondition>();
     expectTypeOf<Parsed<typeof limitNutrientSchema>>().toEqualTypeOf<LimitNutrient>();
+    expectTypeOf<Parsed<typeof healthReasonFactorSchema>>().toEqualTypeOf<HealthReasonFactor>();
+    expectTypeOf<Parsed<typeof healthReasonLevelSchema>>().toEqualTypeOf<HealthReasonLevel>();
   });
 });

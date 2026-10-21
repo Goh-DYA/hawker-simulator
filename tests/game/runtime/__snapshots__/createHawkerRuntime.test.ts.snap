@@ -1100,7 +1100,17 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 220.17,
             },
             "healthRating": 2.1,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "high",
+                "isEstimated": true,
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "moderate",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.4,
               "obesity": 1.6,
@@ -1170,7 +1180,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 225.95,
             },
             "healthRating": 2.8,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.3,
               "obesity": 2.5,
@@ -1241,7 +1260,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 229.2,
             },
             "healthRating": 3.4,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "moderate",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.4,
               "obesity": 3,
@@ -1313,7 +1341,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 234.83,
             },
             "healthRating": 4.7,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "saturated-fat",
+                "level": "moderate",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.6,
               "obesity": 4,
@@ -1385,7 +1422,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 235.93,
             },
             "healthRating": 3.8,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "moderate",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.6,
               "obesity": 3.7,
@@ -1456,7 +1502,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 243.1,
             },
             "healthRating": 5,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 5,
               "obesity": 4.9,
@@ -1527,7 +1582,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 232.42,
             },
             "healthRating": 4,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "moderate",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "moderate",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.5,
               "obesity": 3.4,
@@ -1599,7 +1663,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 237.35,
             },
             "healthRating": 4,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "moderate",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.7,
               "obesity": 3.9,
@@ -1679,7 +1752,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 3.2,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "moderate",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.4,
               "obesity": 3,
@@ -1751,7 +1833,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 226.45,
             },
             "healthRating": 2.5,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "moderate",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.7,
               "obesity": 2.3,
@@ -1823,7 +1914,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 234.95,
             },
             "healthRating": 3.2,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "moderate",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.5,
               "obesity": 3.3,
@@ -1894,7 +1994,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 230.17,
             },
             "healthRating": 3,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.3,
               "obesity": 2.9,
@@ -1965,7 +2074,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 241.4,
             },
             "healthRating": 4.9,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.9,
               "obesity": 4.6,
@@ -2037,7 +2155,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 240.58,
             },
             "healthRating": 4.1,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "moderate",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.7,
               "obesity": 4.2,
@@ -2109,7 +2236,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 249.2,
             },
             "healthRating": 5,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 5,
               "obesity": 5,
@@ -2180,7 +2316,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 239.43,
             },
             "healthRating": 4.3,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "moderate",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.8,
               "obesity": 4.1,
@@ -2252,7 +2397,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 242.98,
             },
             "healthRating": 4.2,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "moderate",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.7,
               "obesity": 4.3,
@@ -2324,7 +2478,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 227.48,
             },
             "healthRating": 2.3,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.1,
               "obesity": 2.3,
@@ -2404,11 +2567,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 213.94,
             },
             "healthRating": 2.1,
-            "healthParts": {
-              "nutrients": 2.6,
-              "conditions": 1.6,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.8,
               "obesity": 1.9,
@@ -2483,11 +2655,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 218.01,
             },
             "healthRating": 1.9,
-            "healthParts": {
-              "nutrients": 2.3,
-              "conditions": 1.4,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.6,
               "obesity": 1.9,
@@ -2562,11 +2743,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 253.43,
             },
             "healthRating": 1.7,
-            "healthParts": {
-              "nutrients": 2.1,
-              "conditions": 1.2,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.5,
               "obesity": 1.8,
@@ -2641,11 +2831,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 178.47,
             },
             "healthRating": 2.6,
-            "healthParts": {
-              "nutrients": 3.2,
-              "conditions": 2.1,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.3,
               "obesity": 2.6,
@@ -2720,11 +2919,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 189.11,
             },
             "healthRating": 2.4,
-            "healthParts": {
-              "nutrients": 2.9,
-              "conditions": 1.9,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2,
               "obesity": 2.2,
@@ -2796,11 +3004,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 128.83,
             },
             "healthRating": 4,
-            "healthParts": {
-              "nutrients": 4.2,
-              "conditions": 3.7,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.1,
               "obesity": 4.5,
@@ -2883,11 +3096,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 207.21,
             },
             "healthRating": 2.2,
-            "healthParts": {
-              "nutrients": 2.7,
-              "conditions": 1.6,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "fibre",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.3,
               "obesity": 2.5,
@@ -2962,11 +3184,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 222.93,
             },
             "healthRating": 3.2,
-            "healthParts": {
-              "nutrients": 3.6,
-              "conditions": 2.9,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "fibre",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.1,
               "obesity": 3.8,
@@ -3049,13 +3280,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 243.0784,
             },
             "healthRating": 1.5,
-            "healthParts": {
-              "nutrients": 2.4,
-              "conditions": 1.4,
-              "excess": 0.3,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.32,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.7,
               "obesity": 1.9,
@@ -3130,25 +3368,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 19.4542,
             },
             "healthRating": 2.7,
-            "healthParts": {
-              "nutrients": 2.9,
-              "conditions": 2.5,
-              "excess": 0,
-              "denseNutrients": [
-                {
-                  "nutrient": "energy",
-                  "per100g": 352,
-                },
-                {
-                  "nutrient": "saturated-fat",
-                  "per100g": 5.2,
-                },
-                {
-                  "nutrient": "sodium",
-                  "per100g": 571,
-                },
-              ],
-            },
+            "healthReasons": [
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.4,
               "obesity": 2.7,
@@ -3223,25 +3456,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 51.05,
             },
             "healthRating": 3.4,
-            "healthParts": {
-              "nutrients": 3.6,
-              "conditions": 3.2,
-              "excess": 0,
-              "denseNutrients": [
-                {
-                  "nutrient": "energy",
-                  "per100g": 278,
-                },
-                {
-                  "nutrient": "saturated-fat",
-                  "per100g": 3.9,
-                },
-                {
-                  "nutrient": "sodium",
-                  "per100g": 420,
-                },
-              ],
-            },
+            "healthReasons": [
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "fibre",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.3,
               "obesity": 2.9,
@@ -3316,21 +3544,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 3.4,
-            "healthParts": {
-              "nutrients": 3.7,
-              "conditions": 3.1,
-              "excess": 0,
-              "denseNutrients": [
-                {
-                  "nutrient": "energy",
-                  "per100g": 220,
-                },
-                {
-                  "nutrient": "saturated-fat",
-                  "per100g": 4.8,
-                },
-              ],
-            },
+            "healthReasons": [
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "energy",
+                "level": "moderate",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.5,
               "obesity": 3.6,
@@ -3405,17 +3632,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.8,
-            "healthParts": {
-              "nutrients": 3,
-              "conditions": 2.5,
-              "excess": 0,
-              "denseNutrients": [
-                {
-                  "nutrient": "energy",
-                  "per100g": 248,
-                },
-              ],
-            },
+            "healthReasons": [
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.8,
               "obesity": 3.1,
@@ -3498,13 +3728,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.7,
-            "healthParts": {
-              "nutrients": 3.6,
-              "conditions": 2.2,
-              "excess": 0.2,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.21,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.3,
               "obesity": 3.3,
@@ -3579,13 +3816,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 3.4,
-            "healthParts": {
-              "nutrients": 4.3,
-              "conditions": 2.9,
-              "excess": 0.2,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.21,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 5,
               "obesity": 5,
@@ -3660,13 +3904,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.2,
-            "healthParts": {
-              "nutrients": 3.1,
-              "conditions": 1.8,
-              "excess": 0.3,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.28,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.6,
               "obesity": 2.8,
@@ -3741,13 +3992,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 3.2,
-            "healthParts": {
-              "nutrients": 3.9,
-              "conditions": 2.9,
-              "excess": 0.2,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.21,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "moderate",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.5,
               "obesity": 5,
@@ -3822,13 +4080,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.8,
-            "healthParts": {
-              "nutrients": 3.6,
-              "conditions": 2.6,
-              "excess": 0.3,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.27,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.9,
               "obesity": 5,
@@ -3910,11 +4175,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 303.8,
             },
             "healthRating": 3.3,
-            "healthParts": {
-              "nutrients": 4,
-              "conditions": 2.7,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "fibre",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.6,
               "obesity": 3.4,
@@ -3987,13 +4261,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 553.1,
             },
             "healthRating": 3.5,
-            "healthParts": {
-              "nutrients": 4.2,
-              "conditions": 2.8,
-              "excess": 0.1,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.07,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 5,
               "obesity": 3.6,
@@ -4076,11 +4357,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.2,
-            "healthParts": {
-              "nutrients": 2.5,
-              "conditions": 1.9,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.6,
               "obesity": 1.8,
@@ -4155,17 +4445,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 3,
-            "healthParts": {
-              "nutrients": 3.3,
-              "conditions": 2.7,
-              "excess": 0,
-              "denseNutrients": [
-                {
-                  "nutrient": "energy",
-                  "per100g": 258,
-                },
-              ],
-            },
+            "healthReasons": [
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2,
               "obesity": 3,
@@ -4240,13 +4533,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1.9,
-            "healthParts": {
-              "nutrients": 2.3,
-              "conditions": 2.2,
-              "excess": 0.3,
-              "excessNutrient": "saturated-fat",
-              "excessDayShare": 1.35,
-            },
+            "healthReasons": [
+              {
+                "factor": "saturated-fat",
+                "level": "above-daily",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.6,
               "obesity": 1.8,
@@ -4321,11 +4621,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.2,
-            "healthParts": {
-              "nutrients": 2.5,
-              "conditions": 2,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.6,
               "obesity": 1.8,
@@ -4400,11 +4709,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2,
-            "healthParts": {
-              "nutrients": 2.4,
-              "conditions": 1.5,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.6,
               "obesity": 1.9,
@@ -4487,13 +4805,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 487.04,
             },
             "healthRating": 1.2,
-            "healthParts": {
-              "nutrients": 1.9,
-              "conditions": 1.3,
-              "excess": 0.4,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.39,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.5,
               "obesity": 1.8,
@@ -4568,13 +4893,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1.6,
-            "healthParts": {
-              "nutrients": 2.3,
-              "conditions": 1.4,
-              "excess": 0.2,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.22,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.6,
               "obesity": 1.9,
@@ -4649,13 +4981,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 424.13,
             },
             "healthRating": 1,
-            "healthParts": {
-              "nutrients": 1.7,
-              "conditions": 1.3,
-              "excess": 0.5,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.54,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "above-daily",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.5,
               "obesity": 1.8,
@@ -4730,11 +5069,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.5,
-            "healthParts": {
-              "nutrients": 3,
-              "conditions": 1.9,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.1,
               "obesity": 2.6,
@@ -4817,21 +5165,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 66.85,
             },
             "healthRating": 3.7,
-            "healthParts": {
-              "nutrients": 3.9,
-              "conditions": 3.5,
-              "excess": 0,
-              "denseNutrients": [
-                {
-                  "nutrient": "energy",
-                  "per100g": 258,
-                },
-                {
-                  "nutrient": "saturated-fat",
-                  "per100g": 2.8,
-                },
-              ],
-            },
+            "healthReasons": [
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "sodium",
+                "level": "moderate",
+              },
+              {
+                "factor": "fibre",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.8,
               "obesity": 3.2,
@@ -4906,11 +5253,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 175.61,
             },
             "healthRating": 3.8,
-            "healthParts": {
-              "nutrients": 3.9,
-              "conditions": 3.6,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "moderate",
+              },
+              {
+                "factor": "fibre",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.4,
               "obesity": 4.5,
@@ -4985,21 +5341,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 3.3,
-            "healthParts": {
-              "nutrients": 3.5,
-              "conditions": 3.1,
-              "excess": 0,
-              "denseNutrients": [
-                {
-                  "nutrient": "energy",
-                  "per100g": 234,
-                },
-                {
-                  "nutrient": "saturated-fat",
-                  "per100g": 3.6,
-                },
-              ],
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.3,
               "obesity": 3.5,
@@ -5074,21 +5429,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.5,
-            "healthParts": {
-              "nutrients": 2.8,
-              "conditions": 2.2,
-              "excess": 0,
-              "denseNutrients": [
-                {
-                  "nutrient": "energy",
-                  "per100g": 345,
-                },
-                {
-                  "nutrient": "sodium",
-                  "per100g": 591,
-                },
-              ],
-            },
+            "healthReasons": [
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.9,
               "obesity": 2.6,
@@ -5163,25 +5517,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 3.5,
-            "healthParts": {
-              "nutrients": 3.6,
-              "conditions": 3.4,
-              "excess": 0,
-              "denseNutrients": [
-                {
-                  "nutrient": "energy",
-                  "per100g": 240,
-                },
-                {
-                  "nutrient": "saturated-fat",
-                  "per100g": 3.3,
-                },
-                {
-                  "nutrient": "sodium",
-                  "per100g": 436,
-                },
-              ],
-            },
+            "healthReasons": [
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "sodium",
+                "level": "moderate",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.6,
               "obesity": 3.4,
@@ -5256,25 +5605,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.9,
-            "healthParts": {
-              "nutrients": 3.1,
-              "conditions": 2.7,
-              "excess": 0,
-              "denseNutrients": [
-                {
-                  "nutrient": "energy",
-                  "per100g": 306,
-                },
-                {
-                  "nutrient": "saturated-fat",
-                  "per100g": 5.5,
-                },
-                {
-                  "nutrient": "sodium",
-                  "per100g": 438,
-                },
-              ],
-            },
+            "healthReasons": [
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.5,
               "obesity": 2.8,
@@ -5349,21 +5693,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.7,
-            "healthParts": {
-              "nutrients": 2.9,
-              "conditions": 2.6,
-              "excess": 0,
-              "denseNutrients": [
-                {
-                  "nutrient": "energy",
-                  "per100g": 268,
-                },
-                {
-                  "nutrient": "saturated-fat",
-                  "per100g": 5.6,
-                },
-              ],
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.5,
               "obesity": 3,
@@ -5446,13 +5789,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 660.57,
             },
             "healthRating": 1.4,
-            "healthParts": {
-              "nutrients": 2.3,
-              "conditions": 1.3,
-              "excess": 0.4,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.39,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.8,
               "obesity": 1.9,
@@ -5527,13 +5877,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 660.59,
             },
             "healthRating": 2.1,
-            "healthParts": {
-              "nutrients": 2.9,
-              "conditions": 1.9,
-              "excess": 0.4,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.38,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.1,
               "obesity": 2.9,
@@ -5608,13 +5965,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 717.72,
             },
             "healthRating": 1,
-            "healthParts": {
-              "nutrients": 1.5,
-              "conditions": 1.2,
-              "excess": 0.9,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.85,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "above-daily",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.4,
               "obesity": 1.6,
@@ -5689,13 +6053,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1,
-            "healthParts": {
-              "nutrients": 1.5,
-              "conditions": 1.4,
-              "excess": 0.9,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.89,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "above-daily",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.4,
               "obesity": 1.5,
@@ -5770,13 +6141,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1,
-            "healthParts": {
-              "nutrients": 1.1,
-              "conditions": 1.3,
-              "excess": 0.9,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.93,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "above-daily",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.3,
               "obesity": 1.3,
@@ -5851,13 +6229,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1,
-            "healthParts": {
-              "nutrients": 1.3,
-              "conditions": 1.3,
-              "excess": 0.9,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.91,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "above-daily",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.4,
               "obesity": 1.4,
@@ -5932,13 +6317,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1,
-            "healthParts": {
-              "nutrients": 1,
-              "conditions": 1.1,
-              "excess": 0.9,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.91,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "above-daily",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.2,
               "obesity": 1.4,
@@ -6018,13 +6410,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 653,
             },
             "healthRating": 2.7,
-            "healthParts": {
-              "nutrients": 3.5,
-              "conditions": 2.2,
-              "excess": 0.2,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.16,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.4,
               "obesity": 3,
@@ -6099,11 +6498,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 258.45,
             },
             "healthRating": 2.6,
-            "healthParts": {
-              "nutrients": 3.2,
-              "conditions": 2.1,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.8,
               "obesity": 2.5,
@@ -6178,11 +6586,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.5,
-            "healthParts": {
-              "nutrients": 3.1,
-              "conditions": 2,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.2,
               "obesity": 2.5,
@@ -6257,13 +6674,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1.9,
-            "healthParts": {
-              "nutrients": 3,
-              "conditions": 1.6,
-              "excess": 0.4,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.41,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.7,
               "obesity": 2.8,
@@ -6338,13 +6762,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1.4,
-            "healthParts": {
-              "nutrients": 3.3,
-              "conditions": 1.9,
-              "excess": 1.2,
-              "excessNutrient": "sodium",
-              "excessDayShare": 2.22,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.2,
               "obesity": 2.9,
@@ -6419,13 +6850,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.8,
-            "healthParts": {
-              "nutrients": 3.8,
-              "conditions": 2.2,
-              "excess": 0.2,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.21,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.5,
               "obesity": 3.6,
@@ -6500,13 +6938,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.3,
-            "healthParts": {
-              "nutrients": 3.1,
-              "conditions": 1.8,
-              "excess": 0.2,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.16,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.9,
               "obesity": 2.9,
@@ -6581,13 +7026,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 704.13,
             },
             "healthRating": 1.6,
-            "healthParts": {
-              "nutrients": 2.5,
-              "conditions": 1.5,
-              "excess": 0.4,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.38,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.1,
               "obesity": 2,
@@ -6670,13 +7122,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.2,
-            "healthParts": {
-              "nutrients": 2.8,
-              "conditions": 1.7,
-              "excess": 0.1,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.08,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2,
               "obesity": 2.3,
@@ -6751,11 +7210,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 3.3,
-            "healthParts": {
-              "nutrients": 4,
-              "conditions": 2.7,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "moderate",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.4,
               "obesity": 4,
@@ -6830,11 +7298,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1.8,
-            "healthParts": {
-              "nutrients": 2.1,
-              "conditions": 1.4,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.4,
               "obesity": 1.7,
@@ -6909,13 +7386,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1.2,
-            "healthParts": {
-              "nutrients": 1.5,
-              "conditions": 1.1,
-              "excess": 0.1,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.09,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.2,
               "obesity": 1.4,
@@ -6996,11 +7480,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 259.5,
             },
             "healthRating": 2.9,
-            "healthParts": {
-              "nutrients": 3.4,
-              "conditions": 2.5,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3,
               "obesity": 2.5,
@@ -7074,11 +7567,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 253.48,
             },
             "healthRating": 3.4,
-            "healthParts": {
-              "nutrients": 3.9,
-              "conditions": 2.8,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.1,
               "obesity": 2.5,
@@ -7151,11 +7653,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 160.64,
             },
             "healthRating": 4.1,
-            "healthParts": {
-              "nutrients": 4.3,
-              "conditions": 3.8,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.8,
               "obesity": 4.7,
@@ -7229,13 +7740,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 295.41,
             },
             "healthRating": 3.4,
-            "healthParts": {
-              "nutrients": 4.2,
-              "conditions": 2.8,
-              "excess": 0.1,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.12,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.9,
               "obesity": 3.9,
@@ -7317,13 +7835,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 603.9,
             },
             "healthRating": 2.6,
-            "healthParts": {
-              "nutrients": 4.1,
-              "conditions": 2.6,
-              "excess": 0.7,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.69,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 5,
               "obesity": 4.1,
@@ -7397,11 +7922,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 209.83,
             },
             "healthRating": 4,
-            "healthParts": {
-              "nutrients": 4.3,
-              "conditions": 3.6,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.8,
               "obesity": 5,
@@ -7484,11 +8018,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 272.35,
             },
             "healthRating": 2.7,
-            "healthParts": {
-              "nutrients": 3.1,
-              "conditions": 2.2,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.2,
               "obesity": 2.3,
@@ -7563,11 +8106,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 231.36,
             },
             "healthRating": 3.1,
-            "healthParts": {
-              "nutrients": 3.4,
-              "conditions": 2.7,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.5,
               "obesity": 2.9,
@@ -7642,11 +8194,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 315.98,
             },
             "healthRating": 2.8,
-            "healthParts": {
-              "nutrients": 3.2,
-              "conditions": 2.4,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "fibre",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.1,
               "obesity": 2.7,
@@ -7721,11 +8282,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 219.29,
             },
             "healthRating": 2.3,
-            "healthParts": {
-              "nutrients": 2.7,
-              "conditions": 1.9,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.8,
               "obesity": 1.9,
@@ -7808,11 +8378,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1.9,
-            "healthParts": {
-              "nutrients": 2.2,
-              "conditions": 1.5,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.5,
               "obesity": 1.9,
@@ -7887,11 +8466,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.4,
-            "healthParts": {
-              "nutrients": 3,
-              "conditions": 1.9,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "fibre",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.9,
               "obesity": 1.9,
@@ -7966,13 +8554,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1,
-            "healthParts": {
-              "nutrients": 1.5,
-              "conditions": 1.2,
-              "excess": 0.3,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.32,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "above-daily",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.4,
               "obesity": 1.7,
@@ -8047,13 +8642,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 1.5,
-            "healthParts": {
-              "nutrients": 2,
-              "conditions": 1.3,
-              "excess": 0.2,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.17,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.5,
               "obesity": 1.8,
@@ -8136,13 +8738,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 538.71,
             },
             "healthRating": 1,
-            "healthParts": {
-              "nutrients": 1.5,
-              "conditions": 1.2,
-              "excess": 0.9,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.88,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.5,
               "obesity": 1.4,
@@ -8216,11 +8825,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 212.48,
             },
             "healthRating": 2.4,
-            "healthParts": {
-              "nutrients": 3,
-              "conditions": 1.8,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "fibre",
+                "level": "source",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.9,
               "obesity": 2.6,
@@ -8301,11 +8919,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 253.17,
             },
             "healthRating": 2.7,
-            "healthParts": {
-              "nutrients": 3.3,
-              "conditions": 2.1,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.8,
               "obesity": 2.8,
@@ -8380,11 +9007,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 3.6,
-            "healthParts": {
-              "nutrients": 4.3,
-              "conditions": 3,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.9,
               "obesity": 4.5,
@@ -8457,13 +9093,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 527.15,
             },
             "healthRating": 2.4,
-            "healthParts": {
-              "nutrients": 3.5,
-              "conditions": 2.2,
-              "excess": 0.4,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.45,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "carbohydrate",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.9,
               "obesity": 2.9,
@@ -8546,7 +9189,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 409.59,
             },
             "healthRating": 3.5,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.4,
               "obesity": 2.3,
@@ -8618,7 +9270,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 418.86,
             },
             "healthRating": 4.3,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "moderate",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.6,
               "obesity": 2.8,
@@ -8690,7 +9351,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 418.91,
             },
             "healthRating": 3.2,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.4,
               "obesity": 2.3,
@@ -8762,7 +9432,16 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 423.63,
             },
             "healthRating": 5,
-            "healthParts": undefined,
+            "healthReasons": [
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 4.8,
               "obesity": 3.5,
@@ -8842,11 +9521,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.1,
-            "healthParts": {
-              "nutrients": 2.3,
-              "conditions": 1.9,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.6,
               "obesity": 1.8,
@@ -8921,13 +9609,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 436.96,
             },
             "healthRating": 2.2,
-            "healthParts": {
-              "nutrients": 2.8,
-              "conditions": 1.7,
-              "excess": 0.1,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.08,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 2.2,
               "obesity": 2,
@@ -9002,11 +9697,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 2.2,
-            "healthParts": {
-              "nutrients": 2.6,
-              "conditions": 1.8,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.7,
               "obesity": 1.9,
@@ -9089,11 +9793,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 181.37,
             },
             "healthRating": 2,
-            "healthParts": {
-              "nutrients": 2.3,
-              "conditions": 1.8,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.6,
               "obesity": 1.8,
@@ -9168,11 +9881,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 207.84,
             },
             "healthRating": 2.7,
-            "healthParts": {
-              "nutrients": 3.1,
-              "conditions": 2.4,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "energy",
+                "level": "high",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 1.8,
               "obesity": 1.8,
@@ -9255,13 +9977,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "reason": "not-reported",
             },
             "healthRating": 3,
-            "healthParts": {
-              "nutrients": 3.7,
-              "conditions": 2.5,
-              "excess": 0.1,
-              "excessNutrient": "sodium",
-              "excessDayShare": 1.13,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "above-daily",
+              },
+              {
+                "factor": "saturated-fat",
+                "level": "moderate",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 3.2,
               "obesity": 4.3,
@@ -9332,11 +10061,20 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
               "value": 612.77,
             },
             "healthRating": 3.7,
-            "healthParts": {
-              "nutrients": 4.2,
-              "conditions": 3.2,
-              "excess": 0,
-            },
+            "healthReasons": [
+              {
+                "factor": "sodium",
+                "level": "high",
+              },
+              {
+                "factor": "protein",
+                "level": "high",
+              },
+              {
+                "factor": "sugar",
+                "level": "low",
+              },
+            ],
             "conditionRatings": {
               "high-cholesterol": 5,
               "obesity": 5,

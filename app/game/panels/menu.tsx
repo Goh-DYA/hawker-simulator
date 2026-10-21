@@ -251,6 +251,7 @@ export function MenuPanel({
                     <DishRatingSummary
                       healthRating={profile?.healthRating}
                       starRating={starRating}
+                      healthReasons={profile?.healthReasons}
                     />
                   )}
                   <div className="dish-menu-actions">

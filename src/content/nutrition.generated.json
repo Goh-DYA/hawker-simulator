@@ -103,11 +103,20 @@
       "ratingInputs": {
         "edibleAmount": 322.991
       },
-      "healthParts": {
-        "nutrients": 4.2,
-        "conditions": 3.3,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.roast-chicken-rice",
@@ -196,11 +205,20 @@
       "ratingInputs": {
         "edibleAmount": 361.0035
       },
-      "healthParts": {
-        "nutrients": 3.5,
-        "conditions": 2.7,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.soya-tofu-rice",
@@ -301,17 +319,20 @@
       "ratingInputs": {
         "edibleAmount": 290
       },
-      "healthParts": {
-        "nutrients": 3.9,
-        "conditions": 3.2,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 183
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.chicken-congee",
@@ -398,11 +419,20 @@
       "ratingInputs": {
         "edibleAmount": 556
       },
-      "healthParts": {
-        "nutrients": 4.3,
-        "conditions": 3.5,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.nasi-lemak",
@@ -494,11 +524,20 @@
         "edibleAmount": 381.013
       },
       "variantId": "nasi-lemak-chicken-wing",
-      "healthParts": {
-        "nutrients": 2.6,
-        "conditions": 1.6,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.mee-rebus",
@@ -595,13 +634,20 @@
           "totalSugarG": 7.31
         }
       },
-      "healthParts": {
-        "nutrients": 2.8,
-        "conditions": 1.6,
-        "excess": 0.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.23
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.soto-ayam",
@@ -692,13 +738,20 @@
       "ratingInputs": {
         "edibleAmount": 569
       },
-      "healthParts": {
-        "nutrients": 4.4,
-        "conditions": 3.2,
-        "excess": 0.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.21
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "fibre",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.lontong-sayur",
@@ -788,11 +841,20 @@
       "ratingInputs": {
         "edibleAmount": 553
       },
-      "healthParts": {
-        "nutrients": 3.6,
-        "conditions": 2.7,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.kopi",
@@ -884,7 +946,18 @@
           "totalSugarG": 27.08
         }
       },
-      "variantId": "kopi-default"
+      "variantId": "kopi-default",
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high",
+          "isEstimated": true
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "moderate"
+        }
+      ]
     },
     {
       "id": "dish.sugarcane-juice",
@@ -971,7 +1044,17 @@
       "reviewNote": "The source adds the preparation descriptor fresh.",
       "ratingInputs": {
         "edibleAmount": 550
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.ice-kacang",
@@ -1062,11 +1145,20 @@
       "ratingInputs": {
         "edibleAmount": 425
       },
-      "healthParts": {
-        "nutrients": 3.8,
-        "conditions": 3.1,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.char-kway-teow",
@@ -1157,13 +1249,20 @@
       "ratingInputs": {
         "edibleAmount": 480
       },
-      "healthParts": {
-        "nutrients": 2,
-        "conditions": 1.2,
-        "excess": 0.1,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.05
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.hokkien-prawn-mee",
@@ -1253,11 +1352,20 @@
       "ratingInputs": {
         "edibleAmount": 545.9805
       },
-      "healthParts": {
-        "nutrients": 2.4,
-        "conditions": 1.6,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.fried-carrot-cake",
@@ -1349,11 +1457,20 @@
         "edibleAmount": 331
       },
       "variantId": "carrot-cake-black",
-      "healthParts": {
-        "nutrients": 2.7,
-        "conditions": 1.6,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.oyster-omelette",
@@ -1443,17 +1560,20 @@
       "ratingInputs": {
         "edibleAmount": 200
       },
-      "healthParts": {
-        "nutrients": 3.1,
-        "conditions": 2.5,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 255
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "moderate"
+        }
+      ]
     },
     {
       "id": "dish.roti-prata",
@@ -1555,13 +1675,20 @@
         "edibleAmount": 406.2
       },
       "variantId": "prata-two-plain-curry",
-      "healthParts": {
-        "nutrients": 2.4,
-        "conditions": 1.4,
-        "excess": 0.3,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.32
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.mee-goreng-mamak",
@@ -1652,13 +1779,20 @@
       "ratingInputs": {
         "edibleAmount": 465
       },
-      "healthParts": {
-        "nutrients": 2.3,
-        "conditions": 1.3,
-        "excess": 0.5,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.53
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.chicken-murtabak",
@@ -1750,11 +1884,20 @@
         "edibleAmount": 330
       },
       "variantId": "murtabak-chicken",
-      "healthParts": {
-        "nutrients": 2.5,
-        "conditions": 1.9,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.nasi-briyani",
@@ -1846,13 +1989,20 @@
         "edibleAmount": 709.9686
       },
       "variantId": "briyani-chicken",
-      "healthParts": {
-        "nutrients": 1.9,
-        "conditions": 1.3,
-        "excess": 0.4,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.39
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.masala-thosai",
@@ -1944,21 +2094,20 @@
         "edibleAmount": 156
       },
       "variantId": "thosai-plain",
-      "healthParts": {
-        "nutrients": 3.9,
-        "conditions": 3.5,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 258
-          },
-          {
-            "nutrient": "saturated-fat",
-            "per100g": 2.8
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "moderate"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.idli-sambar",
@@ -2047,11 +2196,20 @@
       "ratingInputs": {
         "edibleAmount": 269
       },
-      "healthParts": {
-        "nutrients": 4.9,
-        "conditions": 4.6,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.vadai-set",
@@ -2142,21 +2300,20 @@
       "ratingInputs": {
         "edibleAmount": 120
       },
-      "healthParts": {
-        "nutrients": 2.9,
-        "conditions": 2.5,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 280
-          },
-          {
-            "nutrient": "sodium",
-            "per100g": 613
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.lemon-rice",
@@ -2247,11 +2404,20 @@
       "ratingInputs": {
         "edibleAmount": 200
       },
-      "healthParts": {
-        "nutrients": 4.4,
-        "conditions": 4.1,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.nyonya-laksa",
@@ -2356,13 +2522,20 @@
       "ratingInputs": {
         "edibleAmount": 611
       },
-      "healthParts": {
-        "nutrients": 2.5,
-        "conditions": 1.7,
-        "excess": 0.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.16
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "above-daily"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.ayam-buah-keluak",
@@ -2453,21 +2626,20 @@
       "ratingInputs": {
         "edibleAmount": 120
       },
-      "healthParts": {
-        "nutrients": 4.5,
-        "conditions": 4.1,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 175
-          },
-          {
-            "nutrient": "saturated-fat",
-            "per100g": 3.3
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "moderate"
+        },
+        {
+          "factor": "energy",
+          "level": "moderate"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.chap-chye",
@@ -2558,11 +2730,20 @@
       "ratingInputs": {
         "edibleAmount": 200
       },
-      "healthParts": {
-        "nutrients": 4.4,
-        "conditions": 4.1,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "moderate"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.babi-pongteh",
@@ -2653,17 +2834,20 @@
       "ratingInputs": {
         "edibleAmount": 200
       },
-      "healthParts": {
-        "nutrients": 3.7,
-        "conditions": 2.9,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 204
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "moderate"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.sambal-stingray",
@@ -2754,11 +2938,20 @@
       "ratingInputs": {
         "edibleAmount": 254
       },
-      "healthParts": {
-        "nutrients": 3.7,
-        "conditions": 3.3,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "moderate"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.sliced-fish-soup",
@@ -2850,13 +3043,20 @@
         "edibleAmount": 793
       },
       "variantId": "fish-soup-fried-beehoon-no-milk",
-      "healthParts": {
-        "nutrients": 3.6,
-        "conditions": 2.2,
-        "excess": 0.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.21
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.black-pepper-crab",
@@ -2947,11 +3147,20 @@
       "ratingInputs": {
         "edibleAmount": 188.16
       },
-      "healthParts": {
-        "nutrients": 4,
-        "conditions": 3.3,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.bak-chor-mee",
@@ -3042,11 +3251,20 @@
         "edibleAmount": 430
       },
       "variantId": "bak-chor-mee-dry",
-      "healthParts": {
-        "nutrients": 4,
-        "conditions": 2.7,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.fishball-mee-pok",
@@ -3137,11 +3355,20 @@
       "ratingInputs": {
         "edibleAmount": 377
       },
-      "healthParts": {
-        "nutrients": 4,
-        "conditions": 2.6,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.lor-mee",
@@ -3233,13 +3460,20 @@
       "ratingInputs": {
         "edibleAmount": 716
       },
-      "healthParts": {
-        "nutrients": 2.8,
-        "conditions": 1.7,
-        "excess": 0.7,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.72
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.teochew-fish-dumpling-soup",
@@ -3328,13 +3562,20 @@
       "ratingInputs": {
         "edibleAmount": 527
       },
-      "healthParts": {
-        "nutrients": 4.4,
-        "conditions": 3.3,
-        "excess": 0,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.01
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.chendol",
@@ -3424,11 +3665,20 @@
       "ratingInputs": {
         "edibleAmount": 423
       },
-      "healthParts": {
-        "nutrients": 2.7,
-        "conditions": 2.1,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.tau-huay",
@@ -3519,11 +3769,20 @@
       "ratingInputs": {
         "edibleAmount": 392
       },
-      "healthParts": {
-        "nutrients": 4.9,
-        "conditions": 4,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.teh-tarik",
@@ -3611,7 +3870,17 @@
       "ratingInputs": {
         "edibleAmount": 250
       },
-      "variantId": "teh-tarik"
+      "variantId": "teh-tarik",
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "moderate"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.pulut-hitam",
@@ -3702,11 +3971,20 @@
       "ratingInputs": {
         "edibleAmount": 425
       },
-      "healthParts": {
-        "nutrients": 3.4,
-        "conditions": 2.5,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.chicken-satay-set",
@@ -3797,17 +4075,20 @@
       "ratingInputs": {
         "edibleAmount": 270
       },
-      "healthParts": {
-        "nutrients": 2.9,
-        "conditions": 2.5,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 211
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.bbq-chicken-wings",
@@ -3897,25 +4178,20 @@
       "ratingInputs": {
         "edibleAmount": 103.569
       },
-      "healthParts": {
-        "nutrients": 3.5,
-        "conditions": 3.1,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 232
-          },
-          {
-            "nutrient": "saturated-fat",
-            "per100g": 3.3
-          },
-          {
-            "nutrient": "sodium",
-            "per100g": 629
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.beef-satay-set",
@@ -4006,17 +4282,20 @@
       "ratingInputs": {
         "edibleAmount": 210
       },
-      "healthParts": {
-        "nutrients": 3.2,
-        "conditions": 3,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 214
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.sambal-grilled-squid",
@@ -4106,11 +4385,20 @@
       "ratingInputs": {
         "edibleAmount": 200
       },
-      "healthParts": {
-        "nutrients": 4.6,
-        "conditions": 3.8,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.har-gow",
@@ -4200,11 +4488,20 @@
       "ratingInputs": {
         "edibleAmount": 196
       },
-      "healthParts": {
-        "nutrients": 4.2,
-        "conditions": 3.8,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.siew-mai",
@@ -4295,25 +4592,20 @@
       "ratingInputs": {
         "edibleAmount": 120
       },
-      "healthParts": {
-        "nutrients": 3.5,
-        "conditions": 3.3,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 223
-          },
-          {
-            "nutrient": "saturated-fat",
-            "per100g": 4.4
-          },
-          {
-            "nutrient": "sodium",
-            "per100g": 483
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.char-siew-bao",
@@ -4404,17 +4696,20 @@
       "ratingInputs": {
         "edibleAmount": 168
       },
-      "healthParts": {
-        "nutrients": 3.4,
-        "conditions": 2.3,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 263
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.lotus-leaf-rice",
@@ -4505,11 +4800,20 @@
       "ratingInputs": {
         "edibleAmount": 308.1874
       },
-      "healthParts": {
-        "nutrients": 3.4,
-        "conditions": 2.2,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.yong-tau-foo",
@@ -4601,13 +4905,20 @@
         "edibleAmount": 971
       },
       "variantId": "ytf-clear-noodles",
-      "healthParts": {
-        "nutrients": 2.3,
-        "conditions": 1.3,
-        "excess": 0.4,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.39
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.ban-mian",
@@ -4696,13 +5007,20 @@
         "edibleAmount": 792
       },
       "variantId": "ban-mian-soup",
-      "healthParts": {
-        "nutrients": 3.5,
-        "conditions": 2.2,
-        "excess": 0.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.16
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.thunder-tea-rice",
@@ -4793,11 +5111,20 @@
       "ratingInputs": {
         "edibleAmount": 431
       },
-      "healthParts": {
-        "nutrients": 3.4,
-        "conditions": 2.7,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.popiah",
@@ -4887,11 +5214,20 @@
       "ratingInputs": {
         "edibleAmount": 191
       },
-      "healthParts": {
-        "nutrients": 5,
-        "conditions": 4.5,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "moderate"
+        },
+        {
+          "factor": "fibre",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.bak-kut-teh",
@@ -4997,13 +5333,20 @@
         "edibleAmount": 740.5452
       },
       "variantId": "bak-kut-teh-rice-you-tiao",
-      "healthParts": {
-        "nutrients": 2.8,
-        "conditions": 1.7,
-        "excess": 0.1,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.08
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.duck-rice",
@@ -5093,11 +5436,20 @@
         "edibleAmount": 398
       },
       "variantId": "duck-rice-braised",
-      "healthParts": {
-        "nutrients": 3.4,
-        "conditions": 2.5,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.kway-chap",
@@ -5188,13 +5540,20 @@
       "ratingInputs": {
         "edibleAmount": 928
       },
-      "healthParts": {
-        "nutrients": 1.7,
-        "conditions": 1.2,
-        "excess": 0.9,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.87
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.claypot-chicken-rice",
@@ -5288,13 +5647,20 @@
       "ratingInputs": {
         "edibleAmount": 531.9771
       },
-      "healthParts": {
-        "nutrients": 2.6,
-        "conditions": 1.6,
-        "excess": 0.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.24
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.char-siew-rice",
@@ -5384,11 +5750,20 @@
       "ratingInputs": {
         "edibleAmount": 353
       },
-      "healthParts": {
-        "nutrients": 4.3,
-        "conditions": 3.2,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.nasi-padang",
@@ -5480,11 +5855,20 @@
         "edibleAmount": 544
       },
       "variantId": "nasi-padang-beef",
-      "healthParts": {
-        "nutrients": 2.2,
-        "conditions": 1.5,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.kaya-toast",
@@ -5575,21 +5959,20 @@
       "ratingInputs": {
         "edibleAmount": 94
       },
-      "healthParts": {
-        "nutrients": 2.5,
-        "conditions": 1.7,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 404
-          },
-          {
-            "nutrient": "sodium",
-            "per100g": 380
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.barley-drink",
@@ -5675,7 +6058,17 @@
       "reviewNote": "Exact named drink match.",
       "ratingInputs": {
         "edibleAmount": 400
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.beef-hor-fun",
@@ -5765,13 +6158,20 @@
       "ratingInputs": {
         "edibleAmount": 682
       },
-      "healthParts": {
-        "nutrients": 3,
-        "conditions": 1.8,
-        "excess": 0.1,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.07
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.chwee-kueh",
@@ -5861,11 +6261,20 @@
       "ratingInputs": {
         "edibleAmount": 175
       },
-      "healthParts": {
-        "nutrients": 4.7,
-        "conditions": 4.4,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.roti-john",
@@ -5956,19 +6365,20 @@
       "ratingInputs": {
         "edibleAmount": 253
       },
-      "healthParts": {
-        "nutrients": 1.8,
-        "conditions": 1.2,
-        "excess": 0,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.01,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 286
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.soya-bean-milk",
@@ -6056,7 +6466,17 @@
       "ratingInputs": {
         "edibleAmount": 450
       },
-      "variantId": "soy-milk-regular"
+      "variantId": "soy-milk-regular",
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.economic-rice",
@@ -6148,11 +6568,20 @@
         "edibleAmount": 553
       },
       "variantId": "economic-rice-veg-meat",
-      "healthParts": {
-        "nutrients": 3.1,
-        "conditions": 2.2,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.wanton-mee",
@@ -6242,11 +6671,20 @@
         "edibleAmount": 388
       },
       "variantId": "wanton-mee-dry",
-      "healthParts": {
-        "nutrients": 3.3,
-        "conditions": 2.1,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.mee-siam",
@@ -6344,13 +6782,20 @@
         }
       },
       "variantId": "mee-siam-gravy",
-      "healthParts": {
-        "nutrients": 1.5,
-        "conditions": 1.2,
-        "excess": 0.9,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.88
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.kueh-pie-tee",
@@ -6441,17 +6886,20 @@
       "ratingInputs": {
         "edibleAmount": 185
       },
-      "healthParts": {
-        "nutrients": 3.2,
-        "conditions": 2.5,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 238
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "moderate"
+        }
+      ]
     },
     {
       "id": "dish.prawn-noodle-soup",
@@ -6542,13 +6990,20 @@
         "edibleAmount": 724.9728
       },
       "variantId": "prawn-noodles-soup",
-      "healthParts": {
-        "nutrients": 4.1,
-        "conditions": 2.6,
-        "excess": 0.7,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.69
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.century-egg-porridge",
@@ -6636,11 +7091,20 @@
       "ratingInputs": {
         "edibleAmount": 489
       },
-      "healthParts": {
-        "nutrients": 4.3,
-        "conditions": 3.7,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.fish-porridge",
@@ -6732,13 +7196,20 @@
         "edibleAmount": 660
       },
       "variantId": "fish-porridge-fried",
-      "healthParts": {
-        "nutrients": 3.7,
-        "conditions": 2.5,
-        "excess": 0.1,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.13
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "moderate"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.minced-pork-porridge",
@@ -6826,11 +7297,20 @@
       "ratingInputs": {
         "edibleAmount": 593
       },
-      "healthParts": {
-        "nutrients": 4.1,
-        "conditions": 3.2,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.chee-cheong-fun",
@@ -6919,11 +7399,20 @@
       "ratingInputs": {
         "edibleAmount": 262
       },
-      "healthParts": {
-        "nutrients": 4.3,
-        "conditions": 3.5,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.you-tiao",
@@ -7014,21 +7503,20 @@
       "ratingInputs": {
         "edibleAmount": 117
       },
-      "healthParts": {
-        "nutrients": 2.8,
-        "conditions": 2.3,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 391
-          },
-          {
-            "nutrient": "sodium",
-            "per100g": 644
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.cheng-tng",
@@ -7116,11 +7604,20 @@
       "ratingInputs": {
         "edibleAmount": 390
       },
-      "healthParts": {
-        "nutrients": 4.5,
-        "conditions": 3.8,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.orh-nee",
@@ -7211,17 +7708,20 @@
       "ratingInputs": {
         "edibleAmount": 150
       },
-      "healthParts": {
-        "nutrients": 2.5,
-        "conditions": 2.2,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "saturated-fat",
-            "per100g": 5.1
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.tau-suan",
@@ -7312,11 +7812,20 @@
       "ratingInputs": {
         "edibleAmount": 369
       },
-      "healthParts": {
-        "nutrients": 3.6,
-        "conditions": 2.6,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.green-bean-soup",
@@ -7406,11 +7915,20 @@
       "ratingInputs": {
         "edibleAmount": 376
       },
-      "healthParts": {
-        "nutrients": 4.1,
-        "conditions": 3.4,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "moderate"
+        },
+        {
+          "factor": "fibre",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.black-sesame-paste",
@@ -7504,11 +8022,20 @@
       "ratingInputs": {
         "edibleAmount": 273
       },
-      "healthParts": {
-        "nutrients": 3.9,
-        "conditions": 3.5,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "moderate"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.ayam-penyet",
@@ -7599,11 +8126,20 @@
       "ratingInputs": {
         "edibleAmount": 467.9884
       },
-      "healthParts": {
-        "nutrients": 2.7,
-        "conditions": 2,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.nasi-goreng",
@@ -7693,13 +8229,20 @@
       "ratingInputs": {
         "edibleAmount": 485
       },
-      "healthParts": {
-        "nutrients": 2.6,
-        "conditions": 1.6,
-        "excess": 0.1,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.07
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.mee-soto",
@@ -7789,13 +8332,20 @@
       "ratingInputs": {
         "edibleAmount": 622
       },
-      "healthParts": {
-        "nutrients": 4.2,
-        "conditions": 2.7,
-        "excess": 1,
-        "excessNutrient": "sodium",
-        "excessDayShare": 2.03
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.gado-gado",
@@ -7886,11 +8436,20 @@
       "ratingInputs": {
         "edibleAmount": 421
       },
-      "healthParts": {
-        "nutrients": 3,
-        "conditions": 2.3,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.ayam-panggang",
@@ -7980,11 +8539,20 @@
       "ratingInputs": {
         "edibleAmount": 645
       },
-      "healthParts": {
-        "nutrients": 1.8,
-        "conditions": 1.2,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.chicken-chop",
@@ -8076,11 +8644,20 @@
         "edibleAmount": 454
       },
       "variantId": "chicken-chop-fries-coleslaw",
-      "healthParts": {
-        "nutrients": 2.3,
-        "conditions": 1.9,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.aglio-olio",
@@ -8171,17 +8748,20 @@
       "ratingInputs": {
         "edibleAmount": 284
       },
-      "healthParts": {
-        "nutrients": 4.6,
-        "conditions": 3.9,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 188
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "moderate"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.fish-and-chips",
@@ -8273,11 +8853,20 @@
         "edibleAmount": 345
       },
       "variantId": "fish-and-chips",
-      "healthParts": {
-        "nutrients": 2.3,
-        "conditions": 1.8,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.spaghetti-bolognese",
@@ -8368,11 +8957,20 @@
       "ratingInputs": {
         "edibleAmount": 410
       },
-      "healthParts": {
-        "nutrients": 3.2,
-        "conditions": 2.3,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.black-pepper-steak",
@@ -8463,13 +9061,20 @@
       "ratingInputs": {
         "edibleAmount": 475
       },
-      "healthParts": {
-        "nutrients": 2.6,
-        "conditions": 2.1,
-        "excess": 0.2,
-        "excessNutrient": "saturated-fat",
-        "excessDayShare": 1.17
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.mutton-satay-set",
@@ -8560,17 +9165,20 @@
       "ratingInputs": {
         "edibleAmount": 190
       },
-      "healthParts": {
-        "nutrients": 2.6,
-        "conditions": 2.3,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 253
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.appam",
@@ -8661,21 +9269,20 @@
       "ratingInputs": {
         "edibleAmount": 144
       },
-      "healthParts": {
-        "nutrients": 4.1,
-        "conditions": 3.4,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 221
-          },
-          {
-            "nutrient": "sodium",
-            "per100g": 347
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "moderate"
+        },
+        {
+          "factor": "sodium",
+          "level": "moderate"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.watercress-pork-rib-soup",
@@ -8766,11 +9373,20 @@
       "ratingInputs": {
         "edibleAmount": 610.924
       },
-      "healthParts": {
-        "nutrients": 4.6,
-        "conditions": 3.9,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.chilli-crab",
@@ -8861,11 +9477,20 @@
       "ratingInputs": {
         "edibleAmount": 384
       },
-      "healthParts": {
-        "nutrients": 3.3,
-        "conditions": 2.8,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.kopi:kopi-siu-dai",
@@ -8953,7 +9578,17 @@
       "reviewNote": "Reduced-sugar kopi variant.",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.kopi:kopi-c",
@@ -9040,7 +9675,17 @@
       "reviewNote": "Kopi with evaporated milk.",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "moderate"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.kopi:kopi-c-kosong",
@@ -9128,7 +9773,17 @@
       "reviewNote": "Kopi C without added sugar.",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "moderate"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.kopi:kopi-o",
@@ -9216,7 +9871,17 @@
       "reviewNote": "Black kopi with sugar.",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "moderate"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.kopi:kopi-o-kosong",
@@ -9303,7 +9968,17 @@
       "reviewNote": "Black kopi without added sugar.",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "low"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.kopi:kopi-c-siu-dai",
@@ -9390,7 +10065,17 @@
       "reviewNote": "Kopi C with less sugar (Derived).",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "moderate"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "moderate"
+        }
+      ]
     },
     {
       "id": "dish.kopi:kopi-o-siu-dai",
@@ -9478,7 +10163,17 @@
       "reviewNote": "Black kopi with less sugar (Derived).",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "moderate"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.teh-tarik:teh",
@@ -9566,7 +10261,17 @@
       "reviewNote": "Standard hot milk tea.",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "moderate"
+        }
+      ]
     },
     {
       "id": "dish.teh-tarik:teh-siu-dai",
@@ -9654,7 +10359,17 @@
       "reviewNote": "Reduced-sugar tea variant.",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "moderate"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.teh-tarik:teh-c",
@@ -9741,7 +10456,17 @@
       "reviewNote": "Tea with evaporated milk.",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.teh-tarik:teh-c-kosong",
@@ -9828,7 +10553,17 @@
       "reviewNote": "Teh C without added sugar.",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "low"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.teh-tarik:teh-o",
@@ -9916,7 +10651,17 @@
       "reviewNote": "Black tea with sugar.",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "moderate"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.teh-tarik:teh-o-kosong",
@@ -10004,7 +10749,17 @@
       "reviewNote": "Black tea without added sugar.",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "low"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.teh-tarik:teh-c-siu-dai",
@@ -10091,7 +10846,17 @@
       "reviewNote": "Teh C with less sugar (Derived).",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "moderate"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.teh-tarik:teh-o-siu-dai",
@@ -10179,7 +10944,17 @@
       "reviewNote": "Black tea with less sugar (Derived).",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "moderate"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.teh-tarik:teh-halia",
@@ -10267,7 +11042,17 @@
       "reviewNote": "Ginger milk tea (Derived).",
       "ratingInputs": {
         "edibleAmount": 250
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.nasi-lemak:nasi-lemak-chicken-cutlet",
@@ -10359,11 +11144,20 @@
       "ratingInputs": {
         "edibleAmount": 399
       },
-      "healthParts": {
-        "nutrients": 2.3,
-        "conditions": 1.4,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.nasi-lemak:nasi-lemak-wing-cutlet",
@@ -10455,11 +11249,20 @@
       "ratingInputs": {
         "edibleAmount": 466.984
       },
-      "healthParts": {
-        "nutrients": 2.1,
-        "conditions": 1.2,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.nasi-lemak:nasi-lemak-egg-ikan-bilis-peanut",
@@ -10551,11 +11354,20 @@
       "ratingInputs": {
         "edibleAmount": 313
       },
-      "healthParts": {
-        "nutrients": 3.2,
-        "conditions": 2.1,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.nasi-lemak:nasi-lemak-fish",
@@ -10647,11 +11459,20 @@
       "ratingInputs": {
         "edibleAmount": 335.0051
       },
-      "healthParts": {
-        "nutrients": 2.9,
-        "conditions": 1.9,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.nasi-lemak:nasi-lemak-rice-only",
@@ -10740,11 +11561,16 @@
       "ratingInputs": {
         "edibleAmount": 214
       },
-      "healthParts": {
-        "nutrients": 4.2,
-        "conditions": 3.7,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.fried-carrot-cake:carrot-cake-white",
@@ -10836,11 +11662,20 @@
       "ratingInputs": {
         "edibleAmount": 321
       },
-      "healthParts": {
-        "nutrients": 3.6,
-        "conditions": 2.9,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.roti-prata:prata-plain",
@@ -10932,25 +11767,20 @@
       "ratingInputs": {
         "edibleAmount": 76.6
       },
-      "healthParts": {
-        "nutrients": 2.9,
-        "conditions": 2.5,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 352
-          },
-          {
-            "nutrient": "saturated-fat",
-            "per100g": 5.2
-          },
-          {
-            "nutrient": "sodium",
-            "per100g": 571
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.roti-prata:prata-egg",
@@ -11042,25 +11872,20 @@
       "ratingInputs": {
         "edibleAmount": 119
       },
-      "healthParts": {
-        "nutrients": 3.6,
-        "conditions": 3.2,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 278
-          },
-          {
-            "nutrient": "saturated-fat",
-            "per100g": 3.9
-          },
-          {
-            "nutrient": "sodium",
-            "per100g": 420
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.roti-prata:prata-egg-onion",
@@ -11152,21 +11977,20 @@
       "ratingInputs": {
         "edibleAmount": 177
       },
-      "healthParts": {
-        "nutrients": 3.7,
-        "conditions": 3.1,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 220
-          },
-          {
-            "nutrient": "saturated-fat",
-            "per100g": 4.8
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "moderate"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.roti-prata:prata-egg-onion-cheese",
@@ -11258,17 +12082,20 @@
       "ratingInputs": {
         "edibleAmount": 185
       },
-      "healthParts": {
-        "nutrients": 3,
-        "conditions": 2.5,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 248
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.sliced-fish-soup:fish-soup-beehoon-no-milk",
@@ -11360,13 +12187,20 @@
       "ratingInputs": {
         "edibleAmount": 811
       },
-      "healthParts": {
-        "nutrients": 4.3,
-        "conditions": 2.9,
-        "excess": 0.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.21
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.sliced-fish-soup:fish-soup-beehoon-milk",
@@ -11458,13 +12292,20 @@
       "ratingInputs": {
         "edibleAmount": 848
       },
-      "healthParts": {
-        "nutrients": 3.1,
-        "conditions": 1.8,
-        "excess": 0.3,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.28
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.sliced-fish-soup:fish-soup-sliced-no-milk",
@@ -11556,13 +12397,20 @@
       "ratingInputs": {
         "edibleAmount": 543
       },
-      "healthParts": {
-        "nutrients": 3.9,
-        "conditions": 2.9,
-        "excess": 0.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.21
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "moderate"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.sliced-fish-soup:fish-soup-sliced-milk",
@@ -11654,13 +12502,20 @@
       "ratingInputs": {
         "edibleAmount": 598
       },
-      "healthParts": {
-        "nutrients": 3.6,
-        "conditions": 2.6,
-        "excess": 0.3,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.27
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.bak-chor-mee:bak-chor-mee-soup",
@@ -11750,13 +12605,20 @@
       "ratingInputs": {
         "edibleAmount": 682
       },
-      "healthParts": {
-        "nutrients": 4.2,
-        "conditions": 2.8,
-        "excess": 0.1,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.07
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.chicken-murtabak:murtabak-chicken-half",
@@ -11848,17 +12710,20 @@
       "ratingInputs": {
         "edibleAmount": 165
       },
-      "healthParts": {
-        "nutrients": 3.3,
-        "conditions": 2.7,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 258
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.chicken-murtabak:murtabak-chicken-mushroom-cheese",
@@ -11950,13 +12815,20 @@
       "ratingInputs": {
         "edibleAmount": 305.5
       },
-      "healthParts": {
-        "nutrients": 2.3,
-        "conditions": 2.2,
-        "excess": 0.3,
-        "excessNutrient": "saturated-fat",
-        "excessDayShare": 1.35
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.chicken-murtabak:murtabak-mutton",
@@ -12048,11 +12920,20 @@
       "ratingInputs": {
         "edibleAmount": 345
       },
-      "healthParts": {
-        "nutrients": 2.5,
-        "conditions": 2,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.chicken-murtabak:murtabak-vegetable",
@@ -12144,11 +13025,20 @@
       "ratingInputs": {
         "edibleAmount": 437
       },
-      "healthParts": {
-        "nutrients": 2.4,
-        "conditions": 1.5,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.nasi-briyani:briyani-fish-prawn",
@@ -12240,13 +13130,20 @@
       "ratingInputs": {
         "edibleAmount": 587
       },
-      "healthParts": {
-        "nutrients": 2.3,
-        "conditions": 1.4,
-        "excess": 0.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.22
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.nasi-briyani:briyani-mutton",
@@ -12338,13 +13235,20 @@
       "ratingInputs": {
         "edibleAmount": 668.976
       },
-      "healthParts": {
-        "nutrients": 1.7,
-        "conditions": 1.3,
-        "excess": 0.5,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.54
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "above-daily"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.nasi-briyani:briyani-vegetable",
@@ -12436,11 +13340,20 @@
       "ratingInputs": {
         "edibleAmount": 518
       },
-      "healthParts": {
-        "nutrients": 3,
-        "conditions": 1.9,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.masala-thosai:thosai-masala",
@@ -12532,11 +13445,20 @@
       "ratingInputs": {
         "edibleAmount": 271
       },
-      "healthParts": {
-        "nutrients": 3.9,
-        "conditions": 3.6,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "moderate"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.masala-thosai:thosai-egg",
@@ -12628,21 +13550,20 @@
       "ratingInputs": {
         "edibleAmount": 146
       },
-      "healthParts": {
-        "nutrients": 3.5,
-        "conditions": 3.1,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 234
-          },
-          {
-            "nutrient": "saturated-fat",
-            "per100g": 3.6
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.masala-thosai:thosai-ghee",
@@ -12734,21 +13655,20 @@
       "ratingInputs": {
         "edibleAmount": 108
       },
-      "healthParts": {
-        "nutrients": 2.8,
-        "conditions": 2.2,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 345
-          },
-          {
-            "nutrient": "sodium",
-            "per100g": 591
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.masala-thosai:thosai-rawa",
@@ -12840,25 +13760,20 @@
       "ratingInputs": {
         "edibleAmount": 85
       },
-      "healthParts": {
-        "nutrients": 3.6,
-        "conditions": 3.4,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 240
-          },
-          {
-            "nutrient": "saturated-fat",
-            "per100g": 3.3
-          },
-          {
-            "nutrient": "sodium",
-            "per100g": 436
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "moderate"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.masala-thosai:thosai-paper",
@@ -12950,25 +13865,20 @@
       "ratingInputs": {
         "edibleAmount": 50
       },
-      "healthParts": {
-        "nutrients": 3.1,
-        "conditions": 2.7,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 306
-          },
-          {
-            "nutrient": "saturated-fat",
-            "per100g": 5.5
-          },
-          {
-            "nutrient": "sodium",
-            "per100g": 438
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.masala-thosai:thosai-cheese",
@@ -13060,21 +13970,20 @@
       "ratingInputs": {
         "edibleAmount": 130
       },
-      "healthParts": {
-        "nutrients": 2.9,
-        "conditions": 2.6,
-        "excess": 0,
-        "denseNutrients": [
-          {
-            "nutrient": "energy",
-            "per100g": 268
-          },
-          {
-            "nutrient": "saturated-fat",
-            "per100g": 5.6
-          }
-        ]
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.yong-tau-foo:ytf-clear-mixed",
@@ -13166,13 +14075,20 @@
       "ratingInputs": {
         "edibleAmount": 771
       },
-      "healthParts": {
-        "nutrients": 2.9,
-        "conditions": 1.9,
-        "excess": 0.4,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.38
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.yong-tau-foo:ytf-clear-fried",
@@ -13264,13 +14180,20 @@
       "ratingInputs": {
         "edibleAmount": 928
       },
-      "healthParts": {
-        "nutrients": 1.5,
-        "conditions": 1.2,
-        "excess": 0.9,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.85
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "above-daily"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.yong-tau-foo:ytf-laksa-boiled",
@@ -13362,13 +14285,20 @@
       "ratingInputs": {
         "edibleAmount": 815
       },
-      "healthParts": {
-        "nutrients": 1.5,
-        "conditions": 1.4,
-        "excess": 0.9,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.89
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "above-daily"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.yong-tau-foo:ytf-laksa-fried",
@@ -13460,13 +14390,20 @@
       "ratingInputs": {
         "edibleAmount": 779
       },
-      "healthParts": {
-        "nutrients": 1.1,
-        "conditions": 1.3,
-        "excess": 0.9,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.93
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "above-daily"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.yong-tau-foo:ytf-laksa-mixed",
@@ -13558,13 +14495,20 @@
       "ratingInputs": {
         "edibleAmount": 797
       },
-      "healthParts": {
-        "nutrients": 1.3,
-        "conditions": 1.3,
-        "excess": 0.9,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.91
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "above-daily"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.yong-tau-foo:ytf-laksa-noodles",
@@ -13656,13 +14600,20 @@
       "ratingInputs": {
         "edibleAmount": 997
       },
-      "healthParts": {
-        "nutrients": 1,
-        "conditions": 1.1,
-        "excess": 0.9,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.91
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "above-daily"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.ban-mian:ban-mian-dry",
@@ -13754,11 +14705,20 @@
       "ratingInputs": {
         "edibleAmount": 407
       },
-      "healthParts": {
-        "nutrients": 3.2,
-        "conditions": 2.1,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.ban-mian:chilli-ban-mian",
@@ -13850,11 +14810,20 @@
       "ratingInputs": {
         "edibleAmount": 411
       },
-      "healthParts": {
-        "nutrients": 3.1,
-        "conditions": 2,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.ban-mian:pork-dumpling-ban-mian",
@@ -13946,13 +14915,20 @@
       "ratingInputs": {
         "edibleAmount": 894
       },
-      "healthParts": {
-        "nutrients": 3,
-        "conditions": 1.6,
-        "excess": 0.4,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.41
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.ban-mian:seafood-tom-yum-ban-mian",
@@ -14044,13 +15020,20 @@
       "ratingInputs": {
         "edibleAmount": 1057
       },
-      "healthParts": {
-        "nutrients": 3.3,
-        "conditions": 1.9,
-        "excess": 1.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 2.22
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.ban-mian:vegetable-ban-mian",
@@ -14142,13 +15125,20 @@
       "ratingInputs": {
         "edibleAmount": 989
       },
-      "healthParts": {
-        "nutrients": 3.8,
-        "conditions": 2.2,
-        "excess": 0.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.21
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.ban-mian:mee-hoon-kway-dry",
@@ -14240,13 +15230,20 @@
       "ratingInputs": {
         "edibleAmount": 422
       },
-      "healthParts": {
-        "nutrients": 3.1,
-        "conditions": 1.8,
-        "excess": 0.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.16
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.ban-mian:mee-hoon-kway-soup",
@@ -14338,13 +15335,20 @@
       "ratingInputs": {
         "edibleAmount": 901
       },
-      "healthParts": {
-        "nutrients": 2.5,
-        "conditions": 1.5,
-        "excess": 0.4,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.38
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.bak-kut-teh:bak-kut-teh-soup",
@@ -14446,11 +15450,20 @@
       "ratingInputs": {
         "edibleAmount": 682.0452
       },
-      "healthParts": {
-        "nutrients": 4,
-        "conditions": 2.7,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "moderate"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.bak-kut-teh:bak-kut-teh-herbal",
@@ -14552,11 +15565,20 @@
       "ratingInputs": {
         "edibleAmount": 702
       },
-      "healthParts": {
-        "nutrients": 2.1,
-        "conditions": 1.4,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.bak-kut-teh:bak-kut-teh-dry",
@@ -14658,13 +15680,20 @@
       "ratingInputs": {
         "edibleAmount": 482
       },
-      "healthParts": {
-        "nutrients": 1.5,
-        "conditions": 1.1,
-        "excess": 0.1,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.09
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.duck-rice:duck-rice-roasted",
@@ -14755,11 +15784,20 @@
       "ratingInputs": {
         "edibleAmount": 402.9855
       },
-      "healthParts": {
-        "nutrients": 3.9,
-        "conditions": 2.8,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.duck-rice:duck-rice-rice-only",
@@ -14849,11 +15887,20 @@
       "ratingInputs": {
         "edibleAmount": 256
       },
-      "healthParts": {
-        "nutrients": 4.3,
-        "conditions": 3.8,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.duck-rice:duck-noodles-dry",
@@ -14944,13 +15991,20 @@
       "ratingInputs": {
         "edibleAmount": 410
       },
-      "healthParts": {
-        "nutrients": 4.2,
-        "conditions": 2.8,
-        "excess": 0.1,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.12
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.prawn-noodle-soup:prawn-noodles-dry",
@@ -15041,11 +16095,20 @@
       "ratingInputs": {
         "edibleAmount": 298.9008
       },
-      "healthParts": {
-        "nutrients": 4.3,
-        "conditions": 3.6,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.economic-rice:economic-rice-veg-fish",
@@ -15137,11 +16200,20 @@
       "ratingInputs": {
         "edibleAmount": 495.2108
       },
-      "healthParts": {
-        "nutrients": 3.4,
-        "conditions": 2.7,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.economic-rice:economic-rice-two-veg",
@@ -15233,11 +16305,20 @@
       "ratingInputs": {
         "edibleAmount": 580
       },
-      "healthParts": {
-        "nutrients": 3.2,
-        "conditions": 2.4,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.economic-rice:economic-rice-veg-fried-meat",
@@ -15329,11 +16410,20 @@
       "ratingInputs": {
         "edibleAmount": 515
       },
-      "healthParts": {
-        "nutrients": 2.7,
-        "conditions": 1.9,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.nasi-padang:nasi-padang-sambal-goreng",
@@ -15425,11 +16515,20 @@
       "ratingInputs": {
         "edibleAmount": 469
       },
-      "healthParts": {
-        "nutrients": 3,
-        "conditions": 1.9,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.nasi-padang:nasi-padang-chicken",
@@ -15521,13 +16620,20 @@
       "ratingInputs": {
         "edibleAmount": 797
       },
-      "healthParts": {
-        "nutrients": 1.5,
-        "conditions": 1.2,
-        "excess": 0.3,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.32
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "above-daily"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.nasi-padang:nasi-padang-assam-pedas",
@@ -15619,13 +16725,20 @@
       "ratingInputs": {
         "edibleAmount": 671
       },
-      "healthParts": {
-        "nutrients": 2,
-        "conditions": 1.3,
-        "excess": 0.2,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.17
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.mee-siam:mee-siam-fried",
@@ -15717,11 +16830,20 @@
       "ratingInputs": {
         "edibleAmount": 336.9975
       },
-      "healthParts": {
-        "nutrients": 3,
-        "conditions": 1.8,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "fibre",
+          "level": "source"
+        }
+      ]
     },
     {
       "id": "dish.wanton-mee:sui-kow-mee-soup",
@@ -15813,11 +16935,20 @@
       "ratingInputs": {
         "edibleAmount": 716
       },
-      "healthParts": {
-        "nutrients": 4.3,
-        "conditions": 3,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.wanton-mee:wanton-mee-soup",
@@ -15907,13 +17038,20 @@
       "ratingInputs": {
         "edibleAmount": 678
       },
-      "healthParts": {
-        "nutrients": 3.5,
-        "conditions": 2.2,
-        "excess": 0.4,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.45
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "carbohydrate",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.soya-bean-milk:soy-milk-less-sugar",
@@ -16001,7 +17139,17 @@
       "reviewNote": "Less-sugar cup (Derived).",
       "ratingInputs": {
         "edibleAmount": 450
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "moderate"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.soya-bean-milk:soy-milk-grass-jelly",
@@ -16089,7 +17237,17 @@
       "reviewNote": "Sweetened cup with grass jelly (Derived).",
       "ratingInputs": {
         "edibleAmount": 450
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.soya-bean-milk:soy-milk-no-sugar",
@@ -16177,7 +17335,17 @@
       "reviewNote": "Unsweetened cup (Derived).",
       "ratingInputs": {
         "edibleAmount": 450
-      }
+      },
+      "healthReasons": [
+        {
+          "factor": "sugar",
+          "level": "low"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "low"
+        }
+      ]
     },
     {
       "id": "dish.chicken-chop:chicken-chop-spaghetti",
@@ -16269,13 +17437,20 @@
       "ratingInputs": {
         "edibleAmount": 617
       },
-      "healthParts": {
-        "nutrients": 2.8,
-        "conditions": 1.7,
-        "excess": 0.1,
-        "excessNutrient": "sodium",
-        "excessDayShare": 1.08
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "above-daily"
+        },
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.chicken-chop:chicken-chop-fries-mash",
@@ -16367,11 +17542,20 @@
       "ratingInputs": {
         "edibleAmount": 509
       },
-      "healthParts": {
-        "nutrients": 2.6,
-        "conditions": 1.8,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.fish-and-chips:grilled-fish-set",
@@ -16463,11 +17647,20 @@
       "ratingInputs": {
         "edibleAmount": 364
       },
-      "healthParts": {
-        "nutrients": 3.1,
-        "conditions": 2.4,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "energy",
+          "level": "high"
+        },
+        {
+          "factor": "saturated-fat",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        }
+      ]
     },
     {
       "id": "dish.fish-porridge:fish-porridge-sliced",
@@ -16555,11 +17748,20 @@
       "ratingInputs": {
         "edibleAmount": 692
       },
-      "healthParts": {
-        "nutrients": 4.2,
-        "conditions": 3.2,
-        "excess": 0
-      }
+      "healthReasons": [
+        {
+          "factor": "sodium",
+          "level": "high"
+        },
+        {
+          "factor": "protein",
+          "level": "high"
+        },
+        {
+          "factor": "sugar",
+          "level": "low"
+        }
+      ]
     }
   ],
   "variantFamilies": [
