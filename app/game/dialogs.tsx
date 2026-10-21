@@ -4,7 +4,8 @@
  * Review.
  *
  * The dialogs are presentational and moved out of the `HawkerSimulator` shell with their
- * markup, classes, ARIA attributes and copy unchanged. The shell keeps which dialog is open,
+ * markup, classes and ARIA attributes unchanged; the tutorial and nutrition-tour copy has since
+ * been rewritten for young players as short icon points from `guide.tsx`. The shell keeps which dialog is open,
  * the tutorial and tour steps, the settings state and the focus trap; it passes each dialog's
  * section ref as a React 19 `ref` prop, so the trap still installs on the same `section`, and
  * the primary buttons keep `autoFocus`. The Settings switches and sliders are `SettingSwitch`
@@ -30,6 +31,7 @@ import {
   type CustomerIndicator,
 } from "@/src/game/runtime/visuals/customer";
 import { NutritionDisclosure } from "./NutritionEducation";
+import { GuideFlow, type GuidePoint, GuidePoints } from "./guide";
 import { describe_writer_verdict, money } from "./display";
 import { type NutritionTourStep, TUTORIAL_DONE_STEP, type TutorialStep } from "./focus";
 
@@ -194,39 +196,74 @@ function CustomerStatusGuide() {
   );
 }
 
-/** The tutorial cards, in order; there is one card per step before `TUTORIAL_DONE_STEP`. */
-const TUTORIAL_COPY = [
+/**
+ * The tutorial cards, in order; there is one card per step before `TUTORIAL_DONE_STEP`. The copy
+ * is written for young players who are new to management games: a short lead-in line, then a
+ * few one-sentence points with an icon each and, where it helps, a row of stages.
+ */
+const TUTORIAL_COPY: readonly {
+  readonly eyebrow: string;
+  readonly title: string;
+  readonly intro?: string;
+  readonly flow?: readonly string[];
+  readonly points: readonly GuidePoint[];
+  readonly action: string;
+}[] & { readonly length: typeof TUTORIAL_DONE_STEP } = [
   {
     eyebrow: "Welcome, neighbour",
-    title: "Run the centre. Read the plate.",
-    body: "Your community dining hall is ready for its first lunch crowd. Every choice changes how people move, queue, eat, and compare menu trade-offs.",
+    title: "Welcome to your hawker centre!",
+    intro: "A hawker centre is a big food hall full of little food stalls.",
+    points: [
+      { icon: "🚶", text: "Hungry guests walk in." },
+      { icon: "🍜", text: "They buy food from your stalls." },
+      { icon: "🪑", text: "They sit down, eat, and go home." },
+      { icon: "😊", text: "Your job: keep them fed and happy!" },
+    ],
     action: "Show me around",
   },
   {
     eyebrow: "Step 1 of 4",
-    title: "Move around the centre",
-    body: "Drag the floor to pan. Use the wheel or the camera controls to zoom. Keyboard players can use the arrow keys and + or −.",
+    title: "Look around",
+    points: [
+      { icon: "✋", text: "Drag the floor to move around the hall." },
+      { icon: "🔍", text: "Scroll, or press + and −, to zoom in and out." },
+      { icon: "⌨️", text: "On a keyboard, the arrow keys work too." },
+    ],
     action: "Got it",
   },
   {
     eyebrow: "Step 2 of 4",
-    title: "Choose something to place",
-    body: "Open Build, choose an unlocked item, then select a highlighted tile. Press R to rotate and Escape to cancel.",
+    title: "Open your stalls",
+    intro: "You already have two food stalls, some tables and some seats.",
+    points: [
+      { icon: "🟢", text: "When you are ready, press Open centre under the map." },
+      { icon: "🚶", text: "Then guests start to arrive." },
+    ],
     action: "Next",
   },
   {
     eyebrow: "Step 3 of 4",
-    title: "Read the living layout",
-    body: "Dotted paths show routes. Numbered queue markers show pressure. Seat rings show reservations. Centre insights explains every bottleneck.",
+    title: "Watch your guests",
+    intro: "Every guest makes the same trip:",
+    flow: ["Pick a stall", "Line up", "Get food", "Sit and eat", "Go home"],
+    points: [
+      { icon: "💬", text: "The bubbles over their heads show what they are doing." },
+      { icon: "⏳", text: "Long lines make guests grumpy, and some go home!" },
+    ],
     action: "Next",
   },
   {
     eyebrow: "Step 4 of 4",
-    title: "Open when you are ready",
-    body: "Customers arrive automatically, choose a stall, queue, collect food, reserve a seat, eat, return their tray, and leave. You can pause at any time.",
-    action: "Open my centre",
+    title: "Earn cash and grow",
+    points: [
+      { icon: "💵", text: "Every meal you sell earns cash." },
+      { icon: "🛠️", text: "Spend it in Build on more tables, seats and fans." },
+      { icon: "🎯", text: "Finish the goals on the left to level up and unlock new stalls." },
+      { icon: "⏸", text: "Press pause at any time." },
+    ],
+    action: "Start playing",
   },
-] as const satisfies { readonly length: typeof TUTORIAL_DONE_STEP };
+];
 
 /** The props of {@link TutorialDialog}. */
 export interface TutorialDialogProps {
@@ -284,7 +321,11 @@ export function TutorialDialog({ ref, step, onFinish, onStepChange }: TutorialDi
         <div className="tutorial-copy">
           <span>{tutorialCopy.eyebrow}</span>
           <h2 id="tutorial-title">{tutorialCopy.title}</h2>
-          <p>{tutorialCopy.body}</p>
+          {tutorialCopy.intro ? <p>{tutorialCopy.intro}</p> : null}
+          {tutorialCopy.flow ? (
+            <GuideFlow stages={tutorialCopy.flow} label="A guest's visit" />
+          ) : null}
+          <GuidePoints points={tutorialCopy.points} />
           <div className="tutorial-dots" aria-label={`Tutorial step ${step + 1} of 5`}>
             {TUTORIAL_COPY.map((_, index) => (
               <i key={index} className={index === step ? "is-active" : ""} />
@@ -311,6 +352,21 @@ export function TutorialDialog({ ref, step, onFinish, onStepChange }: TutorialDi
     </div>
   );
 }
+
+/** The points of the two nutrition-tour cards, in plain words for young players. */
+const NUTRITION_TOUR_POINTS: readonly [readonly GuidePoint[], readonly GuidePoint[]] = [
+  [
+    { icon: "⭐", text: "Stars show how tasty and popular a dish is." },
+    { icon: "♥", text: "The Health rating shows how balanced one serving is in the game." },
+    { icon: "🍜", text: "Open Dishes to compare them." },
+    { icon: "🔁", text: "Some dishes have recipe choices that change Health but not Stars." },
+  ],
+  [
+    { icon: "🧑", text: "Some pretend guests are looking after a health condition." },
+    { icon: "👆", text: "Click a guest to see which dishes fit them best, and why." },
+    { icon: "⚖️", text: "Taste, price, waiting in line and walking far still matter to every guest." },
+  ],
+];
 
 /** The props of {@link NutritionTourDialog}. */
 export interface NutritionTourDialogProps {
@@ -353,13 +409,9 @@ export function NutritionTourDialog({
         <div className="nutrition-tour-copy">
           <span>Nutrition tour · {step + 1} of 2</span>
           <h2 id="nutrition-tour-title">
-            {step === 0 ? "Two ratings, one serving" : "Meet each guest’s health needs"}
+            {step === 0 ? "Two ratings for every dish" : "Every guest is different"}
           </h2>
-          <p>
-            {step === 0
-              ? "Open Menu planning to compare every listed nutrient. Health ratings show in-game balance; Star ratings separately show taste and popularity. Variants can change nutrition and health without changing popularity."
-              : "Some guests fictionally manage a chronic condition. Select one to see their personal health fit, the nutrients considered, and the small satisfaction effect. Taste, price, queues, and distance still matter."}
-          </p>
+          <GuidePoints points={NUTRITION_TOUR_POINTS[step === 0 ? 0 : 1]} />
           <div className="tutorial-actions">
             <button type="button" className="text-button" onClick={() => onFinish()}>
               Skip tour

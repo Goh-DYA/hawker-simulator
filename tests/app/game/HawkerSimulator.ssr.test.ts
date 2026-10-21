@@ -20,7 +20,7 @@ import { HawkerSimulator } from "@/app/game/HawkerSimulator";
 const SSR_GOLDEN_PATH = "__snapshots__/HawkerSimulator.ssr.html";
 
 /** The title of the first tutorial step, which the shell opens on. */
-const FIRST_TUTORIAL_TITLE = "Run the centre. Read the plate.";
+const FIRST_TUTORIAL_TITLE = "Welcome to your hawker centre!";
 
 /** Matches the bottom dock's markup; group 1 is its content. */
 const BOTTOM_DOCK_PATTERN = /<nav class="bottom-dock"[^>]*>([\s\S]*?)<\/nav>/;
