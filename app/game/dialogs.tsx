@@ -5,7 +5,8 @@
  *
  * The dialogs are presentational and moved out of the `HawkerSimulator` shell with their
  * markup, classes and ARIA attributes unchanged; the tutorial and nutrition-tour copy has since
- * been rewritten for young players as short icon points from `guide.tsx`. The shell keeps which dialog is open,
+ * been rewritten in plain words for young players, and the tutorial's last card and Help offer
+ * the guided practice day. The shell keeps which dialog is open,
  * the tutorial and tour steps, the settings state and the focus trap; it passes each dialog's
  * section ref as a React 19 `ref` prop, so the trap still installs on the same `section`, and
  * the primary buttons keep `autoFocus`. The Settings switches and sliders are `SettingSwitch`
@@ -273,19 +274,29 @@ export interface TutorialDialogProps {
   readonly step: TutorialStep;
   /** Finish the tutorial, opening the centre when `openCentre` is set (the last card). */
   readonly onFinish: (openCentre: boolean) => void;
+  /** Finish the tutorial and start the guided practice day (the last card's other choice). */
+  readonly onStartPractice: () => void;
   /** Move to another card. */
   readonly onStepChange: (step: TutorialStep) => void;
 }
 
 /**
  * The first-run tutorial: one card per step, a skip button and a primary button that advances
- * and, on the last card, opens the centre.
+ * and, on the last card, opens the centre. The last card swaps the skip button for a callout
+ * that offers the guided practice day.
  *
  * @param props - See {@link TutorialDialogProps}.
  * @returns The tutorial's backdrop and dialog.
  */
-export function TutorialDialog({ ref, step, onFinish, onStepChange }: TutorialDialogProps) {
+export function TutorialDialog({
+  ref,
+  step,
+  onFinish,
+  onStartPractice,
+  onStepChange,
+}: TutorialDialogProps) {
   const tutorialCopy = TUTORIAL_COPY[Math.min(step, 4)]!;
+  const is_last_card = step === 4;
 
   return (
     <div className="modal-backdrop tutorial-backdrop" role="presentation">
@@ -326,21 +337,42 @@ export function TutorialDialog({ ref, step, onFinish, onStepChange }: TutorialDi
             <GuideFlow stages={tutorialCopy.flow} label="A guest's visit" />
           ) : null}
           <GuidePoints points={tutorialCopy.points} />
+          {is_last_card ? (
+            <aside className="tutorial-practice" aria-labelledby="tutorial-practice-title">
+              <span className="tutorial-practice-icon" aria-hidden="true">
+                🧭
+              </span>
+              <div>
+                <strong id="tutorial-practice-title">New to games like this?</strong>
+                <p>Play a practice day with a guide. It shows you every button, one step at a
+                  time, and nothing is saved.</p>
+                <button
+                  type="button"
+                  className="practice-button"
+                  onClick={() => onStartPractice()}
+                >
+                  Try a practice day <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </aside>
+          ) : null}
           <div className="tutorial-dots" aria-label={`Tutorial step ${step + 1} of 5`}>
             {TUTORIAL_COPY.map((_, index) => (
               <i key={index} className={index === step ? "is-active" : ""} />
             ))}
           </div>
-          <div className="tutorial-actions">
-            <button type="button" className="text-button" onClick={() => onFinish(false)}>
-              Skip tutorial
-            </button>
+          <div className={is_last_card ? "tutorial-actions is-end" : "tutorial-actions"}>
+            {is_last_card ? null : (
+              <button type="button" className="text-button" onClick={() => onFinish(false)}>
+                Skip tutorial
+              </button>
+            )}
             <button
               type="button"
               className="primary-button"
               autoFocus
               onClick={() => {
-                if (step === 4) onFinish(true);
+                if (is_last_card) onFinish(true);
                 else onStepChange((step + 1) as TutorialStep);
               }}
             >
@@ -540,6 +572,11 @@ export interface SettingsDialogProps {
   readonly onExportSave: () => void;
   /** Import the save file the player picked. */
   readonly onImportSave: (event: ChangeEvent<HTMLInputElement>) => void;
+  /**
+   * Whether the guided practice day runs, which turns off export, import and reset and says why
+   * in the dialog itself; absent counts as false.
+   */
+  readonly isPractice?: boolean;
   /** Open the reset confirmation. */
   readonly onOpenReset: () => void;
 }
@@ -561,6 +598,7 @@ export function SettingsDialog({
   onExportSave,
   onImportSave,
   onOpenReset,
+  isPractice = false,
 }: SettingsDialogProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -601,12 +639,18 @@ export function SettingsDialog({
           </fieldset>
           <fieldset>
             <legend>Local data</legend>
+            {isPractice ? (
+              <p className="settings-practice-note" id="settings-practice-note">
+                This is a practice day, so saving, loading and resetting are turned off. Press Exit
+                practice to go back to your own centre.
+              </p>
+            ) : null}
             <div className="button-row">
-              <button type="button" onClick={onExportSave}>Export save</button>
-              <button type="button" onClick={() => fileInputRef.current?.click()}>Import save</button>
+              <button type="button" disabled={isPractice} aria-describedby={isPractice ? "settings-practice-note" : undefined} onClick={onExportSave}>Export save</button>
+              <button type="button" disabled={isPractice} aria-describedby={isPractice ? "settings-practice-note" : undefined} onClick={() => fileInputRef.current?.click()}>Import save</button>
               <input ref={fileInputRef} className="sr-only" type="file" accept="application/json" onChange={onImportSave} />
             </div>
-            <button type="button" className="danger-button" onClick={onOpenReset}>Reset game…</button>
+            <button type="button" className="danger-button" disabled={isPractice} aria-describedby={isPractice ? "settings-practice-note" : undefined} onClick={onOpenReset}>Reset game…</button>
           </fieldset>
           <p className="settings-version">Hawker Balance version {CONTENT_VERSION} · Last updated <time dateTime={CONTENT_UPDATED_ON}>{format_release_date(CONTENT_UPDATED_ON)}</time></p>
         </div>
@@ -626,10 +670,13 @@ export interface HelpDialogProps {
   readonly onReplayTutorial: () => void;
   /** Close Help and restart the nutrition tour. */
   readonly onReplayNutritionTour: () => void;
+  /** Close Help and start the guided practice day. */
+  readonly onStartPractice: () => void;
 }
 
 /**
- * The Help dialog: the controls guide, the nutrition disclosure and the replay buttons.
+ * The Help dialog: the controls guide, the nutrition disclosure, the replay buttons and the
+ * guided practice day.
  *
  * @param props - See {@link HelpDialogProps}.
  * @returns The Help backdrop and dialog.
@@ -639,6 +686,7 @@ export function HelpDialog({
   onClose,
   onReplayTutorial,
   onReplayNutritionTour,
+  onStartPractice,
 }: HelpDialogProps) {
   return (
     <div className="modal-backdrop" role="presentation">
@@ -658,6 +706,7 @@ export function HelpDialog({
         <footer>
           <button type="button" onClick={onReplayTutorial}>Replay tutorial</button>
           <button type="button" onClick={onReplayNutritionTour}>Replay nutrition tour</button>
+          <button type="button" onClick={onStartPractice}>Practice day with a guide</button>
           <button type="button" className="primary-button" onClick={onClose}>Back to centre</button>
         </footer>
       </section>

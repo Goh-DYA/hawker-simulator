@@ -274,6 +274,7 @@ export function WorldToolbar({
           <button
             type="button"
             key={tool}
+            data-coach={`tool-${tool}`}
             aria-pressed={snapshot.buildTool === tool}
             className={snapshot.buildTool === tool ? "is-active" : ""}
             onClick={() => onChooseTool(tool)}
@@ -332,6 +333,16 @@ export function WorldToolbar({
   );
 }
 
+/** The practice-day controls the action strip shows while practice runs. */
+export interface ActionStripPractice {
+  /** Whether the coach is folded away, which shows the Show guide button. */
+  readonly isGuideHidden: boolean;
+  /** Open the folded coach again. */
+  onShowGuide(): void;
+  /** Leave practice and load the player's own centre back. */
+  onExit(): void;
+}
+
 /** The props of {@link ActionStrip}. */
 export interface ActionStripProps {
   /** The save state, the active tool, the undo and route state and whether the centre is open. */
@@ -341,6 +352,11 @@ export interface ActionStripProps {
   >;
   /** The runtime controller that undoes, rotates and clears the route. */
   readonly controllerRef: RefObject<RuntimeController | undefined>;
+  /**
+   * The guided practice day's controls while it runs, which saves nothing; absent outside
+   * practice. They sit in the strip, in the page flow, so they never cover another control.
+   */
+  readonly practice?: ActionStripPractice;
   /** Called with the build tool the player returns to. */
   onChooseTool(tool: BuildTool): void;
   /** Called when the player opens or closes the centre. */
@@ -348,7 +364,8 @@ export interface ActionStripProps {
 }
 
 /**
- * Render the action strip: the save state, the edit actions and the centre toggle.
+ * Render the action strip: the save state (or, during practice, the practice controls), the
+ * edit actions and the centre toggle.
  *
  * @param props - See {@link ActionStripProps}.
  * @returns The action strip.
@@ -356,19 +373,41 @@ export interface ActionStripProps {
 export function ActionStrip({
   snapshot,
   controllerRef,
+  practice,
   onChooseTool,
   onToggleCentre,
 }: ActionStripProps) {
   return (
     <div className="action-strip">
-      <div className="save-state" role="status">
-        <span className={snapshot.autosaveState === "error" ? "error-dot" : "green-dot"} />
-        {snapshot.autosaveState === "saving"
-          ? "Saving…"
-          : snapshot.autosaveState === "error"
-            ? "Save needs attention"
-            : "Saved on this device"}
-      </div>
+      {practice ? (
+        <div className="practice-strip">
+          <div className="save-state" role="status">
+            <span className="amber-dot" />
+            {practice.isGuideHidden ? (
+              <span className="sr-only">Practice day · not saved</span>
+            ) : (
+              <span className="practice-strip-label">Practice day · not saved</span>
+            )}
+          </div>
+          {practice.isGuideHidden ? (
+            <button type="button" onClick={() => practice.onShowGuide()}>
+              Show guide
+            </button>
+          ) : null}
+          <button type="button" className="practice-exit" onClick={() => practice.onExit()}>
+            Exit practice
+          </button>
+        </div>
+      ) : (
+        <div className="save-state" role="status">
+          <span className={snapshot.autosaveState === "error" ? "error-dot" : "green-dot"} />
+          {snapshot.autosaveState === "saving"
+            ? "Saving…"
+            : snapshot.autosaveState === "error"
+              ? "Save needs attention"
+              : "Saved on this device"}
+        </div>
+      )}
       <div className="edit-actions">
         {snapshot.buildTool === "route" ? (
           <>
@@ -454,6 +493,7 @@ export function BottomDock({
         <button
           type="button"
           key={value}
+          data-coach={`dock-${value}`}
           className={panel === value ? "is-active" : ""}
           aria-current={panel === value ? "page" : undefined}
           aria-label={

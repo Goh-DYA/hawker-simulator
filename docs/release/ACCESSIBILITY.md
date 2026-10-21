@@ -44,6 +44,7 @@ Layered stall facades, food displays, and vendor characters are supplemental can
 - Tooltips are duplicated by persistent help or accessible names.
 - Plain language explains failures and next steps.
 - Tutorial steps can be skipped, replayed, paused, and completed without time pressure.
+- The practice-day coach is a non-modal complementary region: it never makes the game inert and never takes focus, except that moving on from inside the card sends focus to the next step's heading (so a key press never lands on a button that changed under it); it announces each step through a polite live region, rings its target with a static outline under reduced motion, and offers Skip, Hide and Exit practice on every step. The tutorial, tour and coach icons are decorative and hidden from assistive technology; each point's text stands on its own, and a guest's visit is read as an ordered list.
 - Number formatting and icons remain consistent; decorative motion never carries core meaning.
 
 ## Motion, flashing, and camera

@@ -1531,3 +1531,304 @@ describe("HawkerSimulator toasts", () => {
     ).toEqual(["Queue full", "Plaque", "Save failed"]);
   });
 });
+
+describe("HawkerSimulator practice day", () => {
+  /** The controller and store calls that move or save a centre. */
+  const CENTRE_CALLS = new Set([
+    "saveGame",
+    "controller.exportState",
+    "controller.importState",
+    "controller.reset",
+  ]);
+
+  /** The notice shown when the player tries to save, load or reset during practice. */
+  const NOT_SAVED =
+    "This is a practice day, so nothing is saved. Press Exit practice to go back to your own centre.";
+
+  /** The notice shown as practice starts. */
+  const PRACTICE_STARTED = "Practice day started. Nothing here is saved.";
+
+  /**
+   * @param container - The component container.
+   * @returns The text of each toast on screen, in stack order.
+   */
+  function toast_messages(container: HTMLElement): readonly (string | null)[] {
+    return Array.from(container.querySelectorAll(".toast-stack .toast p"), (toast) => toast.textContent);
+  }
+
+  /**
+   * Open Help and start the practice day from it, then let the save before it finish.
+   *
+   * @param container - The component container.
+   */
+  async function start_practice_from_help(container: HTMLElement): Promise<void> {
+    fireEvent.click(within(container).getByRole("button", { name: "Open help" }));
+    fireEvent.click(within(container).getByRole("button", { name: "Practice day with a guide" }));
+    await settle();
+  }
+
+  /** @returns The recorded calls that move or save a centre, in issue order. */
+  function centre_calls(): readonly FakeCall[] {
+    return fakes.calls.filter(([method]) => CENTRE_CALLS.has(method));
+  }
+
+  /**
+   * @param container - The component container.
+   * @returns The practice coach's heading, or undefined while it is hidden.
+   */
+  function coach_title(container: HTMLElement): string | undefined {
+    return container.querySelector(".practice-coach h2")?.textContent ?? undefined;
+  }
+
+  it("saves the player's centre, then swaps in a fresh one with the guide on its first step", async () => {
+    const container = await boot_running_centre();
+    fakes.calls.length = 0;
+
+    await start_practice_from_help(container);
+
+    expect({
+      calls: centre_calls(),
+      title: coach_title(container),
+      save_state: require_element(container, ".save-state").textContent,
+    }).toEqual({
+      calls: [
+        ["controller.exportState"],
+        ["saveGame", fakes.runtime.exportedState],
+        ["controller.exportState"],
+        ["controller.reset"],
+      ],
+      title: "Welcome to your practice day!",
+      save_state: "Practice day · not saved",
+    });
+  });
+
+  it("swaps centres once when practice is started twice during the save before it", async () => {
+    const container = await boot_running_centre();
+    fakes.store.hold_saves();
+    fakes.calls.length = 0;
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      fireEvent.click(within(container).getByRole("button", { name: "Open help" }));
+      fireEvent.click(within(container).getByRole("button", { name: "Practice day with a guide" }));
+    }
+    await settle();
+    fakes.store.release_saves();
+    await settle();
+
+    expect(fakes.calls.filter(([method]) => method === "controller.reset")).toEqual([
+      ["controller.reset"],
+    ]);
+  });
+
+  it("saves nothing while practising, from the autosave or from Save now", async () => {
+    const container = await boot_running_centre();
+    await start_practice_from_help(container);
+    fakes.calls.length = 0;
+
+    act(() => {
+      runtime_options().onPersistentChange({ marker: "practice-change" });
+    });
+    await advance_clock(AUTOSAVE_DEBOUNCE_MS);
+    fireEvent.click(dock_button(container, "Save now"));
+    await settle();
+
+    expect({
+      calls: centre_calls(),
+      toasts: toast_messages(container),
+    }).toEqual({ calls: [], toasts: [NOT_SAVED, PRACTICE_STARTED] });
+  });
+
+  it("turns off export, import and reset in Settings while practising, and says why there", async () => {
+    const container = await boot_running_centre();
+    await start_practice_from_help(container);
+
+    const settings = open_settings(container);
+    fireEvent.click(within(settings).getByRole("button", { name: "Reset game…" }));
+
+    expect({
+      disabled: ["Export save", "Import save", "Reset game…"].map(
+        (name) => (within(settings).getByRole("button", { name }) as HTMLButtonElement).disabled,
+      ),
+      note: settings.querySelector(".settings-practice-note")?.textContent,
+      modals: open_modal_titles(container),
+    }).toEqual({
+      disabled: [true, true, true],
+      note: "This is a practice day, so saving, loading and resetting are turned off. Press Exit practice to go back to your own centre.",
+      modals: ["settings-title"],
+    });
+  });
+
+  it("loads the player's centre back on exit, at the speed they left it, and saves again", async () => {
+    const container = await boot_running_centre({ ...SNAPSHOT_FIXTURE, speed: 2 });
+    await start_practice_from_help(container);
+    fakes.calls.length = 0;
+    fakes.store.saveGame.mockClear();
+
+    fireEvent.click(
+      within(require_element(container, ".practice-coach")).getByRole("button", {
+        name: "Exit practice",
+      }),
+    );
+    const exit_calls = fakes.calls.filter(([method]) => method.startsWith("controller."));
+    act(() => {
+      runtime_options().onPersistentChange({ marker: "own-change" });
+    });
+    await advance_clock(AUTOSAVE_DEBOUNCE_MS);
+
+    expect({
+      exit_calls,
+      saves: fakes.store.saveGame.mock.calls,
+      title: coach_title(container),
+      save_state: require_element(container, ".save-state").textContent,
+      newest_toast: toast_messages(container)[0],
+    }).toEqual({
+      exit_calls: [
+        ["controller.importState", fakes.runtime.exportedState],
+        ["controller.setBuildTool", "select"],
+        ["controller.selectBuildItem", undefined],
+        ["controller.selectCustomer", undefined],
+        ["controller.setSpeed", 2],
+      ],
+      saves: [[{ marker: "own-change" }]],
+      title: undefined,
+      save_state: "Saved on this device",
+      newest_toast: "Welcome back to your own centre!",
+    });
+  });
+
+  it("moves through the guide and pauses the game on the finish card", async () => {
+    const container = await boot_running_centre();
+    await start_practice_from_help(container);
+    fakes.calls.length = 0;
+
+    const titles: (string | undefined)[] = [];
+    for (let step = 0; step < 15; step += 1) {
+      const coach = require_element(container, ".practice-coach");
+      fireEvent.click(
+        within(coach).queryByRole("button", { name: /^(Let's go|Next)$/ }) ??
+          within(coach).getByRole("button", { name: "Skip this step" }),
+      );
+      titles.push(coach_title(container));
+    }
+
+    expect({
+      last_titles: titles.slice(-2),
+      speeds: fakes.calls.filter(([method]) => method === "controller.setSpeed"),
+      buttons: within(require_element(container, ".practice-coach"))
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    }).toEqual({
+      last_titles: ["Almost closing time", "You ran a whole day!"],
+      speeds: [["controller.setSpeed", 0]],
+      buttons: ["–", "Keep practising", "Go to my centre →"],
+    });
+  });
+
+  it("folds the guide away and opens it again from the action strip", async () => {
+    const container = await boot_running_centre();
+    await start_practice_from_help(container);
+
+    fireEvent.click(within(container).getByRole("button", { name: "Hide the practice guide" }));
+    const folded = coach_title(container);
+    const strip = require_element(container, ".action-strip");
+    fireEvent.click(within(strip).getByRole("button", { name: "Show guide" }));
+
+    expect([folded, coach_title(container)]).toEqual([undefined, "Welcome to your practice day!"]);
+  });
+
+  it("skips the cash card where the screen hides the cash, as on a phone", async () => {
+    const container = await boot_running_centre();
+    // jsdom has no checkVisibility, so the coach treats every target as visible unless a test
+    // supplies one; this one hides the cash, as the phone layout does.
+    Object.defineProperty(HTMLElement.prototype, "checkVisibility", {
+      configurable: true,
+      value(this: HTMLElement) {
+        return !this.matches(".hud-stats");
+      },
+    });
+    onTestFinished(() => {
+      Reflect.deleteProperty(HTMLElement.prototype, "checkVisibility");
+    });
+    await start_practice_from_help(container);
+
+    fireEvent.click(within(container).getByRole("button", { name: "Let's go" }));
+
+    expect(coach_title(container)).toBe("The clock and the speed buttons");
+  });
+
+  it("closes the phone sheet when the guide is folded, so the strip's controls show", async () => {
+    const container = await boot_running_centre(SNAPSHOT_FIXTURE, [COMPACT_LAYOUT_QUERY]);
+    await start_practice_from_help(container);
+    open_dock_tab(container, "Insights");
+    const was_open = require_element(container, "main.game-shell").dataset.managementOpen;
+
+    fireEvent.click(within(container).getByRole("button", { name: "Hide the practice guide" }));
+
+    expect([was_open, require_element(container, "main.game-shell").dataset.managementOpen]).toEqual([
+      "true",
+      "false",
+    ]);
+  });
+
+  it("shows the not-saved notice once, however often the player tries to save", async () => {
+    const container = await boot_running_centre();
+    await start_practice_from_help(container);
+
+    fireEvent.click(dock_button(container, "Save now"));
+    fireEvent.click(dock_button(container, "Save now"));
+
+    expect(toast_messages(container).filter((message) => message === NOT_SAVED)).toHaveLength(1);
+  });
+
+  it("clears the practice toasts when the player goes back to their centre", async () => {
+    const container = await boot_running_centre();
+    await start_practice_from_help(container);
+    act(() => {
+      runtime_options().onEvent({
+        kind: "success",
+        message: "Happy tables complete · +$100",
+        importance: "important",
+      });
+    });
+
+    fireEvent.click(
+      within(require_element(container, ".practice-coach")).getByRole("button", {
+        name: "Exit practice",
+      }),
+    );
+
+    expect(toast_messages(container)).toEqual(["Welcome back to your own centre!"]);
+  });
+
+  it("starts from the tutorial's last card, marking both onboarding flows as seen", async () => {
+    const container = await boot_simulator();
+    fireEvent.click(within(container).getByRole("button", { name: "Show me around" }));
+    fireEvent.click(within(container).getByRole("button", { name: "Got it" }));
+    fireEvent.click(within(container).getByRole("button", { name: "Next" }));
+    fireEvent.click(within(container).getByRole("button", { name: "Next" }));
+    fakes.calls.length = 0;
+
+    fireEvent.click(within(container).getByRole("button", { name: "Try a practice day" }));
+    await settle();
+
+    expect({
+      preferences: fakes.calls.filter(([method]) => method === "savePreference"),
+      calls: centre_calls(),
+      modals: open_modal_titles(container),
+      title: coach_title(container),
+    }).toEqual({
+      preferences: [
+        ["savePreference", "tutorial-complete", true],
+        ["savePreference", "nutrition-tour-v1-complete", true],
+      ],
+      calls: [
+        ["controller.exportState"],
+        ["saveGame", fakes.runtime.exportedState],
+        ["controller.exportState"],
+        ["controller.reset"],
+      ],
+      modals: [],
+      title: "Welcome to your practice day!",
+    });
+  });
+});

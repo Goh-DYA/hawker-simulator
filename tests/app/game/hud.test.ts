@@ -8,6 +8,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import {
+  ActionStrip,
+  type ActionStripPractice,
   BottomDock,
   DebugPanel,
   DOCK_ITEMS,
@@ -122,6 +124,78 @@ describe("BottomDock", () => {
       html.includes('aria-label="Activity, 2 unread"'),
       html.includes('<i class="dock-unread" aria-hidden="true">2</i>'),
     ]).toEqual([true, true, true]);
+  });
+
+  it("tags each tab for the practice coach to ring", () => {
+    const html = renderToStaticMarkup(
+      createElement(BottomDock, {
+        panel: "build",
+        activityUnread: 0,
+        isInert: false,
+        onOpenPanel: () => undefined,
+        onSaveNow: () => undefined,
+      }),
+    );
+
+    expect(Array.from(html.matchAll(/data-coach="([^"]+)"/g), (match) => match[1])).toEqual(
+      DOCK_ITEMS.map(([panel]) => `dock-${panel}`),
+    );
+  });
+});
+
+describe("ActionStrip", () => {
+  /**
+   * Render the action strip on a saved centre.
+   *
+   * @param practice - The practice controls, or undefined outside practice.
+   * @returns The rendered markup.
+   */
+  function render_strip(practice: ActionStripPractice | undefined): string {
+    return renderToStaticMarkup(
+      createElement(ActionStrip, {
+        snapshot: {
+          autosaveState: "saved",
+          buildTool: "select",
+          canUndo: false,
+          routeGuidePoints: [],
+          isOpen: false,
+        },
+        controllerRef: NO_CONTROLLER,
+        practice,
+        onChooseTool: () => undefined,
+        onToggleCentre: () => undefined,
+      }),
+    );
+  }
+
+  /**
+   * @param is_guide_hidden - Whether the coach is folded away.
+   * @returns Practice controls with inert callbacks.
+   */
+  function practice_controls(is_guide_hidden: boolean): ActionStripPractice {
+    return { isGuideHidden: is_guide_hidden, onShowGuide: () => undefined, onExit: () => undefined };
+  }
+
+  it("shows the save state outside practice", () => {
+    expect(render_strip(undefined)).toContain('<span class="green-dot"></span>Saved on this device');
+  });
+
+  it("says nothing is saved during the practice day and offers Exit practice", () => {
+    const html = render_strip(practice_controls(false));
+    expect([
+      html.includes('<span class="practice-strip-label">Practice day · not saved</span>'),
+      html.includes(">Exit practice</button>"),
+      html.includes(">Show guide</button>"),
+    ]).toEqual([true, true, false]);
+  });
+
+  it("offers Show guide while the coach is folded away, keeping the label for screen readers only", () => {
+    const html = render_strip(practice_controls(true));
+    expect([
+      html.includes(">Show guide</button>"),
+      html.includes('<span class="sr-only">Practice day · not saved</span>'),
+      html.includes("practice-strip-label"),
+    ]).toEqual([true, true, false]);
   });
 });
 

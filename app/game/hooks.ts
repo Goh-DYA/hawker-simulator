@@ -146,6 +146,8 @@ export interface Announcer {
   activityUnread: number;
   /** Replaces the unread count. */
   setActivityUnread(count: number): void;
+  /** Removes every toast on screen, as when the practice day swaps centres. */
+  clearToasts(): void;
 }
 
 /**
@@ -189,6 +191,8 @@ export function useAnnouncer(is_activity_panel_open: boolean): Announcer {
     isActivityPanelOpenRef.current = is_activity_panel_open;
   }, [is_activity_panel_open]);
 
+  const clearToasts = useCallback(() => setToasts([]), []);
+
   const reportStorageIssue = useCallback(
     (message: string) => {
       if (storageWarningRef.current) return;
@@ -206,6 +210,7 @@ export function useAnnouncer(is_activity_panel_open: boolean): Announcer {
     setActivityEntries,
     activityUnread,
     setActivityUnread,
+    clearToasts,
   };
 }
 
