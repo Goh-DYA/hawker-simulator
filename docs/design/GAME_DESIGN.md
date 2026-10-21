@@ -169,7 +169,7 @@ The player cannot enter a hard fail state: starter essentials are protected from
 
 ### Tutorial
 
-The first-session tutorial teaches camera, place a table and seats, place a stall, inspect reachability, open, follow one customer, read one bottleneck, save, and reopen build mode. A separately persisted nutrition tour teaches Menu Planning and customer inspection without replaying the legacy tutorial. Each tour has Skip and Replay.
+The first-session tutorial teaches camera, place a table and seats, place a stall, inspect reachability, open, follow one customer, read one bottleneck, save, and reopen build mode. A separately persisted nutrition tour teaches Menu Planning and customer inspection without replaying the legacy tutorial. Each tour has Skip and Replay. The tutorial and tour copy uses short sentences and plain words, so a young player new to management games can follow it: each card is a short lead-in and a few one-sentence points with a small icon each, never a run-on paragraph.
 
 ### Difficulty and quality modes
 

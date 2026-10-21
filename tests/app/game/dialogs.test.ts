@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * Render tests of the Settings, Help, reset and Service Review dialogs from
+ * Render tests of the tutorial, Settings, Help, reset and Service Review dialogs from
  * `app/game/dialogs.tsx`.
  *
  * Each dialog renders on its own with recorded callbacks, so these cases pin which callback a
@@ -21,11 +21,13 @@ import {
   SettingsDialog,
   SettingSlider,
   SettingSwitch,
+  TutorialDialog,
   type BooleanSettingKey,
   type NumberSettingKey,
 } from "@/app/game/dialogs";
 import { CONTENT_UPDATED_ON, CONTENT_VERSION, format_release_date } from "@/src/content";
 import { DEFAULT_SETTINGS } from "@/src/game/persistence/preferences";
+import type { TutorialStep } from "@/app/game/focus";
 import type { RuntimeDayReport, RuntimeSettings } from "@/src/game/runtime/types";
 import { SNAPSHOT_FIXTURE } from "./panels/fixtures";
 
@@ -69,6 +71,77 @@ function render_settings(is_reset_open = false) {
 
 afterEach(() => {
   cleanup();
+});
+
+describe("TutorialDialog", () => {
+  /**
+   * Render the tutorial on one card with recorded callbacks.
+   *
+   * @param step - The card to show.
+   * @returns The dialog element, its section ref and the callbacks.
+   */
+  function render_tutorial(step: TutorialStep) {
+    const ref = createRef<HTMLElement>();
+    const callbacks = { onFinish: vi.fn(), onStepChange: vi.fn() };
+    render(createElement(TutorialDialog, { ref, step, ...callbacks }));
+    const dialog = within(document.body).getByRole("dialog");
+    return { dialog, ref, callbacks };
+  }
+
+  it("hands the shell's focus trap its section through the ref", () => {
+    const { dialog, ref } = render_tutorial(0);
+    expect(ref.current).toBe(dialog);
+  });
+
+  it("welcomes a new player in plain words", () => {
+    const { dialog } = render_tutorial(0);
+    expect(within(dialog).getByRole("heading").textContent).toBe("Welcome to your hawker centre!");
+    expect(
+      Array.from(dialog.querySelectorAll(".guide-points li"), (item) => item.textContent),
+    ).toEqual([
+      "🚶Hungry guests walk in.",
+      "🍜They buy food from your stalls.",
+      "🪑They sit down, eat, and go home.",
+      "😊Your job: keep them fed and happy!",
+    ]);
+    expect(dialog.querySelectorAll(".guide-icon[aria-hidden='true']")).toHaveLength(4);
+  });
+
+  it("shows a guest's visit as stages on the guests card", () => {
+    const { dialog } = render_tutorial(3);
+    const flow = within(dialog).getByRole("list", { name: "A guest's visit" });
+    expect(Array.from(flow.children, (stage) => stage.textContent)).toEqual([
+      "Pick a stall",
+      "Line up",
+      "Get food",
+      "Sit and eat",
+      "Go home",
+    ]);
+  });
+
+  it.each<[TutorialStep, string]>([
+    [1, "Look around"],
+    [2, "Open your stalls"],
+    [3, "Watch your guests"],
+    [4, "Earn cash and grow"],
+  ])("titles card %i %s", (step, title) => {
+    const { dialog } = render_tutorial(step);
+    expect(within(dialog).getByRole("heading").textContent).toBe(title);
+  });
+
+  it("skips from an early card and advances with the primary button", () => {
+    const { dialog, callbacks } = render_tutorial(1);
+    fireEvent.click(within(dialog).getByRole("button", { name: "Got it" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Skip tutorial" }));
+    expect(callbacks.onStepChange).toHaveBeenCalledWith(2);
+    expect(callbacks.onFinish).toHaveBeenCalledWith(false);
+  });
+
+  it("opens the centre from the last card's primary button", () => {
+    const { dialog, callbacks } = render_tutorial(4);
+    fireEvent.click(within(dialog).getByRole("button", { name: "Start playing" }));
+    expect(callbacks.onFinish).toHaveBeenCalledWith(true);
+  });
 });
 
 describe("SettingsDialog", () => {
