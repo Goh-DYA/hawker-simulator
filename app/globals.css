@@ -1338,13 +1338,15 @@ kbd {
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 20%), 0 2px 4px rgb(15 50 40 / 22%);
 }
 
+/* The lists fill only the space the panel has left, so a card below them, such as the guest
+   inspector, keeps its own height before a list takes the rest. */
 .catalogue-grid,
 .stall-list,
 .dish-list,
 .insights-list,
 .activity-list {
   min-height: 0;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   overflow-y: auto;
   scrollbar-color: #b5a58d transparent;
   scrollbar-width: thin;
@@ -1353,7 +1355,7 @@ kbd {
 .activity-panel {
   min-height: 0;
   display: flex;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   flex-direction: column;
   margin-top: 11px;
 }
@@ -1594,11 +1596,15 @@ kbd {
   white-space: nowrap;
 }
 
+/* The menu manager fills only the space the panel has left and scrolls as a whole when that is
+   short (beside the guest inspector), so its dish list never spills over the cards below it. */
 .menu-manager {
   min-height: 0;
   display: flex;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
 }
 
 .menu-stall-picker {
@@ -5584,8 +5590,36 @@ kbd {
   font-size: 0.58rem;
 }
 
+/* Beside the guest inspector, the sections drop the room their lists keep at the bottom (the
+   inspector already sits there), and the menu manager becomes the Dishes panel's one scroller,
+   so its stall picker and dish rows scroll together instead of through a slit. */
+.catalogue-panel:has(.customer-nutrition-inspector) :is(
+    .catalogue-grid,
+    .stall-list,
+    .dish-list,
+    .insights-list,
+    .activity-list,
+    .focus-panel
+  ) {
+  padding-bottom: 12px;
+}
+
+.catalogue-panel:has(.customer-nutrition-inspector) .menu-manager .dish-list {
+  flex: none;
+  overflow: visible;
+}
+
+/* The inspector takes up to most of the panel, ahead of the list above it, shrinks when the
+   panel has less room, and scrolls inside its height, so its last details are never cut off
+   by the panel's hidden overflow. It leaves at least half of the panel to the section above,
+   enough for one whole Build item or dish row on a short screen. */
 .customer-nutrition-inspector {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 50%;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
   margin-top: 10px;
   padding: 11px;
   border: 2px solid #7fa8b5;
@@ -5755,8 +5789,10 @@ kbd {
   font-weight: 900;
 }
 
+/* Like the lists, the Focus panel fills only the space the guest inspector leaves. */
 .focus-panel {
   min-height: 0;
+  flex: 1 1 0;
   display: grid;
   gap: 10px;
   margin-top: 10px;
