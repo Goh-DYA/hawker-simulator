@@ -5,20 +5,18 @@
  * pulse, the Variant Lab dialog, the customer nutrition inspector and the disclosure note.
  *
  * The components render view models (the `*View` types here) that the runtime snapshot
- * provides, so they hold no game logic. A meal's card explains its Health rating from the
- * generated parts the profile carries, against the content's daily reference amounts.
+ * provides, so they hold no game logic. A Health rating's tooltip lists the main reasons the
+ * profile carries, in plain words that name no score.
  * `dialogFocusAction` is re-exported from `focus.ts` for existing importers.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import {
-  limitNutrientSchema,
   NUTRITION_CONTENT,
-  type LimitNutrient,
-  type NutritionDailyReference,
-  type NutritionHealthParts,
+  type HealthReasonFactor,
+  type HealthReasonLevel,
+  type NutritionHealthReason,
 } from "@/src/content";
-import { HEALTH_CONDITIONS } from "@/src/game/core/enums";
 import { HEALTH_CONDITION_LABELS as RUNTIME_HEALTH_CONDITION_LABELS } from "@/src/game/runtime/nutrition";
 import { install_focus_trap, VARIANT_LAB_FOCUSABLE_SELECTOR } from "./focus";
 import { PaintedPreview } from "./previews";
@@ -48,8 +46,8 @@ export interface NutritionProfileView {
   readonly ironMg?: NutritionValueView;
   readonly waterG?: NutritionValueView;
   readonly healthRating?: number;
-  /** The parts a meal's Health rating is built from; drinks have none. */
-  readonly healthParts?: NutritionHealthParts;
+  /** Up to three main reasons for the Health rating, concerns first; absent when not rated. */
+  readonly healthReasons?: readonly NutritionHealthReason[];
   readonly conditionRatings?: Readonly<Record<string, number | undefined>>;
   readonly intentFits?: Readonly<Record<string, number | undefined>>;
 }
@@ -190,54 +188,54 @@ const PULSE_METRICS = [
 /** The runtime's condition labels, indexable by any condition ID a profile or guest holds. */
 const HEALTH_CONDITION_LABELS: Readonly<Record<string, string>> = RUNTIME_HEALTH_CONDITION_LABELS;
 
-/** The health badge label of a guest with a condition, whose card explains the general rating. */
+/** The health badge label of a guest with a condition. */
 const PERSONAL_HEALTH_FIT_LABEL = "Personal health fit";
 
+/** How a health reason names its nutrient. */
+const REASON_NOUNS: Readonly<Record<HealthReasonFactor, string>> = {
+  energy: "energy",
+  "saturated-fat": "saturated fat",
+  sodium: "sodium",
+  sugar: "sugar",
+  carbohydrate: "carbohydrate",
+  fibre: "fibre",
+  protein: "protein",
+};
+
+/** How each reason level reads, with the nutrient's noun in place of `{}`. */
+const REASON_TEMPLATES: Readonly<Record<HealthReasonLevel, string>> = {
+  "above-daily": "More than a day's {}",
+  high: "High in {}",
+  moderate: "Moderate {}",
+  low: "Low in {}",
+  source: "Source of {}",
+};
+
+/** The tooltip line of a profile without reviewed nutrition data, which rates neutral. */
+const UNRATED_REASON = "No reviewed nutrition data yet";
+
 /**
- * The condition rating at which a condition guest counts a dish as a match (the core's
- * `HEALTH_MATCH_THRESHOLD`); the card names the lowest condition only below it.
+ * Whether a health reason supports the rating (a fibre or protein claim, or a nutrient the
+ * serving is low in) rather than weighs on it.
+ *
+ * @param reason - The health reason.
+ * @returns True for a strength.
  */
-const CONDITION_MATCH_RATING = 3.5;
+function is_strength_reason(reason: NutritionHealthReason) {
+  return reason.level === "low" || reason.factor === "fibre" || reason.factor === "protein";
+}
 
-const TRANS_FAT_NOTE = " (trans fat counted with it)";
-
-/** How the meal card names each limit nutrient, its amount and its daily reference. */
-const LIMIT_NUTRIENT_COPY = {
-  energy: {
-    metric: "energyKcal",
-    reference: "energyKcal",
-    noun: "",
-    guideline: "daily energy reference",
-  },
-  "saturated-fat": {
-    metric: "saturatedFatG",
-    reference: "saturatedFatG",
-    noun: " saturated fat",
-    guideline: "daily saturated fat guideline",
-  },
-  sodium: {
-    metric: "sodiumMg",
-    reference: "sodiumMg",
-    noun: " sodium",
-    guideline: "daily sodium guideline",
-  },
-  sugar: {
-    metric: "totalSugarG",
-    reference: "totalSugarG",
-    noun: " total sugar",
-    guideline: "daily sugar guideline",
-  },
-} as const satisfies Readonly<
-  Record<
-    LimitNutrient,
-    {
-      readonly metric: ProfileMetric;
-      readonly reference: keyof NutritionDailyReference;
-      readonly noun: string;
-      readonly guideline: string;
-    }
-  >
->;
+/**
+ * Words one health reason, as in "High in sodium", or "Likely high in sugar" when it rests on
+ * an estimated amount.
+ *
+ * @param reason - The health reason.
+ * @returns The reason's text.
+ */
+function health_reason_text(reason: NutritionHealthReason) {
+  const text = REASON_TEMPLATES[reason.level].replace("{}", REASON_NOUNS[reason.factor]);
+  return reason.isEstimated ? `Likely ${text.charAt(0).toLowerCase()}${text.slice(1)}` : text;
+}
 
 /**
  * Names the variant a customer was served.
@@ -301,6 +299,65 @@ function ratingText(value: number | undefined) {
 }
 
 /**
+ * Renders the Health rating's tooltip: a small button that lists the rating's main reasons
+ * while it is hovered or focused, in plain words that name no score. Escape hides the list
+ * until the pointer or focus leaves (WCAG 1.4.13).
+ *
+ * @param props - The reasons, and the badge's label for the button's name.
+ * @returns The tooltip and its button.
+ */
+function HealthReasonsTip({
+  reasons,
+  healthLabel,
+}: {
+  readonly reasons?: readonly NutritionHealthReason[];
+  readonly healthLabel: string;
+}) {
+  const tip_id = useId();
+  const [is_dismissed, set_is_dismissed] = useState(false);
+  const handle_key_down = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key !== "Escape" || is_dismissed) return;
+    // Hide the tooltip without also closing the dialog or panel around it.
+    event.stopPropagation();
+    set_is_dismissed(true);
+  };
+  return (
+    <span
+      className="health-reasons"
+      data-dismissed={is_dismissed ? "true" : undefined}
+      onMouseLeave={() => set_is_dismissed(false)}
+    >
+      <button
+        type="button"
+        className="health-reasons-trigger"
+        aria-label={`Why this ${healthLabel.toLowerCase()}`}
+        aria-describedby={tip_id}
+        onKeyDown={handle_key_down}
+        onBlur={() => set_is_dismissed(false)}
+      >
+        i
+      </button>
+      <span role="tooltip" id={tip_id} className="health-reasons-tip">
+        <ul>
+          {reasons && reasons.length > 0 ? (
+            reasons.map((reason) => (
+              <li
+                key={`${reason.factor}:${reason.level}`}
+                data-tone={is_strength_reason(reason) ? "strength" : "concern"}
+              >
+                {health_reason_text(reason)}
+              </li>
+            ))
+          ) : (
+            <li>{UNRATED_REASON}</li>
+          )}
+        </ul>
+      </span>
+    </span>
+  );
+}
+
+/**
  * Renders a dish's health and star rating badges.
  *
  * @param props - The ratings to show and the health badge's label.
@@ -310,10 +367,13 @@ export function DishRatingSummary({
   healthRating,
   starRating,
   healthLabel = "Health rating",
+  healthReasons,
 }: {
   readonly healthRating?: number;
   readonly starRating?: number;
   readonly healthLabel?: string;
+  /** The rating's main reasons; a rated badge without them explains that data is missing. */
+  readonly healthReasons?: readonly NutritionHealthReason[];
 }) {
   return (
     <div className="dish-rating-summary" aria-label="Dish health and star ratings">
@@ -323,6 +383,9 @@ export function DishRatingSummary({
       >
         <i aria-hidden="true">♥</i>
         <span><small>{healthLabel}</small><strong>{ratingText(healthRating)}</strong></span>
+        {typeof healthRating === "number" ? (
+          <HealthReasonsTip reasons={healthReasons} healthLabel={healthLabel} />
+        ) : null}
       </span>
       <span
         className="dish-rating-badge is-star"
@@ -335,214 +398,15 @@ export function DishRatingSummary({
   );
 }
 
-/**
- * Names a limit nutrient's daily reference amount, as in "the 2,000 mg daily sodium guideline".
- *
- * @param nutrient - The limit nutrient.
- * @returns The reference phrase, with the amount from the content's daily reference.
- */
-function describe_daily_reference(nutrient: LimitNutrient) {
-  const copy = LIMIT_NUTRIENT_COPY[nutrient];
-  const amount = NUTRITION_CONTENT.dailyReference[copy.reference];
-  return `the ${formatNumber(amount, 0)} ${METRIC_COPY[copy.metric].unit} ${copy.guideline}`;
-}
-
-/**
- * Gives a serving's percentage of a daily reference amount.
- *
- * @param amount - The serving's amount.
- * @param nutrient - The limit nutrient, which picks the daily reference amount.
- * @returns The whole-number percentage.
- */
-function format_day_percentage(amount: number, nutrient: LimitNutrient) {
-  const reference = NUTRITION_CONTENT.dailyReference[LIMIT_NUTRIENT_COPY[nutrient].reference];
-  return Math.round((100 * amount) / reference);
-}
-
-function has_trans_fat(profile: NutritionProfileView) {
-  return profile.transFatG?.status === "known" && profile.transFatG.value > 0;
-}
-
-/**
- * Reads the amount the rating used for a limit nutrient: saturated fat counts trans fat with
- * it, and an unreported trans fat adds nothing.
- *
- * @param profile - The meal's profile.
- * @param nutrient - The limit nutrient.
- * @returns The amount, or undefined when the nutrient is a trace or not available.
- */
-function resolve_limit_amount(profile: NutritionProfileView, nutrient: LimitNutrient) {
-  const value = profile[LIMIT_NUTRIENT_COPY[nutrient].metric];
-  if (value?.status !== "known") return undefined;
-  if (nutrient !== "saturated-fat") return value.value;
-  const trans_fat = profile.transFatG;
-  return value.value + (trans_fat?.status === "known" ? trans_fat.value : 0);
-}
-
-function trans_fat_note(profile: NutritionProfileView, nutrient: LimitNutrient) {
-  return nutrient === "saturated-fat" && has_trans_fat(profile) ? TRANS_FAT_NOTE : "";
-}
-
-/**
- * Describes one limit nutrient of a serving against its daily reference amount.
- *
- * @param profile - The meal's profile.
- * @param nutrient - The limit nutrient.
- * @returns The row, such as "1,434 mg sodium, 72% of the 2,000 mg daily sodium guideline",
- *   or the nutrient's value text without a percentage when it is a trace or not available.
- */
-function describe_limit_row(profile: NutritionProfileView, nutrient: LimitNutrient) {
-  const copy = LIMIT_NUTRIENT_COPY[nutrient];
-  const metric = METRIC_COPY[copy.metric];
-  const amount = resolve_limit_amount(profile, nutrient);
-  if (amount === undefined) {
-    return `${metric.label}: ${nutritionValueText(profile[copy.metric], copy.metric)}`;
-  }
-  const amount_text = `${formatNumber(amount, metric.digits)} ${metric.unit}${copy.noun}`;
-  const percentage = format_day_percentage(amount, nutrient);
-  const reference = describe_daily_reference(nutrient);
-  return `${amount_text}, ${percentage}% of ${reference}${trans_fat_note(profile, nutrient)}`;
-}
-
-/**
- * Lists the limit nutrients whose amount per 100 g, not the serving, set their rating.
- *
- * @param profile - The meal's profile.
- * @param parts - The meal's Health rating parts.
- * @returns The density line, or undefined when no nutrient is rated by density.
- */
-function describe_dense_nutrients(profile: NutritionProfileView, parts: NutritionHealthParts) {
-  if (!parts.denseNutrients) return undefined;
-  const entries = parts.denseNutrients.map(({ nutrient, per100g }) => {
-    const copy = LIMIT_NUTRIENT_COPY[nutrient];
-    const metric = METRIC_COPY[copy.metric];
-    const amount_text = `${formatNumber(per100g, metric.digits)} ${metric.unit}${copy.noun}`;
-    return `${amount_text}${trans_fat_note(profile, nutrient)}`;
-  });
-  return `Also rated per 100 g: ${entries.join(", ")}`;
-}
-
-/**
- * Finds the lowest displayed condition rating; a tie goes to the first condition.
- *
- * @param ratings - The profile's condition ratings.
- * @returns The condition and its rating, or undefined when none is rated.
- */
-function find_lowest_condition(ratings: NutritionProfileView["conditionRatings"]) {
-  let lowest: { readonly condition: string; readonly rating: number } | undefined;
-  for (const condition of HEALTH_CONDITIONS) {
-    const rating = ratings?.[condition];
-    if (typeof rating !== "number" || !Number.isFinite(rating)) continue;
-    if (!lowest || rating < lowest.rating) lowest = { condition, rating };
-  }
-  return lowest;
-}
-
-/**
- * Builds the always-visible summary of how a meal's Health rating is built.
- *
- * @param profile - The meal's profile.
- * @param parts - The meal's Health rating parts.
- * @param is_personal_fit - Whether the card's badge shows a guest's personal health fit, so
- *   the summary names the general rating it explains.
- * @returns The summary text.
- */
-function build_health_summary(
-  profile: NutritionProfileView,
-  parts: NutritionHealthParts,
-  is_personal_fit: boolean,
-) {
-  const parts_text = `daily-guideline nutrients ${parts.nutrients.toFixed(1)} `
-    + `and condition fit ${parts.conditions.toFixed(1)}`;
-  const lead = is_personal_fit && typeof profile.healthRating === "number"
-    ? `Health rating ${profile.healthRating.toFixed(1)} is built from ${parts_text}`
-    : `How this Health rating is built: ${parts_text}`;
-  const lowest = find_lowest_condition(profile.conditionRatings);
-  if (!lowest || lowest.rating >= CONDITION_MATCH_RATING) return lead;
-  const label = HEALTH_CONDITION_LABELS[lowest.condition];
-  return `${lead} · lowest: ${label} ${lowest.rating.toFixed(1)}`;
-}
-
-/**
- * Describes how much more than a full day's amount of a limit nutrient one serving holds.
- *
- * @param profile - The meal's profile.
- * @param parts - The meal's Health rating parts.
- * @returns The excess line before any deduction, or undefined when no nutrient passes a day.
- */
-function describe_excess(profile: NutritionProfileView, parts: NutritionHealthParts) {
-  const nutrient = parts.excessNutrient;
-  if (!nutrient || parts.excessDayShare === undefined) return undefined;
-  const is_estimated = profile[LIMIT_NUTRIENT_COPY[nutrient].metric]?.status !== "known";
-  const percentage = Math.round(100 * parts.excessDayShare);
-  const share = `${is_estimated ? "an estimated " : ""}${percentage}%`;
-  const sugar_note = nutrient === "sugar" ? ", as total sugar" : "";
-  const notes = `${sugar_note}${trans_fat_note(profile, nutrient)}`;
-  return `One serving holds ${share} of ${describe_daily_reference(nutrient)}${notes}`;
-}
-
 function ConditionRatingDetails({
   ratings,
-  profile,
-  healthLabel,
 }: {
   readonly ratings?: Readonly<Record<string, number | undefined>>;
-  readonly profile?: NutritionProfileView;
-  readonly healthLabel?: string;
 }) {
   const entries = Object.entries(ratings ?? {}).filter(
     (entry): entry is [string, number] =>
       typeof entry[1] === "number" && Number.isFinite(entry[1]),
   );
-  const parts = profile?.healthParts;
-  if (profile && parts) {
-    const dense_line = describe_dense_nutrients(profile, parts);
-    const excess_line = describe_excess(profile, parts);
-    const deduction = parts.excess.toFixed(1);
-    return (
-      <details className="condition-rating-details health-parts-details">
-        <summary>
-          {build_health_summary(profile, parts, healthLabel === PERSONAL_HEALTH_FIT_LABEL)}
-        </summary>
-        <p className="health-parts-heading">
-          Daily-guideline nutrients {ratingText(parts.nutrients)}
-        </p>
-        <ul aria-label="Limit nutrients per listed serving against daily guidelines">
-          {limitNutrientSchema.options.map((nutrient) => (
-            <li key={nutrient}>{describe_limit_row(profile, nutrient)}</li>
-          ))}
-        </ul>
-        <p className="health-parts-note">
-          Fibre and protein add credit, which shrinks as energy, saturated fat, sodium and sugar
-          rise.
-        </p>
-        {dense_line ? <p className="health-parts-note">{dense_line}</p> : null}
-        <p className="health-parts-heading">
-          Condition fit {ratingText(parts.conditions)} (the lowest condition counts as much as the
-          other three together)
-        </p>
-        <dl aria-label="Condition-specific health ratings">
-          {entries.map(([condition, rating]) => (
-            <div key={condition}>
-              <dt>{HEALTH_CONDITION_LABELS[condition] ?? condition.replaceAll("-", " ")}</dt>
-              <dd>{ratingText(rating)}</dd>
-            </div>
-          ))}
-        </dl>
-        {excess_line ? (
-          <p className="health-parts-excess">
-            {excess_line}
-            {parts.excess >= 0.1 ? (
-              <>
-                {" "}
-                <span role="img" aria-label={`minus ${deduction} star`}>(−{deduction} star)</span>
-              </>
-            ) : null}
-          </p>
-        ) : null}
-      </details>
-    );
-  }
   if (entries.length === 0) return null;
   return (
     <details className="condition-rating-details">
@@ -590,6 +454,7 @@ export function NutritionProfileSummary({
         healthRating={healthRating ?? profile?.healthRating}
         starRating={starRating}
         healthLabel={healthLabel}
+        healthReasons={profile?.healthReasons}
       />
       <p>Serving · {profile?.servingLabel ?? dataState ?? "Not available"}</p>
       {dataState ? <p className="nutrition-data-state">{dataState}</p> : null}
@@ -612,11 +477,7 @@ export function NutritionProfileSummary({
           ))}
         </dl>
       </details>
-      <ConditionRatingDetails
-        ratings={profile?.conditionRatings}
-        profile={profile}
-        healthLabel={healthLabel}
-      />
+      <ConditionRatingDetails ratings={profile?.conditionRatings} />
     </div>
   );
 }
@@ -998,19 +859,18 @@ const DAILY_REFERENCE_AMOUNTS = [
   `${formatNumber(NUTRITION_CONTENT.dailyReference.totalSugarG, 0)} g`,
 ];
 
-/** The Help text on how a meal's Health rating is built, with the content's daily amounts. */
+/** The Help text on what the Health rating reflects, with the content's daily amounts. */
 const HEALTH_RATING_HELP_TEXT =
-  "For meals, the Health rating is half a score for energy, saturated fat, sodium and sugar "
-  + "measured against daily guideline amounts, with credit for fibre and protein, and half the "
-  + "four condition ratings, where the lowest counts as much as the other three together. A "
-  + "serving holding more than a full day's amount of energy, saturated fat, sodium or sugar "
-  + `(${DAILY_REFERENCE_AMOUNTS.slice(0, 3).join(", ")} or ${DAILY_REFERENCE_AMOUNTS[3]}) loses `
-  + "one more star for each extra day. It describes one serving for a general adult and is not "
-  + "dietary advice.";
+  "A meal's Health rating weighs one serving's energy, saturated fat, sodium and sugar against "
+  + `daily guideline amounts (${DAILY_REFERENCE_AMOUNTS.slice(0, 3).join(", ")} and `
+  + `${DAILY_REFERENCE_AMOUNTS[3]}), counts its fibre and protein, and reflects how it suits `
+  + "each health condition. A drink's follows its sugar and saturated fat bands. The i beside a "
+  + "Health rating lists its main reasons. It describes one serving for a general adult and is "
+  + "not dietary advice.";
 
 /**
- * Renders the note that the nutrition data and ratings are educational, not advice, and how a
- * meal's Health rating is built.
+ * Renders the note that the nutrition data and ratings are educational, not advice, and what
+ * the Health rating reflects.
  *
  * @returns The disclosure.
  */
@@ -1027,7 +887,7 @@ export function NutritionDisclosure() {
         These scores are game mechanics—not a diagnosis, health certification, or personal medical
         advice. Total sugar is not the same as added sugar.
       </p>
-      <h3>How the Health rating is built</h3>
+      <h3>What the Health rating reflects</h3>
       <p>{HEALTH_RATING_HELP_TEXT}</p>
     </details>
   );

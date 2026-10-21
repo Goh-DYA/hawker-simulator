@@ -762,6 +762,16 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <small>Health rating</small>
 <strong>3.8/5</strong>
 </span>
+<span class="health-reasons">
+<button type="button" class="health-reasons-trigger" aria-label="Why this health rating" aria-describedby="_r_0_">i</button>
+<span role="tooltip" id="_r_0_" class="health-reasons-tip">
+<ul>
+<li data-tone="concern">High in sodium</li>
+<li data-tone="concern">High in carbohydrate</li>
+<li data-tone="strength">Source of protein</li>
+</ul>
+</span>
+</span>
 </span>
 <span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.6/5">
 <i aria-hidden="true">★</i>
@@ -827,17 +837,8 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 </dl>
 </details>
-<details class="condition-rating-details health-parts-details">
-<summary>How this Health rating is built: daily-guideline nutrients 4.2 and condition fit 3.3 · lowest: Managing hypertension 2.9</summary>
-<p class="health-parts-heading">Daily-guideline nutrients 4.2/5</p>
-<ul aria-label="Limit nutrients per listed serving against daily guidelines">
-<li>488 kcal, 24% of the 2,000 kcal daily energy reference</li>
-<li>4.4 g saturated fat, 20% of the 22 g daily saturated fat guideline (trans fat counted with it)</li>
-<li>1,227 mg sodium, 61% of the 2,000 mg daily sodium guideline</li>
-<li>Total sugar: Trace amount</li>
-</ul>
-<p class="health-parts-note">Fibre and protein add credit, which shrinks as energy, saturated fat, sodium and sugar rise.</p>
-<p class="health-parts-heading">Condition fit 3.3/5 (the lowest condition counts as much as the other three together)</p>
+<details class="condition-rating-details">
+<summary>Health rating by condition</summary>
 <dl aria-label="Condition-specific health ratings">
 <div>
 <dt>Managing high cholesterol</dt>
@@ -886,6 +887,16 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <span>
 <small>Health rating</small>
 <strong>3.1/5</strong>
+</span>
+<span class="health-reasons">
+<button type="button" class="health-reasons-trigger" aria-label="Why this health rating" aria-describedby="_r_1_">i</button>
+<span role="tooltip" id="_r_1_" class="health-reasons-tip">
+<ul>
+<li data-tone="concern">High in sodium</li>
+<li data-tone="concern">High in carbohydrate</li>
+<li data-tone="strength">Source of protein</li>
+</ul>
+</span>
 </span>
 </span>
 <span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.3/5">
@@ -952,17 +963,8 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 </dl>
 </details>
-<details class="condition-rating-details health-parts-details">
-<summary>How this Health rating is built: daily-guideline nutrients 3.5 and condition fit 2.7 · lowest: Managing diabetes 2.4</summary>
-<p class="health-parts-heading">Daily-guideline nutrients 3.5/5</p>
-<ul aria-label="Limit nutrients per listed serving against daily guidelines">
-<li>643 kcal, 32% of the 2,000 kcal daily energy reference</li>
-<li>7.0 g saturated fat, 32% of the 22 g daily saturated fat guideline (trans fat counted with it)</li>
-<li>1,061 mg sodium, 53% of the 2,000 mg daily sodium guideline</li>
-<li>0.7 g total sugar, 1% of the 50 g daily sugar guideline</li>
-</ul>
-<p class="health-parts-note">Fibre and protein add credit, which shrinks as energy, saturated fat, sodium and sugar rise.</p>
-<p class="health-parts-heading">Condition fit 2.7/5 (the lowest condition counts as much as the other three together)</p>
+<details class="condition-rating-details">
+<summary>Health rating by condition</summary>
 <dl aria-label="Condition-specific health ratings">
 <div>
 <dt>Managing high cholesterol</dt>
@@ -1012,6 +1014,16 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <span>
 <small>Health rating</small>
 <strong>3.6/5</strong>
+</span>
+<span class="health-reasons">
+<button type="button" class="health-reasons-trigger" aria-label="Why this health rating" aria-describedby="_r_2_">i</button>
+<span role="tooltip" id="_r_2_" class="health-reasons-tip">
+<ul>
+<li data-tone="concern">High in sodium</li>
+<li data-tone="concern">High in carbohydrate</li>
+<li data-tone="strength">Source of protein</li>
+</ul>
+</span>
 </span>
 </span>
 <span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 3.2/5">
@@ -1078,18 +1090,8 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 </dl>
 </details>
-<details class="condition-rating-details health-parts-details">
-<summary>How this Health rating is built: daily-guideline nutrients 3.9 and condition fit 3.2 · lowest: Managing diabetes 3.1</summary>
-<p class="health-parts-heading">Daily-guideline nutrients 3.9/5</p>
-<ul aria-label="Limit nutrients per listed serving against daily guidelines">
-<li>530 kcal, 26% of the 2,000 kcal daily energy reference</li>
-<li>5.2 g saturated fat, 24% of the 22 g daily saturated fat guideline</li>
-<li>1,119 mg sodium, 56% of the 2,000 mg daily sodium guideline</li>
-<li>2.3 g total sugar, 5% of the 50 g daily sugar guideline</li>
-</ul>
-<p class="health-parts-note">Fibre and protein add credit, which shrinks as energy, saturated fat, sodium and sugar rise.</p>
-<p class="health-parts-note">Also rated per 100 g: 183 kcal</p>
-<p class="health-parts-heading">Condition fit 3.2/5 (the lowest condition counts as much as the other three together)</p>
+<details class="condition-rating-details">
+<summary>Health rating by condition</summary>
 <dl aria-label="Condition-specific health ratings">
 <div>
 <dt>Managing high cholesterol</dt>
@@ -1139,6 +1141,16 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <span>
 <small>Health rating</small>
 <strong>3.9/5</strong>
+</span>
+<span class="health-reasons">
+<button type="button" class="health-reasons-trigger" aria-label="Why this health rating" aria-describedby="_r_3_">i</button>
+<span role="tooltip" id="_r_3_" class="health-reasons-tip">
+<ul>
+<li data-tone="concern">High in sodium</li>
+<li data-tone="strength">High in protein</li>
+<li data-tone="strength">Low in sugar</li>
+</ul>
+</span>
 </span>
 </span>
 <span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 3.5/5">
@@ -1205,17 +1217,8 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 </dl>
 </details>
-<details class="condition-rating-details health-parts-details">
-<summary>How this Health rating is built: daily-guideline nutrients 4.3 and condition fit 3.5 · lowest: Managing hypertension 2.4</summary>
-<p class="health-parts-heading">Daily-guideline nutrients 4.3/5</p>
-<ul aria-label="Limit nutrients per listed serving against daily guidelines">
-<li>311 kcal, 16% of the 2,000 kcal daily energy reference</li>
-<li>3.5 g saturated fat, 16% of the 22 g daily saturated fat guideline</li>
-<li>1,434 mg sodium, 72% of the 2,000 mg daily sodium guideline</li>
-<li>Total sugar: Trace amount</li>
-</ul>
-<p class="health-parts-note">Fibre and protein add credit, which shrinks as energy, saturated fat, sodium and sugar rise.</p>
-<p class="health-parts-heading">Condition fit 3.5/5 (the lowest condition counts as much as the other three together)</p>
+<details class="condition-rating-details">
+<summary>Health rating by condition</summary>
 <dl aria-label="Condition-specific health ratings">
 <div>
 <dt>Managing high cholesterol</dt>
@@ -1265,6 +1268,16 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <span>
 <small>Health rating</small>
 <strong>3.8/5</strong>
+</span>
+<span class="health-reasons">
+<button type="button" class="health-reasons-trigger" aria-label="Why this health rating" aria-describedby="_r_4_">i</button>
+<span role="tooltip" id="_r_4_" class="health-reasons-tip">
+<ul>
+<li data-tone="concern">High in sodium</li>
+<li data-tone="concern">High in carbohydrate</li>
+<li data-tone="strength">High in protein</li>
+</ul>
+</span>
 </span>
 </span>
 <span class="dish-rating-badge is-star" aria-label="Star rating for taste and popularity: 4.3/5">
@@ -1331,17 +1344,8 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 </div>
 </dl>
 </details>
-<details class="condition-rating-details health-parts-details">
-<summary>How this Health rating is built: daily-guideline nutrients 4.3 and condition fit 3.2 · lowest: Managing diabetes 2.6</summary>
-<p class="health-parts-heading">Daily-guideline nutrients 4.3/5</p>
-<ul aria-label="Limit nutrients per listed serving against daily guidelines">
-<li>621 kcal, 31% of the 2,000 kcal daily energy reference</li>
-<li>4.2 g saturated fat, 19% of the 22 g daily saturated fat guideline</li>
-<li>833 mg sodium, 42% of the 2,000 mg daily sodium guideline</li>
-<li>2.1 g total sugar, 4% of the 50 g daily sugar guideline</li>
-</ul>
-<p class="health-parts-note">Fibre and protein add credit, which shrinks as energy, saturated fat, sodium and sugar rise.</p>
-<p class="health-parts-heading">Condition fit 3.2/5 (the lowest condition counts as much as the other three together)</p>
+<details class="condition-rating-details">
+<summary>Health rating by condition</summary>
 <dl aria-label="Condition-specific health ratings">
 <div>
 <dt>Managing high cholesterol</dt>
@@ -1375,8 +1379,8 @@ exports[`HawkerSimulator panels > renders the Dishes panel for a captured runtim
 <details class="nutrition-disclosure">
 <summary>Nutrition data &amp; education note</summary>
 <p>Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed serving in the supplied CSV data; recipes and portions vary. The Health rating is a comparative in-game balance score derived from that serving and can change by variant. The Star rating separately represents taste and popularity. A customer's personal health fit also reflects their fictional condition and can slightly affect satisfaction. These scores are game mechanics—not a diagnosis, health certification, or personal medical advice. Total sugar is not the same as added sugar.</p>
-<h3>How the Health rating is built</h3>
-<p>For meals, the Health rating is half a score for energy, saturated fat, sodium and sugar measured against daily guideline amounts, with credit for fibre and protein, and half the four condition ratings, where the lowest counts as much as the other three together. A serving holding more than a full day's amount of energy, saturated fat, sodium or sugar (2,000 kcal, 22 g, 2,000 mg or 50 g) loses one more star for each extra day. It describes one serving for a general adult and is not dietary advice.</p>
+<h3>What the Health rating reflects</h3>
+<p>A meal's Health rating weighs one serving's energy, saturated fat, sodium and sugar against daily guideline amounts (2,000 kcal, 22 g, 2,000 mg and 50 g), counts its fibre and protein, and reflects how it suits each health condition. A drink's follows its sugar and saturated fat bands. The i beside a Health rating lists its main reasons. It describes one serving for a general adult and is not dietary advice.</p>
 </details>
 </div>
 </div>
@@ -1540,8 +1544,8 @@ exports[`HawkerSimulator panels > renders the Focus panel for a captured runtime
 <details class="nutrition-disclosure">
 <summary>Nutrition data &amp; education note</summary>
 <p>Hawker Balance is an educational game, not medical or dietary advice. Nutrition values describe the listed serving in the supplied CSV data; recipes and portions vary. The Health rating is a comparative in-game balance score derived from that serving and can change by variant. The Star rating separately represents taste and popularity. A customer's personal health fit also reflects their fictional condition and can slightly affect satisfaction. These scores are game mechanics—not a diagnosis, health certification, or personal medical advice. Total sugar is not the same as added sugar.</p>
-<h3>How the Health rating is built</h3>
-<p>For meals, the Health rating is half a score for energy, saturated fat, sodium and sugar measured against daily guideline amounts, with credit for fibre and protein, and half the four condition ratings, where the lowest counts as much as the other three together. A serving holding more than a full day's amount of energy, saturated fat, sodium or sugar (2,000 kcal, 22 g, 2,000 mg or 50 g) loses one more star for each extra day. It describes one serving for a general adult and is not dietary advice.</p>
+<h3>What the Health rating reflects</h3>
+<p>A meal's Health rating weighs one serving's energy, saturated fat, sodium and sugar against daily guideline amounts (2,000 kcal, 22 g, 2,000 mg and 50 g), counts its fibre and protein, and reflects how it suits each health condition. A drink's follows its sugar and saturated fat bands. The i beside a Health rating lists its main reasons. It describes one serving for a general adult and is not dietary advice.</p>
 </details>
 </div>
 </aside>"

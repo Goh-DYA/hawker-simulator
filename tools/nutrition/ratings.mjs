@@ -14,6 +14,8 @@ import { NUTRITION_INTENTS, SNACK_RATED_DISH_IDS } from "./manifest.mjs";
 /**
  * @import {
  *   HealthCondition,
+ *   HealthReasonFactor,
+ *   HealthReasonLevel,
  *   LimitNutrient,
  *   NutritionClass,
  *   NutritionIntentId,
@@ -59,25 +61,26 @@ import { NUTRITION_INTENTS, SNACK_RATED_DISH_IDS } from "./manifest.mjs";
  *   };
  *   healthRating?: number;
  *   conditionRatings?: Record<string, number>;
- *   healthParts?: HealthParts;
+ *   healthReasons?: HealthReason[];
  * }} RateableProfile
  */
 
 /**
- * The parts a meal's overall Health rating is built from, for the card that explains it
- * (ADR 0009). Each part comes from the same unrounded values as the rating, so the card
- * never explains a number the rating did not use.
+ * One of a profile's main health reasons, which the Health rating's tooltip lists in plain
+ * words: a nutrient one serving is high or low in, or a fibre or protein claim. A reason
+ * names no score or weight (ADR 0009).
  *
- * @typedef {object} HealthParts
- * @property {number} nutrients - The nutrient score, capped at five for display, to 0.1.
- * @property {number} conditions - The condition score, to 0.1.
- * @property {number} excess - The stars lost past a full day's amount, to 0.1.
- * @property {LimitNutrient} [excessNutrient] - The limit nutrient holding the largest share
- *   of a day, when one serving holds more than a full day of it.
- * @property {number} [excessDayShare] - That share of a full day, to 0.01, when above 1.
- * @property {Array<{ nutrient: LimitNutrient; per100g: number }>} [denseNutrients] - The
- *   limit nutrients whose per-100 g density, not the serving, set their penalty, with the
- *   resolved amount per 100 g of the edible part.
+ * @typedef {object} HealthReason
+ * @property {HealthReasonFactor} factor - The nutrient.
+ * @property {HealthReasonLevel} level - How much of it the serving holds.
+ * @property {true} [isEstimated] - Set when the amount behind the reason stands in for an
+ *   unreported or withheld value.
+ */
+
+/**
+ * A reason before selection, with the penalty, credit or day share it is ranked by.
+ *
+ * @typedef {{ factor: HealthReasonFactor; level: HealthReasonLevel; weight: number }} ReasonCandidate
  */
 
 /**
@@ -350,11 +353,29 @@ export const OVERALL_BLEND = { nutrientScore: 0.5, conditionScore: 0.5 };
 export const OVERALL_DAY_EXCESS_STARS_PER_DAY = 1;
 
 /**
- * When the card lists a limit nutrient as rated per 100 g: its density penalty is at least
- * a third of the density curve's 0.75 maximum, and at least 0.1 above its per-serving
- * penalty, so the density visibly set that penalty. Design choices (ADR 0009).
+ * The penalty fractions at which a meal's limit nutrient, or its carbohydrate, becomes one
+ * of its health reasons. "high" starts at half the full penalty: a meal's share of the daily
+ * limit per serving, or two thirds of the way from the FSA low to the FSA high band per
+ * 100 g. "moderate" starts at a quarter. A reported nutrient with no penalty is "low": at
+ * most a sixth of the day per serving and in the FSA green band per 100 g. Design choices
+ * tested against the generated profiles (ADR 0009); drinks are graded by their Nutri-Grade
+ * band and the EU low claims instead (see `grade_drink_reason`).
  */
-export const DENSITY_LINE = { minPenalty: 0.25, minLeadOverServing: 0.1 };
+export const HEALTH_REASON_THRESHOLDS = { high: 0.5, moderate: 0.25 };
+
+/**
+ * The credit fractions at which fibre and protein become claims. The fibre credit is half at
+ * the EU "source of fibre" amount and full at "high fibre"; the protein credit is a fifth at
+ * the EU "source of protein" 12% of energy and full at "high protein" 20% (Regulation (EC)
+ * No 1924/2006, Annex).
+ */
+export const HEALTH_CLAIM_THRESHOLDS = {
+  fibre: { source: 0.5, high: 1 },
+  protein: { source: 0.2, high: 1 },
+};
+
+/** The most reasons a profile lists, so the tooltip reads at a glance. */
+export const MAX_HEALTH_REASONS = 3;
 
 /**
  * How far past its full penalty a limit nutrient's overall penalty keeps rising: to 1.25 at
@@ -596,31 +617,6 @@ const resolve_serving = (profile) => {
 const per_100 = (amount, serving) => (amount * 100) / serving.densityAmount;
 
 /**
- * The two readings of a limit nutrient for a meal: its per-serving dose and its per-100 g
- * density, each from 0 to 1, with the amount per 100 g that the density reading used.
- *
- * @typedef {{ serving: number; density: number; per100g: number }} LimitParts
- */
-
-/**
- * Reads a limit nutrient's per-serving and per-100 g density penalties.
- *
- * @param {number} amount - The amount per serving.
- * @param {CurveAnchors} serving_anchors - The per-serving curve.
- * @param {{ low: number; high: number }} band - The density band.
- * @param {ResolvedServing} serving - The serving.
- * @returns {LimitParts} The two penalties and the amount per 100 g.
- */
-const compute_limit_parts = (amount, serving_anchors, band, serving) => {
-  const per100g = per_100(amount, serving);
-  return {
-    serving: read_curve(amount, serving_anchors),
-    density: read_curve(per100g, build_density_anchors(band)),
-    per100g,
-  };
-};
-
-/**
  * The penalty of a limit nutrient for a meal: the worse of its per-serving dose and its
  * per-100 g density.
  *
@@ -630,10 +626,11 @@ const compute_limit_parts = (amount, serving_anchors, band, serving) => {
  * @param {ResolvedServing} serving - The serving.
  * @returns {number} The penalty, from 0 to 1.
  */
-const compute_limit_penalty = (amount, serving_anchors, band, serving) => {
-  const parts = compute_limit_parts(amount, serving_anchors, band, serving);
-  return Math.max(parts.serving, parts.density);
-};
+const compute_limit_penalty = (amount, serving_anchors, band, serving) =>
+  Math.max(
+    read_curve(amount, serving_anchors),
+    read_curve(per_100(amount, serving), build_density_anchors(band)),
+  );
 
 /**
  * The penalty and credit fractions of a meal, each from 0 to 1. The credits are per
@@ -647,37 +644,13 @@ const compute_meal_fractions = (serving) => {
   const sugar_share = serving.isSnack ? MEAL_SHARE * SNACK_SHARE_OF_MEAL : MEAL_SHARE;
   const carbohydrate_to_fibre =
     serving.qualityFibreG > 0 ? serving.carbohydrateG / serving.qualityFibreG : Infinity;
-  /** @type {Record<LimitNutrient, LimitParts>} */
-  const limit_parts = {
-    energy: compute_limit_parts(
+  return {
+    energy: compute_limit_penalty(
       energy,
       serving.isSnack ? SNACK_ENERGY_ANCHORS : ENERGY_SERVING_ANCHORS,
       DENSITY_BANDS.energyKcal,
       serving,
     ),
-    "saturated-fat": compute_limit_parts(
-      serving.saturatedFatG,
-      build_meal_share_anchors(DAILY_REFERENCE.saturatedFatG),
-      DENSITY_BANDS.saturatedFatG,
-      serving,
-    ),
-    sodium: compute_limit_parts(
-      sodium,
-      build_meal_share_anchors(DAILY_REFERENCE.sodiumMg),
-      DENSITY_BANDS.sodiumMg,
-      serving,
-    ),
-    sugar: compute_limit_parts(
-      serving.totalSugarG,
-      build_meal_share_anchors(DAILY_REFERENCE.totalSugarG, sugar_share),
-      DENSITY_BANDS.totalSugarG,
-      serving,
-    ),
-  };
-  const worse = (/** @type {LimitParts} */ parts) => Math.max(parts.serving, parts.density);
-  return {
-    limitParts: limit_parts,
-    energy: worse(limit_parts.energy),
     obesityEnergy: compute_limit_penalty(
       energy,
       serving.isSnack ? SNACK_ENERGY_ANCHORS : OBESITY_ENERGY_ANCHORS,
@@ -687,7 +660,12 @@ const compute_meal_fractions = (serving) => {
     carbohydrateQuality:
       read_curve(carbohydrate_to_fibre, CARBOHYDRATE_QUALITY.ratioAnchors) *
       read_curve(serving.carbohydrateG, CARBOHYDRATE_QUALITY.amountAnchors),
-    saturatedFat: worse(limit_parts["saturated-fat"]),
+    saturatedFat: compute_limit_penalty(
+      serving.saturatedFatG,
+      build_meal_share_anchors(DAILY_REFERENCE.saturatedFatG),
+      DENSITY_BANDS.saturatedFatG,
+      serving,
+    ),
     cholesterolSaturatedFat: compute_limit_penalty(
       serving.saturatedFatG,
       build_meal_share_anchors(CONDITION_REFERENCE.cholesterolSaturatedFatG),
@@ -700,7 +678,12 @@ const compute_meal_fractions = (serving) => {
       DENSITY_BANDS.totalFatG,
       serving,
     ),
-    sodium: worse(limit_parts.sodium),
+    sodium: compute_limit_penalty(
+      sodium,
+      build_meal_share_anchors(DAILY_REFERENCE.sodiumMg),
+      DENSITY_BANDS.sodiumMg,
+      serving,
+    ),
     hypertensionSodium: Math.max(
       read_curve(sodium, HYPERTENSION_SODIUM_ANCHORS),
       read_curve(per_100(sodium, serving), [
@@ -708,7 +691,12 @@ const compute_meal_fractions = (serving) => {
         [DENSITY_BANDS.sodiumMg.high, 0.6],
       ]),
     ),
-    sugar: worse(limit_parts.sugar),
+    sugar: compute_limit_penalty(
+      serving.totalSugarG,
+      build_meal_share_anchors(DAILY_REFERENCE.totalSugarG, sugar_share),
+      DENSITY_BANDS.totalSugarG,
+      serving,
+    ),
     diabetesSugar: compute_limit_penalty(
       serving.totalSugarG,
       build_meal_share_anchors(CONDITION_REFERENCE.diabetesSugarG, sugar_share),
@@ -830,76 +818,110 @@ const compute_condition_score = (condition_ratings) =>
   CONDITION_SCORE_WEIGHTS.lowest * Math.min(...condition_ratings);
 
 /**
- * The largest share of a full day's amount that one serving holds of energy, saturated
- * plus trans fat, sodium or sugar, on the resolved (imputed where unreported) amounts, and
- * the nutrient that holds it (the first in card order on a tie). Meals and snack-rated
- * desserts are both measured against the whole day.
+ * The share of a full day's amount that one serving holds of energy, saturated plus trans
+ * fat, sodium and sugar, on the resolved (imputed where unreported) amounts. Meals,
+ * snack-rated desserts and drinks are all measured against the whole day.
  *
- * @param {ResolvedServing} serving - The meal serving.
- * @returns {{ share: number; nutrient: LimitNutrient }} The day share, above 1 when one
- *   serving breaches a full day, and its nutrient.
+ * @param {ResolvedServing} serving - The serving.
+ * @returns {Record<LimitNutrient, number>} Each nutrient's day share, above 1 when one
+ *   serving breaches a full day.
  */
-const compute_day_share = (serving) => {
-  /** @type {Array<[LimitNutrient, number]>} */
-  const shares = [
-    ["energy", serving.energyKcal / DAILY_REFERENCE.energyKcal],
-    ["saturated-fat", serving.saturatedFatG / DAILY_REFERENCE.saturatedFatG],
-    ["sodium", (serving.sodiumMg ?? 0) / DAILY_REFERENCE.sodiumMg],
-    ["sugar", serving.totalSugarG / DAILY_REFERENCE.totalSugarG],
-  ];
-  const [nutrient, share] = shares.reduce((largest, entry) =>
-    entry[1] > largest[1] ? entry : largest,
-  );
-  return { share, nutrient };
+const compute_day_shares = (serving) => ({
+  energy: serving.energyKcal / DAILY_REFERENCE.energyKcal,
+  "saturated-fat": serving.saturatedFatG / DAILY_REFERENCE.saturatedFatG,
+  sodium: (serving.sodiumMg ?? 0) / DAILY_REFERENCE.sodiumMg,
+  sugar: serving.totalSugarG / DAILY_REFERENCE.totalSugarG,
+});
+
+/**
+ * Grades a limit nutrient as a reason from its penalty and its day share (see
+ * {@link HEALTH_REASON_THRESHOLDS}).
+ *
+ * @param {LimitNutrient} nutrient - The limit nutrient.
+ * @param {number} penalty - Its penalty, from 0 to 1.
+ * @param {number} day_share - The serving's share of a full day of it.
+ * @returns {ReasonCandidate | undefined} The reason, or undefined between "low" and
+ *   "moderate".
+ */
+const grade_limit_reason = (nutrient, penalty, day_share) => {
+  if (day_share > 1) return { factor: nutrient, level: "above-daily", weight: day_share };
+  if (penalty >= HEALTH_REASON_THRESHOLDS.high) {
+    return { factor: nutrient, level: "high", weight: penalty };
+  }
+  if (penalty >= HEALTH_REASON_THRESHOLDS.moderate) {
+    return { factor: nutrient, level: "moderate", weight: penalty };
+  }
+  return penalty === 0 ? { factor: nutrient, level: "low", weight: 0 } : undefined;
 };
 
 /**
- * Rounds an amount per 100 g for the card: whole kilocalories and milligrams, grams to 0.1.
+ * Grades a fibre or protein credit as a claim (see {@link HEALTH_CLAIM_THRESHOLDS}).
  *
- * @param {LimitNutrient} nutrient - The limit nutrient.
- * @param {number} per100g - The amount per 100 g.
- * @returns {number} The rounded amount.
+ * @param {"fibre" | "protein"} factor - The nutrient.
+ * @param {number} credit - Its credit fraction, from 0 to 1.
+ * @returns {ReasonCandidate | undefined} The claim, or undefined below "source".
  */
-const round_per_100g = (nutrient, per100g) =>
-  nutrient === "energy" || nutrient === "sodium"
-    ? Math.round(per100g + Number.EPSILON)
-    : roundRating(per100g);
+const grade_claim_reason = (factor, credit) => {
+  const thresholds = HEALTH_CLAIM_THRESHOLDS[factor];
+  if (credit >= thresholds.high) return { factor, level: "high", weight: credit };
+  if (credit >= thresholds.source) return { factor, level: "source", weight: credit };
+  return undefined;
+};
 
 /**
- * The parts a meal's overall rating is built from, for the card (see {@link HealthParts}).
- *
- * @param {ReturnType<typeof compute_meal_fractions>} f - The serving's fractions.
- * @param {number} nutrient_score - The unrounded nutrient score.
- * @param {number} condition_score - The unrounded condition score.
- * @param {{ share: number; nutrient: LimitNutrient }} day_share - The serving's day share.
- * @param {number} day_excess - The unrounded stars lost past a full day.
- * @returns {HealthParts} The parts.
+ * The EU "low sugar" and "low saturated fat" claim limits for a liquid, per 100 ml
+ * (Regulation (EC) No 1924/2006, Annex), under which a drink's sugar or saturated fat is
+ * "low".
  */
-const build_health_parts = (f, nutrient_score, condition_score, day_share, day_excess) => {
-  /** @type {HealthParts} */
-  const parts = {
-    nutrients: roundRating(Math.min(5, nutrient_score)),
-    conditions: roundRating(condition_score),
-    excess: roundRating(day_excess),
-  };
-  if (day_share.share > 1) {
-    parts.excessNutrient = day_share.nutrient;
-    parts.excessDayShare = Math.round((day_share.share + Number.EPSILON) * 100) / 100;
+export const DRINK_LOW_PER_100ML = { sugar: 2.5, "saturated-fat": 0.75 };
+
+/**
+ * Grades a drink's sugar or saturated fat as a reason: "high" in Nutri-Grade band D, or from
+ * a meal's share of the daily limit in one serving; "low" at most the EU low claim per 100 ml
+ * with at most a sixth of the day in one serving; otherwise "moderate".
+ *
+ * @param {"sugar" | "saturated-fat"} nutrient - The nutrient.
+ * @param {number} per100ml - Its amount per 100 ml.
+ * @param {number} grade - Its Nutri-Grade penalty: 2/3 at the C boundary.
+ * @param {number} dose - Its per-serving penalty, 0.5 at a meal's share of the day.
+ * @param {number} day_share - The serving's share of a full day of it.
+ * @returns {ReasonCandidate} The reason.
+ */
+const grade_drink_reason = (nutrient, per100ml, grade, dose, day_share) => {
+  const weight = Math.max(grade, dose);
+  if (day_share > 1) return { factor: nutrient, level: "above-daily", weight: day_share };
+  if (grade > 2 / 3 || dose >= HEALTH_REASON_THRESHOLDS.high) {
+    return { factor: nutrient, level: "high", weight };
   }
-  const dense = /** @type {LimitNutrient[]} */ (Object.keys(f.limitParts))
-    .filter((nutrient) => {
-      const reading = f.limitParts[nutrient];
-      return (
-        reading.density >= DENSITY_LINE.minPenalty &&
-        reading.density - reading.serving >= DENSITY_LINE.minLeadOverServing
-      );
-    })
-    .map((nutrient) => ({
-      nutrient,
-      per100g: round_per_100g(nutrient, f.limitParts[nutrient].per100g),
-    }));
-  if (dense.length > 0) parts.denseNutrients = dense;
-  return parts;
+  if (per100ml <= DRINK_LOW_PER_100ML[nutrient] && dose === 0) {
+    return { factor: nutrient, level: "low", weight: 0 };
+  }
+  return { factor: nutrient, level: "moderate", weight };
+};
+
+/**
+ * The reason candidates of a meal: its four limit nutrients, a carbohydrate load past half
+ * the diabetes carbohydrate penalty, and its fibre and protein claims.
+ *
+ * @param {ResolvedServing} serving - The meal serving.
+ * @param {ReturnType<typeof compute_meal_fractions>} f - The serving's fractions.
+ * @returns {ReasonCandidate[]} The candidates.
+ */
+const collect_meal_reasons = (serving, f) => {
+  const day_shares = compute_day_shares(serving);
+  /** @type {Array<ReasonCandidate | undefined>} */
+  const candidates = [
+    grade_limit_reason("energy", f.energy, day_shares.energy),
+    grade_limit_reason("saturated-fat", f.saturatedFat, day_shares["saturated-fat"]),
+    grade_limit_reason("sodium", f.sodium, day_shares.sodium),
+    grade_limit_reason("sugar", f.sugar, day_shares.sugar),
+    f.diabetesCarbohydrate >= HEALTH_REASON_THRESHOLDS.high
+      ? { factor: "carbohydrate", level: "high", weight: f.diabetesCarbohydrate }
+      : undefined,
+    grade_claim_reason("fibre", f.fibre),
+    grade_claim_reason("protein", f.protein),
+  ];
+  return candidates.filter((candidate) => candidate !== undefined);
 };
 
 /**
@@ -913,8 +935,8 @@ const build_health_parts = (f, nutrient_score, condition_score, day_share, day_e
  * @returns {{
  *   overall: number;
  *   conditions: Record<HealthCondition, number>;
- *   parts: HealthParts;
- * }} The ratings and the parts of the overall rating.
+ *   reasons: ReasonCandidate[];
+ * }} The ratings and the reason candidates.
  */
 const rate_meal = (serving) => {
   const f = compute_meal_fractions(serving);
@@ -964,8 +986,8 @@ const rate_meal = (serving) => {
   };
   const nutrient_score = compute_nutrient_score(serving, f);
   const condition_score = compute_condition_score(Object.values(raw_conditions));
-  const day_share = compute_day_share(serving);
-  const day_excess = OVERALL_DAY_EXCESS_STARS_PER_DAY * Math.max(0, day_share.share - 1);
+  const day_share = Math.max(...Object.values(compute_day_shares(serving)));
+  const day_excess = OVERALL_DAY_EXCESS_STARS_PER_DAY * Math.max(0, day_share - 1);
   return {
     overall: finish_rating(
       OVERALL_BLEND.nutrientScore * nutrient_score +
@@ -978,7 +1000,7 @@ const rate_meal = (serving) => {
       diabetes: finish_rating(raw_conditions.diabetes),
       hypertension: finish_rating(raw_conditions.hypertension),
     },
-    parts: build_health_parts(f, nutrient_score, condition_score, day_share, day_excess),
+    reasons: collect_meal_reasons(serving, f),
   };
 };
 
@@ -989,7 +1011,12 @@ const rate_meal = (serving) => {
  * energy and sodium add their dose on top.
  *
  * @param {ResolvedServing} serving - The drink serving, in millilitres.
- * @returns {{ overall: number; conditions: Record<HealthCondition, number> }} The ratings.
+ * @returns {{
+ *   overall: number;
+ *   conditions: Record<HealthCondition, number>;
+ *   reasons: ReasonCandidate[];
+ * }} The ratings and the reason candidates: sugar and saturated fat, which set a drink's
+ *   overall rating.
  */
 const rate_drink = (serving) => {
   const [sugar_a, sugar_b, sugar_c] = NUTRI_GRADE_BANDS.totalSugarG;
@@ -1031,6 +1058,23 @@ const rate_drink = (serving) => {
           serving.sodiumMg,
           build_meal_share_anchors(CONDITION_REFERENCE.hypertensionSodiumMg),
         );
+  const day_shares = compute_day_shares(serving);
+  const reasons = [
+    grade_drink_reason(
+      "sugar",
+      per_100(serving.totalSugarG, serving),
+      sugar_grade,
+      sugar_dose,
+      day_shares.sugar,
+    ),
+    grade_drink_reason(
+      "saturated-fat",
+      per_100(serving.saturatedFatG, serving),
+      fat_grade,
+      0,
+      day_shares["saturated-fat"],
+    ),
+  ];
   return {
     overall: finish_rating(5 - 3.5 * grade - 0.5 * sugar_dose),
     conditions: {
@@ -1043,16 +1087,104 @@ const rate_drink = (serving) => {
         5 - 3 * sodium_dose - 0.75 * sugar_grade - 0.25 * sugar_dose,
       ),
     },
+    reasons: reasons.filter((reason) => reason !== undefined),
   };
 };
 
+/** The nutrient each reason factor reads, to tell a reported amount from a stand-in. */
+const REASON_METRICS = {
+  energy: "energyKcal",
+  "saturated-fat": "saturatedFatG",
+  sodium: "sodiumMg",
+  sugar: "totalSugarG",
+  carbohydrate: "carbohydrateG",
+  fibre: "dietaryFibreG",
+  protein: "proteinG",
+};
+
+/** The order strengths are listed in: claims, then "low" nutrients, sodium first. */
+const STRENGTH_ORDER = [
+  "fibre:high",
+  "protein:high",
+  "fibre:source",
+  "protein:source",
+  "sodium:low",
+  "sugar:low",
+  "saturated-fat:low",
+  "energy:low",
+];
+
+/** The order concern levels are listed in, the gravest first. */
+const CONCERN_LEVEL_ORDER = ["above-daily", "high", "moderate"];
+
 /**
- * Writes the overall health rating and every condition rating onto each profile, and onto
- * each rated meal the parts its overall rating is built from, mutating the profiles in
- * place. Each released serving is rated on its own against fixed guideline amounts (see
+ * Whether a reason supports the rating (a claim or a "low" nutrient) rather than weighs on it.
+ *
+ * @param {ReasonCandidate} reason - The reason.
+ * @returns {boolean} True for a strength.
+ */
+const is_strength = (reason) =>
+  reason.level === "low" || reason.factor === "fibre" || reason.factor === "protein";
+
+/**
+ * Orders concerns gravest first: by level, a limit nutrient before carbohydrate at the same
+ * level, then by weight.
+ *
+ * @param {ReasonCandidate} a - A concern.
+ * @param {ReasonCandidate} b - Another concern.
+ * @returns {number} The comparison.
+ */
+const compare_concerns = (a, b) =>
+  CONCERN_LEVEL_ORDER.indexOf(a.level) - CONCERN_LEVEL_ORDER.indexOf(b.level) ||
+  Number(a.factor === "carbohydrate") - Number(b.factor === "carbohydrate") ||
+  b.weight - a.weight;
+
+/**
+ * Picks a profile's main reasons from its candidates: up to {@link MAX_HEALTH_REASONS}, the
+ * gravest concerns first, keeping one slot for a strength when there is one and two when
+ * there is only one concern. A "low" nutrient must be reported (a trace counts); any other
+ * reason resting on a stand-in amount is marked estimated.
+ *
+ * @param {RateableProfile} profile - The rated profile.
+ * @param {readonly ReasonCandidate[]} candidates - Its reason candidates.
+ * @returns {HealthReason[]} The reasons, concerns before strengths.
+ */
+const select_health_reasons = (profile, candidates) => {
+  const is_reported = (/** @type {ReasonCandidate} */ reason) => {
+    const status = profile.nutrients[REASON_METRICS[reason.factor]]?.status;
+    return status === "known" || status === "trace";
+  };
+  const usable = candidates.filter((reason) => reason.level !== "low" || is_reported(reason));
+  const concerns = usable.filter((reason) => !is_strength(reason)).sort(compare_concerns);
+  const strengths = usable
+    .filter(is_strength)
+    .sort(
+      (a, b) =>
+        STRENGTH_ORDER.indexOf(`${a.factor}:${a.level}`) -
+        STRENGTH_ORDER.indexOf(`${b.factor}:${b.level}`),
+    );
+  let strength_count = Math.min(
+    strengths.length,
+    Math.max(1, MAX_HEALTH_REASONS - concerns.length),
+  );
+  const concern_count = Math.min(concerns.length, MAX_HEALTH_REASONS - strength_count);
+  strength_count = Math.min(strengths.length, MAX_HEALTH_REASONS - concern_count);
+  return [...concerns.slice(0, concern_count), ...strengths.slice(0, strength_count)].map(
+    (reason) => {
+      /** @type {HealthReason} */
+      const selected = { factor: reason.factor, level: reason.level };
+      if (!is_reported(reason)) selected.isEstimated = true;
+      return selected;
+    },
+  );
+};
+
+/**
+ * Writes the overall health rating, every condition rating and the main health reasons onto
+ * each profile, mutating the profiles in place. Each released serving is rated on its own against fixed guideline amounts (see
  * {@link rate_meal} and {@link rate_drink}), so a rating never depends on the rest of the
  * catalogue. A profile that is not released, or that lacks energy, saturated fat or
- * carbohydrate, gets the neutral rating of 3.
+ * carbohydrate, gets the neutral rating of 3 and no reasons.
  *
  * @param {RateableProfile[]} profiles - The profiles to rate.
  */
@@ -1060,21 +1192,16 @@ export const addHealthRatings = (profiles) => {
   for (const profile of profiles) {
     const serving =
       profile.status === "released" ? resolve_serving(profile) : undefined;
-    delete profile.healthParts;
+    delete profile.healthReasons;
     if (!serving) {
       profile.healthRating = 3;
       profile.conditionRatings = { ...NEUTRAL_CONDITION_RATINGS };
       continue;
     }
-    if (profile.nutritionClass === "drink") {
-      const ratings = rate_drink(serving);
-      profile.healthRating = ratings.overall;
-      profile.conditionRatings = ratings.conditions;
-      continue;
-    }
-    const ratings = rate_meal(serving);
+    const ratings =
+      profile.nutritionClass === "drink" ? rate_drink(serving) : rate_meal(serving);
     profile.healthRating = ratings.overall;
     profile.conditionRatings = ratings.conditions;
-    profile.healthParts = ratings.parts;
+    profile.healthReasons = select_health_reasons(profile, ratings.reasons);
   }
 };

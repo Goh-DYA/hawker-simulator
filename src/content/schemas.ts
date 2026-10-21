@@ -353,7 +353,7 @@ export const nutritionProfileStatusSchema = z.enum(["released", "unavailable", "
 
 export const nutritionClassSchema = z.enum(["meal", "drink"]);
 
-/** A limit nutrient of a meal's overall Health rating, in the order the card lists them. */
+/** A limit nutrient of the overall Health rating. */
 export const limitNutrientSchema = z.enum(["energy", "saturated-fat", "sodium", "sugar"]);
 
 export const nutritionServingUnitSchema = z.enum(["g", "ml"]);
@@ -410,32 +410,45 @@ export const nutritionProvenanceSchema = z.object({
   reviewNote: z.string().min(8),
 });
 
-/**
- * The parts a meal's overall Health rating is built from (ADR 0009), for the card that
- * explains it. Generated from the same unrounded values as the rating; drinks have none.
- */
-export const nutritionHealthPartsSchema = z.object({
-  /** The nutrient score: energy, saturated fat, sodium and sugar, with fibre and protein credit. */
-  nutrients: fivePointRatingSchema,
-  /** The condition score: two thirds the mean of the four condition ratings, one third the lowest. */
-  conditions: fivePointRatingSchema,
-  /** Stars lost past a full day's amount of a limit nutrient, to 0.1. */
-  excess: z.number().min(0).refine(
-    (value) => Math.abs(value * 10 - Math.round(value * 10)) < 1e-9,
-    "Excess must use one decimal place.",
-  ),
-  /** The limit nutrient one serving holds more than a full day of. */
-  excessNutrient: limitNutrientSchema.optional(),
-  /** That nutrient's share of a full day, to 0.01. */
-  excessDayShare: z.number().min(1).optional(),
-  /** Limit nutrients whose density per 100 g, not the serving, set their penalty. */
-  denseNutrients: z
-    .array(z.object({ nutrient: limitNutrientSchema, per100g: z.number().nonnegative() }))
-    .min(1)
-    .optional(),
-});
+/** A nutrient a profile's health reasons name: the four limit nutrients, carbohydrate, fibre and protein. */
+export const healthReasonFactorSchema = z.enum([
+  ...limitNutrientSchema.options,
+  "carbohydrate",
+  "fibre",
+  "protein",
+]);
 
-/** The daily amounts a meal card's percentages and excess line name. */
+/**
+ * How much of a nutrient one serving holds, as a health reason: more than a full day's
+ * amount, high, moderate or low for a limit nutrient (high for carbohydrate), and a source
+ * of or high in fibre or protein.
+ */
+export const healthReasonLevelSchema = z.enum(["above-daily", "high", "moderate", "low", "source"]);
+
+const CLAIM_FACTORS: ReadonlySet<string> = new Set(["fibre", "protein"]);
+
+/**
+ * One of a profile's main health reasons, which the Health rating's tooltip lists in plain
+ * words. Generated from the same values as the rating; it names no score (ADR 0009).
+ */
+export const nutritionHealthReasonSchema = z
+  .object({
+    factor: healthReasonFactorSchema,
+    level: healthReasonLevelSchema,
+    /** Set when the amount behind the reason stands in for an unreported or withheld value. */
+    isEstimated: z.literal(true).optional(),
+  })
+  .refine(
+    ({ factor, level }) =>
+      CLAIM_FACTORS.has(factor)
+        ? level === "source" || level === "high"
+        : factor === "carbohydrate"
+          ? level === "high"
+          : level !== "source",
+    "A health reason's level must suit its nutrient.",
+  );
+
+/** The daily guideline amounts the Help text names. */
 export const nutritionDailyReferenceSchema = z.object({
   energyKcal: z.number().positive(),
   saturatedFatG: z.number().positive(),
@@ -455,8 +468,8 @@ export const nutritionProfileSchema = z.object({
   healthRating: fivePointRatingSchema,
   /** Per-serving game ratings against the stricter guidance for each condition. */
   conditionRatings: z.record(healthConditionSchema, fivePointRatingSchema),
-  /** What a meal's overall Health rating is built from; absent for drinks. */
-  healthParts: nutritionHealthPartsSchema.optional(),
+  /** Up to three main reasons for the Health rating, concerns first; absent when not rated. */
+  healthReasons: z.array(nutritionHealthReasonSchema).max(3).optional(),
   intentFits: z.partialRecord(
     nutritionIntentIdSchema,
     z.number().min(0).max(1),

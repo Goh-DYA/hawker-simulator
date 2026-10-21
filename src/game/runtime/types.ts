@@ -5,7 +5,7 @@
  * The UI depends on these types only, never on the runtime's internals. `RuntimePersistentState`
  * is re-exported here so the UI can name the save shape.
  */
-import type { NutritionHealthParts } from "@/src/content";
+import type { NutritionHealthReason } from "@/src/content";
 import type {
   AccessPoint,
   GridPoint,
@@ -60,8 +60,8 @@ export interface RuntimeNutritionProfileSummary {
   readonly waterG?: NutritionValue;
   /** Overall in-game balance score for this exact listed serving. */
   readonly healthRating?: number;
-  /** The parts a meal's Health rating is built from, for the card that explains it. */
-  readonly healthParts?: NutritionHealthParts;
+  /** Up to three main reasons for the Health rating, for its tooltip; absent when not rated. */
+  readonly healthReasons?: readonly NutritionHealthReason[];
   /** Condition-aware scores used to personalise customers' menu choices. */
   readonly conditionRatings?: Partial<Readonly<Record<HealthConditionId, number>>>;
   readonly intentFits?: Partial<Readonly<Record<NutritionIntent, number>>>;

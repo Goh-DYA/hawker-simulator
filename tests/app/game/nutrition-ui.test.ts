@@ -2,7 +2,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL, URL } from "node:url";
-import { cleanup, render, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, within } from "@testing-library/react";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it } from "vitest";
@@ -355,224 +355,137 @@ describe("Hawker Balance nutrition education UI", () => {
   });
 });
 
-/**
- * A synthetic meal whose driving sodium amount is not reported, so the card must call the
- * excess an estimate. No released profile does this today (the content test keeps it so).
- */
-const ESTIMATED_SODIUM_MEAL: NutritionProfileView = {
-  status: "released",
-  servingLabel: "1 bowl (500 g)",
-  energyKcal: { status: "known", value: 500 },
-  saturatedFatG: { status: "known", value: 5 },
-  transFatG: { status: "unavailable", reason: "not-reported" },
-  sodiumMg: { status: "unavailable", reason: "not-reported" },
-  totalSugarG: { status: "known", value: 4 },
-  healthRating: 2.6,
-  healthParts: {
-    nutrients: 3.6,
-    conditions: 2.6,
-    excess: 0.5,
-    excessNutrient: "sodium",
-    excessDayShare: 1.5,
-  },
-  conditionRatings: { "high-cholesterol": 3.6, obesity: 3.6, diabetes: 4, hypertension: 1.2 },
-};
-
-/** Renders a nutrition card and returns its Health rating disclosure. */
-function render_health_details(
+/** Renders a nutrition card and returns its Health rating badge. */
+function render_health_badge(
   profile: NutritionProfileView | undefined,
-  options: { readonly healthLabel?: string } = {},
+  options: { readonly healthLabel?: string; readonly healthRating?: number } = {},
 ) {
-  const { container } = render(
-    createElement(NutritionProfileSummary, { profile, healthLabel: options.healthLabel }),
+  const { container } = render(createElement(NutritionProfileSummary, { profile, ...options }));
+  const badge = container.querySelector<HTMLElement>(".dish-rating-badge.is-health");
+  if (!badge) throw new Error("The card has no Health rating badge");
+  return badge;
+}
+
+/** Reads a badge's tooltip lines and their tones. */
+function tip_lines(badge: HTMLElement) {
+  return [...badge.querySelectorAll('[role="tooltip"] li')].map(
+    (line) => `${line.getAttribute("data-tone") ?? "none"}: ${line.textContent}`,
   );
-  const details = container.querySelector<HTMLDetailsElement>("details.condition-rating-details");
-  if (!details) throw new Error("The card has no Health rating disclosure");
-  return details;
 }
 
-function summary_text(details: HTMLDetailsElement) {
-  return details.querySelector("summary")?.textContent;
-}
-
-function line_texts(details: HTMLDetailsElement) {
-  return [...details.querySelectorAll("li, p")].map((element) => element.textContent);
-}
-
-function meal_with_conditions(ratings: Readonly<Record<string, number>>): NutritionProfileView {
-  return { ...ESTIMATED_SODIUM_MEAL, conditionRatings: ratings };
-}
-
-describe("meal Health rating card", () => {
+describe("Health rating reasons tooltip", () => {
   afterEach(() => {
     cleanup();
   });
 
-  it("summarises how a meal's Health rating is built, naming the lowest condition", () => {
-    const details = render_health_details(nutritionProfileView("dish.chicken-congee"));
+  it("lists a meal's main reasons in plain words, concerns first", () => {
+    const badge = render_health_badge(nutritionProfileView("dish.chicken-congee"));
+    const trigger = within(badge).getByRole("button", { name: "Why this health rating" });
 
-    expect([
-      summary_text(details),
-      line_texts(details).includes(
-        "1,434 mg sodium, 72% of the 2,000 mg daily sodium guideline",
-      ),
-    ]).toEqual([
-      "How this Health rating is built: daily-guideline nutrients 4.3 and condition fit 3.5"
-        + " · lowest: Managing hypertension 2.4",
-      true,
+    expect([trigger.getAttribute("aria-describedby"), tip_lines(badge)]).toEqual([
+      badge.querySelector('[role="tooltip"]')?.id,
+      ["concern: High in sodium", "strength: High in protein", "strength: Low in sugar"],
     ]);
   });
 
-  it("names the lowest condition only below 3.5, the first on a tie", () => {
-    const summaries = [
-      { "high-cholesterol": 3.6, obesity: 3.5, diabetes: 4, hypertension: 3.9 },
-      { "high-cholesterol": 3.6, obesity: 3.4, diabetes: 4, hypertension: 3.9 },
-      { "high-cholesterol": 3, obesity: 3.4, diabetes: 4, hypertension: 3 },
-    ].map((ratings) => meal_with_conditions(ratings)).map((profile) => {
-      const text = summary_text(render_health_details(profile));
+  it("explains a drink and a dessert the same way as a meal", () => {
+    const drinks = tip_lines(render_health_badge(nutritionProfileView("dish.kopi")));
+    cleanup();
+    const dessert = tip_lines(render_health_badge(nutritionProfileView("dish.ice-kacang")));
+
+    expect([drinks, dessert]).toEqual([
+      ["concern: Likely high in sugar", "concern: Moderate saturated fat"],
+      ["concern: High in sugar", "concern: High in energy", "strength: High in fibre"],
+    ]);
+  });
+
+  it("names a guest's personal health fit in the button and keeps the dish's reasons", () => {
+    const badge = render_health_badge(nutritionProfileView("dish.chicken-congee"), {
+      healthLabel: "Personal health fit",
+      healthRating: 2.4,
+    });
+
+    expect([
+      within(badge).getByRole("button", { name: "Why this personal health fit" }) !== null,
+      tip_lines(badge)[0],
+    ]).toEqual([true, "concern: High in sodium"]);
+  });
+
+  it("says a rating without reviewed data has no reasons, and an unrated badge has no button", () => {
+    const quarantined = render_health_badge({ status: "quarantined", healthRating: 3 });
+    const quarantined_lines = tip_lines(quarantined);
+    cleanup();
+    const unrated = render_health_badge(undefined);
+
+    expect([quarantined_lines, within(unrated).queryByRole("button")]).toEqual([
+      ["none: No reviewed nutrition data yet"],
+      null,
+    ]);
+  });
+
+  it("hides on Escape without passing the key on, and shows again after focus leaves", () => {
+    const outer_keys: string[] = [];
+    const record_key = (event: globalThis.KeyboardEvent) => outer_keys.push(event.key);
+    document.addEventListener("keydown", record_key);
+    const badge = render_health_badge(nutritionProfileView("dish.chicken-congee"));
+    const trigger = within(badge).getByRole("button");
+    const wrapper = trigger.parentElement;
+    trigger.focus();
+    fireEvent.keyDown(trigger, { key: "Escape" });
+    const dismissed = wrapper?.getAttribute("data-dismissed");
+    fireEvent.keyDown(trigger, { key: "Escape" });
+    fireEvent.blur(trigger);
+    document.removeEventListener("keydown", record_key);
+
+    expect([dismissed, wrapper?.getAttribute("data-dismissed"), outer_keys]).toEqual([
+      "true",
+      null,
+      ["Escape"],
+    ]);
+  });
+
+  it("keeps the per-condition disclosure for meals and drinks alike", () => {
+    const summaries = ["dish.chicken-congee", "dish.kopi"].map((dish_id) => {
+      const { container } = render(
+        createElement(NutritionProfileSummary, { profile: nutritionProfileView(dish_id) }),
+      );
+      const details = container.querySelector("details.condition-rating-details");
+      const text = [details?.querySelector("summary")?.textContent, details?.querySelectorAll("p").length];
       cleanup();
       return text;
     });
 
     expect(summaries).toEqual([
-      "How this Health rating is built: daily-guideline nutrients 3.6 and condition fit 2.6",
-      "How this Health rating is built: daily-guideline nutrients 3.6 and condition fit 2.6"
-        + " · lowest: Managing obesity 3.4",
-      "How this Health rating is built: daily-guideline nutrients 3.6 and condition fit 2.6"
-        + " · lowest: Managing high cholesterol 3.0",
+      ["Health rating by condition", 0],
+      ["Health rating by condition", 0],
     ]);
   });
 
-  it("names the general rating a guest's personal health fit card explains", () => {
-    const { container } = render(createElement(CustomerNutritionInspector, {
-      customer: {
-        customerId: "customer-1",
-        archetypeId: "regular",
-        status: "eating",
-        decisionReasons: [],
-        dishId: "dish.chicken-congee",
-        healthConditionIds: ["hypertension"],
-        personalizedHealthRating: 2.4,
-        profile: nutritionProfileView("dish.chicken-congee"),
-      },
-      dishLabel: () => "Chicken congee",
-      variantLabel: () => undefined,
-      personaLabel: () => "Regular",
-      onClose: () => undefined,
-    }));
-
-    expect(container.querySelector("details.condition-rating-details summary")?.textContent)
-      .toBe(
-        "Health rating 3.9 is built from daily-guideline nutrients 4.3 and condition fit 3.5"
-          + " · lowest: Managing hypertension 2.4",
-      );
-  });
-
-  it("states a serving's sodium past a full day and the star it costs", () => {
-    const details = render_health_details(nutritionProfileView("dish.mee-soto"));
-    const excess = details.querySelector(".health-parts-excess");
-    const deduction = within(details).getByRole("img", { name: "minus 1.0 star" });
-
-    expect([excess?.textContent, deduction.textContent]).toEqual([
-      "One serving holds 203% of the 2,000 mg daily sodium guideline (−1.0 star)",
-      "(−1.0 star)",
-    ]);
-  });
-
-  it("shows no deduction for a serving just past a full day", () => {
-    const details = render_health_details(
-      nutritionProfileView("dish.teochew-fish-dumpling-soup"),
-    );
-
-    expect([
-      details.querySelector(".health-parts-excess")?.textContent,
-      within(details).queryByRole("img"),
-    ]).toEqual(["One serving holds 101% of the 2,000 mg daily sodium guideline", null]);
-  });
-
-  it("notes trans fat in the saturated fat row only when the profile reports some", () => {
-    const with_trans = line_texts(render_health_details(nutritionProfileView("dish.mee-soto")));
-    cleanup();
-    const trace_trans = line_texts(
-      render_health_details(nutritionProfileView("dish.chicken-congee")),
-    );
-
-    expect([
-      with_trans.includes(
-        "1.8 g saturated fat, 8% of the 22 g daily saturated fat guideline"
-          + " (trans fat counted with it)",
-      ),
-      trace_trans.includes("3.5 g saturated fat, 16% of the 22 g daily saturated fat guideline"),
-    ]).toEqual([true, true]);
-  });
-
-  it("lists the nutrients a meal is rated on per 100 g", () => {
-    const plain_thosai = line_texts(
-      render_health_details(nutritionProfileView("dish.masala-thosai")),
-    );
-    cleanup();
-    const congee = line_texts(render_health_details(nutritionProfileView("dish.chicken-congee")));
-
-    expect([
-      plain_thosai.filter((line) => line?.startsWith("Also rated per 100 g")),
-      congee.filter((line) => line?.startsWith("Also rated per 100 g")),
-    ]).toEqual([
-      ["Also rated per 100 g: 258 kcal, 2.8 g saturated fat (trans fat counted with it)"],
-      [],
-    ]);
-  });
-
-  it("calls an excess estimated when the driving amount is not reported", () => {
-    const lines = line_texts(render_health_details(ESTIMATED_SODIUM_MEAL));
-
-    expect([
-      lines.includes("Sodium: Not available"),
-      lines.includes(
-        "One serving holds an estimated 150% of the 2,000 mg daily sodium guideline (−0.5 star)",
-      ),
-    ]).toEqual([true, true]);
-  });
-
-  it("keeps the condition disclosure for a drink", () => {
-    const details = render_health_details(nutritionProfileView("dish.kopi"));
-
-    expect([summary_text(details), details.querySelector(".health-parts-heading")]).toEqual([
-      "Health rating by condition",
-      null,
-    ]);
-  });
-
-  it("explains in Help how a meal's Health rating is built", () => {
+  it("says in Help what the Health rating reflects, without its scoring", () => {
     const { container } = render(createElement(NutritionDisclosure));
     const heading = container.querySelector("h3");
 
     expect([heading?.textContent, heading?.nextElementSibling?.textContent]).toEqual([
-      "How the Health rating is built",
-      "For meals, the Health rating is half a score for energy, saturated fat, sodium and sugar"
-        + " measured against daily guideline amounts, with credit for fibre and protein, and half"
-        + " the four condition ratings, where the lowest counts as much as the other three"
-        + " together. A serving holding more than a full day's amount of energy, saturated fat,"
-        + " sodium or sugar (2,000 kcal, 22 g, 2,000 mg or 50 g) loses one more star for each"
-        + " extra day. It describes one serving for a general adult and is not dietary advice.",
+      "What the Health rating reflects",
+      "A meal's Health rating weighs one serving's energy, saturated fat, sodium and sugar"
+        + " against daily guideline amounts (2,000 kcal, 22 g, 2,000 mg and 50 g), counts its"
+        + " fibre and protein, and reflects how it suits each health condition. A drink's follows"
+        + " its sugar and saturated fat bands. The i beside a Health rating lists its main"
+        + " reasons. It describes one serving for a general adult and is not dietary advice.",
     ]);
   });
 
-  // The copy rules: no judgement or suitability words, no "reference intake", and no "=",
-  // since rebuilding the shown rating from the rounded parts can be off by 0.1.
-  it("keeps every meal card within the copy rules", () => {
+  // The copy rules: no judgement or suitability words, and nothing that gives away the scoring.
+  it("keeps every tooltip within the copy rules", () => {
     const banned_words = /\b(good|bad|healthy|healthier|light|lighter|suited to|safe for)\b/i;
-    const banned_terms = /\bRI\b|[Rr]eference intake|=/;
-    const breaches = NUTRITION_CONTENT.profiles
-      .filter((profile) => profile.healthParts)
-      .flatMap((profile) => {
-        const details = render_health_details(
-          runtimeNutritionProfile(coreNutritionProfile(profile)),
-        );
-        const text = details.textContent ?? "";
-        cleanup();
-        const is_breach = banned_words.test(text) || banned_terms.test(text);
-        return is_breach ? [`${profile.id}: ${text}`] : [];
-      });
+    const scoring_words = /\b(score|weight|stars?|lowest|built|points?|half|third)\b|[=%]/i;
+    const breaches = NUTRITION_CONTENT.profiles.flatMap((profile) => {
+      const badge = render_health_badge(runtimeNutritionProfile(coreNutritionProfile(profile)));
+      const text = badge.querySelector('[role="tooltip"]')?.textContent ?? "";
+      cleanup();
+      const is_breach = text === "" || banned_words.test(text) || scoring_words.test(text);
+      return is_breach ? [`${profile.id}: ${text}`] : [];
+    });
 
     expect(breaches).toEqual([]);
   });

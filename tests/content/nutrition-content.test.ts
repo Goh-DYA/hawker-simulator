@@ -75,7 +75,7 @@ describe("nutrition content", () => {
     );
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
-      "c4dce8eb58dbae5d02aa70ee28a2504ff13ae1c34326b421b0fcbcb3ad963f4e",
+      "4e3c59f186f78cd157472a954b0bd38eb5c1771c75d014883d65bd038f41d07e",
     );
   });
 
@@ -614,34 +614,53 @@ describe("overall meal Health rating", () => {
     return profile_of(dish_id, variant_id);
   };
 
-  it("explains each meal's rating with parts built from the same values", () => {
-    const limit_metric_of = {
+  it("gives every rated profile two or three plain reasons, concerns first", () => {
+    const metric_of = {
       energy: "energyKcal",
       "saturated-fat": "saturatedFatG",
       sodium: "sodiumMg",
       sugar: "totalSugarG",
+      carbohydrate: "carbohydrateG",
+      fibre: "dietaryFibreG",
+      protein: "proteinG",
     } as const;
     for (const profile of NUTRITION_CONTENT.profiles) {
-      const parts = profile.healthParts;
-      if (profile.nutritionClass === "drink") {
-        assert.equal(parts, undefined, profile.id);
+      const reasons = profile.healthReasons;
+      if (profile.status !== "released") {
+        assert.equal(reasons, undefined, profile.id);
         continue;
       }
-      assert.ok(parts, profile.id);
-      const blend = 0.5 * parts.nutrients + 0.5 * parts.conditions - parts.excess;
-      const expected = Math.min(5, Math.max(1, blend));
-      assert.ok(Math.abs(profile.healthRating - expected) <= 0.15 + 1e-9, profile.id);
-      assert.equal(parts.excessNutrient === undefined, parts.excessDayShare === undefined);
-      if (parts.excessNutrient === undefined || parts.excessDayShare === undefined) {
-        assert.equal(parts.excess, 0, profile.id);
-        continue;
+      assert.ok(reasons && reasons.length >= 2 && reasons.length <= 3, profile.id);
+      const is_strength = reasons.map(
+        (reason) =>
+          reason.level === "low" || reason.factor === "fibre" || reason.factor === "protein",
+      );
+      // Concerns come before strengths, and each nutrient appears once.
+      assert.deepEqual(is_strength, [...is_strength].sort(), profile.id);
+      assert.equal(new Set(reasons.map((reason) => reason.factor)).size, reasons.length);
+      for (const reason of reasons) {
+        const status = profile.nutrients[metric_of[reason.factor]].status;
+        const is_reported = status === "known" || status === "trace";
+        // A "low" claim needs a reported amount; any other reason on a stand-in says so.
+        assert.ok(reason.level !== "low" || is_reported, `${profile.id} ${reason.factor}`);
+        assert.equal(reason.isEstimated === true, !is_reported, `${profile.id} ${reason.factor}`);
       }
-      assert.ok(Math.abs(parts.excess - (parts.excessDayShare - 1)) <= 0.06, profile.id);
-      // An excess line quotes a precise share of a day, so the amount driving it must be
-      // reported, not imputed; a future exception needs the card's "estimated" wording.
-      const driving = profile.nutrients[limit_metric_of[parts.excessNutrient]];
-      assert.equal(driving.status, "known", `${profile.id} ${parts.excessNutrient}`);
     }
+    const reasons_of = (profile_id: string) =>
+      by_profile_id(profile_id).healthReasons?.map(
+        (reason) => `${reason.isEstimated ? "~" : ""}${reason.level} ${reason.factor}`,
+      );
+    assert.deepEqual(
+      ["dish.chicken-congee", "dish.char-siew-rice", "dish.kopi", "dish.kopi:kopi-o-kosong"].map(
+        reasons_of,
+      ),
+      [
+        ["high sodium", "high protein", "low sugar"],
+        ["high sodium", "high carbohydrate", "high protein"],
+        ["~high sugar", "moderate saturated-fat"],
+        ["low sugar", "low saturated-fat"],
+      ],
+    );
     assert.deepEqual(NUTRITION_CONTENT.dailyReference, {
       energyKcal: 2_000,
       saturatedFatG: 22,

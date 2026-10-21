@@ -19,6 +19,8 @@ import type {
   footprintSchema,
   gridPointSchema,
   healthConditionSchema,
+  healthReasonFactorSchema,
+  healthReasonLevelSchema,
   interactionPointSchema,
   interactionRoleSchema,
   launchContentSchema,
@@ -27,7 +29,7 @@ import type {
   nutritionContentSchema,
   nutritionDailyReferenceSchema,
   nutritionGuidelineSchema,
-  nutritionHealthPartsSchema,
+  nutritionHealthReasonSchema,
   nutritionIntentIdSchema,
   nutritionIntentSchema,
   nutritionMetricSchema,
@@ -118,7 +120,11 @@ export type HealthCondition = ReadonlyDeep<z.output<typeof healthConditionSchema
 
 export type LimitNutrient = ReadonlyDeep<z.output<typeof limitNutrientSchema>>;
 
-export type NutritionHealthParts = ReadonlyDeep<z.output<typeof nutritionHealthPartsSchema>>;
+export type NutritionHealthReason = ReadonlyDeep<z.output<typeof nutritionHealthReasonSchema>>;
+
+export type HealthReasonFactor = ReadonlyDeep<z.output<typeof healthReasonFactorSchema>>;
+
+export type HealthReasonLevel = ReadonlyDeep<z.output<typeof healthReasonLevelSchema>>;
 
 export type NutritionDailyReference = ReadonlyDeep<z.output<typeof nutritionDailyReferenceSchema>>;
 

@@ -4922,9 +4922,96 @@ kbd {
 }
 
 .dish-rating-badge.is-health {
+  position: relative;
   border-color: #75a48b;
   background: #edf7ef;
   color: #285d3c;
+}
+
+.health-reasons {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.dish-rating-badge .health-reasons-trigger {
+  width: 15px;
+  height: 15px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #75a48b;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #285d3c;
+  cursor: help;
+  font: italic 900 0.5rem/1 Georgia, "Times New Roman", serif;
+}
+
+.dish-rating-badge .health-reasons-trigger:focus-visible {
+  outline: 2px solid #25596a;
+  outline-offset: 1px;
+}
+
+/* The tip hangs from the whole badge; its top padding bridges the gap, so the pointer can
+   travel onto it without the tip closing. */
+.dish-rating-badge .health-reasons-tip {
+  position: absolute;
+  top: 100%;
+  left: -1px;
+  z-index: 30;
+  width: max-content;
+  max-width: min(13rem, 70vw);
+  display: none;
+  padding-top: 4px;
+  color: #ffffff;
+  font-size: 0.53rem;
+  font-weight: 800;
+  line-height: 1.35;
+  text-transform: none;
+  white-space: normal;
+}
+
+.dish-rating-badge .health-reasons-tip > ul {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: #183c47;
+  box-shadow: 0 4px 12px rgb(16 42 51 / 28%);
+  list-style: none;
+}
+
+.dish-rating-badge .health-reasons-tip li {
+  display: flex;
+  gap: 5px;
+}
+
+.dish-rating-badge .health-reasons-tip li::before {
+  flex: 0 0 auto;
+  width: 0.7em;
+  font-weight: 900;
+  text-align: center;
+}
+
+/* The marks are decorative: the text says what each reason is, so the alt text is empty. */
+.dish-rating-badge .health-reasons-tip li[data-tone="concern"]::before {
+  content: "\2212";
+  content: "\2212" / "";
+  color: #ffc58a;
+}
+
+.dish-rating-badge .health-reasons-tip li[data-tone="strength"]::before {
+  content: "+";
+  content: "+" / "";
+  color: #9fe0b4;
+}
+
+.dish-rating-badge.is-health:hover .health-reasons-tip,
+.dish-rating-badge.is-health:focus-within .health-reasons-tip {
+  display: block;
+}
+
+.dish-rating-badge.is-health .health-reasons[data-dismissed] .health-reasons-tip {
+  display: none;
 }
 
 .dish-rating-badge.is-star {
@@ -5021,47 +5108,6 @@ kbd {
 .condition-rating-details dl > div {
   border-left-color: #75a48b;
   background: #edf7ef;
-}
-
-.health-parts-details > p,
-.health-parts-details > ul {
-  margin: 6px 0 4px;
-  color: var(--ink);
-  font-size: 0.53rem;
-  font-weight: 700;
-  line-height: 1.45;
-}
-
-.health-parts-details > ul {
-  display: grid;
-  gap: 3px;
-  padding: 0;
-  list-style: none;
-}
-
-.health-parts-details > ul > li {
-  padding: 4px 6px;
-  border-left: 3px solid #5b8ea1;
-  border-radius: 5px;
-  background: #edf3f4;
-}
-
-.health-parts-details .health-parts-heading {
-  margin-top: 8px;
-  color: #25596a;
-  font-weight: 900;
-}
-
-.health-parts-details .health-parts-note {
-  color: var(--ink-soft);
-}
-
-.health-parts-details .health-parts-excess {
-  padding: 5px 7px;
-  border-left: 3px solid #b5652b;
-  border-radius: 5px;
-  background: #fbf0e6;
-  font-weight: 800;
 }
 
 .nutrition-data-state {

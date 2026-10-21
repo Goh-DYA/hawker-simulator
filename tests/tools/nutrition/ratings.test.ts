@@ -44,7 +44,7 @@ import {
 } from "@/tools/nutrition/importer.mjs";
 
 /** sha256 of `${JSON.stringify(content, null, 2)}\n` for the varied fixture. */
-const VARIED_OUTPUT_SHA256 = "6c9f7485e21023b37c2151a669f6d3be070a631a39362f7a3fe610488b4d90f7";
+const VARIED_OUTPUT_SHA256 = "df29ef0ceca8ed9c460a9fdbde6f2ca8166068619125edcf9cdb3976fc0e4ea5";
 
 /** Guideline rows for the 11 nutrients the importer recognises, in source order. */
 const GUIDELINE_ROWS = [
@@ -190,8 +190,8 @@ function strip_derived_ratings(profiles: readonly RatedProfile[]): RatedProfile[
   for (const profile of stripped) {
     delete profile.healthRating;
     delete profile.conditionRatings;
-    // The meal rating parts are derived too; the importer types them, this test does not.
-    Reflect.deleteProperty(profile, "healthParts");
+    // The health reasons are derived too; the importer types them, this test does not.
+    Reflect.deleteProperty(profile, "healthReasons");
     profile.intentFits = {};
   }
   return stripped;
@@ -294,6 +294,49 @@ describe("overall meal rating anchors", () => {
       leanSaturatedFatDays: [3.1, 1.6],
       onBudgetTwoDaysSodium: 1,
     });
+  });
+});
+
+describe("health reasons", () => {
+  const reasons_of = (serving: SyntheticServing) => {
+    const profile = build_synthetic_profile(serving);
+    addHealthRatings([profile]);
+    return Reflect.get(profile, "healthReasons") as unknown;
+  };
+
+  it("names a lean serving's claims and low nutrients", () => {
+    expect(reasons_of(LEAN_SERVING)).toEqual([
+      { factor: "protein", level: "high" },
+      { factor: "sodium", level: "low" },
+      { factor: "sugar", level: "low" },
+    ]);
+  });
+
+  it("puts more than a day of sodium first", () => {
+    expect(reasons_of({ ...LEAN_SERVING, sodiumMg: 4_000 })).toEqual([
+      { factor: "sodium", level: "above-daily" },
+      { factor: "protein", level: "high" },
+      { factor: "sugar", level: "low" },
+    ]);
+  });
+
+  it("keeps a slot for a strength when every limit nutrient is high", () => {
+    expect(reasons_of(ON_BUDGET_SERVING)).toEqual([
+      { factor: "sugar", level: "high" },
+      { factor: "energy", level: "high" },
+      { factor: "protein", level: "source" },
+    ]);
+  });
+
+  it("marks a reason resting on an imputed amount as estimated, never as low", () => {
+    const profile = build_synthetic_profile(LEAN_SERVING);
+    profile.nutrients.sodiumMg = { status: "unavailable", reason: "not-reported" };
+    addHealthRatings([profile]);
+    expect(Reflect.get(profile, "healthReasons")).toEqual([
+      { factor: "sodium", level: "high", isEstimated: true },
+      { factor: "protein", level: "high" },
+      { factor: "sugar", level: "low" },
+    ]);
   });
 });
 
