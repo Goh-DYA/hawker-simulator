@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 /**
  * Render tests of the practice coach in `app/game/coach.tsx`: the step card with its task, its
- * praise and its buttons, the ring around the target, the finish card, and the folded bar. The
+ * praise, its note and its buttons, the counter of the main day and the bonus steps, the ring
+ * around the target, the finish cards, and the folded bar. The
  * coach's wiring into the running shell (starting, saving nothing and exiting) is covered in
  * `HawkerSimulator.test.ts`.
  */
@@ -12,6 +13,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { PracticeCoach } from "@/app/game/coach";
 import {
   PRACTICE_FINISH_STEP,
+  PRACTICE_LAST_STEP,
   PRACTICE_START,
   PRACTICE_STEPS,
   type PracticeContext,
@@ -21,19 +23,32 @@ import {
 /** A context on the fresh practice centre, with the Build panel on screen. */
 const CONTEXT: PracticeContext = {
   snapshot: {
+    activeDishVariants: {},
+    accessPoints: [],
     buildTool: "select",
     cash: 4_200,
     day: 1,
     isOpen: false,
+    neighbourhood: undefined,
+    placedObjectCount: 14,
+    placedStalls: [],
+    routeGuidePoints: [],
+    selectedBuildId: undefined,
     selectedCustomerNutrition: undefined,
+    selectedObjectId: undefined,
     servedCustomers: 0,
     speed: 1,
+    stallMenus: {},
     timeLabel: "10:30 AM",
   },
-  baseline: { cash: 4_200, day: 1, servedCustomers: 0 },
+  baseline: undefined,
+  stepBaselines: {},
+  movesCompleted: 0,
+  completedStepIds: [],
   panel: "build",
   isPanelVisible: true,
   hasOpenDialog: false,
+  isCompact: false,
 };
 
 /**
@@ -52,7 +67,13 @@ function step_index(id: string): number {
  * @returns The coach's container and the callbacks.
  */
 function render_coach(progress: PracticeProgress, context: PracticeContext = CONTEXT) {
-  const callbacks = { onNext: vi.fn(), onCollapsedChange: vi.fn(), onExit: vi.fn() };
+  const callbacks = {
+    onNext: vi.fn(),
+    onBack: vi.fn(),
+    onSkipHidden: vi.fn(),
+    onCollapsedChange: vi.fn(),
+    onExit: vi.fn(),
+  };
   const { container } = render(createElement(PracticeCoach, { progress, context, ...callbacks }));
   return { container, callbacks };
 }
@@ -67,8 +88,19 @@ describe("PracticeCoach", () => {
     const { container } = render_coach(PRACTICE_START);
     const coach = within(container).getByRole("complementary", { name: "Practice guide" });
     expect(within(coach).getByRole("heading").textContent).toBe("Welcome to your practice day!");
-    expect(coach.textContent).toContain(`Step 1 of ${PRACTICE_STEPS.length}`);
+    expect(coach.textContent).toContain(`Step 1 of ${PRACTICE_FINISH_STEP + 1}`);
     expect(within(coach).getByRole("progressbar").getAttribute("aria-valuenow")).toBe("1");
+  });
+
+  it("counts the bonus steps on their own", () => {
+    const { container } = render_coach({ ...PRACTICE_START, stepIndex: PRACTICE_FINISH_STEP + 1 });
+    const coach = within(container).getByRole("complementary", { name: "Practice guide" });
+    const bar = within(coach).getByRole("progressbar");
+    expect([
+      coach.querySelector(".practice-count")?.textContent,
+      bar.getAttribute("aria-valuenow"),
+      bar.getAttribute("aria-valuemax"),
+    ]).toEqual(["Bonus step 1 of 3", "1", "3"]);
   });
 
   it("lays the card out as a lead-in, the visit's stages and icon points", () => {
@@ -85,8 +117,29 @@ describe("PracticeCoach", () => {
     }).toEqual({
       intro: "Watch what each guest does:",
       stages: ["Pick a stall", "Line up", "Get food", "Sit and eat", "Go home"],
-      points: ["💬The bubbles over their heads show what they are doing."],
+      points: [
+        "💬The bubbles over their heads show what they are doing.",
+        "⚙️Settings has a key that explains every bubble.",
+      ],
     });
+  });
+
+  it("offers Back on every card but the first", () => {
+    const first = render_coach(PRACTICE_START);
+    const has_back_first = within(first.container).queryByRole("button", { name: "Back" }) !== null;
+    cleanup();
+    const later = render_coach({ ...PRACTICE_START, stepIndex: step_index("move") });
+    fireEvent.click(within(later.container).getByRole("button", { name: "Back" }));
+    expect([has_back_first, later.callbacks.onBack.mock.calls.length]).toEqual([false, 1]);
+  });
+
+  it("offers Back on the finish card too", () => {
+    const { container, callbacks } = render_coach({
+      ...PRACTICE_START,
+      stepIndex: PRACTICE_FINISH_STEP,
+    });
+    fireEvent.click(within(container).getByRole("button", { name: "Back" }));
+    expect(callbacks.onBack).toHaveBeenCalledTimes(1);
   });
 
   it("moves on from a read-only card with its primary button", () => {
@@ -105,6 +158,34 @@ describe("PracticeCoach", () => {
     expect(coach.getAttribute("data-done")).toBe("false");
     fireEvent.click(within(coach).getByRole("button", { name: "Skip this step" }));
     expect(callbacks.onNext).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers no skip on the end of the day, which day 2 needs", () => {
+    const { container } = render_coach({ ...PRACTICE_START, stepIndex: step_index("end-of-day") });
+    const coach = within(container).getByRole("complementary", { name: "Practice guide" });
+    expect(
+      within(coach)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["–", "Show tips", "← Back", "Exit practice"]);
+  });
+
+  it("shows the Service Review's tip on the next morning", () => {
+    const { container } = render_coach(
+      { ...PRACTICE_START, stepIndex: step_index("new-day") },
+      {
+        ...CONTEXT,
+        snapshot: {
+          ...CONTEXT.snapshot,
+          neighbourhood: {
+            lastReport: {
+              focusTip: { factor: "comfort", label: "Seating", score: 0, action: "Add seats." },
+            },
+          } as unknown as PracticeContext["snapshot"]["neighbourhood"],
+        },
+      },
+    );
+    expect(container.querySelector(".practice-note")?.textContent).toBe("Seating: Add seats.");
   });
 
   it("praises a finished task and offers Next", () => {
@@ -158,16 +239,27 @@ describe("PracticeCoach", () => {
     }
   });
 
-  it("offers the way home, or more practice, on the finish card", () => {
+  it("offers the way home, more practice or the bonus tools on the finish card", () => {
     const { container, callbacks } = render_coach({
       ...PRACTICE_START,
       stepIndex: PRACTICE_FINISH_STEP,
     });
     fireEvent.click(within(container).getByRole("button", { name: "Go to my centre" }));
     fireEvent.click(within(container).getByRole("button", { name: "Keep practising" }));
+    fireEvent.click(within(container).getByRole("button", { name: "Bonus tools" }));
     expect(callbacks.onExit).toHaveBeenCalledTimes(1);
     expect(callbacks.onCollapsedChange).toHaveBeenCalledWith(true);
+    expect(callbacks.onNext).toHaveBeenCalledTimes(1);
     expect(within(container).queryByRole("button", { name: "Skip this step" })).toBeNull();
+  });
+
+  it("ends the bonus steps with the way home and no more bonus", () => {
+    const { container } = render_coach({ ...PRACTICE_START, stepIndex: PRACTICE_LAST_STEP });
+    expect(
+      within(container)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["–", "← Back", "Keep practising", "Go to my centre →"]);
   });
 
   it("exits from any step and folds down from its hide button", () => {
@@ -184,7 +276,13 @@ describe("PracticeCoach", () => {
   });
 
   it("sends focus to the next step's heading when the player moves on from the card", () => {
-    const callbacks = { onNext: vi.fn(), onCollapsedChange: vi.fn(), onExit: vi.fn() };
+    const callbacks = {
+      onNext: vi.fn(),
+      onBack: vi.fn(),
+      onSkipHidden: vi.fn(),
+      onCollapsedChange: vi.fn(),
+      onExit: vi.fn(),
+    };
     const { container, rerender } = render(
       createElement(PracticeCoach, { progress: PRACTICE_START, context: CONTEXT, ...callbacks }),
     );
@@ -198,14 +296,38 @@ describe("PracticeCoach", () => {
         ...callbacks,
       }),
     );
-    expect(document.activeElement?.textContent).toBe("Your cash and your fans");
+    expect(document.activeElement?.textContent).toBe("Your cash and your hearts");
+  });
+
+  it("gives its heading focus when it opens again and focus has fallen to the page", () => {
+    const callbacks = {
+      onNext: vi.fn(),
+      onBack: vi.fn(),
+      onSkipHidden: vi.fn(),
+      onCollapsedChange: vi.fn(),
+      onExit: vi.fn(),
+    };
+    const folded = { ...PRACTICE_START, isCollapsed: true };
+    const { rerender } = render(
+      createElement(PracticeCoach, { progress: folded, context: CONTEXT, ...callbacks }),
+    );
+    rerender(
+      createElement(PracticeCoach, { progress: PRACTICE_START, context: CONTEXT, ...callbacks }),
+    );
+    expect(document.activeElement?.textContent).toBe("Welcome to your practice day!");
   });
 
   it("leaves focus alone when the step changes while the player is elsewhere", () => {
     const outside = document.createElement("button");
     document.body.append(outside);
     outside.focus();
-    const callbacks = { onNext: vi.fn(), onCollapsedChange: vi.fn(), onExit: vi.fn() };
+    const callbacks = {
+      onNext: vi.fn(),
+      onBack: vi.fn(),
+      onSkipHidden: vi.fn(),
+      onCollapsedChange: vi.fn(),
+      onExit: vi.fn(),
+    };
     const { rerender } = render(
       createElement(PracticeCoach, { progress: PRACTICE_START, context: CONTEXT, ...callbacks }),
     );
@@ -246,7 +368,9 @@ describe("PracticeCoach", () => {
     stats.checkVisibility = () => false;
     document.body.append(stats);
     const { callbacks } = render_coach({ ...PRACTICE_START, stepIndex: step_index("money") });
-    expect(callbacks.onNext).toHaveBeenCalledTimes(1);
+    expect([callbacks.onSkipHidden.mock.calls.length, callbacks.onNext.mock.calls.length]).toEqual([
+      1, 0,
+    ]);
   });
 
   it("keeps a step whose target is on screen", () => {
@@ -255,6 +379,6 @@ describe("PracticeCoach", () => {
     stats.checkVisibility = () => true;
     document.body.append(stats);
     const { callbacks } = render_coach({ ...PRACTICE_START, stepIndex: step_index("money") });
-    expect(callbacks.onNext).not.toHaveBeenCalled();
+    expect(callbacks.onSkipHidden).not.toHaveBeenCalled();
   });
 });

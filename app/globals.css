@@ -6186,6 +6186,15 @@ kbd {
   color: #1f5a3a;
 }
 
+/* A line from the game, such as the Service Review's tip, set off like a quote. */
+.practice-coach .practice-note {
+  padding: 8px 12px;
+  border-left: 4px solid var(--amber);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunk);
+  font-weight: 600;
+}
+
 .practice-coach .practice-progress {
   color: var(--ink-soft);
   font-size: var(--text-md);
@@ -6194,14 +6203,27 @@ kbd {
 
 .practice-coach footer {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
-  gap: 10px;
+  gap: 6px 10px;
   margin-top: 12px;
+}
+
+/* Back sits on the left, apart from the buttons that leave or move on. */
+.practice-coach footer .practice-back {
+  margin-right: auto;
+  padding-left: 0;
 }
 
 .practice-coach footer button {
   white-space: nowrap;
+}
+
+/* Bonus tools is optional, so it is outlined rather than filled like the way home. */
+.practice-coach footer .practice-bonus {
+  border: 1px solid var(--forest);
+  color: var(--forest);
 }
 
 /* During practice the action strip's save state becomes the practice controls, in the page
@@ -6272,8 +6294,7 @@ kbd {
     zoom: 0.45;
   }
 
-  .practice-coach[data-tips="closed"] .guide-points,
-  .practice-coach[data-tips="closed"] .guide-flow {
+  .practice-coach[data-tips="closed"] .guide-points {
     display: none;
   }
 

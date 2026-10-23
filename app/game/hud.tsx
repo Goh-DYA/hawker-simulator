@@ -284,6 +284,7 @@ export function WorldToolbar({
         ))}
         <button
           type="button"
+          data-coach="tool-access"
           aria-pressed={snapshot.buildTool === "access"}
           className={snapshot.buildTool === "access" ? "is-active" : ""}
           onClick={() => onChooseTool(snapshot.buildTool === "access" ? "select" : "access")}
@@ -292,6 +293,7 @@ export function WorldToolbar({
         </button>
         <button
           type="button"
+          data-coach="tool-route"
           aria-pressed={snapshot.buildTool === "route"}
           className={snapshot.buildTool === "route" ? "is-active" : ""}
           onClick={() => onChooseRouteTool()}
@@ -433,6 +435,7 @@ export function ActionStrip({
           <>
             <button
               type="button"
+              data-coach="undo"
               disabled={!snapshot.canUndo}
               onClick={() => controllerRef.current?.undo()}
             >

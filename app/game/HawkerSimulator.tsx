@@ -104,12 +104,15 @@ import { ActivityPanel, FocusPanel, InsightsPanel, ObjectiveCard } from "./panel
 import { NextUnlockSignpost, TodayStrip } from "./panels/today";
 import { PracticeCoach } from "./coach";
 import {
-  advance_practice,
-  PRACTICE_FINISH_STEP,
+  move_practice,
+  observe_practice_snapshot,
   PRACTICE_NOT_SAVED_MESSAGE,
   PRACTICE_START,
+  is_practice_step_done,
+  PRACTICE_STEPS,
+  type PracticeContext,
+  type PracticeDirection,
   type PracticeProgress,
-  record_practice_baseline,
 } from "./practice";
 
 const INITIAL_LEVEL = 1;
@@ -138,6 +141,7 @@ const INITIAL_SNAPSHOT: RuntimeSnapshot = {
   totalSeats: 8,
   cleanliness: 100,
   trayReturnStations: 1,
+  placedObjectCount: 0,
   unclearedTrays: 0,
   cleaningCrew: 1,
   peakReputation: INITIAL_REPUTATION,
@@ -223,6 +227,8 @@ export function HawkerSimulator() {
   // synchronously, before React re-renders.
   const is_practice_ref = useRef(false);
   const practice_return_ref = useRef<{ state: unknown; speed: GameSpeed } | undefined>(undefined);
+  // The object count of the last snapshot, so practice can tell when a placement lands.
+  const placed_object_count_ref = useRef<number | undefined>(undefined);
 
   const [snapshot, setSnapshot] = useState(INITIAL_SNAPSHOT);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -300,7 +306,8 @@ export function HawkerSimulator() {
         autosaveState: current.autosaveState,
       }));
       track_service_review(nextSnapshot);
-      set_practice((current) => record_practice_baseline(current, nextSnapshot));
+      set_practice((current) => observe_practice_snapshot(current, nextSnapshot));
+      end_practice_placement(nextSnapshot);
     },
     onEvent: announce,
     onPersistentChange(state) {
@@ -370,7 +377,11 @@ export function HawkerSimulator() {
     set_is_review_unread(false);
     const resume_speed = review_resume_speed_ref.current;
     review_resume_speed_ref.current = undefined;
-    if (resume_speed !== undefined) controllerRef.current?.setSpeed(resume_speed);
+    // During practice the next morning starts paused, so the coach's setup steps can be read
+    // before the clock runs.
+    if (resume_speed !== undefined && !is_practice_ref.current) {
+      controllerRef.current?.setSpeed(resume_speed);
+    }
   }, [controllerRef]);
 
   const review_report = snapshot.neighbourhood?.lastReport;
@@ -549,12 +560,44 @@ export function HawkerSimulator() {
     controllerRef.current?.selectBuildItem(item.id);
     controllerRef.current?.setBuildTool("place");
     audioRef.current?.play("ui");
-    // On a phone the management sheet covers the map, so close it to place the item.
-    if (compactManagement) setManagementOpen(false);
+    // On a phone the management sheet covers the map, so close it to place the item, letting go
+    // of a selected guest too, whose inspector would hold the sheet open.
+    if (compactManagement) closeManagementSheet();
+  }
+
+  /**
+   * During practice, stop building once a placement lands, so a second click does not buy a
+   * second item. The tool change waits a microtask, because the runtime reports the placement
+   * from inside its own command.
+   *
+   * @param next_snapshot - The runtime snapshot just received.
+   */
+  function end_practice_placement(next_snapshot: RuntimeSnapshot) {
+    const previous_count = placed_object_count_ref.current;
+    placed_object_count_ref.current = next_snapshot.placedObjectCount;
+    if (
+      !is_practice_ref.current ||
+      next_snapshot.buildTool !== "place" ||
+      previous_count === undefined ||
+      next_snapshot.placedObjectCount <= previous_count
+    ) {
+      return;
+    }
+    queueMicrotask(() => {
+      if (!is_practice_ref.current) return;
+      setSelectedId(undefined);
+      controllerRef.current?.setBuildTool("select");
+      controllerRef.current?.selectBuildItem(undefined);
+    });
   }
 
   function chooseTool(tool: BuildTool) {
     setSelectedId(tool === "place" ? selectedId : undefined);
+    // A tool button lets go of an object the Move tool holds without moving it. Queued before the
+    // runtime's snapshot, so the practice coach does not count it as a move.
+    set_practice((current) =>
+      current?.isMoveHeld ? { ...current, isMoveHeld: false } : current,
+    );
     controllerRef.current?.setBuildTool(tool);
     if (tool !== "place") controllerRef.current?.selectBuildItem(undefined);
     audioRef.current?.play("ui");
@@ -812,13 +855,47 @@ export function HawkerSimulator() {
     return true;
   }
 
-  /** Move the practice guide on one step, pausing the game when it reaches the finish card. */
-  function advance_practice_step() {
+  /**
+   * Gather what the practice checks read.
+   *
+   * @param progress - The practice progress.
+   * @returns The practice context for the current snapshot, panel and dialogs.
+   */
+  function build_practice_context(progress: PracticeProgress): PracticeContext {
+    return {
+      snapshot,
+      baseline: progress.baseline,
+      stepBaselines: progress.stepBaselines,
+      movesCompleted: progress.movesCompleted,
+      completedStepIds: progress.completedStepIds,
+      panel,
+      isPanelVisible: !compactManagement || managementSheetOpen,
+      hasOpenDialog: interfaceInert,
+      isCompact: compactManagement,
+    };
+  }
+
+  /**
+   * Move the practice guide one step forward or back. Moving forward onto a step that asks for it
+   * (building, the next morning, the finish card) pauses the game, and on a phone a step played on
+   * the map closes the management sheet.
+   *
+   * @param direction - 1 for the next step, -1 for the previous one.
+   */
+  function move_practice_step(direction: PracticeDirection) {
     if (!practice) return;
-    const next = advance_practice(practice);
-    if (next.stepIndex === PRACTICE_FINISH_STEP && practice.stepIndex !== PRACTICE_FINISH_STEP) {
+    const next = move_practice(
+      practice,
+      direction,
+      snapshot,
+      is_practice_step_done(PRACTICE_STEPS[practice.stepIndex]!, build_practice_context(practice)),
+    );
+    const next_step = PRACTICE_STEPS[next.stepIndex];
+    if (direction === 1 && next.stepIndex !== practice.stepIndex && next_step?.pausesOnEnter) {
       controllerRef.current?.setSpeed(0);
     }
+    // On a phone, a step played on the map closes the sheet that would cover it.
+    if (compactManagement && next_step?.isMapNeeded) closeManagementSheet();
     set_practice(next);
   }
 
@@ -844,6 +921,21 @@ export function HawkerSimulator() {
     isVariantLabOpen: Boolean(variantLabFamily),
     isServiceReviewOpen: is_review_showing,
   });
+  // A practice task stays done once the player has done it, even when they change it back before
+  // moving on (a recipe switched back, a panel closed). Recorded during render, as React allows
+  // for a component's own state, so the coach never shows the task undone again.
+  const practice_step = practice ? PRACTICE_STEPS[practice.stepIndex] : undefined;
+  if (
+    practice !== undefined &&
+    practice_step?.task !== undefined &&
+    !practice.completedStepIds.includes(practice_step.id) &&
+    is_practice_step_done(practice_step, build_practice_context(practice))
+  ) {
+    set_practice({
+      ...practice,
+      completedStepIds: [...practice.completedStepIds, practice_step.id],
+    });
+  }
 
   const previewRequests = useMemo(
     () =>
@@ -1242,14 +1334,10 @@ export function HawkerSimulator() {
       {practice && !interfaceInert ? (
         <PracticeCoach
           progress={practice}
-          context={{
-            snapshot,
-            baseline: practice.baseline,
-            panel,
-            isPanelVisible: !compactManagement || managementSheetOpen,
-            hasOpenDialog: interfaceInert,
-          }}
-          onNext={advance_practice_step}
+          context={build_practice_context(practice)}
+          onNext={() => move_practice_step(1)}
+          onBack={() => move_practice_step(-1)}
+          onSkipHidden={() => move_practice_step(practice.direction)}
           onCollapsedChange={(is_collapsed) => {
             // On a phone an open sheet covers the action strip, where the folded coach's
             // controls go, so folding closes it.

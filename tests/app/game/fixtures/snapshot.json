@@ -43,6 +43,7 @@
   "totalSeats": 6,
   "cleanliness": 99.4,
   "trayReturnStations": 1,
+  "placedObjectCount": 14,
   "unclearedTrays": 1,
   "cleaningCrew": 1,
   "peakReputation": 8,
