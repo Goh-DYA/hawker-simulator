@@ -11,9 +11,11 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
+  get_practice_position,
   is_practice_step_done,
   place_coach_card,
   PRACTICE_FINISH_STEP,
+  PRACTICE_LAST_STEP,
   PRACTICE_STEPS,
   type PracticeContext,
   type PracticeProgress,
@@ -61,8 +63,12 @@ export interface PracticeCoachProps {
   readonly progress: PracticeProgress;
   /** What the step checks read. */
   readonly context: PracticeContext;
-  /** Move to the next step. */
+  /** Move to the next step; from the finish card, that starts the bonus steps. */
   readonly onNext: () => void;
+  /** Move back to the previous step. */
+  readonly onBack: () => void;
+  /** Skip a step whose target the screen hides, in the direction the player is moving. */
+  readonly onSkipHidden: () => void;
   /** Fold the coach away (the action strip then offers Show guide), or open it again. */
   readonly onCollapsedChange: (isCollapsed: boolean) => void;
   /** Leave practice and load the player's own centre back. */
@@ -81,9 +87,10 @@ function is_hidden(element: HTMLElement): boolean {
 
 /**
  * Render the practice coach: nothing while folded (the action strip holds its controls then),
- * otherwise the ring and the step card. When the player moves on from inside the card, focus
- * goes to the new step's heading, so a key press never lands on a button that changed under it.
- * On phones a task step folds its tips behind a toggle, so the card covers less of the map.
+ * otherwise the ring and the step card, which can step back as well as on. When the player moves
+ * on or back from inside the card, focus goes to the new step's heading, so a key press never lands on a button that changed under it.
+ * On phones a task step folds its tip points behind a toggle, so the card covers less of the map;
+ * its how-to stages stay in view.
  *
  * @param props - See {@link PracticeCoachProps}.
  * @returns The coach.
@@ -92,22 +99,26 @@ export function PracticeCoach({
   progress,
   context,
   onNext,
+  onBack,
+  onSkipHidden,
   onCollapsedChange,
   onExit,
 }: PracticeCoachProps) {
   const card_ref = useRef<HTMLElement>(null);
   const heading_ref = useRef<HTMLHeadingElement>(null);
   const should_focus_heading_ref = useRef(false);
-  const skipped_step_ref = useRef<number | undefined>(undefined);
-  const on_next_ref = useRef(onNext);
+  const on_skip_hidden_ref = useRef(onSkipHidden);
   const [layout, set_layout] = useState<CoachLayout>();
   const [tips_step, set_tips_step] = useState<number>();
-  const step = PRACTICE_STEPS[progress.stepIndex] ?? PRACTICE_STEPS[PRACTICE_FINISH_STEP]!;
+  const step = PRACTICE_STEPS[progress.stepIndex] ?? PRACTICE_STEPS[PRACTICE_LAST_STEP]!;
   const target_selector = step.target?.(context);
   const is_done = is_practice_step_done(step, context);
-  const is_finish = progress.stepIndex >= PRACTICE_FINISH_STEP;
+  const is_finish = progress.stepIndex === PRACTICE_FINISH_STEP;
+  const is_end = is_finish || progress.stepIndex >= PRACTICE_LAST_STEP;
+  const position = get_practice_position(progress.stepIndex);
   const progress_line = step.progress?.(context);
-  const has_tips = step.task !== undefined && Boolean(step.points ?? step.flow);
+  const note = step.note?.(context);
+  const has_tips = step.task !== undefined && Boolean(step.points);
   const are_tips_open = tips_step === progress.stepIndex;
   const is_skipped_when_hidden = step.isSkippedWhenHidden === true;
   const cover_edge = step.coverEdge ?? "bottom";
@@ -115,8 +126,20 @@ export function PracticeCoach({
   // A layout effect, declared before the measuring one, so a skip made while measuring calls
   // this render's callback rather than the last render's.
   useLayoutEffect(() => {
-    on_next_ref.current = onNext;
-  }, [onNext]);
+    on_skip_hidden_ref.current = onSkipHidden;
+  }, [onSkipHidden]);
+
+  // Show guide sits in the action strip and disappears as the card comes back, which would leave
+  // focus on the page itself; the card's heading takes it instead.
+  const was_collapsed_ref = useRef(progress.isCollapsed);
+  useEffect(() => {
+    const was_collapsed = was_collapsed_ref.current;
+    was_collapsed_ref.current = progress.isCollapsed;
+    if (!was_collapsed || progress.isCollapsed) return;
+    if (document.activeElement === null || document.activeElement === document.body) {
+      heading_ref.current?.focus();
+    }
+  }, [progress.isCollapsed]);
 
   useEffect(() => {
     if (!should_focus_heading_ref.current) return;
@@ -124,26 +147,28 @@ export function PracticeCoach({
     heading_ref.current?.focus();
   }, [progress.stepIndex]);
 
-  /** Move on, sending focus to the next heading when it was inside the card. */
-  const go_next = () => {
+  /**
+   * Move forward or back, sending focus to the new step's heading when it was inside the card.
+   *
+   * @param move - The step change to make.
+   */
+  const go = (move: () => void) => {
     should_focus_heading_ref.current = Boolean(card_ref.current?.contains(document.activeElement));
-    onNext();
+    move();
   };
 
   useLayoutEffect(() => {
     if (progress.isCollapsed) return;
+    // Each showing of a step skips it at most once, however often it is measured; a later
+    // visit, such as stepping back onto it, may skip it again.
+    let has_skipped = false;
     const measure = () => {
       const card = card_ref.current;
       if (!card) return;
       const target = target_selector ? document.querySelector<HTMLElement>(target_selector) : null;
-      if (
-        is_skipped_when_hidden &&
-        target &&
-        is_hidden(target) &&
-        skipped_step_ref.current !== progress.stepIndex
-      ) {
-        skipped_step_ref.current = progress.stepIndex;
-        on_next_ref.current();
+      if (is_skipped_when_hidden && target && is_hidden(target) && !has_skipped) {
+        has_skipped = true;
+        on_skip_hidden_ref.current();
         return;
       }
       const box = target?.getBoundingClientRect();
@@ -209,7 +234,7 @@ export function PracticeCoach({
         <header>
           <span className="practice-badge">Practice day</span>
           <span className="practice-count">
-            Step {progress.stepIndex + 1} of {PRACTICE_STEPS.length}
+            {position.label} {position.number} of {position.total}
           </span>
           <button
             type="button"
@@ -225,16 +250,17 @@ export function PracticeCoach({
           role="progressbar"
           aria-label="Practice progress"
           aria-valuemin={1}
-          aria-valuemax={PRACTICE_STEPS.length}
-          aria-valuenow={progress.stepIndex + 1}
+          aria-valuemax={position.total}
+          aria-valuenow={position.number}
         >
-          <i style={{ width: `${((progress.stepIndex + 1) / PRACTICE_STEPS.length) * 100}%` }} />
+          <i style={{ width: `${(position.number / position.total) * 100}%` }} />
         </div>
         <div aria-live="polite" aria-atomic="true">
           <h2 ref={heading_ref} tabIndex={-1}>
             {step.title}
           </h2>
           {step.intro ? <p>{step.intro}</p> : null}
+          {note ? <p className="practice-note">{note}</p> : null}
           {step.flow ? <GuideFlow stages={step.flow.stages} label={step.flow.label} /> : null}
           {step.points ? <GuidePoints points={step.points} /> : null}
           {step.task ? (
@@ -265,11 +291,25 @@ export function PracticeCoach({
           </button>
         ) : null}
         <footer>
-          {is_finish ? (
+          {progress.stepIndex > 0 ? (
+            <button type="button" className="text-button practice-back" onClick={() => go(onBack)}>
+              <span aria-hidden="true">← </span>Back
+            </button>
+          ) : null}
+          {is_end ? (
             <>
               <button type="button" className="text-button" onClick={() => onCollapsedChange(true)}>
                 Keep practising
               </button>
+              {is_finish ? (
+                <button
+                  type="button"
+                  className="text-button practice-bonus"
+                  onClick={() => go(onNext)}
+                >
+                  Bonus tools
+                </button>
+              ) : null}
               <button type="button" className="primary-button" onClick={onExit}>
                 Go to my centre <span aria-hidden="true">→</span>
               </button>
@@ -280,11 +320,11 @@ export function PracticeCoach({
                 Exit practice
               </button>
               {is_done ? (
-                <button type="button" className="primary-button" onClick={go_next}>
+                <button type="button" className="primary-button" onClick={() => go(onNext)}>
                   {progress.stepIndex === 0 ? "Let's go" : "Next"} <span aria-hidden="true">→</span>
                 </button>
-              ) : (
-                <button type="button" className="text-button" onClick={go_next}>
+              ) : step.isRequired ? null : (
+                <button type="button" className="text-button" onClick={() => go(onNext)}>
                   Skip this step
                 </button>
               )}

@@ -1545,6 +1545,12 @@ describe("HawkerSimulator practice day", () => {
   const NOT_SAVED =
     "This is a practice day, so nothing is saved. Press Exit practice to go back to your own centre.";
 
+  /** How many cards the main practice day has, welcome to finish. */
+  const PRACTICE_MAIN_STEP_COUNT = 24;
+
+  /** How many cards the practice day has with its bonus steps. */
+  const PRACTICE_STEP_COUNT = 27;
+
   /** The notice shown as practice starts. */
   const PRACTICE_STARTED = "Practice day started. Nothing here is saved.";
 
@@ -1696,32 +1702,73 @@ describe("HawkerSimulator practice day", () => {
     });
   });
 
-  it("moves through the guide and pauses the game on the finish card", async () => {
+  it("moves through the guide, passing over the put-down cards of skipped picks and pausing to build, on the next morning and on the finish card", async () => {
     const container = await boot_running_centre();
     await start_practice_from_help(container);
     fakes.calls.length = 0;
 
     const titles: (string | undefined)[] = [];
-    for (let step = 0; step < 15; step += 1) {
-      const coach = require_element(container, ".practice-coach");
-      fireEvent.click(
-        within(coach).queryByRole("button", { name: /^(Let's go|Next)$/ }) ??
-          within(coach).getByRole("button", { name: "Skip this step" }),
-      );
+    for (
+      let step = 0;
+      step < PRACTICE_MAIN_STEP_COUNT && coach_title(container) !== "You're ready!";
+      step += 1
+    ) {
+      press_on(container);
       titles.push(coach_title(container));
     }
+    const finish_buttons = coach_buttons(container);
+    fireEvent.click(within(container).getByRole("button", { name: "Bonus tools" }));
+    const bonus_title = coach_title(container);
+    press_on(container);
+    press_on(container);
 
     expect({
+      morning: titles.indexOf("Good morning, day 2!") >= 0,
+      put_down_cards: titles.filter((title) => title === "Put it down" || title === "Find it a spot"),
       last_titles: titles.slice(-2),
       speeds: fakes.calls.filter(([method]) => method === "controller.setSpeed"),
-      buttons: within(require_element(container, ".practice-coach"))
-        .getAllByRole("button")
-        .map((button) => button.textContent),
+      finish_buttons,
+      bonus_title,
+      end: [coach_title(container), coach_buttons(container)],
     }).toEqual({
-      last_titles: ["Almost closing time", "You ran a whole day!"],
-      speeds: [["controller.setSpeed", 0]],
-      buttons: ["–", "Keep practising", "Go to my centre →"],
+      morning: true,
+      put_down_cards: [],
+      last_titles: ["Try a new recipe", "You're ready!"],
+      speeds: [
+        ["controller.setSpeed", 0],
+        ["controller.setSpeed", 0],
+        ["controller.setSpeed", 0],
+      ],
+      finish_buttons: ["–", "← Back", "Keep practising", "Bonus tools", "Go to my centre →"],
+      bonus_title: "Add a door",
+      end: [
+        "Bonus tools done!",
+        ["–", "← Back", "Keep practising", "Go to my centre →"],
+      ],
     });
+  });
+
+  it("steps back to the previous card without pausing the game", async () => {
+    const container = await boot_running_centre();
+    await start_practice_from_help(container);
+    const next = () =>
+      fireEvent.click(
+        within(require_element(container, ".practice-coach")).getByRole("button", {
+          name: /^(Let's go|Next)$/,
+        }),
+      );
+    next();
+    next();
+    fakes.calls.length = 0;
+
+    fireEvent.click(
+      within(require_element(container, ".practice-coach")).getByRole("button", { name: "Back" }),
+    );
+
+    expect({
+      title: coach_title(container),
+      speeds: fakes.calls.filter(([method]) => method === "controller.setSpeed"),
+    }).toEqual({ title: "Your cash and your hearts", speeds: [] });
   });
 
   it("folds the guide away and opens it again from the action strip", async () => {
@@ -1767,6 +1814,203 @@ describe("HawkerSimulator practice day", () => {
     expect([was_open, require_element(container, "main.game-shell").dataset.managementOpen]).toEqual([
       "true",
       "false",
+    ]);
+  });
+
+  it("closes the phone sheet, letting go of the guest, when a card is played on the map", async () => {
+    const container = await boot_running_centre(SNAPSHOT_FIXTURE, [COMPACT_LAYOUT_QUERY]);
+    await start_practice_from_help(container);
+    open_dock_tab(container, "Insights");
+    const was_open = require_element(container, "main.game-shell").dataset.managementOpen;
+    fakes.calls.length = 0;
+
+    fireEvent.click(within(container).getByRole("button", { name: "Let's go" }));
+    fireEvent.click(
+      within(require_element(container, ".practice-coach")).getByRole("button", { name: "Next" }),
+    );
+    go_to_card(container, "Your hawker centre");
+
+    expect([
+      was_open,
+      require_element(container, "main.game-shell").dataset.managementOpen,
+      fakes.calls.filter(([method]) => method === "controller.selectCustomer"),
+    ]).toEqual(["true", "false", [["controller.selectCustomer", undefined]]]);
+  });
+
+  it("keeps stepping back past a card the screen hides, instead of bouncing forward", async () => {
+    const container = await boot_running_centre();
+    Object.defineProperty(HTMLElement.prototype, "checkVisibility", {
+      configurable: true,
+      value(this: HTMLElement) {
+        return !this.matches(".hud-stats");
+      },
+    });
+    onTestFinished(() => {
+      Reflect.deleteProperty(HTMLElement.prototype, "checkVisibility");
+    });
+    await start_practice_from_help(container);
+    fireEvent.click(within(container).getByRole("button", { name: "Let's go" }));
+    const forward = coach_title(container);
+
+    fireEvent.click(
+      within(require_element(container, ".practice-coach")).getByRole("button", { name: "Back" }),
+    );
+
+    expect([forward, coach_title(container)]).toEqual([
+      "The clock and the speed buttons",
+      "Welcome to your practice day!",
+    ]);
+  });
+
+  /**
+   * Move the coach on one card: Next, or Skip on an unfinished task. A task that cannot be
+   * skipped, the end of the day, is finished first by a snapshot of the next day.
+   *
+   * @param container - The component container.
+   */
+  function press_on(container: HTMLElement): void {
+    const find_button = () =>
+      within(require_element(container, ".practice-coach")).queryByRole("button", {
+        name: /^(Let's go|Next|Skip this step)$/,
+      });
+    if (find_button() === null) {
+      // The first snapshot sets the practice baseline, if none has arrived yet.
+      push_snapshot({});
+      push_snapshot({ day: SNAPSHOT_FIXTURE.day + 1 });
+    }
+    const button = find_button();
+    if (button === null) throw new Error(`No way on from "${coach_title(container)}"`);
+    fireEvent.click(button);
+  }
+
+  /**
+   * @param container - The component container.
+   * @returns The text of each button on the coach's card.
+   */
+  function coach_buttons(container: HTMLElement): readonly (string | null)[] {
+    return within(require_element(container, ".practice-coach"))
+      .getAllByRole("button")
+      .map((button) => button.textContent);
+  }
+
+  /**
+   * Press on until the coach shows a card.
+   *
+   * @param container - The component container.
+   * @param title - The card's heading.
+   */
+  function go_to_card(container: HTMLElement, title: string): void {
+    for (let step = 0; step < PRACTICE_STEP_COUNT && coach_title(container) !== title; step += 1) {
+      press_on(container);
+    }
+  }
+
+  /**
+   * Push a runtime snapshot of the running centre with some fields changed.
+   *
+   * @param changes - The snapshot fields to change.
+   */
+  function push_snapshot(changes: Partial<RuntimeSnapshot>): void {
+    act(() => {
+      runtime_options().onSnapshot({ ...SNAPSHOT_FIXTURE, ...changes });
+    });
+  }
+
+  /**
+   * @param container - The component container.
+   * @returns Whether the coach's card shows its task as done.
+   */
+  function is_card_done(container: HTMLElement): boolean {
+    return require_element(container, ".practice-coach").dataset.done === "true";
+  }
+
+  it("counts a move only when the Move tool puts its object down", async () => {
+    const container = await boot_running_centre();
+    await start_practice_from_help(container);
+    go_to_card(container, "Move a stool");
+    const toolbar = require_element(container, ".tool-segment");
+
+    push_snapshot({ buildTool: "move", selectedObjectId: "starter-3" });
+    fireEvent.click(within(toolbar).getByRole("button", { name: "Move" }));
+    push_snapshot({ buildTool: "move", selectedObjectId: undefined });
+    push_snapshot({ buildTool: "select" });
+    const after_cancel = is_card_done(container);
+    push_snapshot({ buildTool: "move", selectedObjectId: "starter-3" });
+    push_snapshot({ buildTool: "move", selectedObjectId: undefined });
+    push_snapshot({ buildTool: "select" });
+
+    expect([after_cancel, is_card_done(container)]).toEqual([false, true]);
+  });
+
+  it("keeps a finished card done when the player steps back to it", async () => {
+    const container = await boot_running_centre();
+    await start_practice_from_help(container);
+    go_to_card(container, "Buy a stool");
+    push_snapshot({ buildTool: "place" });
+    fireEvent.click(
+      within(require_element(container, ".practice-coach")).getByRole("button", { name: "Next" }),
+    );
+    push_snapshot({ buildTool: "select" });
+
+    fireEvent.click(
+      within(require_element(container, ".practice-coach")).getByRole("button", { name: "Back" }),
+    );
+
+    expect([coach_title(container), is_card_done(container)]).toEqual(["Buy a stool", true]);
+  });
+
+  it("keeps a card done once its task is done, even when the player changes it back", async () => {
+    const container = await boot_running_centre();
+    await start_practice_from_help(container);
+    go_to_card(container, "Buy a stool");
+
+    push_snapshot({ buildTool: "place" });
+    push_snapshot({ buildTool: "select" });
+
+    expect(is_card_done(container)).toBe(true);
+  });
+
+  it("stops building after each placement during practice, but not in the player's own centre", async () => {
+    const container = await boot_running_centre();
+    push_snapshot({ buildTool: "place", placedObjectCount: 14 });
+    push_snapshot({ buildTool: "place", placedObjectCount: 15 });
+    await settle();
+    const own_calls = fakes.calls.filter(([method]) => method === "controller.setBuildTool");
+    await start_practice_from_help(container);
+    push_snapshot({ buildTool: "place", placedObjectCount: 14 });
+    fakes.calls.length = 0;
+
+    push_snapshot({ buildTool: "place", placedObjectCount: 15 });
+    await settle();
+
+    expect([own_calls, fakes.calls]).toEqual([
+      [],
+      [
+        ["controller.setBuildTool", "select"],
+        ["controller.selectBuildItem", undefined],
+      ],
+    ]);
+  });
+
+  it("leaves the next morning paused when the Service Review closes during practice", async () => {
+    const container = await boot_running_centre();
+    await start_practice_from_help(container);
+    push_snapshot({});
+    fakes.calls.length = 0;
+    const neighbourhood = SNAPSHOT_FIXTURE.neighbourhood!;
+    push_snapshot({
+      day: 3,
+      speed: 10,
+      neighbourhood: {
+        ...neighbourhood,
+        lastReport: { ...neighbourhood.lastReport!, day: 2 },
+      },
+    });
+
+    fireEvent.click(within(container).getByRole("button", { name: "Open for Day 3" }));
+
+    expect(fakes.calls.filter(([method]) => method === "controller.setSpeed")).toEqual([
+      ["controller.setSpeed", 0],
     ]);
   });
 

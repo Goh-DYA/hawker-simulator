@@ -913,6 +913,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
   "totalSeats": 6,
   "cleanliness": 100,
   "trayReturnStations": 1,
+  "placedObjectCount": 14,
   "unclearedTrays": 0,
   "cleaningCrew": 2,
   "peakReputation": 8,

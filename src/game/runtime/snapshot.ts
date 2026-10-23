@@ -411,6 +411,7 @@ export function build_runtime_snapshot(input: SnapshotInput): RuntimeSnapshot {
       queueCount,
     }),
     trayReturnStations,
+    placedObjectCount: snapshot.objects.length,
     unclearedTrays: Object.keys(snapshot.unclearedTrays).length,
     cleaningCrew: count_hall_cleaning_crew(state),
     peakReputation: snapshot.progression.peakReputation * REPUTATION_SCALE,

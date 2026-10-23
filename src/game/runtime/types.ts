@@ -302,6 +302,8 @@ export interface RuntimeSnapshot {
   totalSeats: number;
   cleanliness: number;
   trayReturnStations: number;
+  /** How many objects (stalls and placeables) are placed in the hall. */
+  placedObjectCount: number;
   /** Seats holding a tray that the table-cleaning crew has not cleared yet. */
   unclearedTrays: number;
   /** Trays the crew can clear at once. */

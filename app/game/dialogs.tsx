@@ -259,7 +259,7 @@ const TUTORIAL_COPY: readonly {
     points: [
       { icon: "💵", text: "Every meal you sell earns cash." },
       { icon: "🛠️", text: "Spend it in Build on more tables, seats and fans." },
-      { icon: "🎯", text: "Finish the goals on the left to level up and unlock new stalls." },
+      { icon: "🎯", text: "Finish the goals on the left to level up and unlock new stalls. On a phone, look under Focus." },
       { icon: "⏸", text: "Press pause at any time." },
     ],
     action: "Start playing",
