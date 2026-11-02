@@ -2,7 +2,7 @@
 /**
  * Tests of the toast queue behind `useAnnouncer`: `queue_toast`, which keeps up to three toasts
  * newest first and drops the oldest of the lowest priority, and the hook's own timers, which
- * take each toast down on its own schedule.
+ * take each toast down on its own schedule unless the player dismisses it first.
  *
  * `setTimeout` is fake, so each test decides when a toast's timer ends.
  */
@@ -99,6 +99,21 @@ describe("useAnnouncer toasts", () => {
       ["Second", "First"],
       ["Second"],
     ]);
+  });
+
+  it("takes a dismissed toast down before its timer ends, leaving the others", () => {
+    const { result } = renderHook(() => useAnnouncer(false));
+
+    act(() => {
+      result.current.announce({ kind: "warning", message: "First" });
+      result.current.announce({ kind: "error", message: "Second" });
+    });
+    const first_id = result.current.toasts.find((toast) => toast.message === "First")!.id;
+    act(() => {
+      result.current.dismissToast(first_id);
+    });
+
+    expect(result.current.toasts.map((toast) => toast.message)).toEqual(["Second"]);
   });
 
   it("never pops up a routine event", () => {

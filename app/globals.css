@@ -3386,6 +3386,44 @@ kbd {
   font-weight: 900;
 }
 
+.toast-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The dismiss button: a round target of at least 28px, its × drawn here so the notice's text
+   stays its glyph and message. */
+.toast .toast-dismiss {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.toast .toast-dismiss::before {
+  content: "×";
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.toast .toast-dismiss:hover {
+  border-color: var(--surface-line);
+  background: rgb(0 0 0 / 6%);
+}
+
+.toast .toast-dismiss:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+}
+
 .modal-backdrop {
   position: fixed;
   z-index: 50;

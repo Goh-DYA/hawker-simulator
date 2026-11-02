@@ -528,7 +528,7 @@ export function BottomDock({
 
 /** The props of {@link ToastStack}. */
 export interface ToastStackProps {
-  /** Whether a service-worker update is waiting. */
+  /** Whether a service-worker update is waiting and its notice has not been dismissed. */
   readonly isUpdateReady: boolean;
   /** The toasts on screen. */
   readonly toasts: readonly Toast[];
@@ -536,15 +536,49 @@ export interface ToastStackProps {
   readonly isInert: boolean;
   /** Called when the player saves and applies the waiting update. */
   onApplyUpdate(): void;
+  /** Called when the player dismisses the update notice until the next update is found. */
+  onDismissUpdate(): void;
+  /** Called with a toast's ID when the player dismisses it. */
+  onDismissToast(id: number): void;
 }
 
 /**
- * Render the toast stack: the update notice, if any, then the toasts.
+ * Render the dismiss button of one notice. Its × is drawn by CSS, so the notice's text stays
+ * its glyph and message; the button is named by its label.
+ *
+ * @param props - The notice's message, which names the button, and the dismiss callback.
+ * @returns The dismiss button.
+ */
+function ToastDismissButton({ message, onDismiss }: { readonly message: string; onDismiss(): void }) {
+  return (
+    <button
+      type="button"
+      className="toast-dismiss"
+      aria-label={`Dismiss notice: ${message}`}
+      title="Dismiss"
+      onClick={() => onDismiss()}
+    />
+  );
+}
+
+/** The message of the update notice. */
+const UPDATE_NOTICE_MESSAGE = "A safe update is ready. Save, then reload when convenient.";
+
+/**
+ * Render the toast stack: the update notice, if any, then the toasts. Every notice has a
+ * dismiss button, so a notice never has to be waited out when it covers a control.
  *
  * @param props - See {@link ToastStackProps}.
  * @returns The live toast region.
  */
-export function ToastStack({ isUpdateReady, toasts, isInert, onApplyUpdate }: ToastStackProps) {
+export function ToastStack({
+  isUpdateReady,
+  toasts,
+  isInert,
+  onApplyUpdate,
+  onDismissUpdate,
+  onDismissToast,
+}: ToastStackProps) {
   return (
     <div
       className="toast-stack"
@@ -556,16 +590,20 @@ export function ToastStack({ isUpdateReady, toasts, isInert, onApplyUpdate }: To
       {isUpdateReady ? (
         <div className="toast info">
           <span>↻</span>
-          <p>A safe update is ready. Save, then reload when convenient.</p>
-          <button type="button" onClick={() => onApplyUpdate()}>
-            Save &amp; update
-          </button>
+          <p>{UPDATE_NOTICE_MESSAGE}</p>
+          <div className="toast-actions">
+            <button type="button" onClick={() => onApplyUpdate()}>
+              Save &amp; update
+            </button>
+            <ToastDismissButton message={UPDATE_NOTICE_MESSAGE} onDismiss={onDismissUpdate} />
+          </div>
         </div>
       ) : null}
       {toasts.map((toast) => (
         <div className={`toast ${toast.kind}`} key={toast.id}>
           <span aria-hidden="true">{TOAST_KIND_GLYPHS[toast.kind]}</span>
           <p>{toast.message}</p>
+          <ToastDismissButton message={toast.message} onDismiss={() => onDismissToast(toast.id)} />
         </div>
       ))}
     </div>

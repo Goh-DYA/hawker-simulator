@@ -268,6 +268,7 @@ export function HawkerSimulator() {
     activityUnread,
     setActivityUnread,
     clearToasts,
+    dismissToast,
   } = useAnnouncer(panel === "activity");
   const persist_preference = usePreferenceWriter(reportStorageIssue);
 
@@ -1251,6 +1252,8 @@ export function HawkerSimulator() {
         toasts={toasts}
         isInert={interfaceInert}
         onApplyUpdate={() => void applyReadyUpdate()}
+        onDismissUpdate={() => setUpdateReady(false)}
+        onDismissToast={dismissToast}
       />
 
       {tutorialStep < TUTORIAL_DONE_STEP ? (

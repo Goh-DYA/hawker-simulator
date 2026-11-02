@@ -1530,6 +1530,25 @@ describe("HawkerSimulator toasts", () => {
       Array.from(container.querySelectorAll(".toast-stack .toast p"), (toast) => toast.textContent),
     ).toEqual(["Queue full", "Plaque", "Save failed"]);
   });
+
+  it("takes a toast down at once when the player dismisses it", async () => {
+    const container = await boot_simulator({ preferences: ONBOARDED_PREFERENCES });
+
+    act(() => {
+      runtime_options().onEvent({ kind: "error", message: "Save failed" });
+      runtime_options().onEvent({ kind: "warning", message: "Route blocked" });
+    });
+    act(() => {
+      require_element(
+        container,
+        '.toast-stack button[aria-label="Dismiss notice: Route blocked"]',
+      ).click();
+    });
+
+    expect(
+      Array.from(container.querySelectorAll(".toast-stack .toast p"), (toast) => toast.textContent),
+    ).toEqual(["Save failed"]);
+  });
 });
 
 describe("HawkerSimulator practice day", () => {
