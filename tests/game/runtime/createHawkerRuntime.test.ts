@@ -33,7 +33,7 @@ vi.mock("phaser", async () => (await import("./fixtures")).PHASER_STUB_MODULE);
 const FRAME_MS = 100;
 
 /** sha256 of `JSON.stringify(exportState())` for a fresh centre. */
-const FRESH_EXPORT_SHA256 = "1c5a4e9899a93749404c9d104d0cc4bd661f0f86d261c2f2e4962b6f6ac3d298";
+const FRESH_EXPORT_SHA256 = "26fe5d7479f09a699b945327703baf30b2e490ed8b4a695a983f14754bccde89";
 /**
  * sha256 of `JSON.stringify(exportState())` after importing the fresh centre's save. It
  * differs from {@link FRESH_EXPORT_SHA256} only in key order: loading a save rebuilds each
@@ -41,30 +41,30 @@ const FRESH_EXPORT_SHA256 = "1c5a4e9899a93749404c9d104d0cc4bd661f0f86d261c2f2e49
  * later positions.
  */
 const REIMPORTED_FRESH_EXPORT_SHA256 =
-  "e3f02a074c33187a7d97d51420822028b45810a018a15589cea613fbbb45976b";
+  "b919a2e0dd24a6557e659c724823d28444c07a285db38d0718fd178bc1495d85";
 
 const OPEN_RUN_FRAMES = 600;
 /** sha256 of `JSON.stringify(exportState().core)` after each frame count, at speed 1. */
 const OPEN_RUN_CORE_SHA256: Readonly<Record<number, string>> = {
-  100: "3542c8c94e71457560b2bde637f5631fd3deced7fe2c2782ae855f78f028eb28",
-  300: "6e163633451ceb47dda333462579a2793b59b5655a3ba4900df9e2a5603bae64",
-  600: "3362093a758b3570b3cf0bac04a806139f6d53eb0c1cd64b454fb5aa37d249ca",
+  100: "5190e985546a85366d1331d87db5fbf11deb6d501957b7964d4cb3fdfa39674a",
+  300: "5fbce5150119e28ce8af567ba2a18a1b87b8eaec6d10984fc4e23e7908da6abd",
+  600: "69f065037df10e776603987938b577dfdc9ce8ee29385c9905985f72f1c1625f",
 };
 
-/** Speed 10 turns each 100 ms frame into one simulated second, so a day is 480 frames. */
+/** Speed 10 turns each 100 ms frame into one simulated second, so a day is 600 frames. */
 const MULTI_DAY_SPEED = 10;
-const MULTI_DAY_FRAMES = 1_100;
+const MULTI_DAY_FRAMES = 1_300;
 /**
- * The multi-day run renders and simulates 11,000 steps, about 6 s on a laptop, so it gets
+ * The multi-day run renders and simulates 13,000 steps, about 7 s on a laptop, so it gets
  * more than the suite's 15 s default to stay green on a slower or busier machine.
  */
 const MULTI_DAY_TIMEOUT_MS = 60_000;
 /** Checkpoints around the end of the first and second operating days. */
 const MULTI_DAY_CORE_SHA256: Readonly<Record<number, string>> = {
-  480: "ebd72de6242dc8eb5091362982ed6bf81f82805f6a143c241ace5e43d7f30b09",
-  500: "75be51b3c39d1eb4cba604dbe33438c555b9d7e539986e7b3ffc1f84016bbc2e",
-  960: "c85c16030605df5f29bc84f1e0fab2bc5739cd646decd6cc1ed579a87dfaa905",
-  1_000: "2e495eb63c38749a380766f6a217d1ed9b8c14635fd72bdc0c3aea159dc0c6e2",
+  600: "7fe6732261b20810e6779bdf7db34bf0a23f240407799ece4c8c75eecfd7a5c6",
+  620: "7ec3502db597b69fe5fdc52199566f369738e41ce04456d09fb79e1ca14bbf32",
+  1_200: "bd3699d1c4ce198e2b6e560a6d05f03b584982ea737f2df9e9bc6d98ca8b1abf",
+  1_250: "5fd3ca7458ddef42d1e9724a5641b350baab4362702f0299c7cf4b7b5c4a45d1",
 };
 
 /**
@@ -83,7 +83,7 @@ const MULTI_DAY_CORE_SHA256: Readonly<Record<number, string>> = {
 const PRESSURE_SIMULATION_SPAN_MS = 12;
 const PRESSURE_CALL_OFFSETS_MS: readonly number[] = [0, 0, PRESSURE_SIMULATION_SPAN_MS];
 /** sha256 of `JSON.stringify(exportState().core)` after the pressure run. */
-const PRESSURE_RUN_CORE_SHA256 = "449bb555cfb61bc330918bc313cefe3cefd032f2a9579de496bfbecadcce8337";
+const PRESSURE_RUN_CORE_SHA256 = "8c92436e697b6a588fe884f4ca12fd1fdb0288f82c7575bf1965b4d69c0599ae";
 
 const IMPORT_RUN_FRAMES = 300;
 const RESET_RUN_FRAMES = 50;
@@ -257,7 +257,7 @@ describe("createHawkerRuntime", () => {
     const fresh_unlocks = new Set(export_core(runtime).progression.unlockedDefinitionIds);
     runtime.controller.setSpeed(MULTI_DAY_SPEED);
 
-    const hashes = run_frames(runtime, MULTI_DAY_FRAMES, [480, 500, 960, 1_000]);
+    const hashes = run_frames(runtime, MULTI_DAY_FRAMES, [600, 620, 1_200, 1_250]);
     const reconciled_ids = export_core(runtime).progression.unlockedDefinitionIds.filter(
       (id) => RECONCILE_ONLY_IDS.has(id) && !fresh_unlocks.has(id),
     );

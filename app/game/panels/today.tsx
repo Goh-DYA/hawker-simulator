@@ -1,7 +1,7 @@
 /**
  * The left rail's "Today" strip and the next-unlock signpost.
  *
- * `TodayStrip` shows the neighbourhood's day card, a 10:30–18:30 timeline of the day's lunch
+ * `TodayStrip` shows the neighbourhood's day card, a 10:30–20:30 timeline of the day's lunch
  * and dinner crowds with the last-orders mark, the clock and the food writer's visit, the rush
  * notice (in a polite live region, so it is announced once as it changes), the writer's review
  * status and tomorrow's forecast. A centre without a neighbourhood keeps the static layout tip
@@ -64,6 +64,7 @@ export function describe_timeline(neighbourhood: RuntimeNeighbourhood): string {
       (window) =>
         `${window.label} crowd ${format_minute_range(window.startMinute, window.endMinute)}.`,
     ),
+    `Doors close ${format_minute_of_day(neighbourhood.doorsCloseMinute)}.`,
     `Last orders ${format_minute_of_day(neighbourhood.lastOrdersMinute)}.`,
   ];
   if (neighbourhood.writer) {
@@ -147,6 +148,13 @@ export function TodayStrip({ neighbourhood }: TodayStripProps) {
             />
           ))}
           <span
+            className="today-closing"
+            style={{
+              left: offset(neighbourhood.doorsCloseMinute),
+              width: format_share(1 - share(neighbourhood.doorsCloseMinute)),
+            }}
+          />
+          <span
             className="today-last-orders"
             style={{ left: offset(neighbourhood.lastOrdersMinute) }}
           />
@@ -159,7 +167,10 @@ export function TodayStrip({ neighbourhood }: TodayStripProps) {
         </div>
         <div className="today-timeline-axis">
           <span>{format_minute_of_day(openingMinute)}</span>
-          <span>Last orders {format_minute_of_day(neighbourhood.lastOrdersMinute)}</span>
+          <span>
+            Doors {format_minute_of_day(neighbourhood.doorsCloseMinute)} · Last orders{" "}
+            {format_minute_of_day(neighbourhood.lastOrdersMinute)}
+          </span>
         </div>
         <p className="today-rush-times" aria-hidden="true">
           {neighbourhood.rushWindows.map((window, index) => (

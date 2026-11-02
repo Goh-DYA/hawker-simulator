@@ -1,12 +1,29 @@
 # Test Report
 
-Report date: 2026-10-20
-Build/commit: Content `1.7.0` working source; working source validated with Node.js `v22.22.0`; commit/publication record pending
+Report date: 2026-11-02
+Build/commit: Content `1.8.0` working source; working source validated with Node.js `v22.22.0`; commit/publication record pending
 Release verdict: **NO-GO pending exact-production browser/offline QA and required human reviews**
 
 This document owns the dated test and gate evidence; other documents link here instead of restating results (see the [documentation index](README.md)). Release blockers are listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md), and content counts in [CONTENT_CATALOGUE.md](design/CONTENT_CATALOGUE.md#roster-counts).
 
-Scope note: this report records the content `1.7.0` working-source gate, retains the content `1.6.0`, `1.5.0`, `1.4.0` and `1.3.0` gates as previous records, and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
+Scope note: this report records the content `1.8.0` working-source gate, retains the content `1.7.0`, `1.6.0`, `1.5.0`, `1.4.0` and `1.3.0` gates as previous records, and retains the earlier content `1.2.0` evidence below as a labelled historical baseline. Working-source builds and a targeted development-browser pass are not exact-production, offline, performance, or human-review evidence.
+
+## Content `1.8.0` working-source validation
+
+Content `1.8.0` expands the furniture catalogue to 98 placeables unlocking across levels 1 to 30, tapers the seat comfort, ambience and cleanliness ratings instead of capping them, and runs the operating day from 10:30 to 20:30 with a closing wind-down and core save schema V6 ([ADR 0010](decisions/0010-ten-hour-day-closing-and-save-v6.md)).
+
+Gate results on the landed source:
+
+| Check | Result |
+|---|---|
+| Date and Node.js version | 2026-11-02, Node.js `v22.23.4` (Linux) |
+| `CI=true npm run test:release`: typecheck, lint with no warnings, Vitest files / tests, Vinext build, rendered-output/offline-shell assertions | **Pass**: typecheck, lint with no warnings, 113 Vitest files / 1,519 tests (1 skipped: the gallery-fixture generator, which runs only with `GALLERY_REGENERATE=1`), Vinext build, 2 rendered-output/offline-shell assertions |
+| `npm run validate:content` | **Pass** (17 tests) |
+| `npm run build:vercel` (native Next.js Vercel build) | **Pass** |
+| Service-worker build ID (Linux build) | `193910db9e0d` |
+| `benchmark-80-agents` mean and p95 per fixed step | 0.097 ms and 0.102 ms |
+
+Seeded runs of the real starter centre (3 world seeds × 8 days, plus a high-reputation variant) on the ten-hour day sent no guest home at closing, left nobody in the hall at 20:29.9, and had the last guest arrive around 19:11.
 
 ## Content `1.7.0` working-source validation
 

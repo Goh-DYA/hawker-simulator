@@ -243,14 +243,18 @@ export interface RuntimeNeighbourhood {
   tomorrow: RuntimeDayCard;
   /** In-game minute of the day now. */
   minuteOfDay: number;
-  /** The day's opening, last-orders and closing minutes, for the timeline. */
+  /** The day's opening, doors-closing, last-orders and closing minutes, for the timeline. */
   openingMinute: number;
+  doorsCloseMinute: number;
   lastOrdersMinute: number;
   closingMinute: number;
   rushWindows: readonly RuntimeRushWindow[];
   /** The crowd under way now, if any. */
   activeRush?: "lunch" | "dinner";
-  /** A short notice of the next rush within the warning lead time, if any. */
+  /**
+   * A short notice of the closing step under way once the doors have closed, else of the next
+   * rush within the warning lead time, if any.
+   */
   rushNotice?: string;
   writer?: RuntimeWriterVisit;
   isWriterTomorrow: boolean;

@@ -15,7 +15,7 @@ import { clone_neighbourhood } from "../neighbourhood";
 import type {
   AnyPersistentGameState,
   GameState,
-  PersistentGameStateV5,
+  PersistentGameStateV6,
   SimulationCatalog,
   SimulationConfigOverrides,
 } from "../types";
@@ -65,7 +65,7 @@ export interface DeserializeResult {
  * @param state - The game state to save.
  * @returns A deep copy of the persisted fields.
  */
-export function persistentStateFromGame(state: GameState): PersistentGameStateV5 {
+export function persistentStateFromGame(state: GameState): PersistentGameStateV6 {
   return {
     schemaVersion: PERSISTENT_SCHEMA_VERSION,
     savedAtTick: state.tick,

@@ -11,6 +11,7 @@ import { event, openStalls, type Draft } from "./draft";
 import { nextFloat } from "./rng";
 import { compareIds } from "./ordering";
 import { get_quality_settings } from "./state";
+import { follows_operating_hours, has_admissible_stall } from "./closing";
 import {
   HEALTH_CONDITIONS,
   healthConditionFromRoll,
@@ -20,7 +21,7 @@ import {
   record_intent_request,
 } from "./nutrition";
 import { operatingDay, operatingMinuteOfDay } from "./progression";
-import { active_rush_window, compute_time_demand, is_last_orders, ms_until_day_end } from "./rush";
+import { active_rush_window, compute_time_demand, is_doors_closed, ms_until_day_end } from "./rush";
 import { compute_rush_windows, get_archetype_factor, get_today_card } from "./neighbourhood";
 import type { CustomerArchetype, HealthCondition, NutritionIntent } from "./types";
 
@@ -342,22 +343,25 @@ export function compute_next_spawn_interval_ms(draft: Draft): number {
   const interval = (state.config.spawnIntervalMs / Math.max(MIN_ARRIVAL_DEMAND, demand)) * backpressure;
   const next_arrival_ms = draft.source.elapsedMs + interval;
   const day_end_ms = draft.source.elapsedMs + ms_until_day_end(draft.source.elapsedMs);
-  // An arrival that would land during last orders waits for the next day's opening instead.
-  const deferred_interval = next_arrival_ms < day_end_ms && is_last_orders(next_arrival_ms)
+  // An arrival that would land after the doors close waits for the next day's opening instead.
+  const deferred_interval = next_arrival_ms < day_end_ms && is_doors_closed(next_arrival_ms)
     ? day_end_ms - draft.source.elapsedMs
     : interval;
   return Math.max(MIN_SPAWN_INTERVAL_MS, deferred_interval);
 }
 
 /**
- * Whether the adaptive arrival model is closed to new guests for the rest of the day.
+ * Whether the adaptive arrival model lets no new guest in at this step.
  *
- * Arrivals stop at last orders. A fixed arrival interval (`maxActiveCustomers`) ignores the
- * operating clock and never closes.
+ * Arrivals stop for the day at the last entry, when the doors close forty minutes before last
+ * orders, and before that whenever no open stall could serve one more guest by the closing call
+ * (`has_admissible_stall`), so every guest of the day comes in while they can still be served. A
+ * fixed arrival interval (`maxActiveCustomers`) ignores the operating clock and never closes.
  *
  * @param draft - The draft of the current step.
- * @returns True while last orders apply to the adaptive model.
+ * @returns True while the doors are closed, or no stall could serve a new guest in time.
  */
 export function is_arrival_window_closed(draft: Draft): boolean {
-  return get_quality_settings(draft.source).maxActiveCustomers === undefined && is_last_orders(draft.source.elapsedMs);
+  if (!follows_operating_hours(draft.source)) return false;
+  return is_doors_closed(draft.source.elapsedMs) || !has_admissible_stall(draft);
 }

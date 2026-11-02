@@ -435,7 +435,7 @@ const customerSeeds = [
       accessoryChance: 0.48,
       carryProp: "backpack",
     },
-    visitSchedule: { startHour: 17, endHour: 19, peakMultiplier: 1.7 },
+    visitSchedule: { startHour: 18, endHour: 20, peakMultiplier: 1.7 },
     satisfactionModifiers: {
       value: 0.06,
       speed: 0.18,

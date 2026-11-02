@@ -10783,20 +10783,20 @@ exports[`core simulation golden master > (e) applies a fixed build-command scrip
 
 exports[`core simulation golden master > (f) runs the adaptive arrival model with nutrition and health for two day rollovers > (f) end 1`] = `
 {
-  "tick": 10000,
-  "rngState": 2437290273,
+  "tick": 12500,
+  "rngState": 4136199447,
   "economy": {
-    "currency": 8778,
-    "lifetimeRevenue": 4908,
+    "currency": 10158,
+    "lifetimeRevenue": 5538,
     "lifetimeSpend": 0,
-    "completedVisits": 818,
+    "completedVisits": 923,
     "abandonedVisits": 0,
   },
   "progression": {
-    "xp": 11061,
-    "level": 11,
-    "reputation": 3.3749999393981582,
-    "peakReputation": 3.3749999393981582,
+    "xp": 12621,
+    "level": 12,
+    "reputation": 3.374999992735198,
+    "peakReputation": 3.374999992735198,
     "unlockedDefinitionIds": [
       "seat",
       "stall",
@@ -10815,7 +10815,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "title": "Warm welcome",
         "description": "Serve 27 neighbours today.",
         "target": 27,
-        "startValue": 790,
+        "startValue": 888,
         "rewardCash": 300,
         "rewardXp": 80,
       },
@@ -10853,10 +10853,11 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
       "service-1",
       "service-2",
       "growth-2",
+      "growth-3",
     ],
     "stallMastery": {
       "stall": {
-        "points": 14688,
+        "points": 16578,
         "rank": 13,
         "upgradeLevel": 1,
       },
@@ -10864,25 +10865,28 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
   },
   "queues": {
     "stall-1": [
-      "customer-819",
+      "customer-924",
     ],
   },
-  "reservations": {},
+  "reservations": {
+    "seat-1:0": "customer-923",
+  },
   "customers": [
     {
-      "id": "customer-817",
+      "id": "customer-922",
       "status": "walking-to-exit",
       "at": "9,4",
       "spent": 6,
     },
     {
-      "id": "customer-818",
-      "status": "walking-to-tray-return",
+      "id": "customer-923",
+      "status": "eating",
       "at": "6,2",
+      "seat": "seat-1:0",
       "spent": 6,
     },
     {
-      "id": "customer-819",
+      "id": "customer-924",
       "status": "walking-to-queue",
       "at": "0,3",
       "stall": "stall-1",
@@ -10890,16 +10894,16 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
     },
   ],
   "metrics": {
-    "spawnedCustomers": 819,
-    "despawnedCustomers": 816,
-    "completedCustomers": 816,
-    "pathRequests": 4760,
+    "spawnedCustomers": 924,
+    "despawnedCustomers": 921,
+    "completedCustomers": 921,
+    "pathRequests": 5398,
     "pathFailures": 0,
     "recoveredTargets": 0,
-    "trayReturns": 817,
+    "trayReturns": 922,
     "visitRatings": [
       {
-        "customerId": "customer-767",
+        "customerId": "customer-872",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -10918,7 +10922,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-768",
+        "customerId": "customer-873",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -10937,7 +10941,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-769",
+        "customerId": "customer-874",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -10956,7 +10960,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-770",
+        "customerId": "customer-875",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -10975,7 +10979,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-771",
+        "customerId": "customer-876",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -10994,7 +10998,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-772",
+        "customerId": "customer-877",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11013,7 +11017,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-773",
+        "customerId": "customer-878",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11032,7 +11036,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-774",
+        "customerId": "customer-879",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11051,7 +11055,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-775",
+        "customerId": "customer-880",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11070,7 +11074,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-776",
+        "customerId": "customer-881",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11089,7 +11093,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-777",
+        "customerId": "customer-882",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11108,7 +11112,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-778",
+        "customerId": "customer-883",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11127,7 +11131,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-779",
+        "customerId": "customer-884",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11146,7 +11150,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-780",
+        "customerId": "customer-885",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11165,7 +11169,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-781",
+        "customerId": "customer-886",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11184,7 +11188,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-782",
+        "customerId": "customer-887",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11203,7 +11207,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-783",
+        "customerId": "customer-888",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11222,140 +11226,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 2,
       },
       {
-        "customerId": "customer-784",
-        "walkingMetricVersion": 2,
-        "score": 82,
-        "served": true,
-        "abandoned": false,
-        "reason": "served",
-        "stallDefinitionId": "stall",
-        "components": {
-          "foodQuality": 60,
-          "wait": 100,
-          "value": 100,
-          "walking": 100,
-          "comfort": 76,
-          "cleanliness": 82,
-          "ambience": 72,
-        },
-        "day": 2,
-      },
-      {
-        "customerId": "customer-785",
-        "walkingMetricVersion": 2,
-        "score": 82,
-        "served": true,
-        "abandoned": false,
-        "reason": "served",
-        "stallDefinitionId": "stall",
-        "components": {
-          "foodQuality": 60,
-          "wait": 100,
-          "value": 100,
-          "walking": 100,
-          "comfort": 76,
-          "cleanliness": 82,
-          "ambience": 72,
-        },
-        "day": 2,
-      },
-      {
-        "customerId": "customer-786",
-        "walkingMetricVersion": 2,
-        "score": 82,
-        "served": true,
-        "abandoned": false,
-        "reason": "served",
-        "stallDefinitionId": "stall",
-        "components": {
-          "foodQuality": 60,
-          "wait": 100,
-          "value": 100,
-          "walking": 100,
-          "comfort": 76,
-          "cleanliness": 82,
-          "ambience": 72,
-        },
-        "day": 2,
-      },
-      {
-        "customerId": "customer-787",
-        "walkingMetricVersion": 2,
-        "score": 82,
-        "served": true,
-        "abandoned": false,
-        "reason": "served",
-        "stallDefinitionId": "stall",
-        "components": {
-          "foodQuality": 60,
-          "wait": 100,
-          "value": 100,
-          "walking": 100,
-          "comfort": 76,
-          "cleanliness": 82,
-          "ambience": 72,
-        },
-        "day": 2,
-      },
-      {
-        "customerId": "customer-788",
-        "walkingMetricVersion": 2,
-        "score": 82,
-        "served": true,
-        "abandoned": false,
-        "reason": "served",
-        "stallDefinitionId": "stall",
-        "components": {
-          "foodQuality": 60,
-          "wait": 100,
-          "value": 100,
-          "walking": 100,
-          "comfort": 76,
-          "cleanliness": 82,
-          "ambience": 72,
-        },
-        "day": 2,
-      },
-      {
-        "customerId": "customer-789",
-        "walkingMetricVersion": 2,
-        "score": 82,
-        "served": true,
-        "abandoned": false,
-        "reason": "served",
-        "stallDefinitionId": "stall",
-        "components": {
-          "foodQuality": 60,
-          "wait": 100,
-          "value": 100,
-          "walking": 100,
-          "comfort": 76,
-          "cleanliness": 82,
-          "ambience": 72,
-        },
-        "day": 2,
-      },
-      {
-        "customerId": "customer-790",
-        "walkingMetricVersion": 2,
-        "score": 82,
-        "served": true,
-        "abandoned": false,
-        "reason": "served",
-        "stallDefinitionId": "stall",
-        "components": {
-          "foodQuality": 60,
-          "wait": 100,
-          "value": 100,
-          "walking": 100,
-          "comfort": 76,
-          "cleanliness": 82,
-          "ambience": 72,
-        },
-        "day": 2,
-      },
-      {
-        "customerId": "customer-791",
+        "customerId": "customer-889",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11374,7 +11245,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-792",
+        "customerId": "customer-890",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11393,7 +11264,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-793",
+        "customerId": "customer-891",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11412,7 +11283,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-794",
+        "customerId": "customer-892",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11431,7 +11302,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-795",
+        "customerId": "customer-893",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11450,7 +11321,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-796",
+        "customerId": "customer-894",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11469,7 +11340,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-797",
+        "customerId": "customer-895",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11488,7 +11359,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-798",
+        "customerId": "customer-896",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11507,7 +11378,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-799",
+        "customerId": "customer-897",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11526,7 +11397,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-800",
+        "customerId": "customer-898",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11545,7 +11416,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-801",
+        "customerId": "customer-899",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11564,7 +11435,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-802",
+        "customerId": "customer-900",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11583,7 +11454,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-803",
+        "customerId": "customer-901",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11602,7 +11473,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-804",
+        "customerId": "customer-902",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11621,7 +11492,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-805",
+        "customerId": "customer-903",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11640,7 +11511,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-806",
+        "customerId": "customer-904",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11659,7 +11530,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-807",
+        "customerId": "customer-905",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11678,7 +11549,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-808",
+        "customerId": "customer-906",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11697,7 +11568,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-809",
+        "customerId": "customer-907",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11716,7 +11587,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-810",
+        "customerId": "customer-908",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11735,7 +11606,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-811",
+        "customerId": "customer-909",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11754,7 +11625,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-812",
+        "customerId": "customer-910",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11773,7 +11644,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-813",
+        "customerId": "customer-911",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11792,7 +11663,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-814",
+        "customerId": "customer-912",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11811,7 +11682,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-815",
+        "customerId": "customer-913",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11830,7 +11701,140 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "day": 3,
       },
       {
-        "customerId": "customer-816",
+        "customerId": "customer-914",
+        "walkingMetricVersion": 2,
+        "score": 82,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 100,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72,
+        },
+        "day": 3,
+      },
+      {
+        "customerId": "customer-915",
+        "walkingMetricVersion": 2,
+        "score": 82,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 100,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72,
+        },
+        "day": 3,
+      },
+      {
+        "customerId": "customer-916",
+        "walkingMetricVersion": 2,
+        "score": 82,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 100,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72,
+        },
+        "day": 3,
+      },
+      {
+        "customerId": "customer-917",
+        "walkingMetricVersion": 2,
+        "score": 82,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 100,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72,
+        },
+        "day": 3,
+      },
+      {
+        "customerId": "customer-918",
+        "walkingMetricVersion": 2,
+        "score": 82,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 100,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72,
+        },
+        "day": 3,
+      },
+      {
+        "customerId": "customer-919",
+        "walkingMetricVersion": 2,
+        "score": 82,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 100,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72,
+        },
+        "day": 3,
+      },
+      {
+        "customerId": "customer-920",
+        "walkingMetricVersion": 2,
+        "score": 82,
+        "served": true,
+        "abandoned": false,
+        "reason": "served",
+        "stallDefinitionId": "stall",
+        "components": {
+          "foodQuality": 60,
+          "wait": 100,
+          "value": 100,
+          "walking": 100,
+          "comfort": 76,
+          "cleanliness": 82,
+          "ambience": 72,
+        },
+        "day": 3,
+      },
+      {
+        "customerId": "customer-921",
         "walkingMetricVersion": 2,
         "score": 82,
         "served": true,
@@ -11850,11 +11854,11 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
       },
     ],
     "nutrition": {
-      "servedMeals": 818,
-      "profiledServings": 818,
+      "servedMeals": 923,
+      "profiledServings": 923,
       "nonDefaultVariantServings": 0,
-      "intentRequests": 338,
-      "intentMatches": 338,
+      "intentRequests": 380,
+      "intentMatches": 380,
       "intentMisses": 0,
       "intentUnknowns": 0,
       "byIntent": {
@@ -11871,8 +11875,8 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           "unknowns": 0,
         },
         "fibre-forward": {
-          "requests": 338,
-          "matches": 338,
+          "requests": 380,
+          "matches": 380,
           "misses": 0,
           "unknowns": 0,
         },
@@ -11918,12 +11922,90 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
         "waterG": 0,
       },
       "dishServings": {
-        "noodles": 584,
-        "rice": 234,
+        "noodles": 660,
+        "rice": 263,
       },
       "recentOutcomes": [
         {
-          "customerId": "customer-769",
+          "customerId": "customer-874",
+          "day": 2,
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "unknown",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-875",
           "day": 2,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -12002,7 +12084,397 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-770",
+          "customerId": "customer-876",
+          "day": 2,
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "unknown",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-877",
+          "day": 2,
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "unknown",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-878",
+          "day": 2,
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "unknown",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-879",
+          "day": 2,
+          "dishId": "rice",
+          "variantId": "rice-default",
+          "result": "unknown",
+          "profile": {
+            "id": "rice-profile-default",
+            "dishId": "rice",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.1,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-880",
+          "day": 2,
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "unknown",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-881",
           "day": 2,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -12081,7 +12553,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-771",
+          "customerId": "customer-882",
           "day": 2,
           "dishId": "rice",
           "variantId": "rice-default",
@@ -12159,7 +12631,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-772",
+          "customerId": "customer-883",
           "day": 2,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -12238,397 +12710,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-773",
-          "day": 2,
-          "dishId": "rice",
-          "variantId": "rice-default",
-          "result": "unknown",
-          "profile": {
-            "id": "rice-profile-default",
-            "dishId": "rice",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.1,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-774",
-          "day": 2,
-          "dishId": "rice",
-          "variantId": "rice-default",
-          "result": "unknown",
-          "profile": {
-            "id": "rice-profile-default",
-            "dishId": "rice",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.1,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-775",
-          "day": 2,
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "unknown",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-776",
-          "day": 2,
-          "dishId": "rice",
-          "variantId": "rice-default",
-          "result": "unknown",
-          "profile": {
-            "id": "rice-profile-default",
-            "dishId": "rice",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.1,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-777",
-          "day": 2,
-          "dishId": "rice",
-          "variantId": "rice-default",
-          "result": "unknown",
-          "profile": {
-            "id": "rice-profile-default",
-            "dishId": "rice",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.1,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-778",
+          "customerId": "customer-884",
           "day": 2,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -12707,85 +12789,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-779",
-          "day": 2,
-          "dishId": "rice",
-          "variantId": "rice-default",
-          "result": "unknown",
-          "profile": {
-            "id": "rice-profile-default",
-            "dishId": "rice",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.1,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-780",
+          "customerId": "customer-885",
           "day": 2,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -12864,475 +12868,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-781",
-          "day": 2,
-          "dishId": "rice",
-          "variantId": "rice-default",
-          "result": "unknown",
-          "profile": {
-            "id": "rice-profile-default",
-            "dishId": "rice",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.1,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-782",
-          "day": 2,
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "unknown",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-783",
-          "day": 2,
-          "dishId": "rice",
-          "variantId": "rice-default",
-          "result": "unknown",
-          "profile": {
-            "id": "rice-profile-default",
-            "dishId": "rice",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.1,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-784",
-          "day": 2,
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "unknown",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-785",
-          "day": 2,
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "unknown",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-786",
-          "day": 2,
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "unknown",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-787",
+          "customerId": "customer-886",
           "day": 2,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -13411,86 +12947,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-788",
-          "day": 2,
-          "intentId": "fibre-forward",
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "matched",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-789",
+          "customerId": "customer-887",
           "day": 2,
           "dishId": "noodles",
           "variantId": "noodles-default",
@@ -13568,87 +13025,8 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-790",
+          "customerId": "customer-888",
           "day": 2,
-          "intentId": "fibre-forward",
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "matched",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-791",
-          "day": 3,
           "dishId": "noodles",
           "variantId": "noodles-default",
           "result": "unknown",
@@ -13725,7 +13103,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-792",
+          "customerId": "customer-889",
           "day": 3,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -13804,11 +13182,12 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-793",
+          "customerId": "customer-890",
           "day": 3,
+          "intentId": "fibre-forward",
           "dishId": "noodles",
           "variantId": "noodles-default",
-          "result": "unknown",
+          "result": "matched",
           "profile": {
             "id": "noodles-profile-default",
             "dishId": "noodles",
@@ -13882,7 +13261,165 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-794",
+          "customerId": "customer-891",
+          "day": 3,
+          "intentId": "fibre-forward",
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "matched",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-892",
+          "day": 3,
+          "intentId": "fibre-forward",
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "matched",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-893",
           "day": 3,
           "dishId": "rice",
           "variantId": "rice-default",
@@ -13960,7 +13497,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-795",
+          "customerId": "customer-894",
           "day": 3,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -14039,7 +13576,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-796",
+          "customerId": "customer-895",
           "day": 3,
           "dishId": "noodles",
           "variantId": "noodles-default",
@@ -14117,7 +13654,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-797",
+          "customerId": "customer-896",
           "day": 3,
           "dishId": "noodles",
           "variantId": "noodles-default",
@@ -14195,7 +13732,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-798",
+          "customerId": "customer-897",
           "day": 3,
           "dishId": "rice",
           "variantId": "rice-default",
@@ -14273,241 +13810,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-799",
-          "day": 3,
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "unknown",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-800",
-          "day": 3,
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "unknown",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-801",
-          "day": 3,
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "unknown",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-802",
+          "customerId": "customer-898",
           "day": 3,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -14586,85 +13889,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-803",
-          "day": 3,
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "unknown",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-804",
+          "customerId": "customer-899",
           "day": 3,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -14743,319 +13968,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-805",
-          "day": 3,
-          "dishId": "rice",
-          "variantId": "rice-default",
-          "result": "unknown",
-          "profile": {
-            "id": "rice-profile-default",
-            "dishId": "rice",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.1,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-806",
-          "day": 3,
-          "dishId": "rice",
-          "variantId": "rice-default",
-          "result": "unknown",
-          "profile": {
-            "id": "rice-profile-default",
-            "dishId": "rice",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.1,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-807",
-          "day": 3,
-          "dishId": "rice",
-          "variantId": "rice-default",
-          "result": "unknown",
-          "profile": {
-            "id": "rice-profile-default",
-            "dishId": "rice",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.1,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-808",
-          "day": 3,
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "unknown",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-809",
+          "customerId": "customer-900",
           "day": 3,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -15134,7 +14047,163 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-810",
+          "customerId": "customer-901",
+          "day": 3,
+          "dishId": "rice",
+          "variantId": "rice-default",
+          "result": "unknown",
+          "profile": {
+            "id": "rice-profile-default",
+            "dishId": "rice",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.1,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-902",
+          "day": 3,
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "unknown",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-903",
           "day": 3,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -15213,85 +14282,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-811",
-          "day": 3,
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "unknown",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-812",
+          "customerId": "customer-904",
           "day": 3,
           "dishId": "rice",
           "variantId": "rice-default",
@@ -15369,7 +14360,85 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-813",
+          "customerId": "customer-905",
+          "day": 3,
+          "dishId": "rice",
+          "variantId": "rice-default",
+          "result": "unknown",
+          "profile": {
+            "id": "rice-profile-default",
+            "dishId": "rice",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.1,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-906",
           "day": 3,
           "dishId": "noodles",
           "variantId": "noodles-default",
@@ -15447,85 +14516,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-814",
-          "day": 3,
-          "dishId": "noodles",
-          "variantId": "noodles-default",
-          "result": "unknown",
-          "profile": {
-            "id": "noodles-profile-default",
-            "dishId": "noodles",
-            "status": "released",
-            "nutritionClass": "meal",
-            "serving": {
-              "amount": 300,
-              "unit": "g",
-              "label": "1 plate (300 g)",
-            },
-            "nutrients": {
-              "energyKcal": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "proteinG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "saturatedFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "transFatG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "carbohydrateG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "totalSugarG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "dietaryFibreG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "sodiumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "calciumMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "ironMg": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-              "waterG": {
-                "status": "unavailable",
-                "reason": "not-reported",
-              },
-            },
-            "intentFits": {
-              "fibre-forward": 0.95,
-            },
-            "healthRating": 3,
-            "conditionRatings": {
-              "high-cholesterol": 3,
-              "obesity": 3,
-              "diabetes": 3,
-              "hypertension": 3,
-            },
-          },
-        },
-        {
-          "customerId": "customer-815",
+          "customerId": "customer-907",
           "day": 3,
           "intentId": "fibre-forward",
           "dishId": "noodles",
@@ -15604,7 +14595,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-816",
+          "customerId": "customer-908",
           "day": 3,
           "dishId": "noodles",
           "variantId": "noodles-default",
@@ -15682,11 +14673,12 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-817",
+          "customerId": "customer-909",
           "day": 3,
+          "intentId": "fibre-forward",
           "dishId": "noodles",
           "variantId": "noodles-default",
-          "result": "unknown",
+          "result": "matched",
           "profile": {
             "id": "noodles-profile-default",
             "dishId": "noodles",
@@ -15760,7 +14752,7 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           },
         },
         {
-          "customerId": "customer-818",
+          "customerId": "customer-910",
           "day": 3,
           "dishId": "rice",
           "variantId": "rice-default",
@@ -15827,6 +14819,1027 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
             },
             "intentFits": {
               "fibre-forward": 0.1,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-911",
+          "day": 3,
+          "intentId": "fibre-forward",
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "matched",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-912",
+          "day": 3,
+          "intentId": "fibre-forward",
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "matched",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-913",
+          "day": 3,
+          "intentId": "fibre-forward",
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "matched",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-914",
+          "day": 3,
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "unknown",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-915",
+          "day": 3,
+          "intentId": "fibre-forward",
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "matched",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-916",
+          "day": 3,
+          "dishId": "rice",
+          "variantId": "rice-default",
+          "result": "unknown",
+          "profile": {
+            "id": "rice-profile-default",
+            "dishId": "rice",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.1,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-917",
+          "day": 3,
+          "intentId": "fibre-forward",
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "matched",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-918",
+          "day": 3,
+          "dishId": "rice",
+          "variantId": "rice-default",
+          "result": "unknown",
+          "profile": {
+            "id": "rice-profile-default",
+            "dishId": "rice",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.1,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-919",
+          "day": 3,
+          "dishId": "rice",
+          "variantId": "rice-default",
+          "result": "unknown",
+          "profile": {
+            "id": "rice-profile-default",
+            "dishId": "rice",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.1,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-920",
+          "day": 3,
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "unknown",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-921",
+          "day": 3,
+          "intentId": "fibre-forward",
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "matched",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-922",
+          "day": 3,
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "unknown",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
+            },
+            "healthRating": 3,
+            "conditionRatings": {
+              "high-cholesterol": 3,
+              "obesity": 3,
+              "diabetes": 3,
+              "hypertension": 3,
+            },
+          },
+        },
+        {
+          "customerId": "customer-923",
+          "day": 3,
+          "intentId": "fibre-forward",
+          "dishId": "noodles",
+          "variantId": "noodles-default",
+          "result": "matched",
+          "profile": {
+            "id": "noodles-profile-default",
+            "dishId": "noodles",
+            "status": "released",
+            "nutritionClass": "meal",
+            "serving": {
+              "amount": 300,
+              "unit": "g",
+              "label": "1 plate (300 g)",
+            },
+            "nutrients": {
+              "energyKcal": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "proteinG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "saturatedFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "transFatG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "carbohydrateG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "totalSugarG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "dietaryFibreG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "sodiumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "calciumMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "ironMg": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+              "waterG": {
+                "status": "unavailable",
+                "reason": "not-reported",
+              },
+            },
+            "intentFits": {
+              "fibre-forward": 0.95,
             },
             "healthRating": 3,
             "conditionRatings": {
@@ -15840,10 +15853,10 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
       ],
       "today": {
         "day": 3,
-        "servedMeals": 28,
-        "profiledServings": 28,
-        "intentRequests": 7,
-        "intentMatches": 7,
+        "servedMeals": 35,
+        "profiledServings": 35,
+        "intentRequests": 18,
+        "intentMatches": 18,
         "intentMisses": 0,
         "intentUnknowns": 0,
         "byIntent": {
@@ -15860,8 +15873,8 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
             "unknowns": 0,
           },
           "fibre-forward": {
-            "requests": 7,
-            "matches": 7,
+            "requests": 18,
+            "matches": 18,
             "misses": 0,
             "unknowns": 0,
           },
@@ -15907,8 +15920,8 @@ exports[`core simulation golden master > (f) runs the adaptive arrival model wit
           "waterG": 0,
         },
         "dishServings": {
-          "noodles": 21,
-          "rice": 7,
+          "noodles": 26,
+          "rice": 9,
         },
       },
     },

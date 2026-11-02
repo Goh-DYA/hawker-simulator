@@ -9,8 +9,10 @@
 import { CALENDAR_CARD_BY_ID, DISHES, localize_key, STALL_BY_ID } from "@/src/content";
 import {
   active_rush_window,
+  CLOSING_CALL_MINUTE,
   compute_rush_windows,
   count_cleaning_crew,
+  DOORS_CLOSE_MINUTE,
   LAST_ORDERS_MINUTE,
   operatingDay,
   operatingMinuteOfDay,
@@ -38,8 +40,8 @@ import type {
 
 /** In-game minute at which the operating day opens (10:30). */
 const OPENING_MINUTE = 10 * 60 + 30;
-/** In-game minute at which the operating day closes (18:30). */
-const CLOSING_MINUTE = 18 * 60 + 30;
+/** In-game minute at which the operating day closes (20:30). */
+const CLOSING_MINUTE = 20 * 60 + 30;
 /** How far ahead, in in-game minutes, the HUD announces a rush. */
 export const RUSH_NOTICE_LEAD_MINUTES = 90;
 /** The fictional neighbourhood paper the food writer writes for. */
@@ -253,6 +255,25 @@ export function build_day_review(
 }
 
 /**
+ * Describes the closing step under way, for the Today strip's notice line.
+ *
+ * @param minute - The in-game minute of the day.
+ * @returns The notice from the doors closing until the day ends, otherwise `undefined`.
+ */
+export function describe_closing_step(minute: number): string | undefined {
+  if (minute >= CLOSING_CALL_MINUTE) {
+    return "Closing up. Diners finish their meals and head home; the hall clears before tomorrow.";
+  }
+  if (minute >= LAST_ORDERS_MINUTE) {
+    return `Last orders. Guests already in line are still served; diners finish up by ${format_clock(CLOSING_CALL_MINUTE)}.`;
+  }
+  if (minute >= DOORS_CLOSE_MINUTE) {
+    return `Last entry passed: the doors are closed. Guests inside order by ${format_clock(LAST_ORDERS_MINUTE)}.`;
+  }
+  return undefined;
+}
+
+/**
  * Projects the neighbourhood into the HUD view.
  *
  * @param state - The game state.
@@ -304,15 +325,18 @@ export function build_neighbourhood_view(
     tomorrow: card_view(neighbourhood.calendar.tomorrowCardId),
     minuteOfDay: minute,
     openingMinute: OPENING_MINUTE,
+    doorsCloseMinute: DOORS_CLOSE_MINUTE,
     lastOrdersMinute: LAST_ORDERS_MINUTE,
     closingMinute: CLOSING_MINUTE,
     rushWindows,
     activeRush,
-    rushNotice: activeRush
-      ? `${activeRush === "lunch" ? "Lunch" : "Dinner"} rush under way. Queues and seats fill quickly.`
-      : next
-        ? `${next.label} crowd from about ${format_clock(next.startMinute)}. Ready the queues and seats.`
-        : undefined,
+    rushNotice:
+      describe_closing_step(minute) ??
+      (activeRush
+        ? `${activeRush === "lunch" ? "Lunch" : "Dinner"} rush under way. Queues and seats fill quickly.`
+        : next
+          ? `${next.label} crowd from about ${format_clock(next.startMinute)}. Ready the queues and seats.`
+          : undefined),
     writer: writerView,
     isWriterTomorrow: neighbourhood.calendar.isWriterTomorrow,
     writerPickStallIds: neighbourhood.writerPickStallIds,

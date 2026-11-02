@@ -51,10 +51,10 @@ const BUSY_FRAME_COUNT = 50;
 /** The first guest of a run; customer ids count up from 1. */
 const FIRST_GUEST_ID = "customer-1";
 
-/** Scenario (4) of `createHawkerRuntime.test.ts`: speed 10 turns a day into 480 frames. */
+/** Scenario (4) of `createHawkerRuntime.test.ts`: speed 10 turns a day into 600 frames. */
 const MULTI_DAY_SPEED = 10;
-const MULTI_DAY_RECORDED_FRAMES: readonly number[] = [480, 960];
-/** The multi-day run steps 960 frames, so it gets the same allowance as the S14 suite. */
+const MULTI_DAY_RECORDED_FRAMES: readonly number[] = [600, 1_200];
+/** The multi-day run steps 1,200 frames, so it gets the same allowance as the S14 suite. */
 const MULTI_DAY_TIMEOUT_MS = 60_000;
 /** Cycling the gallery through every variant draws the full gallery 50 times. */
 const GALLERY_VARIANT_TIMEOUT_MS = 60_000;
@@ -74,7 +74,7 @@ const RENDER_DIGESTS = {
   },
   busy: {
     calls: 415_124,
-    sha256: "8f3a8722ff5897e92fec3fb87f647077a68f863ce2f9dc18ee580df7002f903c",
+    sha256: "358c8386f7bca31b66bbad1ca9812e6636ecb3ec5035e1bb39cbc5a9f75522c7",
   },
   highContrast: {
     calls: 526_275,
@@ -116,13 +116,13 @@ const RENDER_DIGESTS = {
     calls: 120_606,
     sha256: "cc318f80d46fdcd619dcc7a795c189d99db2255e7c237d848e47a7ff741df0af",
   },
-  multiDayFrame480: {
-    calls: 225,
-    sha256: "ef1bcd89e79b65acf0a1f9f8b5cb44d786aa037e73d0815d9f5d6fc520b1cf67",
+  multiDayFrame600: {
+    calls: 138,
+    sha256: "f4bced72b51ce31ef28e5d1fea350f7068e1d753aab922a8522227de6407b0a7",
   },
-  multiDayFrame960: {
-    calls: 224,
-    sha256: "6a591198daeaf3c6c9275d7017042cd4f9652be38ddae0e80ac5af5515d29bd5",
+  multiDayFrame1200: {
+    calls: 146,
+    sha256: "a562204ad416d8b56f7e14311ad7353da7692cb08dd9416bec8a3e1c719fb3fd",
   },
 } satisfies Record<string, RenderLogDigest>;
 
@@ -389,7 +389,7 @@ describe("createHawkerRuntime rendering", () => {
   );
 
   it(
-    "(10) draws frames 480 and 960 of the two-day run at speed 10",
+    "(10) draws frames 600 and 1,200 of the two-day run at speed 10",
     async () => {
       const runtime = await create_test_runtime();
       const scene = runtime.boot();
@@ -411,8 +411,8 @@ describe("createHawkerRuntime rendering", () => {
       }
 
       expect(digests).toEqual({
-        480: RENDER_DIGESTS.multiDayFrame480,
-        960: RENDER_DIGESTS.multiDayFrame960,
+        600: RENDER_DIGESTS.multiDayFrame600,
+        1_200: RENDER_DIGESTS.multiDayFrame1200,
       });
       expect(labels).toMatchSnapshot();
     },

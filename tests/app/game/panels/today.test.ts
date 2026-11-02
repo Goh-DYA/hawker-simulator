@@ -86,19 +86,34 @@ describe("TodayStrip", () => {
         band.style.left,
       ]),
     ).toEqual([
-      ["lunch", "", `${get_timeline_share(714, 630, 1110) * 100}%`],
-      ["dinner", "", `${get_timeline_share(1011, 630, 1110) * 100}%`],
+      ["lunch", "", `${get_timeline_share(714, 630, 1230) * 100}%`],
+      ["dinner", "", `${get_timeline_share(1096, 630, 1230) * 100}%`],
     ]);
     expect(container.querySelector(".today-rush-times")?.textContent).toBe(
-      "Lunch 11:54 AM–1:06 PM · Dinner 4:51–5:39 PM",
+      "Lunch 11:54 AM–1:06 PM · Dinner 6:16–7:04 PM",
     );
+  });
+
+  it("shades the wind-down from the doors closing to the end of the day", () => {
+    const container = render_strip(NEIGHBOURHOOD);
+    const closing = container.querySelector<HTMLElement>(".today-closing");
+
+    expect([
+      closing?.style.left,
+      closing?.style.width,
+      container.querySelector(".today-timeline-axis")?.textContent,
+    ]).toEqual([
+      `${get_timeline_share(1160, 630, 1230) * 100}%`,
+      `${(1 - get_timeline_share(1160, 630, 1230)) * 100}%`,
+      "10:30 AMDoors 7:20 PM · Last orders 8:00 PM",
+    ]);
   });
 
   it("describes the whole timeline in its image label", () => {
     const strip = within(render_strip({ ...NEIGHBOURHOOD, writer: WRITER }));
 
     expect(strip.getByRole("img").getAttribute("aria-label")).toBe(
-      "Opening hours 10:30 AM to 6:30 PM. Lunch crowd 11:54 AM–1:06 PM. Dinner crowd 4:51–5:39 PM. Last orders 6:10 PM. Food writer reviewing 12:00–2:00 PM. Now 11:30 AM.",
+      "Opening hours 10:30 AM to 8:30 PM. Lunch crowd 11:54 AM–1:06 PM. Dinner crowd 6:16–7:04 PM. Doors close 7:20 PM. Last orders 8:00 PM. Food writer reviewing 12:00–2:00 PM. Now 11:30 AM.",
     );
   });
 
@@ -110,8 +125,8 @@ describe("TodayStrip", () => {
       container.querySelector<HTMLElement>(".today-last-orders")?.style.left,
       container.querySelector(".today-writer-mark"),
     ]).toEqual([
-      `${get_timeline_share(690, 630, 1110) * 100}%`,
-      `${get_timeline_share(1090, 630, 1110) * 100}%`,
+      `${get_timeline_share(690, 630, 1230) * 100}%`,
+      `${get_timeline_share(1200, 630, 1230) * 100}%`,
       null,
     ]);
   });

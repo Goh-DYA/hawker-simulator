@@ -75,8 +75,8 @@ const REJECTED_SAVE_CASES: readonly RejectedSaveCase[] = [
   },
   {
     name: "an unsupported schema version",
-    buildInput: () => ({ ...load_save_fixture("save-v4.json"), schemaVersion: 6 }),
-    message: "Unsupported save version: 6",
+    buildInput: () => ({ ...load_save_fixture("save-v4.json"), schemaVersion: 7 }),
+    message: "Unsupported save version: 7",
   },
   {
     name: "a save string that is not valid JSON",

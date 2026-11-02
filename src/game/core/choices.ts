@@ -3,6 +3,12 @@
  * return to walk to.
  *
  * Every random draw keeps its position, so seeded runs stay identical.
+ *
+ * In a centre that keeps operating hours the kitchens wind down before closing: a guest only
+ * considers dishes that can be cooked by the closing call (`servable_dishes`), so a stall never
+ * takes an order it cannot hand over, and only joins a queue the stall is estimated to clear in
+ * time (`is_served_by_closing_call` in `closing.ts`). A guest whom only the closing leaves without
+ * a choice goes home without a visit rating, since the closing, not the service, ended the visit.
  */
 import { getObjectTrayReturnPoint, getSeatLocations, type SeatLocation } from "./grid";
 import {
@@ -32,6 +38,8 @@ import {
   personalizedHealthRating,
 } from "./nutrition";
 import { getGlobalWayfinding } from "./utility";
+import { follows_operating_hours, is_served_by_closing_call } from "./closing";
+import { ms_until_closing_call } from "./rush";
 import type {
   Customer,
   DishDefinition,
@@ -84,6 +92,35 @@ function affordableDishes(draft: Draft, stall: StallRuntime, customer: Customer)
 }
 
 /**
+ * Lists the affordable dishes on a stall's menu that can still be cooked before the closing call.
+ * Without operating hours every affordable dish can.
+ *
+ * @param draft - The draft whose clock, catalog and quality settings are used.
+ * @param stall - The stall whose menu is checked.
+ * @param customer - The customer whose budget and spending apply.
+ * @returns The servable dishes, in menu order.
+ */
+function servable_dishes(draft: Draft, stall: StallRuntime, customer: Customer): readonly DishDefinition[] {
+  const affordable = affordableDishes(draft, stall, customer);
+  if (!follows_operating_hours(draft.source)) return affordable;
+  const time_left_ms = ms_until_closing_call(draft.source.elapsedMs);
+  return affordable.filter((dish) => dish.preparationMs <= time_left_ms);
+}
+
+/**
+ * Whether the kitchen cut-off alone leaves a guest nothing to order at a stall: the guest can
+ * afford a dish on its menu, but none of them can be cooked before the closing call.
+ *
+ * @param draft - The draft whose clock, catalog and quality settings are used.
+ * @param stall - The stall whose menu is checked.
+ * @param customer - The customer whose budget and spending apply.
+ * @returns True when the closing, not the menu or the budget, is what turns the guest away.
+ */
+export function is_kitchen_closed_for(draft: Draft, stall: StallRuntime, customer: Customer): boolean {
+  return affordableDishes(draft, stall, customer).length > 0 && servable_dishes(draft, stall, customer).length === 0;
+}
+
+/**
  * Converts a dish's authored base demand into a bounded appeal term around neutral demand.
  *
  * @param dish - The dish to score.
@@ -107,13 +144,19 @@ export function chooseStall(draft: Draft, source: Customer): Customer {
   const archetype = getArchetype(draft, source);
   const wayfinding = getGlobalWayfinding(draft.objects, draft.source.catalog);
   let best: { stall: StallRuntime; path: readonly GridPoint[]; score: number } | undefined;
+  let is_turned_away_by_closing = false;
   for (const stall of openStalls(draft)) {
     const config = stall.definition.stall as NonNullable<PlaceableDefinition["stall"]>;
     const queue = draft.queues[stall.object.id] ?? [];
-    const dishes = affordableDishes(draft, stall, source);
+    const dishes = servable_dishes(draft, stall, source);
+    if (dishes.length === 0 && is_kitchen_closed_for(draft, stall, source)) is_turned_away_by_closing = true;
     const effectiveCapacity = Math.min(config.queueCapacity, stall.queueCells.length);
     const targetQueueCell = stall.queueCells[queue.length];
     if (queue.length >= effectiveCapacity || !targetQueueCell || dishes.length === 0) continue;
+    if (!is_served_by_closing_call(draft, stall, queue.length, dishes)) {
+      is_turned_away_by_closing = true;
+      continue;
+    }
     const path = requestPath(draft, source.position, targetQueueCell);
     if (!path) continue;
     const preferredTags = new Set(archetype.preferenceTags ?? []);
@@ -155,6 +198,7 @@ export function chooseStall(draft: Draft, source: Customer): Customer {
       best = { stall, path, score };
     }
   }
+  if (!best && is_turned_away_by_closing) return beginExit(draft, { ...source, isSentHome: true }, false);
   if (!best) return beginExit(draft, { ...source, departureReason: "no-stall" }, true);
   draft.queues[best.stall.object.id] = [...(draft.queues[best.stall.object.id] ?? []), source.id];
   const customer = preparePath(transition(draft, source, "walking-to-queue"), best.path);
@@ -175,13 +219,14 @@ export interface DishChoice {
  * @param draft - The draft whose catalog and RNG are used.
  * @param stall - The stall the customer is ordering at.
  * @param customer - The ordering customer.
- * @returns The chosen dish and variant, or `undefined` when nothing is affordable.
+ * @returns The chosen dish and variant, or `undefined` when nothing affordable can be cooked
+ * before the closing call.
  */
 export function chooseDish(draft: Draft, stall: StallRuntime, customer: Customer): DishChoice | undefined {
   const archetype = getArchetype(draft, customer);
   const preferred = new Set(archetype.preferenceTags ?? []);
   let best: { dish: DishDefinition; variant?: NutritionVariant; score: number } | undefined;
-  for (const dish of [...affordableDishes(draft, stall, customer)].sort((a, b) => compareIds(a.id, b.id))) {
+  for (const dish of [...servable_dishes(draft, stall, customer)].sort((a, b) => compareIds(a.id, b.id))) {
     const matches = (dish.preferenceTags ?? []).filter((tag) => preferred.has(tag)).length;
     const random = nextFloat(draft.rngState);
     draft.rngState = random.state;

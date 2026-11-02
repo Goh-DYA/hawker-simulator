@@ -7,8 +7,11 @@ import {
   compute_time_demand,
   DEFAULT_RUSH_WINDOWS,
   DINNER_RUSH,
+  is_closing_call,
+  is_doors_closed,
   is_last_orders,
   LUNCH_RUSH,
+  ms_until_closing_call,
   ms_until_day_end,
   rush_bump_share,
 } from "@/src/game/core/rush";
@@ -47,18 +50,33 @@ describe("rush demand curve", () => {
 
   it("reports the rush core around each centre only", () => {
     expect(active_rush_window(12 * 60 + 30, DEFAULT_RUSH_WINDOWS)?.kind).toBe("lunch");
-    expect(active_rush_window(17 * 60, DEFAULT_RUSH_WINDOWS)?.kind).toBe("dinner");
+    expect(active_rush_window(18 * 60 + 30, DEFAULT_RUSH_WINDOWS)?.kind).toBe("dinner");
     expect(active_rush_window(15 * 60, DEFAULT_RUSH_WINDOWS)).toBeUndefined();
     expect(active_rush_window(11 * 60, DEFAULT_RUSH_WINDOWS)).toBeUndefined();
   });
 });
 
 describe("last orders", () => {
-  it("closes from 18:10 until the day ends", () => {
-    expect(is_last_orders(elapsed_at(18 * 60 + 9))).toBe(false);
-    expect(is_last_orders(elapsed_at(18 * 60 + 10))).toBe(true);
-    expect(is_last_orders(elapsed_at(18 * 60 + 29, 2))).toBe(true);
+  it("closes from 20:00 until the day ends", () => {
+    expect(is_last_orders(elapsed_at(19 * 60 + 59))).toBe(false);
+    expect(is_last_orders(elapsed_at(20 * 60))).toBe(true);
+    expect(is_last_orders(elapsed_at(20 * 60 + 29, 2))).toBe(true);
     expect(is_last_orders(elapsed_at(OPENING_MINUTE, 2))).toBe(false);
+  });
+
+  it("closes the doors from 19:20 and calls closing from 20:12, until the day ends", () => {
+    expect(is_doors_closed(elapsed_at(19 * 60 + 19))).toBe(false);
+    expect(is_doors_closed(elapsed_at(19 * 60 + 20))).toBe(true);
+    expect(is_doors_closed(elapsed_at(OPENING_MINUTE, 2))).toBe(false);
+    expect(is_closing_call(elapsed_at(20 * 60 + 11))).toBe(false);
+    expect(is_closing_call(elapsed_at(20 * 60 + 12))).toBe(true);
+    expect(is_closing_call(elapsed_at(OPENING_MINUTE, 2))).toBe(false);
+  });
+
+  it("counts the milliseconds left until the closing call", () => {
+    expect(ms_until_closing_call(elapsed_at(20 * 60))).toBe(12 * MS_PER_MINUTE);
+    expect(ms_until_closing_call(elapsed_at(20 * 60 + 12, 3))).toBe(0);
+    expect(ms_until_closing_call(elapsed_at(20 * 60 + 20))).toBe(-8 * MS_PER_MINUTE);
   });
 
   it("counts the milliseconds left in the operating day", () => {
@@ -67,7 +85,7 @@ describe("last orders", () => {
     expect(ms_until_day_end(OPERATING_DAY_MS)).toBe(OPERATING_DAY_MS);
   });
 
-  it("spawns nobody in the adaptive model between last orders and the next opening", () => {
+  it("spawns nobody in the adaptive model between the doors closing and the next opening", () => {
     const start = makeGame({
       catalog: TEST_CATALOG,
       config: {
@@ -76,16 +94,16 @@ describe("last orders", () => {
         standard: { maxActiveCustomers: undefined },
       },
     });
-    const before_last_orders = runUntil(
-      { ...start, elapsedMs: elapsed_at(18 * 60), spawnCountdownMs: 0 },
-      (state) => is_last_orders(state.elapsedMs),
+    const before_doors_close = runUntil(
+      { ...start, elapsedMs: elapsed_at(19 * 60 + 10), spawnCountdownMs: 0 },
+      (state) => is_doors_closed(state.elapsedMs),
       2_000,
     );
-    const spawned_before = before_last_orders.metrics.spawnedCustomers;
+    const spawned_before = before_doors_close.metrics.spawnedCustomers;
     const at_close = runUntil(
-      before_last_orders,
-      (state) => !is_last_orders(state.elapsedMs),
-      2_000,
+      before_doors_close,
+      (state) => !is_doors_closed(state.elapsedMs),
+      4_000,
     );
     expect(at_close.metrics.spawnedCustomers - spawned_before).toBe(0);
     const after_opening = runUntil(

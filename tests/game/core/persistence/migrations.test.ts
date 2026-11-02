@@ -15,12 +15,16 @@
  *   load is pinned too.
  * - `save-v5.json`: `persistentStateFromGame` at step 5,400 of the adaptive run with world
  *   seed 2026 and four synthetic calendar cards, so it holds a neighbourhood on day 2 with a
- *   finished day-1 report, a peak reputation and a scheduled food writer.
+ *   finished day-1 report, a peak reputation and a scheduled food writer. Its `elapsedMs`
+ *   (540,000) counts eight-minute operating days: 11:30 on day 2.
+ * - `save-v6.json`: the V5 fixture loaded and written back as V6, so its `elapsedMs`
+ *   (660,000) counts ten-minute operating days and still reads 11:30 on day 2.
  *
- * Each fixture is checked three ways: the migrated V5 save, the `stateDigest` of the
+ * Each fixture is checked three ways: the migrated V6 save, the `stateDigest` of the
  * loaded game, and the save string written back from it. The V1 to V4 digests moved once
- * when V5 was added, because the current save and snapshot carry the new fields; the
- * fixtures themselves are unchanged. The assertions hash raw
+ * when V5 was added, because the current save and snapshot carry the new fields, and every
+ * earlier digest moved once when V6 was added, because the schema version and the re-counted
+ * `elapsedMs` are part of the save; the fixtures themselves are unchanged. The assertions hash raw
  * strings, so field order is pinned as well as values. If a refactor makes one fail, the
  * refactor changed save handling: fix the code, never the literal or the fixture.
  */
@@ -31,6 +35,8 @@ import { describe, expect, it } from "vitest";
 import {
   deserializeGameState,
   migratePersistentState,
+  operatingDay,
+  operatingMinuteOfDay,
   serializeGameState,
   stateDigest,
   type SimulationCatalog,
@@ -53,33 +59,39 @@ interface SaveFixtureHashes {
 const SAVE_FIXTURE_HASHES: readonly SaveFixtureHashes[] = [
   {
     fileName: "save-v1.json",
-    migratedSaveSha256: "4527c2d5273293d47ae399f05c101a4964d8c5bd0eee2747cbf421e3d81d2416",
-    stateDigestSha256: "e15efa271e5db406aebe5419504419674264a5e5f4ab2d01168b2507130dc24a",
-    serializedSaveSha256: "1a4dcd9048d98675dab8bd2cab85f498a1aed103187a6aa2eda27ed372ee2dde",
+    migratedSaveSha256: "64a660d9a400d54fdea4eee4fb817298a57b285a4c133d0f00b4d324032c56c8",
+    stateDigestSha256: "de3253d890937083940e62dfbbbc97eaaa94752ac0536f11cd42aced1c47f6ac",
+    serializedSaveSha256: "1c33118cd5dab42c17609852f3bf0ebe65f025f1d3236aa1dc0670978484c16b",
   },
   {
     fileName: "save-v2.json",
-    migratedSaveSha256: "2a358048b3166a30610306f4f358531950102d917e5257817abfd74360efb8fc",
-    stateDigestSha256: "a51d8e426aec96c2ae570b95d1410aa83d36962572fcc970fbbbbd1397d7f6df",
-    serializedSaveSha256: "3a93257b79b509841012980b024400955ccc7650a400b1bfb52c3da70ae8f8ee",
+    migratedSaveSha256: "7f8cdc225e6d3a2e7354496ef0b0ba5c1e114e5e16c3c7ffc6ff3c4612bc3257",
+    stateDigestSha256: "65f35175af1b50764c2cdc8d79601fd1da9f80348314bb4f3a856865e3fc4eb0",
+    serializedSaveSha256: "93c5fa1e8df4be8fa128aabf9bd6acb287615c4a1d9d84517090ec6ac316a9f9",
   },
   {
     fileName: "save-v3.json",
-    migratedSaveSha256: "ba12f8341105da4f385319f9123ca15fa8fad90e55dea63f562895a704ba842c",
-    stateDigestSha256: "d3f9dd8bc5169a2dcd3561f3529bc880200e5289cbae41a9ad4c9ba0430ec843",
-    serializedSaveSha256: "e35e5d28717f88b91266b5f2de9b3b98617f94232397b3f2f3979cbce6e9bda5",
+    migratedSaveSha256: "cd1ced58c2e5dad99deeee0f136ac896c5d378de38f17dba96a088c9433c0858",
+    stateDigestSha256: "251617b57962c5e606d7f194bfbdf9b8f2574b53cd4b7aaf0aa9ccc4207c78c9",
+    serializedSaveSha256: "b6d439629b72e9a3d5e6858c6f09a1678c3774cf8bbc5b02ce37408739ca21dd",
   },
   {
     fileName: "save-v4.json",
-    migratedSaveSha256: "1a94014c72c2f7cc526bf5524e523c67d7264165d50f34afd87254587d08194f",
-    stateDigestSha256: "3cb47752df4110e8cdcd3273cc4933e7299957ada3d6357ef0e5a110fc76bded",
-    serializedSaveSha256: "4816edea55303a849151b2c891c6396901f9c5d7c36d68eadf786dc9d3e16745",
+    migratedSaveSha256: "df42b373391d1859c2100d3fabb26b6d4aa8476581456238ba14ea71b88c2fd8",
+    stateDigestSha256: "d12a748cf55e070b10f7f292982e31438ad834ff8c00f99b3c09ce86dff09675",
+    serializedSaveSha256: "ce80ab1528a4fb866da8945646aca2e9533355dd7fc824fe9dcb14727cb12b88",
   },
   {
     fileName: "save-v5.json",
-    migratedSaveSha256: "a3a2fae71a499a05ab4c17a23bf394935ba4fd5dceaf1778b8e3e49fdb3ea29d",
-    stateDigestSha256: "0f77b0361f302ee3c1c3cfffcff3edbfb3ae965217c95bb0639137e88652db38",
-    serializedSaveSha256: "536bc2c48c4b064cdf533eed384fe8b9cefd4ae695b9e838de24a9f83f507b38",
+    migratedSaveSha256: "46a5ebf8e7d67ba53ae79057edf8080aaf471f380e8aa86c35df5952eb5157e8",
+    stateDigestSha256: "24ca23968102258d61ae36ad141c5e0edebbaf2893cf1f3a61c8d59bbfae1711",
+    serializedSaveSha256: "99a1433e1af6c0825627d031a2d1a0a519f0eba2d5213bf272b8faad0edfe4aa",
+  },
+  {
+    fileName: "save-v6.json",
+    migratedSaveSha256: "46a5ebf8e7d67ba53ae79057edf8080aaf471f380e8aa86c35df5952eb5157e8",
+    stateDigestSha256: "24ca23968102258d61ae36ad141c5e0edebbaf2893cf1f3a61c8d59bbfae1711",
+    serializedSaveSha256: "99a1433e1af6c0825627d031a2d1a0a519f0eba2d5213bf272b8faad0edfe4aa",
   },
 ];
 
@@ -119,7 +131,7 @@ describe("schema V5", () => {
   it("starts a migrated V4 save at its reputation peak and without a neighbourhood", () => {
     const v4 = load_save_fixture("save-v4.json") as { readonly progression: { readonly reputation: number } };
     const migrated = migratePersistentState(load_save_fixture("save-v4.json"));
-    expect(migrated.schemaVersion).toBe(5);
+    expect(migrated.schemaVersion).toBe(6);
     expect(migrated.progression.peakReputation).toBe(v4.progression.reputation);
     expect(migrated.neighbourhood).toBeNull();
   });
@@ -139,8 +151,35 @@ describe("schema V5", () => {
   });
 });
 
+describe("schema V6", () => {
+  it("re-counts a V5 save's elapsed time on the ten-minute day, keeping its day and time of day", () => {
+    const v5 = load_save_fixture("save-v5.json") as { readonly elapsedMs: number };
+    const migrated = migratePersistentState(load_save_fixture("save-v5.json"));
+    const v5_day_ms = 8 * 60 * 1_000;
+    expect({
+      schemaVersion: migrated.schemaVersion,
+      day: operatingDay(migrated.elapsedMs),
+      minute: operatingMinuteOfDay(migrated.elapsedMs),
+    }).toEqual({
+      schemaVersion: 6,
+      day: 1 + Math.floor(v5.elapsedMs / v5_day_ms),
+      minute: 10 * 60 + 30 + Math.floor((v5.elapsedMs % v5_day_ms) / 1_000),
+    });
+  });
+
+  it("loads the V5 save on the day its neighbourhood calendar shows", () => {
+    const loaded = deserializeGameState(load_save_fixture("save-v5.json"), TEST_CATALOG);
+    expect([operatingDay(loaded.elapsedMs), loaded.neighbourhood?.calendar.day]).toEqual([2, 2]);
+  });
+
+  it("keeps a V6 save's elapsed time as it is", () => {
+    const v6 = load_save_fixture("save-v6.json") as { readonly elapsedMs: number };
+    expect(migratePersistentState(load_save_fixture("save-v6.json")).elapsedMs).toBe(v6.elapsedMs);
+  });
+});
+
 describe.each(SAVE_FIXTURE_HASHES)("$fileName", (expected) => {
-  it("migrates to the pinned V5 save", () => {
+  it("migrates to the pinned V6 save", () => {
     const migrated = migratePersistentState(load_save_fixture(expected.fileName));
     expect(hash_sha256(JSON.stringify(migrated))).toBe(expected.migratedSaveSha256);
   });
