@@ -109,9 +109,9 @@ const DEPARTURE_GUEST_ID = "customer-3";
 const DEPARTURE_FRAME = 1_019;
 const DEPARTURE_FRAME_LIMIT = 1_500;
 /** Every event of the departure run, from opening to the departure frame. */
-const DEPARTURE_RUN_EVENT_COUNT = 22;
+const DEPARTURE_RUN_EVENT_COUNT = 21;
 const DEPARTURE_RUN_EVENTS_SHA256 =
-  "71b4c1b1e60b422710db627c0f0e2c317497580f91b2a2fe8393bf9b786ed59f";
+  "d1d3f9f559ed12a5b8481552fce5af0d5a446e85f635889a9af35b2219f571e8";
 /** The departure run steps about 1,200 frames, so it gets the multi-day run's allowance. */
 const DEPARTURE_TIMEOUT_MS = 60_000;
 const DEPARTURE_MESSAGE = "The selected guest finished their visit.";
@@ -157,7 +157,7 @@ const FLOW_CORE_SHA256 = {
   queue: "56f37d706525542fd8bd654970681386e13891030d3708cd6c0f647c9f181a5f",
   access: "6acc77b5ad2a7692200833d74ecfc09dbe0eef39ba498f530a9b82689df92982",
   accessCollision: "cb571e923465162c07febcdc1696a5492eb47b6e8fe50795823d4d3663202245",
-  departure: "f7108f6e4920e74bf99003373528c6decc63f85257b8448b43a0cef7145a8da6",
+  departure: "443b643dd2d69218d363171f3ddbbae3a8a1a9f5c2771ebf4429dce4ec9bc6ed",
   keyboard: "5549f74c51ee67043cfbe64e8eae54a242176a657dbfd30887ec457986c2f7c5",
   keyboardPlace: "5a8c157d11664b13ad7951ca5377fab21e6e51ee7d9b1f8b163c852d3b7f4fbd",
 } as const;

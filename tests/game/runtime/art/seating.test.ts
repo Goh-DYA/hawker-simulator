@@ -189,7 +189,7 @@ describe.each(["table", "seat"] as const)("the %s painter", (category) => {
   const items = launch_items(category);
 
   it("covers the launch roster", () => {
-    expect(items).toHaveLength(category === "table" ? 8 : 10);
+    expect(items).toHaveLength(category === "table" ? 10 : 13);
   });
 
   it("paints every item at every frame and rotation, directly and through the dispatcher", () => {
@@ -461,6 +461,30 @@ describe("the table top contract", () => {
 
     expect(top.halfDepth / top.halfWidth).toBeCloseTo(0.65, 1);
   });
+
+  it("paints the banquet top as a round ellipse like the café top, at every rotation", () => {
+    for (const rotation of ROTATIONS) {
+      const spec = spec_for("item.banquet-turntable-table", rotation, DEFAULT_PAINT_FRAME);
+      const top = table_top(footprint_box(spec), spec.recipe);
+      const ellipses = paint_direct(spec)
+        .log.map((entry) => JSON.parse(entry) as [string, ...number[]])
+        .filter(([method]) => method === "ellipse");
+
+      expect(top.shape).toBe("ellipse");
+      expect(top.halfWidth).toBeGreaterThanOrEqual(64);
+      expect(top.halfDepth / top.halfWidth).toBeGreaterThanOrEqual(0.6);
+      expect(top.halfDepth / top.halfWidth).toBeLessThanOrEqual(0.7);
+      expect(
+        ellipses.some(
+          ([, x, y, rx, ry]) =>
+            x === top.centreX &&
+            y === top.centreY - top.lift &&
+            rx === top.halfWidth &&
+            ry === top.halfDepth,
+        ),
+      ).toBe(true);
+    }
+  });
 });
 
 describe("has_backrest", () => {
@@ -473,9 +497,12 @@ describe("has_backrest", () => {
     expect(withBackrest).toEqual([
       "item.acoustic-booth-seat",
       "item.booster-family-chair",
+      "item.companion-transfer-bench",
       "item.cushioned-dining-chair",
       "item.easy-rise-arm-chair",
+      "item.four-person-teak-bench",
       "item.moulded-back-chair",
+      "item.rattan-lounge-chair",
       "item.two-person-bench",
     ]);
   });

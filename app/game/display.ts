@@ -442,13 +442,12 @@ export function utilityEffects(item: PlaceableDefinition): readonly string[] {
         "wash-hands": "Improves hygiene and dining comfort",
         "collect-water": "Improves refreshment and dining comfort",
         "inspect-menu": "Improves stall discovery",
-        queue: "Improves queue patience and flow",
+        queue: "Improves queue patience",
         sit: "Provides usable seating",
         use: "Provides passive facility support",
       }[role],
     );
   }
-  if (item.queuePoints.length > 0) effects.push(`${item.queuePoints.length} queue guide points`);
   return [...new Set(effects)];
 }
 

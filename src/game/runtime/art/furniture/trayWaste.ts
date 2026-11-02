@@ -1,7 +1,7 @@
 /**
  * Tray and waste painters: the single- and dual-bay tray return stations, the dish-drop counter,
- * the recycling sorter, the covered food-waste and general-waste bins, the cleaning trolley bay
- * and the clean tray stack rack, as stainless hawker-centre infrastructure in the 3/4 view.
+ * the recycling sorter, the covered food-waste and general-waste bins, the cleaning trolley bay,
+ * the clean tray stack rack and the tray-return conveyor, as stainless hawker-centre infrastructure in the 3/4 view.
  *
  * Directional stations are laid out along their service edge with a {@link Run}, so they turn
  * with the placement rotation (their openings face the rotated south) while the light and the
@@ -38,6 +38,7 @@ import {
   face_view,
   ground_bottom,
   INK,
+  is_across,
   LEAF,
   lifted,
   make_run,
@@ -90,6 +91,20 @@ const TROLLEY_GREY = 0x6d7c80;
 const TROLLEY_DECK = 4.5;
 /** Paper-stream blue of the recycling sorter. */
 const PAPER_BLUE = 0x2f6fa3;
+/** Height of the tray-return conveyor's belt. */
+const CONVEYOR_BELT = 15;
+/** Height of the conveyor's wash tunnel hood. */
+const CONVEYOR_TUNNEL = 27;
+/** Depth of the conveyor across its footprint when it runs across the screen. */
+const CONVEYOR_REACH = 15;
+/** Depth of the conveyor turned north-south, wider so it reads in its narrow footprint. */
+const CONVEYOR_END_REACH = 22;
+/** Height of the top of the conveyor's header board. */
+const CONVEYOR_HEADER = 35;
+/** Height of the conveyor's return inlets at each end. */
+const CONVEYOR_INLET = 24;
+/** Black rubber of the conveyor belt. */
+const BELT_RUBBER = 0x2b3133;
 
 /** A tray-waste painter: paints one branch in the rotated footprint. */
 type TrayWastePainter = (
@@ -102,6 +117,7 @@ type TrayWastePainter = (
 
 /** The painter of each tray-waste branch. */
 const TRAY_WASTE_PAINTERS: Readonly<Record<TrayWasteStyle, TrayWastePainter>> = {
+  conveyor: paint_tray_conveyor,
   "tray-point": paint_tray_point,
   recycling: paint_recycling_sorter,
   "food-waste": (ctx, box, _recipe, frame, rotation) => paint_bin(ctx, box, frame, rotation, true),
@@ -110,8 +126,8 @@ const TRAY_WASTE_PAINTERS: Readonly<Record<TrayWasteStyle, TrayWastePainter>> = 
 };
 
 /**
- * Paints a tray return, dish drop, recycling sorter, waste bin, trolley bay or tray rack in its
- * rotated orientation.
+ * Paints a tray return, dish drop, recycling sorter, waste bin, trolley bay, tray rack or tray
+ * conveyor in its rotated orientation.
  *
  * @param ctx - The paint context.
  * @param box - The footprint box (already rotated).
@@ -1739,4 +1755,244 @@ function paint_tray_block(
   );
   ctx.fillStyle = css(0xffffff, 0.4);
   ctx.fillRect(ground.x + 1.5, top_y + 0.6, ground.width - 3, 0.6);
+}
+
+/**
+ * Paints the tray-return conveyor: a long, low stainless housing whose black rubber belt carries
+ * returned trays and bowls towards a hooded wash tunnel at its middle, hung with clear strip
+ * curtains, with a taller return inlet at each end under a green "RETURN" panel, so each end is
+ * a drop-off point and the belt between them reads as moving crockery away. Green chevrons on
+ * the belt point both ways into the tunnel, and a green "RETURN TRAYS" header board along the
+ * back matches the other tray returns. Turned north-south it is centred and widened in its
+ * narrow footprint, and its near inlet shows a green arrow plate.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param recipe - The recipe.
+ * @param frame - The paint frame.
+ * @param rotation - The placement rotation.
+ */
+function paint_tray_conveyor(
+  ctx: PaintContext,
+  box: Box,
+  recipe: PlaceableVisualRecipe,
+  frame: PaintFrame,
+  rotation: Rotation,
+): void {
+  const across = is_across(service_side(rotation));
+  const reach = across ? CONVEYOR_REACH : CONVEYOR_END_REACH;
+  const run = make_run(box, rotation, {
+    reach,
+    front_gap: across ? 5 : (box.width - reach) / 2,
+    end_gap: 3,
+    rise: CONVEYOR_HEADER + 2,
+  });
+  const view = face_view(run.side);
+  cast_shadow(ctx, run.ground, CONVEYOR_INLET);
+  const parts: Part[] = [];
+  const belt = run.segment(0.1, 0.9, 1.5, run.reach - 1.5);
+  parts.push({
+    depth: ground_bottom(belt) - 0.4,
+    draw: () => {
+      paint_prism(ctx, belt, CONVEYOR_BELT, STAINLESS, frame, {
+        is_steel: true,
+        seed: recipe.seed,
+        lip: 0.9,
+      });
+      const top = {
+        x: belt.x + 1,
+        y: belt.y - CONVEYOR_BELT + 1,
+        width: belt.width - 2,
+        depth: belt.depth - 2,
+      };
+      fill_rounded_rect(ctx, top.x, top.y, top.width, top.depth, 1, css(BELT_RUBBER));
+      if (!frame.isLowDetail) {
+        const span = across ? top.width : top.depth;
+        for (let offset = 2; offset < span; offset += 3.5) {
+          if (across)
+            line(
+              ctx,
+              top.x + offset,
+              top.y + 0.4,
+              top.x + offset,
+              top.y + top.depth - 0.4,
+              css(0xffffff, 0.12),
+              0.6,
+              "butt",
+            );
+          else
+            line(
+              ctx,
+              top.x + 0.4,
+              top.y + offset,
+              top.x + top.width - 0.4,
+              top.y + offset,
+              css(0xffffff, 0.12),
+              0.6,
+              "butt",
+            );
+        }
+      }
+      for (const [along, colour] of [
+        [0.2, TRAY_BROWN],
+        [0.33, TUB],
+        [0.67, TRAY_BROWN],
+        [0.8, CROCKERY],
+      ] as const) {
+        paint_belt_chevron(ctx, run, along < 0.5 ? along + 0.065 : along - 0.065, frame);
+        const centre = lifted(run.at(along, run.reach / 2), CONVEYOR_BELT);
+        const item = oriented_ground(centre, 9, 7, run.side);
+        fill_rounded_rect(
+          ctx,
+          item.x,
+          item.y - 1.4,
+          item.width,
+          item.depth,
+          1,
+          css(shade(colour, 0.25)),
+        );
+        fill_rounded_rect(ctx, item.x, item.y - 2.2, item.width, item.depth, 1, css(colour));
+        if (colour !== TRAY_BROWN)
+          fill_ellipse(ctx, centre.x, centre.y - 2.6, 2.2, 1.3, css(tint(colour, 0.35)));
+      }
+      if (view === "front") {
+        const face = face_of(belt, CONVEYOR_BELT);
+        paint_plain_back(ctx, face, "back");
+      }
+    },
+  });
+  const tunnel = run.segment(0.4, 0.6, 0.5, run.reach - 0.5);
+  parts.push({
+    // The hood stands over the belt, so seen end-on it paints after the belt it straddles.
+    depth: across ? ground_bottom(tunnel) : ground_bottom(belt) + 0.1,
+    draw: () => {
+      paint_prism(ctx, tunnel, CONVEYOR_TUNNEL, STAINLESS, frame, {
+        is_steel: true,
+        seed: recipe.seed ^ 0x2f,
+        radius: 2.5,
+        lip: 1,
+      });
+      if (view === "end") return;
+      const face = face_of(tunnel, CONVEYOR_TUNNEL);
+      const opening = {
+        x: face.x + 2.5,
+        y: face.y + 6,
+        width: face.width - 5,
+        height: face.height - 6,
+      };
+      fill_rounded_rect(ctx, opening.x, opening.y, opening.width, opening.height, 1.5, css(RECESS));
+      for (let strip = opening.x + 1.2; strip < opening.x + opening.width - 0.8; strip += 2.4) {
+        ctx.fillStyle = css(0xd8eceb, 0.4);
+        ctx.fillRect(strip, opening.y + 0.6, 1.6, opening.height - 1.2);
+      }
+      label(ctx, view === "front" ? "WASH" : "STAFF", face.x + face.width / 2, face.y + 3, {
+        maxWidth: face.width - 3,
+        size: 4.5,
+        colour: INK,
+      });
+    },
+  });
+  const inlet_ends = [
+    [0, 0.1],
+    [0.9, 1],
+  ] as const;
+  // Seen end-on, only the nearer inlet's face is clear of the belt.
+  const near_bottom = Math.max(
+    ...inlet_ends.map(([start, end]) => ground_bottom(run.segment(start, end, 0, run.reach))),
+  );
+  for (const [start, end] of inlet_ends) {
+    const inlet = run.segment(start, end, 0, run.reach);
+    parts.push({
+      depth: ground_bottom(inlet),
+      draw: () => {
+        paint_prism(ctx, inlet, CONVEYOR_INLET, STAINLESS, frame, {
+          is_steel: true,
+          seed: recipe.seed + start * 97,
+          lip: 1,
+        });
+        const face = face_of(inlet, CONVEYOR_INLET);
+        if (view === "front") {
+          fill_rounded_rect(ctx, face.x + 1.5, face.y + 9, face.width - 3, 9, 1, css(RECESS));
+          paint_tray_stack(
+            ctx,
+            face.x + 2.5,
+            face.y + 17,
+            face.width - 5,
+            2,
+            TRAY_BROWN,
+            recipe.seed + end * 31,
+          );
+          paint_tray_arrow(ctx, face.x + face.width / 2, face.y + 4.5);
+        } else {
+          paint_plain_back(ctx, face, view);
+          if (view === "end" && ground_bottom(inlet) === near_bottom) {
+            const plate = { x: face.x + face.width / 2 - 7, y: face.y + 4, width: 14, height: 10 };
+            fill_rounded_rect(ctx, plate.x, plate.y, plate.width, plate.height, 1.2, css(LEAF));
+            paint_pictogram(
+              ctx,
+              "tray-return",
+              plate.x + plate.width / 2,
+              plate.y + plate.height / 2,
+              8,
+            );
+            const plate_edge = edge_style(frame, LEAF);
+            stroke_rounded_rect(
+              ctx,
+              plate.x,
+              plate.y,
+              plate.width,
+              plate.height,
+              1.2,
+              plate_edge.style,
+              plate_edge.width,
+            );
+          }
+        }
+      },
+    });
+  }
+  paint_parts(parts);
+  paint_header_board(
+    ctx,
+    run,
+    run.reach - 2.6,
+    CONVEYOR_TUNNEL + 1,
+    CONVEYOR_HEADER,
+    LEAF,
+    "Return trays",
+    ["tray-return"],
+    frame,
+  );
+  paint_service_sliver(ctx, run, CONVEYOR_INLET, LEAF);
+}
+
+/**
+ * Paints a green chevron on the conveyor belt pointing along it towards the wash tunnel at its
+ * middle, so the belt reads as carrying the returns away from both ends.
+ *
+ * @param ctx - The paint context.
+ * @param run - The conveyor run.
+ * @param along - Where the chevron sits along the run, 0 to 1.
+ * @param frame - The paint frame.
+ */
+function paint_belt_chevron(ctx: PaintContext, run: Run, along: number, frame: PaintFrame): void {
+  if (frame.isLowDetail) return;
+  const centre = lifted(run.at(along, run.reach / 2), CONVEYOR_BELT);
+  const ahead = lifted(
+    run.at(along < 0.5 ? along + 0.01 : along - 0.01, run.reach / 2),
+    CONVEYOR_BELT,
+  );
+  const length = Math.hypot(ahead.x - centre.x, ahead.y - centre.y) || 1;
+  const dx = (ahead.x - centre.x) / length;
+  const dy = (ahead.y - centre.y) / length;
+  const half = Math.min(3.5, run.reach / 2 - 3);
+  ctx.beginPath();
+  ctx.moveTo(centre.x - dx * 1.5 - dy * half, centre.y - dy * 1.5 + dx * half);
+  ctx.lineTo(centre.x + dx * 1.5, centre.y + dy * 1.5);
+  ctx.lineTo(centre.x - dx * 1.5 + dy * half, centre.y - dy * 1.5 - dx * half);
+  ctx.strokeStyle = css(tint(LEAF, 0.35));
+  ctx.lineWidth = 1.3;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.stroke();
 }

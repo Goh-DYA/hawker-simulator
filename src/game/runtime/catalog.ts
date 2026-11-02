@@ -22,7 +22,7 @@ import {
   type PlaceableDefinition as CorePlaceableDefinition,
   type SimulationCatalog,
 } from "@/src/game/core";
-import { utilityEffectsForPlaceable } from "./contentUtility";
+import { count_station_crew, utilityEffectsForPlaceable } from "./contentUtility";
 import { coreNutritionProfile } from "./nutrition";
 import { REPUTATION_SCALE } from "./rules";
 
@@ -158,6 +158,8 @@ export function buildCatalog(): {
         : item.unlockRequirement.level,
       seatPoints: item.seatPoints.map((point) => ({ x: point.x, y: point.y })),
       trayReturnPoint: returnPoint ? { x: returnPoint.x, y: returnPoint.y } : undefined,
+      // A single-opening return keeps core's default crew of one.
+      cleaningCrew: count_station_crew(item) > 1 ? count_station_crew(item) : undefined,
       utility: utilityEffectsForPlaceable(item),
     };
     visuals[item.id] = {

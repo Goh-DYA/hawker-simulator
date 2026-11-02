@@ -1,6 +1,9 @@
 /**
  * Decor painters: fabric ceiling bunting, the tabletop flower vase, the feature centre clock,
- * the geometric tile mural and the community noticeboard, in the 3/4 oblique view.
+ * the geometric tile mural, the community noticeboard, the heritage photo wall, the paper
+ * umbrella canopy and the courtyard water feature, in the 3/4 oblique view. The photo wall hangs
+ * like the other panels, the umbrellas hang on their own cords, and the water feature is the one
+ * decor piece that stands on the floor and blocks movement, a tiled basin with its spill bowl.
  *
  * Guests walk across every decor tile, so the world view draws all but the vase above people,
  * and those pieces hang from the ceiling. The bunting swags along its footprint in two strings
@@ -18,9 +21,10 @@
  */
 import type { Rotation } from "@/src/game/core";
 
-import { resolve_placeable_style } from "../../render/art";
+import { resolve_placeable_style, type DecorStyle } from "../../render/art";
 import type { PlaceableVisualRecipe } from "../../visuals/placeable";
 import {
+  contact_shadow,
   css,
   fill_circle,
   fill_ellipse,
@@ -29,18 +33,21 @@ import {
   label,
   line,
   linear_gradient,
+  mix,
   outline,
   radial_gradient,
+  rounded_rect_path,
   seeded,
   SHADOW_INK,
   shade,
   speckle,
   stroke_ellipse,
+  stroke_rounded_rect,
   TAU,
   tint,
   type PaintContext,
 } from "../canvas";
-import type { PaintFrame } from "../specs";
+import { OVERHANG, type PaintFrame } from "../specs";
 import { type Box, TIMBER } from "./shared";
 import {
   CREAM,
@@ -56,6 +63,8 @@ import {
   PLASTER,
   type Rect,
   TEAL_STEEL,
+  TERRAZZO,
+  TERRAZZO_CHIPS,
   VERMILION,
 } from "./uprights";
 
@@ -103,13 +112,66 @@ const CLOCK_RADIUS = 9;
 const VASE_STAND_HEIGHT = 7;
 /** Radius of the vase stand's round top. */
 const VASE_STAND_RADIUS = 6.5;
+/** Dark stained timber of the photo wall's rail. */
+const PHOTO_RAIL = 0x5a3b26;
+/** Black lacquer of the photographs' frames. */
+const PHOTO_FRAME = 0x2b2622;
+/** The pale paper and sky of an old black-and-white photograph. */
+const PHOTO_LIGHT = 0xeeeae1;
+/** The mid grey of a photograph's street. */
+const PHOTO_MID = 0x77736b;
+/** The near-black of a photograph's figures and shadows. */
+const PHOTO_INK = 0x24211e;
+/** The photo wall's frame sizes in turn: width, how much shorter than the panel, and top gap. */
+const PHOTO_SIZES = [
+  { width: 20, inset: 9, top: 2.5 },
+  { width: 13, inset: 5, top: 1.5 },
+  { width: 16, inset: 11, top: 3.5 },
+] as const;
+/** How round a hung umbrella's canopy looks from the camera. */
+const UMBRELLA_SQUASH = 0.62;
+/** The bamboo of an umbrella's ribs and tip. */
+const UMBRELLA_RIB = 0x8a6a3a;
+/** The oil-paper colours of the umbrellas. */
+const UMBRELLA_COLOURS = [VERMILION, MUSTARD, 0x3d6fa8, BLOOM_PINK, 0x5e9c83, 0xe8742e] as const;
+/**
+ * Where each umbrella hangs over the floor (-1 to 1 across the footprint, in a loose staggered
+ * grid that covers all of it) and its radius on a 3-tile canopy.
+ */
+const UMBRELLA_LAYOUT = [
+  [-0.68, -0.72, 19],
+  [0.08, -0.82, 16],
+  [0.74, -0.58, 18],
+  [-0.3, -0.05, 21],
+  [0.48, 0.12, 17],
+  [-0.82, 0.62, 16],
+  [0.04, 0.78, 19],
+  [0.78, 0.82, 15],
+] as const;
+/**
+ * How high the umbrellas hang above the floor, in pixels: as high as the overhang lets the
+ * northern ones go, the same for all of them so their shadows show how high they are.
+ */
+const UMBRELLA_LIFT = 32;
+/** How far an umbrella's shadow falls from the floor point under it, south-east, in pixels. */
+const UMBRELLA_SHADOW_OFFSET = { x: 7, y: 4 } as const;
+/** Height of the water feature's basin wall. */
+const WATER_BASIN_WALL = 10;
+/** Width of the water feature's terrazzo coping round the water. */
+const WATER_COPING = 6;
+/** How far the water lies below the coping, showing the inside of the far wall. */
+const WATER_DROP = 4;
+/** Glazed cream tile of the water feature's basin. */
+const WATER_TILE = 0xf3ead6;
+/** Still green-blue water of the water feature. */
+const POND_WATER = 0x3f8f95;
 /** Height of the vase from the stand's surface to its mouth. */
 const VASE_HEIGHT = 6;
 /** How far the blooms rise above the stand's surface. */
 const VASE_BLOOM_RISE = 10;
 
 /** The decor pieces that hang from the ceiling as framed panels. */
-export type HungDecor = "mural" | "noticeboard" | "clock";
+export type HungDecor = "mural" | "noticeboard" | "clock" | "photos";
 
 /**
  * The front face of each hung panel: its top edge, its height (kept at every rotation) and its
@@ -121,6 +183,7 @@ const HUNG_DECOR_PANELS: Readonly<
   mural: { top: 9, height: MURAL_TILE * 2 + MURAL_FRAME * 2, maxWidth: 180 },
   noticeboard: { top: 8, height: 28, maxWidth: 80 },
   clock: { top: 8, height: 26, maxWidth: 66 },
+  photos: { top: 8, height: 28, maxWidth: 176 },
 };
 
 /** One string of pennants: its anchor points, sag, pennant count, scale and opacity. */
@@ -1018,9 +1081,585 @@ function paint_notice(
   ctx.restore();
 }
 
+/**
+ * Turns a point given in the authored frame (each axis from -1 to 1 across the footprint) by a
+ * placement rotation, clockwise, so a square piece lays its parts out the way it is turned.
+ *
+ * @param point - The authored point.
+ * @param rotation - The placement rotation.
+ * @returns The turned point, in the same -1 to 1 frame.
+ */
+function turn_point(
+  point: readonly [number, number],
+  rotation: Rotation,
+): readonly [number, number] {
+  const [u, v] = point;
+  if (rotation === 90) return [-v, u];
+  if (rotation === 180) return [-u, -v];
+  if (rotation === 270) return [v, -u];
+  return [u, v];
+}
+
+/**
+ * Paints one old black-and-white photograph in its frame: a pale sky over a dark street, a
+ * striped stall awning, a dark counter and two or three near-black figures, the scene picked by
+ * its index so the row reads as a set of different old pictures with strong contrast.
+ *
+ * @param ctx - The paint context.
+ * @param rect - The photograph inside its mount.
+ * @param index - Which photograph, for its scene.
+ * @param frame - The paint frame.
+ */
+function paint_photograph(ctx: PaintContext, rect: Rect, index: number, frame: PaintFrame): void {
+  const ground = rect.y + rect.height * 0.7;
+  fill_rounded_rect(
+    ctx,
+    rect.x,
+    rect.y,
+    rect.width,
+    rect.height,
+    0.4,
+    linear_gradient(ctx, 0, rect.y, 0, ground, [
+      [0, PHOTO_LIGHT],
+      [1, shade(PHOTO_LIGHT, 0.18)],
+    ]),
+  );
+  ctx.fillStyle = css(PHOTO_MID);
+  ctx.fillRect(rect.x, ground, rect.width, rect.y + rect.height - ground);
+  if (frame.isLowDetail) return;
+  const ink = css(PHOTO_INK);
+  const awning_x = rect.x + rect.width * (index % 2 === 0 ? 0.08 : 0.34);
+  const awning_width = rect.width * 0.58;
+  const awning_top = rect.y + rect.height * 0.26;
+  const awning_bottom = rect.y + rect.height * 0.44;
+  const stripes = 4;
+  for (let stripe = 0; stripe < stripes; stripe += 1) {
+    const x0 = awning_x + (awning_width * stripe) / stripes;
+    const x1 = awning_x + (awning_width * (stripe + 1)) / stripes;
+    fill_polygon(
+      ctx,
+      [
+        [x0, awning_top],
+        [x1, awning_top],
+        [x1 - (stripe === stripes - 1 ? 1 : 0), awning_bottom],
+        [x0 + (stripe === 0 ? 1 : 0), awning_bottom],
+      ],
+      css(stripe % 2 === 0 ? PHOTO_INK : PHOTO_LIGHT),
+    );
+  }
+  ctx.fillStyle = css(PHOTO_INK, 0.85);
+  ctx.fillRect(awning_x + 1, rect.y + rect.height * 0.56, awning_width - 2, rect.height * 0.14);
+  const figures = index % 3 === 0 ? 3 : 2;
+  for (let figure = 0; figure < figures; figure += 1) {
+    const fx = rect.x + rect.width * (0.2 + figure * 0.3 + (index % 2) * 0.1);
+    fill_circle(ctx, fx, ground - rect.height * 0.34, rect.height * 0.075, ink);
+    fill_rounded_rect(
+      ctx,
+      fx - rect.height * 0.075,
+      ground - rect.height * 0.28,
+      rect.height * 0.15,
+      rect.height * 0.36,
+      0.5,
+      ink,
+    );
+  }
+  // The faint sheen of the glass.
+  line(
+    ctx,
+    rect.x + 1,
+    rect.y + 1,
+    rect.x + rect.width * 0.4,
+    rect.y + 1,
+    css(0xffffff, 0.45),
+    0.6,
+    "butt",
+  );
+}
+
+/**
+ * Paints the heritage photo wall: a long dark timber rail hung from the ceiling carrying a row of
+ * framed black-and-white photographs of the neighbourhood's old street stalls, in cream mounts of three
+ * sizes, over a small brass caption plaque; north-south, the narrower panel holds one photograph.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param recipe - The recipe, whose accent picks out the caption plaque.
+ * @param frame - The paint frame.
+ */
+const paint_photo_wall: DecorPainter = (ctx, box, recipe, frame) => {
+  const panel = hung_decor_panel(box, "photos");
+  paint_hung_supports(ctx, box, panel, BOARD_EDGE, frame);
+  const face = paint_board(ctx, panel, PHOTO_RAIL, PLASTER, frame);
+  const count = Math.max(1, Math.floor((face.width - 4) / 24));
+  const cell = (face.width - 4) / count;
+  for (let index = 0; index < count; index += 1) {
+    // Three frame sizes in turn: a wide street scene, a tall portrait and a smaller square.
+    const size = PHOTO_SIZES[index % PHOTO_SIZES.length] ?? PHOTO_SIZES[0];
+    const width = Math.min(cell - 3, size.width);
+    const height = face.height - size.inset;
+    const x = face.x + 2 + cell * (index + 0.5) - width / 2;
+    const y = face.y + size.top;
+    fill_rounded_rect(ctx, x + 0.8, y + 1, width, height, 0.6, css(SHADOW_INK, 0.2));
+    fill_rounded_rect(ctx, x, y, width, height, 0.6, css(PHOTO_FRAME));
+    fill_rounded_rect(ctx, x + 1.2, y + 1.2, width - 2.4, height - 2.4, 0.4, css(CREAM));
+    paint_photograph(
+      ctx,
+      { x: x + 2.6, y: y + 2.6, width: width - 5.2, height: height - 5.2 },
+      index,
+      frame,
+    );
+  }
+  const plaque_width = Math.min(26, face.width - 8);
+  fill_rounded_rect(
+    ctx,
+    face.x + face.width / 2 - plaque_width / 2,
+    face.y + face.height - 4,
+    plaque_width,
+    3,
+    0.8,
+    css(mix(BRASS, recipe.accent, 0.2)),
+  );
+  if (frame.isHighContrast) {
+    outline(ctx, panel.x, panel.y, panel.width, panel.height, 1.2, PHOTO_RAIL, true);
+  }
+};
+
+/**
+ * Paints one open oil-paper umbrella hung from the ceiling, seen from above: a round canopy of
+ * coloured panels between bamboo ribs, its painted rim band and its tip, on a cord rising out of
+ * the texture's top edge.
+ *
+ * @param ctx - The paint context.
+ * @param cx - Canopy centre x.
+ * @param cy - Canopy centre y.
+ * @param radius - Canopy radius.
+ * @param colour - The paper colour.
+ * @param frame - The paint frame.
+ */
+function paint_umbrella(
+  ctx: PaintContext,
+  cx: number,
+  cy: number,
+  radius: number,
+  colour: number,
+  frame: PaintFrame,
+): void {
+  const ry = radius * UMBRELLA_SQUASH;
+  line(ctx, cx, 0, cx, cy - ry * 0.2, css(shade(CABLE, 0.1)), 0.8, "butt");
+  const ribs = 12;
+  for (let rib = 0; rib < ribs; rib += 1) {
+    const start = (rib / ribs) * TAU;
+    const end = ((rib + 1) / ribs) * TAU;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.ellipse(cx, cy, radius, ry, 0, start, end);
+    ctx.closePath();
+    ctx.fillStyle = css(rib % 2 === 0 ? colour : tint(colour, 0.18));
+    ctx.fill();
+  }
+  // The near half of the canopy falls away from the light.
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, radius, ry, 0, 0, Math.PI);
+  ctx.closePath();
+  ctx.fillStyle = css(SHADOW_INK, 0.12);
+  ctx.fill();
+  if (!frame.isLowDetail) {
+    for (let rib = 0; rib < ribs; rib += 1) {
+      const angle = (rib / ribs) * TAU;
+      line(
+        ctx,
+        cx,
+        cy,
+        cx + Math.cos(angle) * radius,
+        cy + Math.sin(angle) * ry,
+        css(UMBRELLA_RIB, 0.7),
+        0.5,
+      );
+    }
+    stroke_ellipse(ctx, cx, cy, radius * 0.72, ry * 0.72, css(tint(colour, 0.5), 0.8), 1.4);
+  }
+  stroke_ellipse(
+    ctx,
+    cx,
+    cy,
+    radius,
+    ry,
+    css(frame.isHighContrast ? INK : shade(colour, 0.35)),
+    frame.isHighContrast ? 1.6 : 0.9,
+  );
+  fill_circle(ctx, cx, cy, 1.6, css(UMBRELLA_RIB));
+}
+
+/**
+ * Paints the paper umbrella canopy: open oil-paper umbrellas of a few sizes in the centre's warm
+ * colours, spread over the whole court and all hung at the same height, each on its own cord,
+ * with a crisp shadow tinted by its paper on the floor just south-east of the point under it, so
+ * the gap between umbrella and shadow shows how high they hang. The layout turns with the
+ * placement rotation.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param recipe - The recipe, whose accent colours one umbrella.
+ * @param frame - The paint frame.
+ * @param rotation - The placement rotation.
+ */
+const paint_umbrella_canopy: DecorPainter = (ctx, box, recipe, frame, rotation) => {
+  const unit = Math.min(box.width, box.height) / 144;
+  const largest = Math.max(...UMBRELLA_LAYOUT.map(([, , size]) => size)) * unit;
+  // The floor band the umbrellas hang over: the northern ones as far north as the overhang
+  // leaves room for at the shared height.
+  const north = box.y - OVERHANG + UMBRELLA_LIFT + largest * UMBRELLA_SQUASH + 2;
+  const south = box.bottom - 14 * unit;
+  const placed = UMBRELLA_LAYOUT.map(([u, v, size], index) => {
+    const [x, y] = turn_point([u, v], rotation);
+    return {
+      cx: box.centreX + x * (box.width / 2 - 22 * unit),
+      floor_y: (north + south) / 2 + y * ((south - north) / 2),
+      radius: size * unit,
+      colour:
+        index === 3 ? recipe.accent : (UMBRELLA_COLOURS[index % UMBRELLA_COLOURS.length] as number),
+    };
+  });
+  for (const umbrella of placed) {
+    const x = umbrella.cx + UMBRELLA_SHADOW_OFFSET.x;
+    const y = umbrella.floor_y + UMBRELLA_SHADOW_OFFSET.y;
+    const ry = umbrella.radius * UMBRELLA_SQUASH;
+    const ink = mix(SHADOW_INK, umbrella.colour, 0.3);
+    // A soft penumbra round a crisper core.
+    fill_ellipse(ctx, x, y, umbrella.radius + 1.5, ry + 1, css(ink, 0.1));
+    fill_ellipse(ctx, x, y, umbrella.radius * 0.9, ry * 0.9, css(ink, 0.16));
+    if (!frame.isLowDetail) {
+      // Light through the paper panels dapples the shadow.
+      fill_ellipse(ctx, x, y, umbrella.radius * 0.5, ry * 0.5, css(umbrella.colour, 0.12));
+    }
+  }
+  // Back to front, so nearer umbrellas overlap the ones behind.
+  for (const umbrella of [...placed].sort((a, b) => a.floor_y - b.floor_y)) {
+    paint_umbrella(
+      ctx,
+      umbrella.cx,
+      umbrella.floor_y - UMBRELLA_LIFT,
+      umbrella.radius,
+      umbrella.colour,
+      frame,
+    );
+  }
+};
+
+/**
+ * Adds a rectangle to the current path anticlockwise, so that inside a clockwise outline it cuts
+ * a hole under the non-zero fill rule (the paint context has no even-odd rule).
+ *
+ * @param ctx - The paint context.
+ * @param rect - The hole.
+ */
+function trace_hole(ctx: PaintContext, rect: Rect): void {
+  ctx.moveTo(rect.x, rect.y);
+  ctx.lineTo(rect.x, rect.y + rect.height);
+  ctx.lineTo(rect.x + rect.width, rect.y + rect.height);
+  ctx.lineTo(rect.x + rect.width, rect.y);
+  ctx.closePath();
+}
+
+/**
+ * Paints the courtyard water feature: a raised basin whose front face is glazed cream tile set
+ * with a row of teal diamonds, under a lit terrazzo coping. The water sits a little below the
+ * coping, so the inside of the far wall shows and the north and west copings cast a shade on it;
+ * it holds lily pads, a clump of reeds and two fish, catches the light in short glints, and a
+ * glazed spill bowl on a pedestal pours a thin stream into a ring of splash and ripples. The
+ * pads, reeds and bowl turn with the placement rotation.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param recipe - The recipe, whose accent glazes the spill bowl.
+ * @param frame - The paint frame.
+ * @param rotation - The placement rotation.
+ */
+const paint_water_feature: DecorPainter = (ctx, box, recipe, frame, rotation) => {
+  const inset = 7;
+  const wall = WATER_BASIN_WALL;
+  const coping = WATER_COPING;
+  const top: Rect = {
+    x: box.x + inset,
+    y: box.y + inset + 4 - wall,
+    width: box.width - inset * 2,
+    height: box.height - inset * 2 - 8,
+  };
+  const inner: Rect = {
+    x: top.x + coping,
+    y: top.y + coping,
+    width: top.width - coping * 2,
+    height: top.height - coping * 2,
+  };
+  const water: Rect = {
+    x: inner.x,
+    y: inner.y + WATER_DROP,
+    width: inner.width,
+    height: inner.height - WATER_DROP,
+  };
+  const at = (point: readonly [number, number]): { x: number; y: number } => {
+    const [u, v] = turn_point(point, rotation);
+    return {
+      x: water.x + water.width * (0.5 + u * 0.38),
+      y: water.y + water.height * (0.5 + v * 0.36),
+    };
+  };
+  contact_shadow(ctx, top.x, top.y + wall, top.width, top.height, { alpha: 0.28 });
+  // The front face of the basin: glazed tile, lit at the top under the coping's lip.
+  const face: Rect = { x: top.x, y: top.y + top.height - 3, width: top.width, height: wall + 3 };
+  fill_rounded_rect(
+    ctx,
+    face.x,
+    face.y,
+    face.width,
+    face.height,
+    3,
+    linear_gradient(ctx, 0, face.y, 0, face.y + face.height, [
+      [0, shade(WATER_TILE, 0.04)],
+      [1, shade(WATER_TILE, 0.2)],
+    ]),
+  );
+  const tile_y = face.y + 3 + (face.height - 3) / 2;
+  if (!frame.isLowDetail) {
+    for (let x = face.x + 5; x < face.x + face.width - 3; x += 8) {
+      line(
+        ctx,
+        x + 4,
+        face.y + 3.5,
+        x + 4,
+        face.y + face.height - 1,
+        css(shade(WATER_TILE, 0.3), 0.5),
+        0.5,
+        "butt",
+      );
+    }
+  }
+  for (let x = face.x + 5; x < face.x + face.width - 3; x += 8) {
+    fill_polygon(
+      ctx,
+      [
+        [x, tile_y - 2.8],
+        [x + 2.8, tile_y],
+        [x, tile_y + 2.8],
+        [x - 2.8, tile_y],
+      ],
+      css(TEAL_STEEL),
+    );
+  }
+  // The inside of the basin: the far wall's tiled face, then the water a little lower.
+  fill_rounded_rect(
+    ctx,
+    inner.x,
+    inner.y,
+    inner.width,
+    inner.height,
+    0,
+    css(shade(WATER_TILE, 0.32)),
+  );
+  fill_rounded_rect(
+    ctx,
+    water.x,
+    water.y,
+    water.width,
+    water.height,
+    2,
+    linear_gradient(ctx, 0, water.y, 0, water.y + water.height, [
+      [0, shade(POND_WATER, 0.28)],
+      [1, tint(POND_WATER, 0.18)],
+    ]),
+  );
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(water.x, water.y, water.width, water.height);
+  ctx.clip();
+  // The shade the north and west copings cast on the water.
+  ctx.fillStyle = linear_gradient(ctx, 0, water.y, 0, water.y + 7, [
+    [0, SHADOW_INK, 0.32],
+    [1, SHADOW_INK, 0],
+  ]);
+  ctx.fillRect(water.x, water.y, water.width, 7);
+  ctx.fillStyle = linear_gradient(ctx, water.x, 0, water.x + 5, 0, [
+    [0, SHADOW_INK, 0.22],
+    [1, SHADOW_INK, 0],
+  ]);
+  ctx.fillRect(water.x, water.y, 5, water.height);
+  // The sky's sheen across the water.
+  fill_ellipse(
+    ctx,
+    water.x + water.width * 0.32,
+    water.y + water.height * 0.55,
+    water.width * 0.32,
+    water.height * 0.22,
+    radial_gradient(
+      ctx,
+      water.x + water.width * 0.32,
+      water.y + water.height * 0.55,
+      0,
+      water.width * 0.32,
+      [
+        [0, 0xffffff, 0.16],
+        [1, 0xffffff, 0],
+      ],
+    ),
+  );
+  const spout = at([0.45, -0.3]);
+  const splash = { x: spout.x + 10, y: spout.y + 9 };
+  if (!frame.isLowDetail) {
+    for (const ring of [5, 9, 13]) {
+      stroke_ellipse(
+        ctx,
+        splash.x,
+        splash.y,
+        ring,
+        ring * 0.45,
+        css(0xffffff, 0.42 - ring * 0.02),
+        0.8,
+      );
+    }
+    // Short glints on the surface.
+    for (const glint of [
+      [-0.5, -0.05],
+      [0.05, 0.55],
+      [-0.15, 0.25],
+      [0.6, 0.6],
+    ] as const) {
+      const point = at(glint);
+      line(ctx, point.x - 2.5, point.y, point.x + 2.5, point.y, css(0xffffff, 0.45), 0.8);
+    }
+  }
+  for (const [index, pad] of (
+    [
+      [-0.55, 0.35],
+      [-0.2, 0.55],
+      [0.1, 0.2],
+    ] as const
+  ).entries()) {
+    const point = at(pad);
+    fill_ellipse(
+      ctx,
+      point.x + 0.6,
+      point.y + 0.8,
+      6 - index,
+      3.6 - index * 0.5,
+      css(SHADOW_INK, 0.2),
+    );
+    fill_ellipse(ctx, point.x, point.y, 6 - index, 3.6 - index * 0.5, css(LEAF));
+    fill_ellipse(ctx, point.x - 1.5, point.y - 1, 2.6 - index * 0.4, 1.2, css(tint(LEAF, 0.3)));
+    line(ctx, point.x, point.y, point.x + 4, point.y - 1, css(shade(LEAF, 0.3)), 0.7);
+    if (index === 0) fill_circle(ctx, point.x - 1.5, point.y - 1, 1.6, css(0xf2a0b6));
+  }
+  for (const [index, fish] of (
+    [
+      [-0.1, -0.15],
+      [0.3, 0.45],
+    ] as const
+  ).entries()) {
+    const point = at(fish);
+    const body = index === 0 ? 0xe8742e : 0xf4efe6;
+    fill_ellipse(ctx, point.x, point.y, 3, 1.2, css(body));
+    fill_polygon(
+      ctx,
+      [
+        [point.x + 2.6, point.y],
+        [point.x + 4.6, point.y - 1.3],
+        [point.x + 4.6, point.y + 1.3],
+      ],
+      css(body),
+    );
+  }
+  // The foam where the stream lands.
+  fill_ellipse(ctx, splash.x, splash.y, 3.6, 1.5, css(0xffffff, 0.75));
+  if (!frame.isLowDetail) {
+    for (const [dx, dy] of [
+      [-3, -2],
+      [3.2, -1.6],
+      [0.4, -3],
+    ] as const) {
+      fill_circle(ctx, splash.x + dx, splash.y + dy, 0.7, css(0xffffff, 0.8));
+    }
+  }
+  ctx.restore();
+  // The coping: a lit terrazzo frame round the water, with a dark arris on its inner edge.
+  ctx.beginPath();
+  rounded_rect_path(ctx, top.x, top.y, top.width, top.height, 5);
+  trace_hole(ctx, inner);
+  ctx.fillStyle = linear_gradient(ctx, top.x, top.y, top.x + top.width * 0.4, top.y + top.height, [
+    [0, tint(TERRAZZO, 0.3)],
+    [1, shade(TERRAZZO, 0.06)],
+  ]);
+  ctx.fill();
+  if (!frame.isLowDetail) {
+    ctx.save();
+    ctx.beginPath();
+    rounded_rect_path(ctx, top.x, top.y, top.width, top.height, 5);
+    trace_hole(ctx, inner);
+    ctx.clip();
+    speckle(
+      ctx,
+      top.x,
+      top.y,
+      top.width,
+      top.height,
+      Math.round((top.width + top.height) * 1.2),
+      TERRAZZO_CHIPS,
+      recipe.seed,
+      0.8,
+    );
+    ctx.restore();
+  }
+  stroke_rounded_rect(
+    ctx,
+    inner.x,
+    inner.y,
+    inner.width,
+    inner.height,
+    0,
+    css(shade(TERRAZZO, 0.4), 0.7),
+    0.8,
+  );
+  line(
+    ctx,
+    top.x + 5,
+    top.y + top.height - 0.6,
+    top.x + top.width - 5,
+    top.y + top.height - 0.6,
+    css(0xffffff, 0.6),
+    0.9,
+    "butt",
+  );
+  // The reeds rising from a corner.
+  const reeds = at([-0.6, -0.5]);
+  for (let reed = 0; reed < 5; reed += 1) {
+    const lean = (reed - 2) * 2.2;
+    line(
+      ctx,
+      reeds.x + reed - 2,
+      reeds.y + 2,
+      reeds.x + lean,
+      reeds.y - 14 + Math.abs(reed - 2) * 2,
+      css(reed % 2 ? LEAF : tint(LEAF, 0.25)),
+      1.1,
+    );
+  }
+  // The spill bowl on its pedestal, pouring a thin stream.
+  const pedestal_top = spout.y - 10;
+  fill_rounded_rect(ctx, spout.x - 2.5, pedestal_top, 5, 12, 1.2, css(shade(TERRAZZO, 0.12)));
+  fill_ellipse(ctx, spout.x, pedestal_top, 9, 3.6, css(shade(recipe.accent, 0.25)));
+  fill_ellipse(ctx, spout.x, pedestal_top - 1.2, 9, 3.4, css(recipe.accent));
+  fill_ellipse(ctx, spout.x, pedestal_top - 1.2, 7, 2.4, css(tint(POND_WATER, 0.25)));
+  line(ctx, spout.x + 8.5, pedestal_top - 0.5, splash.x, splash.y - 1, css(0xe6f6fa, 0.9), 1.4);
+  const edge = frame.isHighContrast
+    ? { style: css(INK), width: 1.6 }
+    : { style: css(shade(TERRAZZO, 0.5), 0.7), width: 0.9 };
+  stroke_rounded_rect(ctx, top.x, top.y, top.width, top.height + wall, 5, edge.style, edge.width);
+};
+
 /** The painter of each non-board decor style. */
-const DECOR_PAINTERS: Readonly<Record<"bunting" | "flower-vase" | "clock", DecorPainter>> = {
+const DECOR_PAINTERS: Readonly<Record<Exclude<DecorStyle, "board">, DecorPainter>> = {
   bunting: paint_bunting,
   "flower-vase": paint_flower_vase,
   clock: paint_feature_clock,
+  "photo-wall": paint_photo_wall,
+  "umbrella-canopy": paint_umbrella_canopy,
+  "water-feature": paint_water_feature,
 };

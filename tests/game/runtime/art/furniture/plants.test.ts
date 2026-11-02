@@ -91,8 +91,8 @@ function plant(id: string): (typeof PLANTS)[number] {
 }
 
 describe("plant painters", () => {
-  it("covers the eight launch plants", () => {
-    expect(PLANTS).toHaveLength(8);
+  it("covers the ten launch plants", () => {
+    expect(PLANTS).toHaveLength(10);
   });
 
   it("paints every plant at every rotation and frame, clipped to its texture", () => {

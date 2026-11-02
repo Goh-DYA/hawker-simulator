@@ -1400,6 +1400,106 @@
         "open": true
       },
       {
+        "id": "placed-100",
+        "definitionId": "item.banquet-turntable-table",
+        "origin": {
+          "x": 40,
+          "y": 17
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-101",
+        "definitionId": "item.companion-transfer-bench",
+        "origin": {
+          "x": 44,
+          "y": 6
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-102",
+        "definitionId": "item.four-person-teak-bench",
+        "origin": {
+          "x": 39,
+          "y": 21
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-103",
+        "definitionId": "item.rattan-lounge-chair",
+        "origin": {
+          "x": 45,
+          "y": 4
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-104",
+        "definitionId": "item.self-order-kiosk",
+        "origin": {
+          "x": 45,
+          "y": 8
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-105",
+        "definitionId": "item.tray-return-conveyor",
+        "origin": {
+          "x": 15,
+          "y": 22
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-106",
+        "definitionId": "item.heritage-lamp-post",
+        "origin": {
+          "x": 45,
+          "y": 10
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-107",
+        "definitionId": "item.misting-fan",
+        "origin": {
+          "x": 44,
+          "y": 17
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-108",
+        "definitionId": "item.giant-ceiling-fan",
+        "origin": {
+          "x": 20,
+          "y": 22
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-109",
+        "definitionId": "item.frangipani-tree-planter",
+        "origin": {
+          "x": 44,
+          "y": 19
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
         "id": "placed-11",
         "definitionId": "stall.bamboo-basket",
         "origin": {
@@ -1408,6 +1508,76 @@
         },
         "rotation": 0,
         "open": true
+      },
+      {
+        "id": "placed-110",
+        "definitionId": "item.bougainvillea-arch",
+        "origin": {
+          "x": 30,
+          "y": 22
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-111",
+        "definitionId": "item.order-ready-board",
+        "origin": {
+          "x": 9,
+          "y": 22
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-112",
+        "definitionId": "item.breeze-block-screen",
+        "origin": {
+          "x": 25,
+          "y": 23
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-113",
+        "definitionId": "item.family-care-room",
+        "origin": {
+          "x": 44,
+          "y": 22
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-114",
+        "definitionId": "item.heritage-photo-wall",
+        "origin": {
+          "x": 34,
+          "y": 23
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-115",
+        "definitionId": "item.paper-umbrella-canopy",
+        "origin": {
+          "x": 39,
+          "y": 23
+        },
+        "rotation": 0,
+        "open": false
+      },
+      {
+        "id": "placed-116",
+        "definitionId": "item.courtyard-water-feature",
+        "origin": {
+          "x": 12,
+          "y": 23
+        },
+        "rotation": 0,
+        "open": false
       },
       {
         "id": "placed-12",
@@ -2358,12 +2528,22 @@
         },
         "rotation": 0,
         "open": true
+      },
+      {
+        "id": "placed-99",
+        "definitionId": "item.granite-chess-table",
+        "origin": {
+          "x": 45,
+          "y": 2
+        },
+        "rotation": 0,
+        "open": false
       }
     ],
     "economy": {
-      "currency": 99908647,
+      "currency": 99893557,
       "lifetimeRevenue": 0,
-      "lifetimeSpend": 91353,
+      "lifetimeSpend": 106443,
       "completedVisits": 0,
       "abandonedVisits": 0
     },
@@ -2377,7 +2557,10 @@
         "item.accessible-wayfinding-sign",
         "item.acoustic-booth-seat",
         "item.acoustic-screen",
+        "item.banquet-turntable-table",
         "item.booster-family-chair",
+        "item.bougainvillea-arch",
+        "item.breeze-block-screen",
         "item.ceiling-fan",
         "item.ceiling-tube-light",
         "item.centre-identity-sign",
@@ -2388,8 +2571,10 @@
         "item.column-fan",
         "item.community-noticeboard",
         "item.compact-square-table",
+        "item.companion-transfer-bench",
         "item.condiment-counter",
         "item.counter-task-light",
+        "item.courtyard-water-feature",
         "item.covered-food-waste-bin",
         "item.cushioned-dining-chair",
         "item.cutlery-napkin-station",
@@ -2400,16 +2585,23 @@
         "item.easy-rise-arm-chair",
         "item.entrance-directory",
         "item.fabric-ceiling-bunting",
+        "item.family-care-room",
         "item.family-trestle-table",
         "item.feature-centre-clock",
         "item.fern-trough",
         "item.festive-string-lights",
         "item.first-aid-cabinet",
         "item.folding-overflow-table",
+        "item.four-person-teak-bench",
+        "item.frangipani-tree-planter",
         "item.general-waste-bin",
         "item.geometric-tile-mural",
+        "item.giant-ceiling-fan",
+        "item.granite-chess-table",
         "item.hanging-pothos",
         "item.heated-display-case",
+        "item.heritage-lamp-post",
+        "item.heritage-photo-wall",
         "item.high-counter-stool",
         "item.high-volume-air-fan",
         "item.integrated-planter-divider",
@@ -2418,10 +2610,13 @@
         "item.low-path-light",
         "item.low-timber-screen",
         "item.menu-preview-board",
+        "item.misting-fan",
         "item.mobile-prep-cart",
         "item.moulded-back-chair",
         "item.order-pickup-shelf",
+        "item.order-ready-board",
         "item.pandan-border-bed",
+        "item.paper-umbrella-canopy",
         "item.pendant-dining-light",
         "item.protected-utility-point",
         "item.public-handwash-sink",
@@ -2429,9 +2624,11 @@
         "item.queue-ticket-dispenser",
         "item.quiet-corner-fan",
         "item.rain-garden-pot",
+        "item.rattan-lounge-chair",
         "item.recycling-sorter",
         "item.retractable-queue-rail",
         "item.round-cafe-table",
+        "item.self-order-kiosk",
         "item.single-bay-tray-return",
         "item.skylight-diffuser",
         "item.stacking-stool",
@@ -2447,6 +2644,7 @@
         "item.three-person-communal-bench",
         "item.tiled-half-wall",
         "item.tray-return-arrow-sign",
+        "item.tray-return-conveyor",
         "item.two-person-bench",
         "item.vine-trellis",
         "item.wall-circulation-fan",

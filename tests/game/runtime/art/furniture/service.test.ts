@@ -59,9 +59,9 @@ type ServicePainter = (
 
 /** The three categories this suite covers, with their painters and launch counts. */
 const CATEGORIES = [
-  { category: "stall-fixture", painter: paint_fixture, count: 8 },
-  { category: "tray-waste", painter: paint_tray_waste, count: 8 },
-  { category: "facility", painter: paint_facility, count: 7 },
+  { category: "stall-fixture", painter: paint_fixture, count: 9 },
+  { category: "tray-waste", painter: paint_tray_waste, count: 9 },
+  { category: "facility", painter: paint_facility, count: 8 },
 ] as const satisfies readonly {
   category: PlaceablePaintSpec["category"];
   painter: ServicePainter;

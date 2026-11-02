@@ -1,7 +1,7 @@
 /**
  * Fan painters: the caged wall fan on its bracket, the broad three-bladed ceiling fan, the slim
- * tower fan, the big drum fan on its wheeled yoke, the bladeless quiet fan and the duct-hung
- * stall exhaust booster.
+ * tower fan, the big drum fan on its wheeled yoke, the bladeless quiet fan, the duct-hung stall
+ * exhaust booster, the pedestal misting fan and the six-bladed giant ceiling fan.
  *
  * Everything is drawn in the 3/4 oblique view from the south, lit from the north-west. Floor
  * fans stand on bases with a contact shadow and turn their caged face to the camera; the
@@ -73,6 +73,22 @@ const DRUM_LIFT = 5;
 const LOOP_RX = 8;
 /** Vertical radius of the quiet fan's air loop. */
 const LOOP_RY = 9.5;
+/** Height of the misting fan's rotor centre above the floor (a 1.3 m pedestal fan). */
+const MIST_FAN_METRES = 1.3;
+/** Radius of the misting fan's cage. */
+const MIST_FAN_RADIUS = 11;
+/** Translucent blue of the misting fan's water tank and nozzles. */
+const MIST_TANK = 0x6fb7d6;
+/** Pale grey-blue of the misting fan's blades. */
+const MIST_BLADE = 0xc5d6dc;
+/** Pale blue-white of the misting fan's plume. */
+const MIST_PLUME = 0xb9dcea;
+/** Puffs in the misting fan's plume at once. */
+const MIST_PUFFS = 4;
+/** Motion frames in one fan cycle, as `FAN_MOTION_FRAMES` in `furniture.ts` (the mist plume wraps with it). */
+const FAN_MOTION_STEPS = 6;
+/** Satin aluminium of the giant ceiling fan's aerofoil blades. */
+const GIANT_BLADE = 0xc4cccb;
 
 type FanPainter = (
   ctx: PaintContext,
@@ -1122,6 +1138,8 @@ function paint_exhaust(
 
 /** The painter for each fan style. */
 const FAN_PAINTERS: Readonly<Record<FanStyle, FanPainter>> = {
+  misting: paint_misting_fan,
+  "giant-rotor": paint_giant_ceiling_fan,
   column: paint_column_fan,
   exhaust: paint_exhaust,
   "wall-rotor": paint_wall_fan,
@@ -1153,4 +1171,193 @@ export function paint_fan(
   clip_texture(ctx, box);
   FAN_PAINTERS[style](ctx, box, frame, recipe, motion, rotation);
   ctx.restore();
+}
+
+/**
+ * Paints the misting fan: a caged pedestal fan on a weighted round base with a translucent blue
+ * water tank, a ring of mist nozzles round its cage and a soft plume of fine mist drifting out
+ * in front of the turning blades.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param frame - The paint frame.
+ * @param recipe - The recipe, whose accent is the hub badge.
+ * @param motion - The motion frame.
+ */
+function paint_misting_fan(
+  ctx: PaintContext,
+  box: Box,
+  frame: PaintFrame,
+  recipe: PlaceableVisualRecipe,
+  motion: number,
+): void {
+  const cx = box.centreX;
+  const foot_y = box.y + box.height * 0.78;
+  const face_y = foot_y - standing_height(MIST_FAN_METRES);
+  const radius = MIST_FAN_RADIUS;
+  floor_shadow(ctx, cx + 3, foot_y + 1.5, 13, 4, 0.24);
+  // The base and its water tank.
+  fill_ellipse(ctx, cx, foot_y + 1, 12, 4.4, css(shade(DARK_STEEL, 0.3)));
+  fill_ellipse(ctx, cx, foot_y, 12, 4.2, css(DARK_STEEL));
+  fill_rounded_rect(ctx, cx - 9, foot_y - 7, 8, 7, 2, css(MIST_TANK, 0.75));
+  fill_rounded_rect(ctx, cx - 8.4, foot_y - 3.6, 6.8, 3, 1, css(tint(MIST_TANK, 0.3), 0.85));
+  line(ctx, cx - 5, foot_y - 7, cx - 1.5, face_y + radius, css(MIST_TANK, 0.7), 0.8);
+  // The pole.
+  fill_rounded_rect(
+    ctx,
+    cx - 1.6,
+    face_y,
+    3.2,
+    foot_y - face_y - 1,
+    1,
+    linear_gradient(ctx, cx - 1.6, 0, cx + 1.6, 0, [
+      [0, tint(STEEL, 0.3)],
+      [1, shade(STEEL, 0.4)],
+    ]),
+  );
+  // The caged rotor.
+  const cage: CageOptions = { squash_x: 1, squash_y: 0.94, rings: 2, spokes: 12, steel: STEEL };
+  paint_cage_back(ctx, cx, face_y, radius, cage);
+  paint_blades(ctx, cx, face_y, radius - 1.5, {
+    count: 5,
+    colour: MIST_BLADE,
+    motion,
+    frame,
+    root: 2.5,
+    width: 6,
+    squash_x: 1,
+    squash_y: 0.94,
+  });
+  paint_hub(ctx, cx, face_y, 2.6, recipe.accent);
+  paint_cage(ctx, cx, face_y, radius, frame, cage);
+  // The nozzle ring round the rim.
+  for (let nozzle = 0; nozzle < 8; nozzle += 1) {
+    const angle = (nozzle / 8) * TAU;
+    fill_circle(
+      ctx,
+      cx + Math.cos(angle) * (radius + 1),
+      face_y + Math.sin(angle) * (radius + 1) * 0.94,
+      0.9,
+      css(MIST_TANK),
+    );
+  }
+  paint_mist_plume(ctx, cx, face_y, motion, frame);
+}
+
+/**
+ * Paints the misting fan's plume: puffs of fine, faintly blue mist blown out of the cage towards
+ * the viewer, each growing and fading as it drifts, with a few droplets. The puffs advance one
+ * step per motion frame and the cycle wraps, so the plume flows as the rotor turns.
+ *
+ * @param ctx - The paint context.
+ * @param cx - Centre x of the cage.
+ * @param face_y - Centre y of the cage.
+ * @param motion - The motion frame.
+ * @param frame - The paint frame.
+ */
+function paint_mist_plume(
+  ctx: PaintContext,
+  cx: number,
+  face_y: number,
+  motion: number,
+  frame: PaintFrame,
+): void {
+  if (frame.isLowDetail) {
+    fill_ellipse(ctx, cx, face_y + 14, 10, 6, css(MIST_PLUME, 0.55));
+    return;
+  }
+  const phase = motion / FAN_MOTION_STEPS;
+  for (let puff = 0; puff < MIST_PUFFS; puff += 1) {
+    const age = (puff + phase) / MIST_PUFFS;
+    const fade = Math.min(1, age * 4) * (1 - age) ** 0.7;
+    const size = 4 + age * 8;
+    const y = face_y + 5 + age * 22;
+    // Two puffs per step, spreading into a cone as they drift.
+    for (const direction of [-1, 1]) {
+      const x = cx + direction * (2 + age * 8) + (puff % 2 === 0 ? 1 : -1);
+      fill_ellipse(
+        ctx,
+        x,
+        y,
+        size,
+        size * 0.72,
+        radial_gradient(ctx, x - size * 0.2, y - size * 0.2, 0, size, [
+          [0, 0xffffff, 0.85 * fade],
+          [0.6, MIST_PLUME, 0.6 * fade],
+          [1, MIST_PLUME, 0],
+        ]),
+      );
+    }
+    // A few droplets catch the light at the plume's edge.
+    fill_circle(
+      ctx,
+      cx + (puff % 2 === 0 ? -1 : 1) * (4 + age * 13),
+      y - 2,
+      0.8,
+      css(MIST_TANK, 0.8 * fade),
+    );
+  }
+}
+
+/**
+ * Paints the giant ceiling fan: six long, wide satin-aluminium aerofoil blades tapering to their
+ * tips on a large horizontal rotor foreshortened by the camera, a broad motor drum on a downrod
+ * from the ceiling, and one wide shadow on the floor far below that marks how high it hangs.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param frame - The paint frame.
+ * @param _recipe - Unused; the giant fan keeps to its aluminium and steel.
+ * @param motion - The motion frame.
+ */
+function paint_giant_ceiling_fan(
+  ctx: PaintContext,
+  box: Box,
+  frame: PaintFrame,
+  _recipe: PlaceableVisualRecipe,
+  motion: number,
+): void {
+  const cx = box.centreX;
+  const cy = box.y + box.height * 0.3;
+  const radius = Math.min(box.width, box.height) * 0.46;
+  const squash_y = FORESHORTEN;
+  const blades = 6;
+  const shadow_radius = radius * 0.72;
+  soft_glow(
+    ctx,
+    cx + 18,
+    Math.min(box.bottom - shadow_radius * squash_y - 4, cy + 72),
+    shadow_radius,
+    shadow_radius * squash_y,
+    SHADOW_INK,
+    0.14,
+  );
+  ceiling_cord(ctx, box, cx, cy - 9, 4);
+  paint_blades(ctx, cx, cy, radius, {
+    count: blades,
+    colour: GIANT_BLADE,
+    motion,
+    frame,
+    root: radius * 0.12,
+    width: radius * 0.2,
+    squash_x: 1,
+    squash_y,
+  });
+  const band = shade(GIANT_BLADE, 0.4);
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(1, squash_y);
+  for (let blade = 0; blade < blades; blade += 1) {
+    ctx.save();
+    ctx.rotate(rotor_angle(blade, blades, motion));
+    // A brushed groove down each blade and its steel root arm.
+    if (!frame.isLowDetail) {
+      line(ctx, radius * 0.3, 0, radius * 0.9, 0, css(shade(GIANT_BLADE, 0.2), 0.5), 0.8);
+    }
+    fill_rounded_rect(ctx, radius * 0.1, -3, radius * 0.18, 6, 2, css(DARK_STEEL));
+    fill_rounded_rect(ctx, radius * 0.11, -2.4, radius * 0.14, 1.4, 0.7, css(0xffffff, 0.3));
+    ctx.restore();
+  }
+  ctx.restore();
+  paint_ceiling_motor(ctx, cx, cy, radius * 0.13, band, frame);
 }

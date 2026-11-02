@@ -196,6 +196,17 @@ function validate_placeable(
   if (definition.kind === "tray-return" && !definition.trayReturnPoint) {
     issues.push({ path: `${path}.trayReturnPoint`, message: "is required for tray-return facilities" });
   }
+  if (
+    definition.cleaningCrew !== undefined &&
+    (definition.kind !== "tray-return" ||
+      !Number.isInteger(definition.cleaningCrew) ||
+      definition.cleaningCrew < 1)
+  ) {
+    issues.push({
+      path: `${path}.cleaningCrew`,
+      message: "must be a positive integer on a tray-return facility",
+    });
+  }
   if (definition.servicePoint) gridPoint(definition.servicePoint, `${path}.servicePoint`, issues);
   if (definition.queueAnchor) gridPoint(definition.queueAnchor, `${path}.queueAnchor`, issues);
   if (definition.trayReturnPoint) gridPoint(definition.trayReturnPoint, `${path}.trayReturnPoint`, issues);

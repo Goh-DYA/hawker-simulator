@@ -46,9 +46,9 @@ const REIMPORTED_FRESH_EXPORT_SHA256 =
 const OPEN_RUN_FRAMES = 600;
 /** sha256 of `JSON.stringify(exportState().core)` after each frame count, at speed 1. */
 const OPEN_RUN_CORE_SHA256: Readonly<Record<number, string>> = {
-  100: "36e84c1fcb4c52c050196755d913f54cf6e198a37fdd2d019b96af0515331c9e",
-  300: "e7b6b56a699f566e79d594b55fbcca960838b48bec7a865c06f6377373409ee0",
-  600: "5f4c6086db1fc9c09af25fdac554a0097cb8086f113909df0b249ce388da4010",
+  100: "3542c8c94e71457560b2bde637f5631fd3deced7fe2c2782ae855f78f028eb28",
+  300: "6e163633451ceb47dda333462579a2793b59b5655a3ba4900df9e2a5603bae64",
+  600: "3362093a758b3570b3cf0bac04a806139f6d53eb0c1cd64b454fb5aa37d249ca",
 };
 
 /** Speed 10 turns each 100 ms frame into one simulated second, so a day is 480 frames. */
@@ -61,10 +61,10 @@ const MULTI_DAY_FRAMES = 1_100;
 const MULTI_DAY_TIMEOUT_MS = 60_000;
 /** Checkpoints around the end of the first and second operating days. */
 const MULTI_DAY_CORE_SHA256: Readonly<Record<number, string>> = {
-  480: "402ce6e500b6690dd5123656e2d323d65f12625267b0be4cdd501e5bfaf3eb89",
-  500: "6fccc979a7b678da492f5b19c017c62dcf032dd56fc99b4cde07148d3651608a",
-  960: "598a3ce614d7eece7140a36aa38d5a5a4990838adb0cfafd16413c47aa1bbd8f",
-  1_000: "bf3739363f900005f6b16d5ca4dfee2a6814353a5eb33812aaa311a688a9b991",
+  480: "ebd72de6242dc8eb5091362982ed6bf81f82805f6a143c241ace5e43d7f30b09",
+  500: "75be51b3c39d1eb4cba604dbe33438c555b9d7e539986e7b3ffc1f84016bbc2e",
+  960: "c85c16030605df5f29bc84f1e0fab2bc5739cd646decd6cc1ed579a87dfaa905",
+  1_000: "2e495eb63c38749a380766f6a217d1ed9b8c14635fd72bdc0c3aea159dc0c6e2",
 };
 
 /**
@@ -83,7 +83,7 @@ const MULTI_DAY_CORE_SHA256: Readonly<Record<number, string>> = {
 const PRESSURE_SIMULATION_SPAN_MS = 12;
 const PRESSURE_CALL_OFFSETS_MS: readonly number[] = [0, 0, PRESSURE_SIMULATION_SPAN_MS];
 /** sha256 of `JSON.stringify(exportState().core)` after the pressure run. */
-const PRESSURE_RUN_CORE_SHA256 = "b5360e0c5f569ee16b9d064b2a2fe3aec728941bd98cf439c3ea9ad9d82340eb";
+const PRESSURE_RUN_CORE_SHA256 = "449bb555cfb61bc330918bc313cefe3cefd032f2a9579de496bfbecadcce8337";
 
 const IMPORT_RUN_FRAMES = 300;
 const RESET_RUN_FRAMES = 50;

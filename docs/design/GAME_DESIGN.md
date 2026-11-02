@@ -29,7 +29,7 @@ The game is for casual and simulation players aged 13+, launches free, requires 
 - Mouse, trackpad, and keyboard are required. Touch is optional.
 - One coherent map theme, orthographic top-down square-grid construction, pan, and zoom.
 - Place, move, rotate, store, sell, remove, and undo placeable objects and stalls.
-- Eighteen fictional stalls, 91 playable dishes, 80 meaningfully distinct placeables, and twelve behavior archetypes.
+- Eighteen fictional stalls, 91 playable dishes, 98 meaningfully distinct placeables, and twelve behavior archetypes.
 - A released source profile and Star rating for every dish, with 171 released nutrition profiles across 23 reviewed recipe-variant families, each with a default the player can tune to an option that rates higher.
 - Overall Health ratings plus distinct high-cholesterol, obesity, diabetes, and hypertension ratings; optional visit conditions remain independent of customer archetype and demographics.
 - Customer spawning, choice, pathfinding, queueing, ordering, preparation abstraction, seat reservation, eating, reactions, tray return where applicable, and departure.
@@ -48,14 +48,14 @@ Accounts, cloud saves, multiplayer, chat, leaderboards, social visits, user-gene
 The release must pass the acceptance checklist in [RELEASE_CHECKLIST.md](../release/RELEASE_CHECKLIST.md). In particular:
 
 - The complete customer lifecycle and build-mode recovery cases pass automated and browser tests.
-- Content validators prove 18 / 91 / 80 / 12 counts, 402 English localization entries, 171 released profiles, 23 variant families, and no missing runtime references.
+- Content validators prove 18 / 91 / 98 / 12 counts, 438 English localization entries, 171 released profiles, 23 variant families, and no missing runtime references.
 - IndexedDB recovery, save migrations, cache updates, and offline reload are verified.
 - Measured performance meets an approved supported-customer cap in both quality tiers.
 - Essential UI actions work by keyboard and do not rely on color or audio alone.
 - Current stable desktop Chrome is tested and its exact version recorded.
 - Human Singapore cultural review, qualified legal/privacy review, and independent security review are complete or explicitly waived by the accountable human owner.
 
-The content `1.7.0` source contract is recorded; its complete automated working-source gate and both local production builds pass. Exact-production browser/offline validation, publication evidence, and all external review gates remain incomplete as of this document date.
+The content `1.8.0` source contract is recorded; its complete automated working-source gate and both local production builds pass. Exact-production browser/offline validation, publication evidence, and all external review gates remain incomplete as of this document date.
 
 ### Product assumptions
 
@@ -127,7 +127,7 @@ Stall score combines preference match, price, expected wait, Star-rated taste/po
 - Preparation is abstracted as capacity-limited service timers rather than ingredient micromanagement.
 - Group members share a visit decision and require a compatible seat cluster; split seating is allowed only as a documented fallback.
 - Tray return depends on the hall and on habit. A guest returns their tray only when a reachable tray return is within 14 path tiles of their seat and their persona's tray-return habit says so; the habit is read from a hash of the guest's ID, so it is stable per guest and draws no random number. It is a behavioural trait of the persona's visit goal, never framed as an ethnic or age trait, and player copy frames returning a tray positively rather than blaming guests who leave one.
-- An unreturned tray stays on the seat, and no one can sit there until the table-cleaning crew clears it. The crew is one member plus one per tray-return station, each clearing the oldest waiting tray first in about 25 seconds, faster near cleaning utilities. Diners seated beside an uncleared tray rate the hall as less clean, and the HUD seating card counts the seats waiting for clearing, so the remedy (more or closer tray returns) is readable. The crew is visible in the hall: uniformed members walk from their tray-return stations to each tray being cleared, wipe the table, and carry the tray back.
+- An unreturned tray stays on the seat, and no one can sit there until the table-cleaning crew clears it. The crew is one member plus each tray-return station's crew (one per return opening, plus one for a station that clears itself: one for the Single-Bay Tray Return, two for the Dual-Bay Tray Return and the staffed Dish Drop Counter, three for the Tray-Return Conveyor), each clearing the oldest waiting tray first in about 25 seconds, faster near cleaning utilities. Diners seated beside an uncleared tray rate the hall as less clean, and the HUD seating card counts the seats waiting for clearing, so the remedy (more or closer tray returns) is readable. The crew is visible in the hall: uniformed members walk from their tray-return stations to each tray being cleared, wipe the table, and carry the tray back.
 
 ### Satisfaction and diagnostics
 

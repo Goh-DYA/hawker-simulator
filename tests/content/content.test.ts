@@ -22,7 +22,7 @@ describe("launch content", () => {
     assert.equal(report.counts.dishes, LAUNCH_ROSTER.dishes);
     assert.equal(report.counts.placeables, LAUNCH_ROSTER.placeables);
     assert.equal(report.counts.customerArchetypes, LAUNCH_ROSTER.customerArchetypes);
-    assert.equal(report.counts.localizationKeys, 402);
+    assert.equal(report.counts.localizationKeys, 438);
   });
 
   it("ships four new customer personas with distinct demand roles", () => {

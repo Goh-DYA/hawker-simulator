@@ -1,6 +1,6 @@
 /**
  * Stall-fixture painters: the queue ticket dispenser, condiment counter, cutlery and napkin
- * station, water carafe station and heated order pickup pass, built as stainless hawker-centre
+ * station, water carafe station, heated order pickup pass and self-order kiosk, built as stainless hawker-centre
  * infrastructure in the 3/4 view, plus the dispatcher that also sends display cases and the prep
  * cart to `fixtureCases.ts`.
  *
@@ -37,6 +37,7 @@ import {
   ground_bottom,
   INK,
   LAMP_LIGHT,
+  LEAF,
   lifted,
   make_run,
   oriented_ground,
@@ -86,6 +87,14 @@ const WATER = 0x7cc3d6;
 const TILE_TEAL = 0xbfe0dc;
 /** LED amber of number displays. */
 const LED_AMBER = 0xffb454;
+/** Gloss white of the self-order kiosk's body. */
+const KIOSK_WHITE = 0xeef1ef;
+/** Cool blue light of the kiosk's touchscreen. */
+const KIOSK_SCREEN = 0x7fc8f0;
+/** Height of the self-order kiosk's top above the floor. */
+const KIOSK_HEIGHT = 38;
+/** The dish tiles on the kiosk's menu screen. */
+const KIOSK_TILES = [0xe8a33d, 0xd95d39, 0x7fb069, 0xf3e3b5] as const;
 
 /** A fixture painter: paints one branch in the rotated footprint. */
 type FixturePainter = (
@@ -104,12 +113,14 @@ const FIXTURE_PAINTERS: Readonly<Record<FixtureStyle, FixturePainter>> = {
   water: paint_water_station,
   pickup: paint_pickup_pass,
   "display-case": paint_display_case,
+  kiosk: paint_self_order_kiosk,
   cart: paint_prep_cart,
 };
 
 /**
  * Paints a stall fixture (ticket dispenser, condiment counter, cutlery station, water carafes,
- * pickup pass, heated or chilled display case or prep cart) in its rotated orientation.
+ * pickup pass, self-order kiosk, heated or chilled display case or prep cart) in its rotated
+ * orientation.
  *
  * @param ctx - The paint context.
  * @param box - The footprint box (already rotated).
@@ -1017,4 +1028,117 @@ function paint_pass_shelf(ctx: PaintContext, run: Run, frame: PaintFrame, bays: 
       colour: INK,
     });
   }
+}
+
+/**
+ * Paints the self-order kiosk: a slim white pedestal on a dark plinth, with a tall touchscreen of
+ * dish tiles and a pay button on its service face above a card reader and a receipt slot, an
+ * accent band down its body and a vented back panel.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param recipe - The recipe.
+ * @param frame - The paint frame.
+ * @param rotation - The placement rotation.
+ */
+function paint_self_order_kiosk(
+  ctx: PaintContext,
+  box: Box,
+  recipe: PlaceableVisualRecipe,
+  frame: PaintFrame,
+  rotation: Rotation,
+): void {
+  const side = service_side(rotation);
+  const foot: Point = { x: box.centreX, y: box.y + 32 };
+  const plinth = oriented_ground(foot, 17, 11, side);
+  const body = oriented_ground(foot, 14, 7, side);
+  cast_shadow(ctx, plinth, KIOSK_HEIGHT);
+  paint_prism(ctx, plinth, 3, DARK_STEEL, frame, { radius: 1.6, lip: 0.4 });
+  paint_prism(ctx, body, KIOSK_HEIGHT, KIOSK_WHITE, frame, {
+    base: 3,
+    radius: 2,
+    front: shade(KIOSK_WHITE, 0.1),
+  });
+  paint_kiosk_face(ctx, face_of(body, KIOSK_HEIGHT, 3), side, recipe.accent, frame);
+}
+
+/**
+ * Details the kiosk's visible face: the touchscreen, card reader and receipt slot in front, the
+ * vented panel and maker disc behind, or the screen's glowing edge when it is seen end-on.
+ *
+ * @param ctx - The paint context.
+ * @param face - The body's south face.
+ * @param side - The service side.
+ * @param accent - The recipe accent, used for the screen header and the body band.
+ * @param frame - The paint frame.
+ */
+function paint_kiosk_face(
+  ctx: PaintContext,
+  face: { x: number; y: number; width: number; height: number },
+  side: ReturnType<typeof service_side>,
+  accent: number,
+  frame: PaintFrame,
+): void {
+  const view = face_view(side);
+  const cx = face.x + face.width / 2;
+  if (view === "front") {
+    const screen = { x: face.x + 1.6, y: face.y + 2.5, width: face.width - 3.2, height: 17 };
+    fill_rounded_rect(ctx, screen.x, screen.y, screen.width, screen.height, 1, css(0x101a1d));
+    paint_glow(ctx, frame, cx, screen.y + screen.height / 2, 9, KIOSK_SCREEN, 0.3);
+    fill_rounded_rect(
+      ctx,
+      screen.x + 0.8,
+      screen.y + 0.8,
+      screen.width - 1.6,
+      2.6,
+      0.5,
+      css(accent),
+    );
+    const tile_width = (screen.width - 2.6) / 2;
+    KIOSK_TILES.forEach((tile, index) => {
+      const column = index % 2;
+      const row = Math.floor(index / 2);
+      fill_rounded_rect(
+        ctx,
+        screen.x + 0.8 + column * (tile_width + 1),
+        screen.y + 4.2 + row * 4.4,
+        tile_width,
+        3.6,
+        0.5,
+        css(tile),
+      );
+    });
+    fill_rounded_rect(
+      ctx,
+      screen.x + 0.8,
+      screen.y + 13.4,
+      screen.width - 1.6,
+      2.6,
+      0.8,
+      css(LEAF),
+    );
+    fill_rounded_rect(ctx, cx - 4, face.y + 22, 8, 3, 0.6, css(INK));
+    fill_rounded_rect(ctx, cx - 2.6, face.y + 22.8, 5.2, 0.8, 0.3, css(0x6fd17a));
+    ctx.fillStyle = css(RECESS);
+    ctx.fillRect(cx - 4.5, face.y + 27, 9, 1);
+    fill_rounded_rect(ctx, cx - 2.4, face.y + 27.6, 4.8, 3.6, 0.4, css(CREAM));
+    ctx.fillStyle = css(accent, 0.85);
+    ctx.fillRect(face.x + 1, face.y + face.height - 4, face.width - 2, 1.6);
+    return;
+  }
+  if (view === "back") {
+    for (let index = 0; index < 4; index += 1) {
+      ctx.fillStyle = css(shade(KIOSK_WHITE, 0.4), 0.6);
+      ctx.fillRect(face.x + 3, face.y + 5 + index * 2.2, face.width - 6, 0.8);
+    }
+    fill_circle(ctx, cx, face.y + 20, 2.6, css(accent));
+    ctx.fillStyle = css(accent, 0.85);
+    ctx.fillRect(face.x + 1, face.y + face.height - 4, face.width - 2, 1.6);
+    return;
+  }
+  const x = side === "west" ? face.x - 0.6 : face.x + face.width - 1;
+  fill_rounded_rect(ctx, x, face.y + 2.5, 1.6, 17, 0.6, css(KIOSK_SCREEN));
+  paint_glow(ctx, frame, x + 0.8, face.y + 11, 7, KIOSK_SCREEN, 0.35);
+  ctx.fillStyle = css(accent, 0.85);
+  ctx.fillRect(face.x + 1, face.y + face.height - 4, face.width - 2, 1.6);
 }

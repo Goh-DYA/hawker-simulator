@@ -1,6 +1,7 @@
 /**
  * Divider painters: the retractable queue rail, low timber screen, tiled half wall, clear wind
- * screen, integrated planter divider and acoustic screen, in the 3/4 oblique view.
+ * screen, integrated planter divider, acoustic screen and breeze-block screen, in the 3/4
+ * oblique view.
  *
  * A divider is a long, thin, standing piece, so it is painted as a wall: running east-west (the
  * authored rotation and 180 degrees) it stands on a ground band just south of its footprint's
@@ -97,9 +98,21 @@ const PLANTER_FOLIAGE = 13;
  * leave under the felt.
  */
 const ACOUSTIC_SCREEN = { thickness: 3, height: 34, legGap: 6 } as const;
+/**
+ * Thickness and height of the breeze-block screen, about 1.5 m tall; turned north-south it is
+ * drawn a little thicker so its coping and pierced end read against the floor.
+ */
+const BREEZE_SCREEN = { thickness: 7, endThickness: 9, height: 32 } as const;
+/** Side of one ventilation block on the screen's face. */
+const BREEZE_BLOCK = 13;
+/** Pale cast concrete of the ventilation blocks. */
+const BREEZE_CONCRETE = 0xe6ddcb;
+/** The shade seen through the blocks' openings. */
+const BREEZE_SHADOW = 0x2b3636;
 
-/** The six divider constructions. */
-type DividerKind = "queue-rail" | "timber" | "tiled" | "wind" | "planter" | "acoustic";
+/** The seven divider constructions. */
+type DividerKind =
+  "queue-rail" | "timber" | "tiled" | "wind" | "planter" | "acoustic" | "breeze-block";
 
 /** Paints one divider construction in one orientation. */
 type DividerPainter = (
@@ -143,6 +156,7 @@ function divider_kind(recipe: PlaceableVisualRecipe): DividerKind {
   if (style === "queue-rail") return "queue-rail";
   if (style === "clear-wind") return "wind";
   if (style === "planter") return "planter";
+  if (style === "breeze-block") return "breeze-block";
   if (recipe.motif.includes("tiled")) return "tiled";
   if (recipe.motif.includes("acoustic")) return "acoustic";
   return "timber";
@@ -1027,6 +1041,202 @@ const paint_acoustic_north_south: DividerPainter = (ctx, box, recipe, frame, rot
     outline(ctx, top.x, top.y, top.width, wall.south - gap - top.y, 1, DARK_STEEL, true);
 };
 
+/**
+ * Paints one ventilation block of the breeze-block screen: a pale concrete square pierced by four
+ * quarter-round openings around a central boss, so the light and the floor behind show through
+ * it in the familiar four-petal pattern.
+ *
+ * @param ctx - The paint context.
+ * @param x - Left edge of the block.
+ * @param y - Top edge of the block.
+ * @param size - Side of the block.
+ * @param frame - The paint frame.
+ */
+function paint_breeze_block(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  size: number,
+  frame: PaintFrame,
+): void {
+  fill_rounded_rect(ctx, x, y, size, size, 0.4, css(BREEZE_CONCRETE));
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+  const inset = size * 0.14;
+  const hole = size / 2 - inset * 1.4;
+  for (const [sx, sy] of [
+    [-1, -1],
+    [1, -1],
+    [-1, 1],
+    [1, 1],
+  ] as const) {
+    const corner_x = cx + sx * (size / 2 - inset);
+    const corner_y = cy + sy * (size / 2 - inset);
+    ctx.beginPath();
+    ctx.moveTo(corner_x, corner_y);
+    ctx.lineTo(corner_x - sx * hole, corner_y);
+    ctx.quadraticCurveTo(
+      cx + sx * size * 0.12,
+      cy + sy * size * 0.12,
+      corner_x,
+      corner_y - sy * hole,
+    );
+    ctx.closePath();
+    ctx.fillStyle = css(BREEZE_SHADOW, 0.82);
+    ctx.fill();
+  }
+  if (!frame.isLowDetail) {
+    fill_circle(ctx, cx, cy, size * 0.09, css(tint(BREEZE_CONCRETE, 0.25)));
+    line(ctx, x + 0.6, y + 0.6, x + size - 0.6, y + 0.6, css(0xffffff, 0.35), 0.6, "butt");
+  }
+}
+
+/** The breeze-block screen running east-west: a wall of ventilation blocks on a plinth. */
+const paint_breeze_east_west: DividerPainter = (ctx, box, recipe, frame) => {
+  const wall = east_west_wall(box, BREEZE_SCREEN.thickness, BREEZE_SCREEN.height);
+  const { top, front } = east_west_faces(wall);
+  east_west_shadow(ctx, box, wall, 0.28);
+  const plinth = 3;
+  const cap = 2.5;
+  // The mortar behind the blocks, darker than the blocks so each one reads.
+  fill_lit_face(ctx, front, shade(BREEZE_CONCRETE, 0.4), 0.4, 0.1);
+  const field_height = front.height - plinth - cap;
+  const rows = Math.max(1, Math.round(field_height / BREEZE_BLOCK));
+  const size = field_height / rows;
+  const columns = Math.max(1, Math.floor(front.width / size));
+  const field_x = front.x + (front.width - columns * size) / 2;
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      paint_breeze_block(
+        ctx,
+        field_x + column * size + 0.4,
+        front.y + cap + row * size + 0.4,
+        size - 0.8,
+        frame,
+      );
+    }
+  }
+  fill_lit_face(
+    ctx,
+    { x: front.x, y: wall.ground - plinth, width: front.width, height: plinth },
+    mix(BREEZE_CONCRETE, recipe.accent, 0.35),
+    0.5,
+  );
+  fill_lit_face(
+    ctx,
+    { x: front.x - 1, y: front.y, width: front.width + 2, height: cap },
+    BREEZE_CONCRETE,
+    0.8,
+  );
+  fill_top_surface(
+    ctx,
+    { x: top.x - 1, y: top.y, width: top.width + 2, height: top.height },
+    tint(BREEZE_CONCRETE, 0.1),
+    1,
+  );
+  outline(
+    ctx,
+    top.x - 1,
+    top.y,
+    top.width + 2,
+    wall.ground - top.y,
+    1,
+    frame.isHighContrast ? DARK_STEEL : BREEZE_CONCRETE,
+    frame.isHighContrast,
+  );
+};
+
+/**
+ * The breeze-block screen running north-south: its coping strip, a long side face showing the
+ * openings through each block as dark slots, and the pierced block ends on its south face, all
+ * edged so the pale concrete stands off the floor.
+ */
+const paint_breeze_north_south: DividerPainter = (ctx, box, recipe, frame, rotation) => {
+  const wall = north_south_wall(box, BREEZE_SCREEN.endThickness, BREEZE_SCREEN.height, rotation);
+  const { top, front, side } = north_south_faces(wall);
+  north_south_shadow(ctx, box, wall, 0.3);
+  fill_lit_face(ctx, side, shade(BREEZE_CONCRETE, 0.22), 0, 0.14);
+  // The side face: the joints between blocks and the openings through them.
+  const plinth = 3;
+  for (
+    let block_y = side.y + 3;
+    block_y < side.y + side.height - plinth - 2;
+    block_y += BREEZE_BLOCK
+  ) {
+    fill_rounded_rect(ctx, side.x, block_y, side.width, 1, 0, css(BREEZE_SHADOW, 0.5));
+    fill_rounded_rect(
+      ctx,
+      side.x + side.width * 0.2,
+      block_y + 2.5,
+      side.width * 0.6,
+      BREEZE_BLOCK - 5,
+      0.4,
+      css(BREEZE_SHADOW, frame.isLowDetail ? 0.6 : 0.85),
+    );
+  }
+  fill_rounded_rect(
+    ctx,
+    side.x,
+    wall.south - plinth,
+    side.width,
+    plinth,
+    0,
+    css(mix(BREEZE_CONCRETE, recipe.accent, 0.35)),
+  );
+  // The south end: the cut ends of the stacked blocks, each pierced by its opening.
+  fill_lit_face(ctx, front, shade(BREEZE_CONCRETE, 0.4), 0.5, 0.1);
+  const cap = 2.5;
+  const field_height = front.height - plinth - cap;
+  const rows = Math.max(1, Math.round(field_height / (BREEZE_BLOCK / 2)));
+  const size = field_height / rows;
+  for (let row = 0; row < rows; row += 1) {
+    const y = front.y + cap + row * size;
+    fill_rounded_rect(
+      ctx,
+      front.x + 0.4,
+      y + 0.4,
+      front.width - 0.8,
+      size - 0.8,
+      0.3,
+      css(BREEZE_CONCRETE),
+    );
+    fill_rounded_rect(
+      ctx,
+      front.x + front.width * 0.3,
+      y + size * 0.28,
+      front.width * 0.4,
+      size * 0.44,
+      0.4,
+      css(BREEZE_SHADOW, 0.9),
+    );
+  }
+  fill_rounded_rect(
+    ctx,
+    front.x,
+    wall.south - plinth,
+    front.width,
+    plinth,
+    0,
+    css(mix(BREEZE_CONCRETE, recipe.accent, 0.35)),
+  );
+  fill_top_surface(
+    ctx,
+    { x: top.x - 1, y: top.y - 1, width: top.width + 2, height: top.height + 3 },
+    tint(BREEZE_CONCRETE, 0.1),
+    1,
+  );
+  outline(
+    ctx,
+    Math.min(top.x - 1, side.x),
+    top.y - 1,
+    top.width + 2 + side.width,
+    wall.south - top.y + 1,
+    1,
+    frame.isHighContrast ? DARK_STEEL : BREEZE_CONCRETE,
+    frame.isHighContrast,
+  );
+};
+
 /** The painters of each divider construction, by orientation. */
 const DIVIDER_PAINTERS: Readonly<
   Record<DividerKind, { readonly eastWest: DividerPainter; readonly northSouth: DividerPainter }>
@@ -1037,4 +1247,5 @@ const DIVIDER_PAINTERS: Readonly<
   wind: { eastWest: paint_wind_east_west, northSouth: paint_wind_north_south },
   planter: { eastWest: paint_planter_east_west, northSouth: paint_planter_north_south },
   acoustic: { eastWest: paint_acoustic_east_west, northSouth: paint_acoustic_north_south },
+  "breeze-block": { eastWest: paint_breeze_east_west, northSouth: paint_breeze_north_south },
 };

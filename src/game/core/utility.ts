@@ -1,7 +1,7 @@
 /**
  * Spatial utility effects of placed signage and facilities: the diminishing influence at a
- * tile, the centre-wide wayfinding bonus, the satisfaction bonus, and utility-adjusted
- * eating time.
+ * tile, the centre-wide wayfinding bonus, the satisfaction bonus, utility-adjusted eating time,
+ * and the taper that turns seat ambience and cleanliness into rating points.
  *
  * Each effect total is clamped to a fixed range, so stacking many items has bounded impact.
  */
@@ -124,6 +124,44 @@ export function utilitySatisfactionBonus(influence: UtilityInfluence): number {
     -0.45,
     0.65,
   );
+}
+
+/** Doublings past the full-rate stretch after which a tapered rating gain reaches its maximum. */
+export const RATING_TAPER_DOUBLINGS = 4;
+
+/**
+ * Tapers the rating points that seat ambience or cleanliness earns, so every extra point keeps
+ * paying at a decreasing rate instead of stopping at a cap.
+ *
+ * The first `full_rate_points` count in full, as the former linear rule did. After that each
+ * doubling of `points` adds `step_per_doubling` (linearly within each doubling), so the gain
+ * reaches its maximum of `full_rate_points + RATING_TAPER_DOUBLINGS * step_per_doubling` only
+ * after four doublings, that is at 16 times the full-rate stretch. The taper is piecewise linear,
+ * with no logarithm or exponential, so it gives the same result on every engine. Zero and negative
+ * points (a penalty) count in full.
+ *
+ * @param points - The raw rating points: the input times its former linear weight.
+ * @param full_rate_points - The points that count in full; must be positive.
+ * @param step_per_doubling - The points each doubling past the full-rate stretch adds.
+ * @returns The tapered gain, never above its maximum.
+ */
+export function compute_tapered_rating_gain(
+  points: number,
+  full_rate_points: number,
+  step_per_doubling: number,
+): number {
+  if (points <= full_rate_points) return points;
+  let gain = full_rate_points;
+  let segment_start = full_rate_points;
+  for (let doubling = 0; doubling < RATING_TAPER_DOUBLINGS; doubling += 1) {
+    const segment_end = segment_start * 2;
+    if (points <= segment_end) {
+      return gain + (step_per_doubling * (points - segment_start)) / segment_start;
+    }
+    gain += step_per_doubling;
+    segment_start = segment_end;
+  }
+  return gain;
 }
 
 /**

@@ -37,8 +37,8 @@ const DIRECTIONAL_SIGNS = [
 ];
 
 describe("paint_signage", () => {
-  it("covers the seven launch signs", () => {
-    expect(SIGNS).toHaveLength(7);
+  it("covers the eight launch signs", () => {
+    expect(SIGNS).toHaveLength(8);
   });
 
   it("paints every sign at every frame and rotation", () => {

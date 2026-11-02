@@ -184,6 +184,26 @@ describe("validateCatalog", () => {
     ]);
   });
 
+  it("accepts a tray return's crew size and rejects a malformed or misplaced one", () => {
+    const { seat, tray } = TEST_CATALOG.placeables;
+    expect(
+      validateCatalog(build_catalog({ placeables: { "crewed-tray": { ...tray, id: "crewed-tray", cleaningCrew: 3 } } })),
+    ).toEqual([]);
+    const catalog = build_catalog({
+      placeables: {
+        "empty-crew": { ...tray, id: "empty-crew", cleaningCrew: 0 },
+        "half-crew": { ...tray, id: "half-crew", cleaningCrew: 1.5 },
+        "crewed-seat": { ...seat, id: "crewed-seat", cleaningCrew: 2 },
+      },
+    });
+    const message = "must be a positive integer on a tray-return facility";
+    expect(validateCatalog(catalog)).toEqual([
+      { path: "placeables.empty-crew.cleaningCrew", message },
+      { path: "placeables.half-crew.cleaningCrew", message },
+      { path: "placeables.crewed-seat.cleaningCrew", message },
+    ]);
+  });
+
   it("pins every issue for a malformed dish", () => {
     const catalog = build_catalog({
       dishes: {

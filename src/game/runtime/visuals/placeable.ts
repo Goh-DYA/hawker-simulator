@@ -58,6 +58,8 @@ const GENERIC_PLACEABLE_WORDS = new Set([
 ]);
 
 const PLACEABLE_FORM_RULES: readonly (readonly [RegExp, string])[] = [
+  [/granite-chess/, "drum-stone-table"],
+  [/banquet/, "clothed-banquet-table"],
   [/terrazzo|round-cafe/, "round-pedestal"],
   [/compact-square/, "compact-square-top"],
   [/long-communal/, "long-communal-slab"],
@@ -66,12 +68,16 @@ const PLACEABLE_FORM_RULES: readonly (readonly [RegExp, string])[] = [
   [/snack-ledge/, "raised-narrow-ledge"],
   [/folding-overflow/, "folding-cross-brace"],
   [/acoustic-booth/, "high-back-booth"],
+  [/transfer-bench/, "grab-rail-bench"],
   [/bench/, "multi-place-bench"],
   [/stool|perch/, "pedestal-stool"],
+  [/lounge-chair/, "woven-lounge-chair"],
   [/arm-chair/, "support-arm-chair"],
   [/chair/, "backed-chair"],
   [/display-case/, "glazed-display-case"],
   [/ticket-dispenser/, "ticket-pedestal"],
+  [/kiosk/, "touchscreen-kiosk"],
+  [/conveyor/, "belt-conveyor"],
   [/counter/, "service-counter"],
   [/shelf|rack|tray-return/, "open-rack"],
   [/cart|trolley/, "wheeled-cart"],
@@ -84,18 +90,25 @@ const PLACEABLE_FORM_RULES: readonly (readonly [RegExp, string])[] = [
   [/path-light/, "low-bollard"],
   [/skylight/, "glazed-ceiling-panel"],
   [/task-light/, "focused-luminaire"],
+  [/lamp-post/, "lantern-post"],
+  [/misting/, "mist-ring-pedestal"],
+  [/giant-ceiling/, "long-blade-rotor"],
   [/column-fan/, "tower-fan"],
   [/exhaust/, "boxed-extractor"],
   [/ceiling-fan/, "suspended-rotor"],
   [/wall-circulation/, "caged-wall-rotor"],
   [/fan/, "caged-floor-rotor"],
+  [/bougainvillea-arch/, "climbing-arch"],
+  [/tree-planter/, "tree-planter"],
   [/trellis/, "climbing-trellis"],
   [/hanging/, "hanging-basket"],
   [/trough|border-bed/, "linear-planter"],
   [/planter|garden-pot/, "floor-planter"],
+  [/order-ready/, "lit-number-board"],
   [/directory|preview-board|identity-sign/, "information-board"],
   [/sign|marker/, "wayfinding-sign"],
   [/queue-rail/, "post-and-belt"],
+  [/breeze-block/, "ventilation-block-wall"],
   [/wind-screen/, "transparent-screen"],
   [/half-wall/, "solid-half-wall"],
   [/divider|screen/, "freestanding-screen"],
@@ -103,11 +116,15 @@ const PLACEABLE_FORM_RULES: readonly (readonly [RegExp, string])[] = [
   [/fountain/, "drinking-fountain"],
   [/cupboard|cabinet/, "wall-cabinet"],
   [/utility-point/, "protected-service-box"],
+  [/care-room/, "enclosed-care-room"],
   [/mural/, "wall-mural"],
   [/noticeboard/, "pin-board"],
   [/bunting/, "hanging-bunting"],
   [/flower-vase/, "tabletop-vase"],
   [/clock/, "feature-clock"],
+  [/photo-wall/, "framed-photo-row"],
+  [/umbrella/, "hung-umbrella-cluster"],
+  [/water-feature/, "spill-basin"],
 ];
 
 function placeableForm(motif: string, category: PlaceableCategory): string {
@@ -124,13 +141,13 @@ function placeableMaterial(
   if (/terrazzo/.test(context)) return "terrazzo";
   if (/laminate/.test(context)) return "laminate";
   if (/clear|glass|skylight|display-case/.test(context)) return "glass";
-  if (/tile|mural/.test(context)) return "ceramic";
+  if (/tile|mural|water-feature/.test(context)) return "ceramic";
   if (/woven|lantern/.test(context)) return "woven-fibre";
-  if (/fabric|bunting/.test(context)) return "fabric";
+  if (/fabric|bunting|banquet|umbrella/.test(context)) return "fabric";
   if (/acoustic|cushion|upholster/.test(context)) return "upholstery";
   if (/moulded|stacking|booster/.test(context)) return "moulded-plastic";
   if (/timber|trestle|communal|bench|noticeboard/.test(context)) return "timber";
-  if (/concrete|masonry/.test(context)) return "masonry";
+  if (/concrete|masonry|granite|breeze-block/.test(context)) return "masonry";
   if (category === "stall-fixture" || category === "tray-waste" || category === "facility") {
     return "stainless-steel";
   }

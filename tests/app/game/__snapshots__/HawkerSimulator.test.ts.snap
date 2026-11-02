@@ -43,7 +43,7 @@ exports[`HawkerSimulator panels > renders the Build panel for a captured runtime
 <span>Build catalogue</span>
 <h2>Make it yours</h2>
 </div>
-<span class="count-badge">80</span>
+<span class="count-badge">98</span>
 <button type="button" class="sheet-close-button" aria-label="Close management sheet">×</button>
 </div>
 <label class="search-field">
@@ -81,52 +81,68 @@ exports[`HawkerSimulator panels > renders the Build panel for a captured runtime
 <small>Rep 10</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Long Communal Table, $330, locked: Level 3">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Long Communal Table, $330, locked: Level 4">
 <span class="item-art item-table" data-motif="long-communal-table" data-form="long-communal-slab" data-material="timber" style="--preview-accent:#477c86" aria-hidden="true">
 <span>▦</span>
 </span>
 <strong>Long Communal Table</strong>
-<small>Level 3</small>
+<small>Level 4</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Family Trestle Table, $420, locked: Level 5">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Family Trestle Table, $420, locked: Level 13">
 <span class="item-art item-table" data-motif="family-trestle-table" data-form="wide-trestle" data-material="timber" style="--preview-accent:#d69a35" aria-hidden="true">
 <span>▦</span>
 </span>
 <strong>Family Trestle Table</strong>
-<small>Level 5</small>
+<small>Level 13</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Accessible End Table, $240, locked: Level 3">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Accessible End Table, $240, locked: Level 5">
 <span class="item-art item-table" data-motif="accessible-end-table" data-form="accessible-notched-top" data-material="glass" style="--preview-accent:#287f75" aria-hidden="true">
 <span>▦</span>
 </span>
 <strong>Accessible End Table</strong>
-<small>Level 3</small>
+<small>Level 5</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Standing Snack Ledge, $160, locked: Level 4">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Standing Snack Ledge, $160, locked: Level 8">
 <span class="item-art item-table" data-motif="standing-snack-ledge" data-form="raised-narrow-ledge" data-material="timber" style="--preview-accent:#b8667a" aria-hidden="true">
 <span>▦</span>
 </span>
 <strong>Standing Snack Ledge</strong>
-<small>Level 4</small>
+<small>Level 8</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Folding Overflow Table, $125, locked: Level 6">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Folding Overflow Table, $70, locked: Level 3">
 <span class="item-art item-table" data-motif="folding-overflow-table" data-form="folding-cross-brace" data-material="timber" style="--preview-accent:#4d7390" aria-hidden="true">
 <span>▦</span>
 </span>
 <strong>Folding Overflow Table</strong>
-<small>Level 6</small>
+<small>Level 3</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Terrazzo Feature Table, $720, locked: Level 11">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Terrazzo Feature Table, $560, locked: Level 21">
 <span class="item-art item-table" data-motif="terrazzo-feature-table" data-form="round-pedestal" data-material="terrazzo" style="--preview-accent:#b8667a" aria-hidden="true">
 <span>▦</span>
 </span>
 <strong>Terrazzo Feature Table</strong>
-<small>Level 11</small>
+<small>Level 21</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Granite Chess Table, $260, locked: Level 17">
+<span class="item-art item-table" data-motif="granite-chess-table" data-form="drum-stone-table" data-material="masonry" style="--preview-accent:#4d7390" aria-hidden="true">
+<span>▦</span>
+</span>
+<strong>Granite Chess Table</strong>
+<small>Level 17</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Banquet Turntable Table, $520, locked: Level 25">
+<span class="item-art item-table" data-motif="banquet-turntable-table" data-form="clothed-banquet-table" data-material="fabric" style="--preview-accent:#d69a35" aria-hidden="true">
+<span>▦</span>
+</span>
+<strong>Banquet Turntable Table</strong>
+<small>Level 25</small>
 <i aria-hidden="true">●</i>
 </button>
 <button type="button" class="catalogue-item " aria-pressed="false" aria-label="Stacking Stool, $35">
@@ -159,44 +175,44 @@ exports[`HawkerSimulator panels > renders the Build panel for a captured runtime
 <small>Level 4</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="High Counter Stool, $75, locked: Level 4">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="High Counter Stool, $75, locked: Level 6">
 <span class="item-art item-seat" data-motif="high-counter-stool" data-form="pedestal-stool" data-material="powder-coated-metal" style="--preview-accent:#a56c3f" aria-hidden="true">
 <span>◒</span>
 </span>
 <strong>High Counter Stool</strong>
-<small>Level 4</small>
+<small>Level 6</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Booster Family Chair, $105, locked: Level 5">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Booster Family Chair, $105, locked: Level 8">
 <span class="item-art item-seat" data-motif="booster-family-chair" data-form="backed-chair" data-material="moulded-plastic" style="--preview-accent:#477c86" aria-hidden="true">
 <span>◒</span>
 </span>
 <strong>Booster Family Chair</strong>
-<small>Level 5</small>
+<small>Level 8</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Cushioned Dining Chair, $145, locked: Level 7">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Cushioned Dining Chair, $145, locked: Level 11">
 <span class="item-art item-seat" data-motif="cushioned-dining-chair" data-form="backed-chair" data-material="upholstery" style="--preview-accent:#a56c3f" aria-hidden="true">
 <span>◒</span>
 </span>
 <strong>Cushioned Dining Chair</strong>
-<small>Level 7</small>
+<small>Level 11</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Three-Person Communal Bench, $210, locked: Level 7">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Three-Person Communal Bench, $210, locked: Level 14">
 <span class="item-art item-seat" data-motif="three-person-communal-bench" data-form="multi-place-bench" data-material="timber" style="--preview-accent:#c8624c" aria-hidden="true">
 <span>◒</span>
 </span>
 <strong>Three-Person Communal Bench</strong>
-<small>Level 7</small>
+<small>Level 14</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Acoustic Booth Seat, $390, locked: Level 10">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Acoustic Booth Seat, $390, locked: Level 20">
 <span class="item-art item-seat" data-motif="acoustic-booth-seat" data-form="high-back-booth" data-material="upholstery" style="--preview-accent:#287f75" aria-hidden="true">
 <span>◒</span>
 </span>
 <strong>Acoustic Booth Seat</strong>
-<small>Level 10</small>
+<small>Level 20</small>
 <i aria-hidden="true">●</i>
 </button>
 <button type="button" class="catalogue-item " aria-pressed="false" aria-label="Swivel Perch Seat, $185, locked: Level 12">
@@ -207,68 +223,100 @@ exports[`HawkerSimulator panels > renders the Build panel for a captured runtime
 <small>Level 12</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Queue Ticket Dispenser, $280, locked: Level 4">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Companion Transfer Bench, $140, locked: Level 18">
+<span class="item-art item-seat" data-motif="companion-transfer-bench" data-form="grab-rail-bench" data-material="timber" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>Companion Transfer Bench</strong>
+<small>Level 18</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Four-Person Teak Bench, $280, locked: Level 24">
+<span class="item-art item-seat" data-motif="four-person-teak-bench" data-form="multi-place-bench" data-material="timber" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>Four-Person Teak Bench</strong>
+<small>Level 24</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Rattan Lounge Chair, $150, locked: Level 28">
+<span class="item-art item-seat" data-motif="rattan-lounge-chair" data-form="woven-lounge-chair" data-material="woven-fibre" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>◒</span>
+</span>
+<strong>Rattan Lounge Chair</strong>
+<small>Level 28</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Queue Ticket Dispenser, $240, locked: Level 8">
 <span class="item-art item-stall-fixture" data-motif="queue-ticket-dispenser" data-form="ticket-pedestal" data-material="stainless-steel" style="--preview-accent:#6e7e42" aria-hidden="true">
 <span>▤</span>
 </span>
 <strong>Queue Ticket Dispenser</strong>
-<small>Level 4</small>
+<small>Level 8</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Condiment Counter, $190, locked: Rep 10">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Condiment Counter, $150, locked: Level 6">
 <span class="item-art item-stall-fixture" data-motif="condiment-counter" data-form="service-counter" data-material="stainless-steel" style="--preview-accent:#287f75" aria-hidden="true">
 <span>▤</span>
 </span>
 <strong>Condiment Counter</strong>
-<small>Rep 10</small>
+<small>Level 6</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Cutlery &amp; Napkin Station, $145, locked: Level 3">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Cutlery &amp; Napkin Station, $120, locked: Level 5">
 <span class="item-art item-stall-fixture" data-motif="cutlery-napkin-station" data-form="stall-fixture-form" data-material="stainless-steel" style="--preview-accent:#a56c3f" aria-hidden="true">
 <span>▤</span>
 </span>
 <strong>Cutlery &amp; Napkin Station</strong>
-<small>Level 3</small>
+<small>Level 5</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Water Carafe Station, $260, locked: Level 5">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Water Carafe Station, $220, locked: Level 10">
 <span class="item-art item-stall-fixture" data-motif="water-carafe-station" data-form="stall-fixture-form" data-material="stainless-steel" style="--preview-accent:#7b669b" aria-hidden="true">
 <span>▤</span>
 </span>
 <strong>Water Carafe Station</strong>
-<small>Level 5</small>
+<small>Level 10</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Order Pickup Shelf, $340, locked: Level 6">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Order Pickup Shelf, $300, locked: Level 12">
 <span class="item-art item-stall-fixture" data-motif="order-pickup-shelf" data-form="open-rack" data-material="stainless-steel" style="--preview-accent:#4d7390" aria-hidden="true">
 <span>▤</span>
 </span>
 <strong>Order Pickup Shelf</strong>
-<small>Level 6</small>
+<small>Level 12</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Heated Display Case, $620, locked: Level 8">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Heated Display Case, $480, locked: Level 18">
 <span class="item-art item-stall-fixture" data-motif="heated-display-case" data-form="glazed-display-case" data-material="glass" style="--preview-accent:#c8624c" aria-hidden="true">
 <span>▤</span>
 </span>
 <strong>Heated Display Case</strong>
-<small>Level 8</small>
+<small>Level 18</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Chilled Display Case, $780, locked: Level 9">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Chilled Display Case, $540, locked: Level 22">
 <span class="item-art item-stall-fixture" data-motif="chilled-display-case" data-form="glazed-display-case" data-material="glass" style="--preview-accent:#c8624c" aria-hidden="true">
 <span>▤</span>
 </span>
 <strong>Chilled Display Case</strong>
-<small>Level 9</small>
+<small>Level 22</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Mobile Prep Cart, $480, locked: Level 10">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Mobile Prep Cart, $380, locked: Level 15">
 <span class="item-art item-stall-fixture" data-motif="mobile-prep-cart" data-form="wheeled-cart" data-material="stainless-steel" style="--preview-accent:#7b669b" aria-hidden="true">
 <span>▤</span>
 </span>
 <strong>Mobile Prep Cart</strong>
-<small>Level 10</small>
+<small>Level 15</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Self-Order Kiosk, $520, locked: Level 26">
+<span class="item-art item-stall-fixture" data-motif="self-order-kiosk" data-form="touchscreen-kiosk" data-material="stainless-steel" style="--preview-accent:#287f75" aria-hidden="true">
+<span>▤</span>
+</span>
+<strong>Self-Order Kiosk</strong>
+<small>Level 26</small>
 <i aria-hidden="true">●</i>
 </button>
 <button type="button" class="catalogue-item " aria-pressed="false" aria-label="Single-Bay Tray Return, $260">
@@ -278,28 +326,28 @@ exports[`HawkerSimulator panels > renders the Build panel for a captured runtime
 <strong>Single-Bay Tray Return</strong>
 <small>$260 · Cleanliness +11</small>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Dual-Bay Tray Return, $520, locked: Level 4">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Dual-Bay Tray Return, $520, locked: Level 9">
 <span class="item-art item-tray-waste" data-motif="dual-bay-tray-return" data-form="open-rack" data-material="stainless-steel" style="--preview-accent:#a56c3f" aria-hidden="true">
 <span>↺</span>
 </span>
 <strong>Dual-Bay Tray Return</strong>
-<small>Level 4</small>
+<small>Level 9</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Dish Drop Counter, $690, locked: Level 7">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Dish Drop Counter, $620, locked: Level 19">
 <span class="item-art item-tray-waste" data-motif="dish-drop-counter" data-form="service-counter" data-material="stainless-steel" style="--preview-accent:#d69a35" aria-hidden="true">
 <span>↺</span>
 </span>
 <strong>Dish Drop Counter</strong>
-<small>Level 7</small>
+<small>Level 19</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Recycling Sorter, $440, locked: Level 5">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Recycling Sorter, $440, locked: Level 11">
 <span class="item-art item-tray-waste" data-motif="recycling-sorter" data-form="multi-stream-receptacle" data-material="stainless-steel" style="--preview-accent:#a56c3f" aria-hidden="true">
 <span>↺</span>
 </span>
 <strong>Recycling Sorter</strong>
-<small>Level 5</small>
+<small>Level 11</small>
 <i aria-hidden="true">●</i>
 </button>
 <button type="button" class="catalogue-item " aria-pressed="false" aria-label="Covered Food-Waste Bin, $180, locked: Level 3">
@@ -317,75 +365,91 @@ exports[`HawkerSimulator panels > renders the Build panel for a captured runtime
 <strong>Covered General-Waste Bin</strong>
 <small>$120 · Ambience -1</small>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Cleaning Trolley Bay, $380, locked: Level 6">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Cleaning Trolley Bay, $380, locked: Level 14">
 <span class="item-art item-tray-waste" data-motif="cleaning-trolley-bay" data-form="wheeled-cart" data-material="stainless-steel" style="--preview-accent:#6e7e42" aria-hidden="true">
 <span>↺</span>
 </span>
 <strong>Cleaning Trolley Bay</strong>
-<small>Level 6</small>
+<small>Level 14</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Clean Tray Stack Rack, $230, locked: Level 4">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Clean Tray Stack Rack, $230, locked: Level 7">
 <span class="item-art item-tray-waste" data-motif="clean-tray-stack-rack" data-form="open-rack" data-material="stainless-steel" style="--preview-accent:#287f75" aria-hidden="true">
 <span>↺</span>
 </span>
 <strong>Clean Tray Stack Rack</strong>
-<small>Level 4</small>
+<small>Level 7</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Efficient Ceiling Tube Light, $150">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Tray-Return Conveyor, $800, locked: Level 24">
+<span class="item-art item-tray-waste" data-motif="tray-return-conveyor" data-form="belt-conveyor" data-material="stainless-steel" style="--preview-accent:#287f75" aria-hidden="true">
+<span>↺</span>
+</span>
+<strong>Tray-Return Conveyor</strong>
+<small>Level 24</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Efficient Ceiling Tube Light, $120">
 <span class="item-art item-lighting" data-motif="ceiling-tube-light" data-form="linear-light" data-material="powder-coated-metal" style="--preview-accent:#c8624c" aria-hidden="true">
 <span>✦</span>
 </span>
 <strong>Efficient Ceiling Tube Light</strong>
-<small>$150 · Ambience +1</small>
+<small>$120 · Ambience +2</small>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Pendant Dining Light, $220, locked: Level 3">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Pendant Dining Light, $220, locked: Level 5">
 <span class="item-art item-lighting" data-motif="pendant-dining-light" data-form="suspended-shade" data-material="powder-coated-metal" style="--preview-accent:#7b669b" aria-hidden="true">
 <span>✦</span>
 </span>
 <strong>Pendant Dining Light</strong>
-<small>Level 3</small>
+<small>Level 5</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Woven Lantern Cluster, $440, locked: Level 6">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Woven Lantern Cluster, $440, locked: Level 13">
 <span class="item-art item-lighting" data-motif="woven-lantern-cluster" data-form="lantern-cluster" data-material="woven-fibre" style="--preview-accent:#d69a35" aria-hidden="true">
 <span>✦</span>
 </span>
 <strong>Woven Lantern Cluster</strong>
-<small>Level 6</small>
+<small>Level 13</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Counter Task Light, $180, locked: Rep 10">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Counter Task Light, $180, locked: Level 5">
 <span class="item-art item-lighting" data-motif="counter-task-light" data-form="service-counter" data-material="powder-coated-metal" style="--preview-accent:#477c86" aria-hidden="true">
 <span>✦</span>
 </span>
 <strong>Counter Task Light</strong>
-<small>Rep 10</small>
+<small>Level 5</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Low Path Light, $170, locked: Level 5">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Low Path Light, $170, locked: Level 9">
 <span class="item-art item-lighting" data-motif="low-path-light" data-form="low-bollard" data-material="powder-coated-metal" style="--preview-accent:#d69a35" aria-hidden="true">
 <span>✦</span>
 </span>
 <strong>Low Path Light</strong>
-<small>Level 5</small>
+<small>Level 9</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Skylight Diffuser, $780, locked: Level 9">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Skylight Diffuser, $620, locked: Level 28">
 <span class="item-art item-lighting" data-motif="skylight-diffuser" data-form="glazed-ceiling-panel" data-material="glass" style="--preview-accent:#a56c3f" aria-hidden="true">
 <span>✦</span>
 </span>
 <strong>Skylight Diffuser</strong>
-<small>Level 9</small>
+<small>Level 28</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Festive String Lights, $360, locked: Level 8">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Festive String Lights, $360, locked: Level 16">
 <span class="item-art item-lighting" data-motif="festive-string-lights" data-form="festoon-cable" data-material="powder-coated-metal" style="--preview-accent:#6e7e42" aria-hidden="true">
 <span>✦</span>
 </span>
 <strong>Festive String Lights</strong>
-<small>Level 8</small>
+<small>Level 16</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Heritage Lamp Post, $380, locked: Level 21">
+<span class="item-art item-lighting" data-motif="heritage-lamp-post" data-form="lantern-post" data-material="powder-coated-metal" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>✦</span>
+</span>
+<strong>Heritage Lamp Post</strong>
+<small>Level 21</small>
 <i aria-hidden="true">●</i>
 </button>
 <button type="button" class="catalogue-item " aria-pressed="false" aria-label="Wall Circulation Fan, $210">
@@ -395,44 +459,60 @@ exports[`HawkerSimulator panels > renders the Build panel for a captured runtime
 <strong>Wall Circulation Fan</strong>
 <small>$210 · Ambience +1</small>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Wide Ceiling Fan, $390, locked: Level 4">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Wide Ceiling Fan, $390, locked: Level 6">
 <span class="item-art item-fan" data-motif="ceiling-fan" data-form="suspended-rotor" data-material="powder-coated-metal" style="--preview-accent:#6e7e42" aria-hidden="true">
 <span>✣</span>
 </span>
 <strong>Wide Ceiling Fan</strong>
-<small>Level 4</small>
+<small>Level 6</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Column Fan, $280, locked: Level 5">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Column Fan, $280, locked: Level 10">
 <span class="item-art item-fan" data-motif="column-fan" data-form="tower-fan" data-material="powder-coated-metal" style="--preview-accent:#287f75" aria-hidden="true">
 <span>✣</span>
 </span>
 <strong>Column Fan</strong>
-<small>Level 5</small>
+<small>Level 10</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="High-Volume Air Fan, $720, locked: Level 8">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="High-Volume Air Fan, $420, locked: Level 12">
 <span class="item-art item-fan" data-motif="high-volume-air-fan" data-form="caged-floor-rotor" data-material="powder-coated-metal" style="--preview-accent:#4d7390" aria-hidden="true">
 <span>✣</span>
 </span>
 <strong>High-Volume Air Fan</strong>
-<small>Level 8</small>
+<small>Level 12</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Quiet Corner Fan, $540, locked: Level 10">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Quiet Corner Fan, $460, locked: Level 15">
 <span class="item-art item-fan" data-motif="quiet-corner-fan" data-form="caged-floor-rotor" data-material="powder-coated-metal" style="--preview-accent:#b8667a" aria-hidden="true">
 <span>✣</span>
 </span>
 <strong>Quiet Corner Fan</strong>
-<small>Level 10</small>
+<small>Level 15</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Stall Exhaust Booster, $880, locked: Level 11">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Stall Exhaust Booster, $640, locked: Level 23">
 <span class="item-art item-fan" data-motif="stall-exhaust-booster" data-form="boxed-extractor" data-material="moulded-plastic" style="--preview-accent:#a56c3f" aria-hidden="true">
 <span>✣</span>
 </span>
 <strong>Stall Exhaust Booster</strong>
-<small>Level 11</small>
+<small>Level 23</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Misting Fan, $440, locked: Level 19">
+<span class="item-art item-fan" data-motif="misting-fan" data-form="mist-ring-pedestal" data-material="powder-coated-metal" style="--preview-accent:#4d7390" aria-hidden="true">
+<span>✣</span>
+</span>
+<strong>Misting Fan</strong>
+<small>Level 19</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Giant Ceiling Fan, $800, locked: Level 29">
+<span class="item-art item-fan" data-motif="giant-ceiling-fan" data-form="long-blade-rotor" data-material="powder-coated-metal" style="--preview-accent:#7b669b" aria-hidden="true">
+<span>✣</span>
+</span>
+<strong>Giant Ceiling Fan</strong>
+<small>Level 29</small>
 <i aria-hidden="true">●</i>
 </button>
 <button type="button" class="catalogue-item " aria-pressed="false" aria-label="Table Herb Planter, $75">
@@ -442,68 +522,84 @@ exports[`HawkerSimulator panels > renders the Build panel for a captured runtime
 <strong>Table Herb Planter</strong>
 <small>$75 · Ambience +3</small>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Tall Areca Planter, $190, locked: Level 3">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Tall Areca Planter, $190, locked: Level 4">
 <span class="item-art item-plant" data-motif="tall-areca-planter" data-form="floor-planter" data-material="living-foliage" style="--preview-accent:#c8624c" aria-hidden="true">
 <span>♧</span>
 </span>
 <strong>Tall Areca Planter</strong>
-<small>Level 3</small>
+<small>Level 4</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Fern Trough, $310, locked: Level 5">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Fern Trough, $310, locked: Level 9">
 <span class="item-art item-plant" data-motif="fern-trough" data-form="linear-planter" data-material="living-foliage" style="--preview-accent:#a56c3f" aria-hidden="true">
 <span>♧</span>
 </span>
 <strong>Fern Trough</strong>
-<small>Level 5</small>
+<small>Level 9</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Vine Trellis, $360, locked: Level 6">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Vine Trellis, $360, locked: Level 11">
 <span class="item-art item-plant" data-motif="vine-trellis" data-form="climbing-trellis" data-material="living-foliage" style="--preview-accent:#c8624c" aria-hidden="true">
 <span>♧</span>
 </span>
 <strong>Vine Trellis</strong>
-<small>Level 6</small>
+<small>Level 11</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Rain-Garden Pot, $420, locked: Level 7">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Rain-Garden Pot, $420, locked: Level 14">
 <span class="item-art item-plant" data-motif="rain-garden-pot" data-form="floor-planter" data-material="living-foliage" style="--preview-accent:#a56c3f" aria-hidden="true">
 <span>♧</span>
 </span>
 <strong>Rain-Garden Pot</strong>
-<small>Level 7</small>
+<small>Level 14</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Hanging Pothos Basket, $155, locked: Level 4">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Hanging Pothos Basket, $155, locked: Level 7">
 <span class="item-art item-plant" data-motif="hanging-pothos" data-form="hanging-basket" data-material="living-foliage" style="--preview-accent:#56875c" aria-hidden="true">
 <span>♧</span>
 </span>
 <strong>Hanging Pothos Basket</strong>
-<small>Level 4</small>
+<small>Level 7</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Dwarf Banana Planter, $520, locked: Level 9">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Dwarf Banana Planter, $460, locked: Level 17">
 <span class="item-art item-plant" data-motif="dwarf-banana-planter" data-form="floor-planter" data-material="living-foliage" style="--preview-accent:#4d7390" aria-hidden="true">
 <span>♧</span>
 </span>
 <strong>Dwarf Banana Planter</strong>
-<small>Level 9</small>
+<small>Level 17</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Pandan Border Bed, $610, locked: Level 10">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Pandan Border Bed, $520, locked: Level 20">
 <span class="item-art item-plant" data-motif="pandan-border-bed" data-form="linear-planter" data-material="living-foliage" style="--preview-accent:#287f75" aria-hidden="true">
 <span>♧</span>
 </span>
 <strong>Pandan Border Bed</strong>
-<small>Level 10</small>
+<small>Level 20</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Entrance Directory, $240, locked: Rep 10">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Frangipani Tree Planter, $460, locked: Level 23">
+<span class="item-art item-plant" data-motif="frangipani-tree-planter" data-form="tree-planter" data-material="living-foliage" style="--preview-accent:#7b669b" aria-hidden="true">
+<span>♧</span>
+</span>
+<strong>Frangipani Tree Planter</strong>
+<small>Level 23</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Bougainvillea Arch, $480, locked: Level 27">
+<span class="item-art item-plant" data-motif="bougainvillea-arch" data-form="climbing-arch" data-material="living-foliage" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>♧</span>
+</span>
+<strong>Bougainvillea Arch</strong>
+<small>Level 27</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Entrance Directory, $240, locked: Level 10">
 <span class="item-art item-signage" data-motif="entrance-directory" data-form="information-board" data-material="painted-board" style="--preview-accent:#7b669b" aria-hidden="true">
 <span>▱</span>
 </span>
 <strong>Entrance Directory</strong>
-<small>Rep 10</small>
+<small>Level 10</small>
 <i aria-hidden="true">●</i>
 </button>
 <button type="button" class="catalogue-item " aria-pressed="false" aria-label="Stall Row Marker, $145, locked: Level 3">
@@ -521,36 +617,44 @@ exports[`HawkerSimulator panels > renders the Build panel for a captured runtime
 <strong>Tray-Return Arrow Sign</strong>
 <small>$95 · Cleanliness +2</small>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Accessible Route Sign, $120, locked: Level 3">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Accessible Route Sign, $120, locked: Level 4">
 <span class="item-art item-signage" data-motif="accessible-wayfinding-sign" data-form="wayfinding-sign" data-material="painted-board" style="--preview-accent:#6e7e42" aria-hidden="true">
 <span>▱</span>
 </span>
 <strong>Accessible Route Sign</strong>
-<small>Level 3</small>
+<small>Level 4</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Queue Courtesy Sign, $105, locked: Level 4">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Queue Courtesy Sign, $105, locked: Level 7">
 <span class="item-art item-signage" data-motif="queue-etiquette-sign" data-form="wayfinding-sign" data-material="painted-board" style="--preview-accent:#56875c" aria-hidden="true">
 <span>▱</span>
 </span>
 <strong>Queue Courtesy Sign</strong>
-<small>Level 4</small>
+<small>Level 7</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Menu Preview Board, $190, locked: Level 5">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Menu Preview Board, $190, locked: Level 13">
 <span class="item-art item-signage" data-motif="menu-preview-board" data-form="information-board" data-material="painted-board" style="--preview-accent:#477c86" aria-hidden="true">
 <span>▱</span>
 </span>
 <strong>Menu Preview Board</strong>
-<small>Level 5</small>
+<small>Level 13</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Centre Identity Sign, $680, locked: Level 9">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Centre Identity Sign, $560, locked: Level 17">
 <span class="item-art item-signage" data-motif="centre-identity-sign" data-form="information-board" data-material="painted-board" style="--preview-accent:#6e7e42" aria-hidden="true">
 <span>▱</span>
 </span>
 <strong>Centre Identity Sign</strong>
-<small>Level 9</small>
+<small>Level 17</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Order-Ready Number Board, $320, locked: Level 22">
+<span class="item-art item-signage" data-motif="order-ready-board" data-form="lit-number-board" data-material="painted-board" style="--preview-accent:#b8667a" aria-hidden="true">
+<span>▱</span>
+</span>
+<strong>Order-Ready Number Board</strong>
+<small>Level 22</small>
 <i aria-hidden="true">●</i>
 </button>
 <button type="button" class="catalogue-item " aria-pressed="false" aria-label="Low Timber Screen, $240, locked: Level 3">
@@ -561,31 +665,31 @@ exports[`HawkerSimulator panels > renders the Build panel for a captured runtime
 <small>Level 3</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Tiled Half Wall, $360, locked: Level 5">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Tiled Half Wall, $360, locked: Level 8">
 <span class="item-art item-divider" data-motif="tiled-half-wall" data-form="solid-half-wall" data-material="ceramic" style="--preview-accent:#287f75" aria-hidden="true">
 <span>╫</span>
 </span>
 <strong>Tiled Half Wall</strong>
-<small>Level 5</small>
+<small>Level 8</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Clear Wind Screen, $410, locked: Level 6">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Clear Wind Screen, $410, locked: Level 12">
 <span class="item-art item-divider" data-motif="clear-wind-screen" data-form="transparent-screen" data-material="glass" style="--preview-accent:#b8667a" aria-hidden="true">
 <span>╫</span>
 </span>
 <strong>Clear Wind Screen</strong>
-<small>Level 6</small>
+<small>Level 12</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Integrated Planter Divider, $520, locked: Level 8">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Integrated Planter Divider, $460, locked: Level 16">
 <span class="item-art item-divider" data-motif="integrated-planter-divider" data-form="floor-planter" data-material="timber" style="--preview-accent:#d69a35" aria-hidden="true">
 <span>╫</span>
 </span>
 <strong>Integrated Planter Divider</strong>
-<small>Level 8</small>
+<small>Level 16</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Retractable Queue Rail, $210, locked: Rep 10">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Retractable Queue Rail, $180, locked: Rep 10">
 <span class="item-art item-divider" data-motif="retractable-queue-rail" data-form="post-and-belt" data-material="timber" style="--preview-accent:#a56c3f" aria-hidden="true">
 <span>╫</span>
 </span>
@@ -593,12 +697,20 @@ exports[`HawkerSimulator panels > renders the Build panel for a captured runtime
 <small>Rep 10</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Acoustic Screen, $620, locked: Level 11">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Acoustic Screen, $470, locked: Level 27">
 <span class="item-art item-divider" data-motif="acoustic-screen" data-form="freestanding-screen" data-material="upholstery" style="--preview-accent:#56875c" aria-hidden="true">
 <span>╫</span>
 </span>
 <strong>Acoustic Screen</strong>
-<small>Level 11</small>
+<small>Level 27</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Breeze-Block Screen, $380, locked: Level 21">
+<span class="item-art item-divider" data-motif="breeze-block-screen" data-form="ventilation-block-wall" data-material="masonry" style="--preview-accent:#56875c" aria-hidden="true">
+<span>╫</span>
+</span>
+<strong>Breeze-Block Screen</strong>
+<small>Level 21</small>
 <i aria-hidden="true">●</i>
 </button>
 <button type="button" class="catalogue-item " aria-pressed="false" aria-label="Public Handwash Sink, $480">
@@ -608,92 +720,124 @@ exports[`HawkerSimulator panels > renders the Build panel for a captured runtime
 <strong>Public Handwash Sink</strong>
 <small>$480 · Ambience +1</small>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Drinking-Water Fountain, $390, locked: Level 4">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Drinking-Water Fountain, $390, locked: Level 11">
 <span class="item-art item-facility" data-motif="drinking-water-fountain" data-form="drinking-fountain" data-material="stainless-steel" style="--preview-accent:#b8667a" aria-hidden="true">
 <span>⬡</span>
 </span>
 <strong>Drinking-Water Fountain</strong>
-<small>Level 4</small>
+<small>Level 11</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Locked Cleaning Cupboard, $320, locked: Level 3">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Locked Cleaning Cupboard, $320, locked: Level 8">
 <span class="item-art item-facility" data-motif="locked-cleaning-cupboard" data-form="wall-cabinet" data-material="stainless-steel" style="--preview-accent:#4d7390" aria-hidden="true">
 <span>⬡</span>
 </span>
 <strong>Locked Cleaning Cupboard</strong>
-<small>Level 3</small>
+<small>Level 8</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Staff Mop Sink, $560, locked: Level 6">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Staff Mop Sink, $560, locked: Level 13">
 <span class="item-art item-facility" data-motif="staff-mop-sink" data-form="wash-basin" data-material="stainless-steel" style="--preview-accent:#477c86" aria-hidden="true">
 <span>⬡</span>
 </span>
 <strong>Staff Mop Sink</strong>
-<small>Level 6</small>
+<small>Level 13</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="First-Aid Cabinet, $180, locked: Rep 10">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="First-Aid Cabinet, $150, locked: Level 6">
 <span class="item-art item-facility" data-motif="first-aid-cabinet" data-form="wall-cabinet" data-material="stainless-steel" style="--preview-accent:#c8624c" aria-hidden="true">
 <span>⬡</span>
 </span>
 <strong>First-Aid Cabinet</strong>
-<small>Rep 10</small>
+<small>Level 6</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Accessible Wash Basin, $640, locked: Level 7">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Accessible Wash Basin, $640, locked: Level 16">
 <span class="item-art item-facility" data-motif="accessible-wash-basin" data-form="wash-basin" data-material="glass" style="--preview-accent:#b8667a" aria-hidden="true">
 <span>⬡</span>
 </span>
 <strong>Accessible Wash Basin</strong>
-<small>Level 7</small>
+<small>Level 16</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Protected Utility Point, $450, locked: Level 9">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Protected Utility Point, $360, locked: Level 18">
 <span class="item-art item-facility" data-motif="protected-utility-point" data-form="protected-service-box" data-material="stainless-steel" style="--preview-accent:#a56c3f" aria-hidden="true">
 <span>⬡</span>
 </span>
 <strong>Protected Utility Point</strong>
-<small>Level 9</small>
+<small>Level 18</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Geometric Tile Mural, $560, locked: Level 6">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Family Care Room, $560, locked: Level 25">
+<span class="item-art item-facility" data-motif="family-care-room" data-form="enclosed-care-room" data-material="stainless-steel" style="--preview-accent:#6e7e42" aria-hidden="true">
+<span>⬡</span>
+</span>
+<strong>Family Care Room</strong>
+<small>Level 25</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Geometric Tile Mural, $480, locked: Level 14">
 <span class="item-art item-decor" data-motif="geometric-tile-mural" data-form="wall-mural" data-material="ceramic" style="--preview-accent:#b8667a" aria-hidden="true">
 <span>◆</span>
 </span>
 <strong>Geometric Tile Mural</strong>
-<small>Level 6</small>
+<small>Level 14</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Community Noticeboard, $230, locked: Level 3">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Community Noticeboard, $230, locked: Level 5">
 <span class="item-art item-decor" data-motif="community-noticeboard" data-form="pin-board" data-material="timber" style="--preview-accent:#b8667a" aria-hidden="true">
 <span>◆</span>
 </span>
 <strong>Community Noticeboard</strong>
-<small>Level 3</small>
+<small>Level 5</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Fabric Ceiling Bunting, $280, locked: Level 5">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Fabric Ceiling Bunting, $280, locked: Level 9">
 <span class="item-art item-decor" data-motif="fabric-ceiling-bunting" data-form="hanging-bunting" data-material="fabric" style="--preview-accent:#b8667a" aria-hidden="true">
 <span>◆</span>
 </span>
 <strong>Fabric Ceiling Bunting</strong>
-<small>Level 5</small>
+<small>Level 9</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Tabletop Flower Vase, $95, locked: Level 4">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Tabletop Flower Vase, $95, locked: Level 7">
 <span class="item-art item-decor" data-motif="tabletop-flower-vase" data-form="tabletop-vase" data-material="painted-board" style="--preview-accent:#b8667a" aria-hidden="true">
 <span>◆</span>
 </span>
 <strong>Tabletop Flower Vase</strong>
-<small>Level 4</small>
+<small>Level 7</small>
 <i aria-hidden="true">●</i>
 </button>
-<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Feature Centre Clock, $420, locked: Level 8">
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Feature Centre Clock, $320, locked: Level 15">
 <span class="item-art item-decor" data-motif="feature-centre-clock" data-form="feature-clock" data-material="painted-board" style="--preview-accent:#56875c" aria-hidden="true">
 <span>◆</span>
 </span>
 <strong>Feature Centre Clock</strong>
-<small>Level 8</small>
+<small>Level 15</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Heritage Photo Wall, $420, locked: Level 26">
+<span class="item-art item-decor" data-motif="heritage-photo-wall" data-form="framed-photo-row" data-material="painted-board" style="--preview-accent:#a56c3f" aria-hidden="true">
+<span>◆</span>
+</span>
+<strong>Heritage Photo Wall</strong>
+<small>Level 26</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Paper Umbrella Canopy, $480, locked: Level 23">
+<span class="item-art item-decor" data-motif="paper-umbrella-canopy" data-form="hung-umbrella-cluster" data-material="fabric" style="--preview-accent:#287f75" aria-hidden="true">
+<span>◆</span>
+</span>
+<strong>Paper Umbrella Canopy</strong>
+<small>Level 23</small>
+<i aria-hidden="true">●</i>
+</button>
+<button type="button" class="catalogue-item " aria-pressed="false" aria-label="Courtyard Water Feature, $600, locked: Level 30">
+<span class="item-art item-decor" data-motif="courtyard-water-feature" data-form="spill-basin" data-material="ceramic" style="--preview-accent:#4d7390" aria-hidden="true">
+<span>◆</span>
+</span>
+<strong>Courtyard Water Feature</strong>
+<small>Level 30</small>
 <i aria-hidden="true">●</i>
 </button>
 </div>

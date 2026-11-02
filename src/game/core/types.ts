@@ -157,6 +157,11 @@ export interface PlaceableDefinition {
   readonly queueAnchor?: GridPoint;
   readonly seatPoints?: readonly GridPoint[];
   readonly trayReturnPoint?: GridPoint;
+  /**
+   * Table-cleaning crew members a tray-return station brings, a positive integer; a tray return
+   * without it brings one. Only tray returns read it.
+   */
+  readonly cleaningCrew?: number;
   readonly stall?: StallDefinition;
   /** Spatial gameplay effects supplied by signs, facilities, comfort, and decor. */
   readonly utility?: UtilityEffects;

@@ -48,8 +48,8 @@ function decor_item(id: string): (typeof DECOR)[number] {
 }
 
 describe("paint_decor", () => {
-  it("covers the five launch decor pieces", () => {
-    expect(DECOR).toHaveLength(5);
+  it("covers the eight launch decor pieces", () => {
+    expect(DECOR).toHaveLength(8);
   });
 
   it("paints every piece at every frame and rotation", () => {

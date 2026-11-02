@@ -151,7 +151,7 @@ const MEAL_SIDE_STEP = 9.75;
 /**
  * Shares of a round top's free width and depth a meal may slide along towards a diner sitting
  * off its middle. The narrow ends of an ellipse leave less room, so these keep the meals of up
- * to eight diners around a round table apart.
+ * to eight diners around a round table apart. A top may give its own shares (`mealSlide`).
  */
 const ROUND_MEAL_SLIDE = { x: 0.3, y: 0.5 } as const;
 /** How far a table may be from a diner's seat for the meal to go on it, in world pixels. */
@@ -245,10 +245,8 @@ function place_meal_on_top(
     along = clamp_symmetric(dinerAlong * scale + left, alongReach);
     depth = clamp_symmetric(depthHalf - MEAL_INSET, depthReach);
   } else {
-    along = clamp_symmetric(
-      dinerAlong,
-      alongReach * (isBeside ? ROUND_MEAL_SLIDE.y : ROUND_MEAL_SLIDE.x),
-    );
+    const slide = top.mealSlide ?? ROUND_MEAL_SLIDE;
+    along = clamp_symmetric(dinerAlong, alongReach * (isBeside ? slide.y : slide.x));
     const edge = depthHalf * Math.sqrt(Math.max(0, 1 - (along / alongHalf) ** 2));
     depth = edge - MEAL_INSET;
     // Pull the meal in until all of it is on the ellipse.
