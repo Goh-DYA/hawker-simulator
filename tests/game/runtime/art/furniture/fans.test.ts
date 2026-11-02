@@ -44,6 +44,8 @@ const ROTOR_FANS = [
   "item.ceiling-fan",
   "item.high-volume-air-fan",
   "item.quiet-corner-fan",
+  "item.misting-fan",
+  "item.giant-ceiling-fan",
 ];
 /** The fans that stay still whatever the motion frame. */
 const STILL_FANS = ["item.column-fan", "item.stall-exhaust-booster"];
@@ -110,7 +112,7 @@ function fan(id: string): (typeof FANS)[number] {
 }
 
 describe("fan painters", () => {
-  it("covers the six launch fans", () => {
+  it("covers the eight launch fans", () => {
     expect(FANS.map((item) => item.id).sort()).toEqual([...ROTOR_FANS, ...STILL_FANS].sort());
   });
 

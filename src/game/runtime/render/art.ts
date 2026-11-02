@@ -61,24 +61,34 @@ export type SeatStyle = "stool" | "bench" | "chair";
 
 /** The fixture branch of `drawFixtureGraphic`; `cart` is the wheeled cabinet. */
 export type FixtureStyle =
-  "ticket" | "condiment" | "cutlery" | "water" | "pickup" | "display-case" | "cart";
+  "ticket" | "condiment" | "cutlery" | "water" | "pickup" | "display-case" | "kiosk" | "cart";
 
 /** The branch of `drawTrayWasteGraphic`; `bin` is the lidded general bin. */
-export type TrayWasteStyle = "tray-point" | "recycling" | "food-waste" | "trolley" | "bin";
+export type TrayWasteStyle =
+  "conveyor" | "tray-point" | "recycling" | "food-waste" | "trolley" | "bin";
 
 /**
  * The foliage branch of `drawPlantGraphic`; `leafy` is the generic leaf fan and `trellis`
  * draws no extra foliage.
  */
 export type PlantStyle =
-  "banana" | "areca" | "pandan" | "fern" | "rain-garden" | "hanging" | "leafy" | "trellis";
+  | "frangipani"
+  | "bougainvillea-arch"
+  | "banana"
+  | "areca"
+  | "pandan"
+  | "fern"
+  | "rain-garden"
+  | "hanging"
+  | "leafy"
+  | "trellis";
 
 /** The panel glyph branch of `drawSignageGraphic`; `board` is the tall information board. */
-export type SignagePanelStyle = "board" | "arrow" | "accessible" | "queue" | "plain";
+export type SignagePanelStyle = "numbers" | "board" | "arrow" | "accessible" | "queue" | "plain";
 
 /** The short label branch of `drawSignageGraphic`. */
 export type SignageLabelStyle =
-  "directory" | "menu" | "return" | "accessible" | "queue" | "row" | "welcome";
+  "ready" | "directory" | "menu" | "return" | "accessible" | "queue" | "row" | "welcome";
 
 /** The two independent art branches a sign draws. */
 export interface SignageStyle {
@@ -87,20 +97,34 @@ export interface SignageStyle {
 }
 
 /** The branch of `drawDividerGraphic`; `panel` is the solid or tiled screen. */
-export type DividerStyle = "queue-rail" | "clear-wind" | "planter" | "panel";
+export type DividerStyle = "queue-rail" | "clear-wind" | "planter" | "breeze-block" | "panel";
 
 /** The branch of `drawFacilityGraphic`; `utility` is the plain service box. */
 export type FacilityStyle =
-  "handwash" | "mop-sink" | "accessible-basin" | "fountain" | "first-aid" | "cupboard" | "utility";
+  | "handwash"
+  | "mop-sink"
+  | "accessible-basin"
+  | "fountain"
+  | "first-aid"
+  | "cupboard"
+  | "care-room"
+  | "utility";
 
 /** The branch of `drawDecorGraphic`; `board` is the wall mural or noticeboard. */
-export type DecorStyle = "bunting" | "flower-vase" | "clock" | "board";
+export type DecorStyle =
+  | "bunting"
+  | "flower-vase"
+  | "clock"
+  | "photo-wall"
+  | "umbrella-canopy"
+  | "water-feature"
+  | "board";
 
 /** The support branch of `drawTableGraphic`. */
-export type TableSupportStyle = "pedestal" | "folding" | "trestle" | "legs";
+export type TableSupportStyle = "drum" | "skirted" | "pedestal" | "folding" | "trestle" | "legs";
 
 /** The tabletop branch of `drawTableGraphic`. */
-export type TableTopStyle = "terrazzo" | "round" | "snack-ledge" | "slab";
+export type TableTopStyle = "stone" | "banquet" | "terrazzo" | "round" | "snack-ledge" | "slab";
 
 /** The two independent art branches a table draws. */
 export interface TableStyle {
@@ -117,10 +141,12 @@ export type LightingStyle =
   | "skylight"
   | "string"
   | "task-light"
+  | "lamp-post"
   | "lamp";
 
 /** The housing branch of `drawFanGraphic`; the rotor styles share the bladed fan. */
-export type FanStyle = "column" | "exhaust" | "wall-rotor" | "ceiling-rotor" | "floor-rotor";
+export type FanStyle =
+  "misting" | "giant-rotor" | "column" | "exhaust" | "wall-rotor" | "ceiling-rotor" | "floor-rotor";
 
 /** The art style each placeable category's renderer selects by. */
 export interface PlaceableStyles {
@@ -178,6 +204,8 @@ export const PLACEABLE_STYLE_BY_ID: {
     "item.standing-snack-ledge": { support: "legs", top: "snack-ledge" },
     "item.folding-overflow-table": { support: "folding", top: "slab" },
     "item.terrazzo-feature-table": { support: "pedestal", top: "terrazzo" },
+    "item.granite-chess-table": { support: "drum", top: "stone" },
+    "item.banquet-turntable-table": { support: "skirted", top: "banquet" },
   },
   seat: {
     "item.stacking-stool": "stool",
@@ -190,6 +218,9 @@ export const PLACEABLE_STYLE_BY_ID: {
     "item.three-person-communal-bench": "bench",
     "item.acoustic-booth-seat": "bench",
     "item.swivel-perch-seat": "stool",
+    "item.companion-transfer-bench": "bench",
+    "item.four-person-teak-bench": "bench",
+    "item.rattan-lounge-chair": "chair",
   },
   "stall-fixture": {
     "item.queue-ticket-dispenser": "ticket",
@@ -200,6 +231,7 @@ export const PLACEABLE_STYLE_BY_ID: {
     "item.heated-display-case": "display-case",
     "item.chilled-display-case": "display-case",
     "item.mobile-prep-cart": "cart",
+    "item.self-order-kiosk": "kiosk",
   },
   "tray-waste": {
     "item.single-bay-tray-return": "tray-point",
@@ -210,6 +242,7 @@ export const PLACEABLE_STYLE_BY_ID: {
     "item.general-waste-bin": "bin",
     "item.cleaning-trolley-bay": "trolley",
     "item.clean-tray-stack-rack": "tray-point",
+    "item.tray-return-conveyor": "conveyor",
   },
   lighting: {
     "item.ceiling-tube-light": "tube",
@@ -219,6 +252,7 @@ export const PLACEABLE_STYLE_BY_ID: {
     "item.low-path-light": "path-light",
     "item.skylight-diffuser": "skylight",
     "item.festive-string-lights": "string",
+    "item.heritage-lamp-post": "lamp-post",
   },
   fan: {
     "item.wall-circulation-fan": "wall-rotor",
@@ -227,6 +261,8 @@ export const PLACEABLE_STYLE_BY_ID: {
     "item.high-volume-air-fan": "floor-rotor",
     "item.quiet-corner-fan": "floor-rotor",
     "item.stall-exhaust-booster": "exhaust",
+    "item.misting-fan": "misting",
+    "item.giant-ceiling-fan": "giant-rotor",
   },
   plant: {
     "item.table-herb-planter": "leafy",
@@ -237,6 +273,8 @@ export const PLACEABLE_STYLE_BY_ID: {
     "item.hanging-pothos": "hanging",
     "item.dwarf-banana-planter": "banana",
     "item.pandan-border-bed": "pandan",
+    "item.frangipani-tree-planter": "frangipani",
+    "item.bougainvillea-arch": "bougainvillea-arch",
   },
   signage: {
     "item.entrance-directory": { panel: "board", label: "directory" },
@@ -246,6 +284,7 @@ export const PLACEABLE_STYLE_BY_ID: {
     "item.queue-etiquette-sign": { panel: "queue", label: "queue" },
     "item.menu-preview-board": { panel: "board", label: "menu" },
     "item.centre-identity-sign": { panel: "board", label: "welcome" },
+    "item.order-ready-board": { panel: "numbers", label: "ready" },
   },
   divider: {
     "item.low-timber-screen": "panel",
@@ -254,6 +293,7 @@ export const PLACEABLE_STYLE_BY_ID: {
     "item.integrated-planter-divider": "planter",
     "item.retractable-queue-rail": "queue-rail",
     "item.acoustic-screen": "panel",
+    "item.breeze-block-screen": "breeze-block",
   },
   facility: {
     "item.public-handwash-sink": "handwash",
@@ -263,6 +303,7 @@ export const PLACEABLE_STYLE_BY_ID: {
     "item.first-aid-cabinet": "first-aid",
     "item.accessible-wash-basin": "accessible-basin",
     "item.protected-utility-point": "utility",
+    "item.family-care-room": "care-room",
   },
   decor: {
     "item.geometric-tile-mural": "board",
@@ -270,6 +311,9 @@ export const PLACEABLE_STYLE_BY_ID: {
     "item.fabric-ceiling-bunting": "bunting",
     "item.tabletop-flower-vase": "flower-vase",
     "item.feature-centre-clock": "clock",
+    "item.heritage-photo-wall": "photo-wall",
+    "item.paper-umbrella-canopy": "umbrella-canopy",
+    "item.courtyard-water-feature": "water-feature",
   },
 };
 
@@ -331,10 +375,12 @@ function classify_fixture_style(motif: string): FixtureStyle {
   if (motif.includes("water")) return "water";
   if (motif.includes("pickup")) return "pickup";
   if (motif.includes("display-case")) return "display-case";
+  if (motif.includes("kiosk")) return "kiosk";
   return "cart";
 }
 
 function classify_tray_waste_style(motif: string): TrayWasteStyle {
+  if (motif.includes("conveyor")) return "conveyor";
   if (
     motif.includes("tray-return") ||
     motif.includes("dish-drop") ||
@@ -349,6 +395,8 @@ function classify_tray_waste_style(motif: string): TrayWasteStyle {
 }
 
 function classify_plant_style(motif: string): PlantStyle {
+  if (motif.includes("frangipani")) return "frangipani";
+  if (motif.includes("bougainvillea")) return "bougainvillea-arch";
   if (motif.includes("banana")) return "banana";
   if (motif.includes("areca")) return "areca";
   if (motif.includes("pandan")) return "pandan";
@@ -364,6 +412,7 @@ function classify_signage_style(motif: string): SignageStyle {
 }
 
 function classify_signage_panel(motif: string): SignagePanelStyle {
+  if (motif.includes("order-ready")) return "numbers";
   if (motif.includes("directory") || motif.includes("menu-preview") || motif.includes("identity")) {
     return "board";
   }
@@ -374,6 +423,7 @@ function classify_signage_panel(motif: string): SignagePanelStyle {
 }
 
 function classify_signage_label(motif: string): SignageLabelStyle {
+  if (motif.includes("order-ready")) return "ready";
   if (motif.includes("directory")) return "directory";
   if (motif.includes("menu")) return "menu";
   if (motif.includes("return")) return "return";
@@ -387,6 +437,7 @@ function classify_divider_style(motif: string): DividerStyle {
   if (motif.includes("queue-rail")) return "queue-rail";
   if (motif.includes("clear-wind")) return "clear-wind";
   if (motif.includes("planter")) return "planter";
+  if (motif.includes("breeze-block")) return "breeze-block";
   return "panel";
 }
 
@@ -397,6 +448,7 @@ function classify_facility_style(motif: string): FacilityStyle {
   if (motif.includes("fountain")) return "fountain";
   if (motif.includes("first-aid")) return "first-aid";
   if (motif.includes("cupboard")) return "cupboard";
+  if (motif.includes("care-room")) return "care-room";
   return "utility";
 }
 
@@ -404,6 +456,9 @@ function classify_decor_style(motif: string): DecorStyle {
   if (motif.includes("bunting")) return "bunting";
   if (motif.includes("flower-vase")) return "flower-vase";
   if (motif.includes("clock")) return "clock";
+  if (motif.includes("photo-wall")) return "photo-wall";
+  if (motif.includes("umbrella")) return "umbrella-canopy";
+  if (motif.includes("water-feature")) return "water-feature";
   return "board";
 }
 
@@ -412,6 +467,8 @@ function classify_table_style(motif: string): TableStyle {
 }
 
 function classify_table_support(motif: string): TableSupportStyle {
+  if (motif.includes("chess")) return "drum";
+  if (motif.includes("banquet")) return "skirted";
   if (motif.includes("round") || motif.includes("terrazzo")) return "pedestal";
   if (motif.includes("folding")) return "folding";
   if (motif.includes("trestle")) return "trestle";
@@ -419,6 +476,8 @@ function classify_table_support(motif: string): TableSupportStyle {
 }
 
 function classify_table_top(motif: string): TableTopStyle {
+  if (motif.includes("chess")) return "stone";
+  if (motif.includes("banquet")) return "banquet";
   if (motif.includes("terrazzo")) return "terrazzo";
   if (motif.includes("round")) return "round";
   if (motif.includes("snack-ledge")) return "snack-ledge";
@@ -433,10 +492,13 @@ function classify_lighting_style(motif: string): LightingStyle {
   if (motif.includes("skylight")) return "skylight";
   if (motif.includes("string")) return "string";
   if (motif.includes("task-light")) return "task-light";
+  if (motif.includes("lamp-post")) return "lamp-post";
   return "lamp";
 }
 
 function classify_fan_style(motif: string): FanStyle {
+  if (motif.includes("misting")) return "misting";
+  if (motif.includes("giant")) return "giant-rotor";
   if (motif.includes("column")) return "column";
   if (motif.includes("exhaust")) return "exhaust";
   if (motif.includes("wall")) return "wall-rotor";

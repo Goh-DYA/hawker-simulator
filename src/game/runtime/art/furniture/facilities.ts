@@ -1,7 +1,7 @@
 /**
  * Facility painters: the public handwash sink, the drinking-water fountain, the accessible wash
- * basin, the staff mop sink, the first-aid cabinet, the locked cleaning cupboard and the
- * protected utility point, as practical hawker-centre infrastructure in the 3/4 view.
+ * basin, the staff mop sink, the first-aid cabinet, the locked cleaning cupboard, the
+ * protected utility point and the family care room, as practical hawker-centre infrastructure in the 3/4 view.
  *
  * Each is laid out along its service edge with a {@link Run}, so it turns with the placement
  * rotation (its user stands on the rotated south side) while the north-west light and the
@@ -95,6 +95,20 @@ const MOP_PANEL = 29;
 const ZINC = 0xa9b6b3;
 /** Grey powder coat of the utility pedestal. */
 const UTILITY_GREY = 0x7d8a87;
+/** Height of the family care room's partition walls. */
+const CARE_WALL = 26;
+/** Height of the care room's low solid near wall, under its frosted glass. */
+const CARE_FRONT_WALL = 11;
+/** Pale mint of the care room's walls. */
+const CARE_WALL_TONE = 0xd5e9df;
+/** Soft vinyl of the care room's floor. */
+const CARE_FLOOR = 0xeee6d6;
+/** Warm oak of the care room's door. */
+const CARE_DOOR = 0xb98a5a;
+/** White laminate of the changing table. */
+const CARE_TABLE = 0xf2f0ea;
+/** Dusty pink of the nursing armchair. */
+const CARE_CHAIR = 0xd99aa5;
 
 /** A facility painter: paints one branch in the rotated footprint. */
 type FacilityPainter = (
@@ -113,6 +127,7 @@ const FACILITY_PAINTERS: Readonly<Record<FacilityStyle, FacilityPainter>> = {
   "mop-sink": paint_mop_sink,
   "first-aid": paint_first_aid,
   cupboard: paint_cupboard,
+  "care-room": paint_care_room,
   utility: paint_utility_point,
 };
 
@@ -1445,4 +1460,412 @@ function paint_hazard_triangle(ctx: PaintContext, cx: number, cy: number, size: 
     ],
     css(INK),
   );
+}
+
+/**
+ * Paints the oak door of the family care room on a wall face: a leaf with a narrow vision panel,
+ * a steel pull and a darker frame.
+ *
+ * @param ctx - The paint context.
+ * @param x - Left of the leaf.
+ * @param y - Top of the leaf.
+ * @param width - Width of the leaf.
+ * @param height - Height of the leaf.
+ * @param frame - The paint frame.
+ */
+function paint_care_door(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  frame: PaintFrame,
+): void {
+  fill_rounded_rect(ctx, x - 1, y - 1, width + 2, height + 1, 1, css(shade(CARE_DOOR, 0.35)));
+  fill_rounded_rect(
+    ctx,
+    x,
+    y,
+    width,
+    height,
+    0.8,
+    linear_gradient(ctx, x, 0, x + width, 0, [
+      [0, tint(CARE_DOOR, 0.18)],
+      [1, shade(CARE_DOOR, 0.12)],
+    ]),
+  );
+  if (!frame.isLowDetail) {
+    paint_glass(
+      ctx,
+      { x: x + width * 0.3, y: y + 2.5, width: width * 0.4, height: 5 },
+      0x9fc8cf,
+      0.8,
+    );
+  }
+  fill_rounded_rect(ctx, x + width - 3.2, y + height * 0.5, 1.6, 3, 0.6, css(DARK_STEEL));
+  if (frame.isHighContrast) {
+    stroke_rounded_rect(ctx, x, y, width, height, 0.8, css(SHADOW_INK), 1);
+  }
+}
+
+/**
+ * Paints the family sign of the care room: a green plate with the family pictogram and its word.
+ *
+ * @param ctx - The paint context.
+ * @param cx - Centre x of the sign.
+ * @param y - Top of the sign.
+ * @param recipe - The recipe, whose accent colours the plate.
+ * @param frame - The paint frame.
+ */
+function paint_care_sign(
+  ctx: PaintContext,
+  cx: number,
+  y: number,
+  recipe: PlaceableVisualRecipe,
+  frame: PaintFrame,
+): void {
+  const sign = { x: cx - 10, y, width: 20, height: 7 };
+  fill_rounded_rect(
+    ctx,
+    sign.x + 0.6,
+    sign.y + 0.8,
+    sign.width,
+    sign.height,
+    1,
+    css(SHADOW_INK, 0.2),
+  );
+  fill_rounded_rect(ctx, sign.x, sign.y, sign.width, sign.height, 1, css(recipe.accent));
+  paint_family_pictogram(ctx, sign.x + 4.5, sign.y + sign.height / 2);
+  label(ctx, "Family", sign.x + 13, sign.y + sign.height / 2 + 0.2, {
+    maxWidth: 11,
+    size: 4,
+    colour: CREAM,
+    uppercase: true,
+  });
+  if (frame.isHighContrast) {
+    const edge = edge_style(frame, recipe.accent);
+    ctx.strokeStyle = edge.style;
+    ctx.lineWidth = edge.width;
+    ctx.strokeRect(sign.x, sign.y, sign.width, sign.height);
+  }
+}
+
+/**
+ * Paints the family care room: a small open-topped room seen from above, with its changing table,
+ * basin and pink nursing armchair always against the far (screen-north) wall and a soft mat on
+ * the floor. The near wall is low, with frosted glass above it, so the room inside reads, and
+ * carries the family sign whichever way the room is turned. The door is on the service side: in
+ * the near wall, in the far wall between the basin and the armchair, or as a doorway with a
+ * visible jamb and lintel in a side wall.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param recipe - The recipe.
+ * @param frame - The paint frame.
+ * @param rotation - The placement rotation.
+ */
+function paint_care_room(
+  ctx: PaintContext,
+  box: Box,
+  recipe: PlaceableVisualRecipe,
+  frame: PaintFrame,
+  rotation: Rotation,
+): void {
+  const side = service_side(rotation);
+  const wall = 2.5;
+  const room: Ground = {
+    x: box.x + 5,
+    y: Math.max(box.y + 5, box.y - OVERHANG + CARE_WALL + 2),
+    width: box.width - 10,
+    depth: 0,
+  };
+  const ground: Ground = { ...room, depth: box.bottom - 5 - room.y };
+  const inner_x = ground.x + wall;
+  const inner_width = ground.width - wall * 2;
+  const back_y = ground.y + wall;
+  const along = (start: number, end: number, front: number, depth: number): Ground => ({
+    x: inner_x + inner_width * start,
+    y: back_y + front,
+    width: inner_width * (end - start),
+    depth,
+  });
+  const wall_options = { radius: 0.8, lip: 0.8 } as const;
+  cast_shadow(ctx, ground, CARE_WALL);
+  // The floor inside the walls: soft vinyl tiles.
+  fill_rounded_rect(ctx, ground.x, ground.y, ground.width, ground.depth, 1.5, css(CARE_FLOOR));
+  if (!frame.isLowDetail) {
+    for (let x = ground.x + 8; x < ground.x + ground.width; x += 8) {
+      line(
+        ctx,
+        x,
+        ground.y,
+        x,
+        ground_bottom(ground),
+        css(shade(CARE_FLOOR, 0.12), 0.6),
+        0.5,
+        "butt",
+      );
+    }
+  }
+  const mat = along(0.24, 0.7, 22, 14);
+  fill_rounded_rect(ctx, mat.x, mat.y, mat.width, mat.depth, 2.5, css(tint(recipe.accent, 0.45)));
+  if (!frame.isLowDetail) {
+    stroke_rounded_rect(
+      ctx,
+      mat.x + 1.5,
+      mat.y + 1.5,
+      mat.width - 3,
+      mat.depth - 3,
+      1.5,
+      css(tint(recipe.accent, 0.7), 0.8),
+      0.6,
+    );
+  }
+  // The far wall; its visible face carries the door when the room is turned to the north.
+  const back: Ground = { x: ground.x, y: ground.y, width: ground.width, depth: wall };
+  const parts: Part[] = [
+    {
+      depth: ground_bottom(back),
+      draw: () => {
+        paint_prism(ctx, back, CARE_WALL, CARE_WALL_TONE, frame, wall_options);
+        const face = face_of(back, CARE_WALL);
+        const slot = along(0.5, 0.72, 0, 0);
+        if (side === "north") {
+          paint_care_door(ctx, slot.x + 1, face.y + 3, slot.width - 2, CARE_WALL - 3, frame);
+        } else {
+          // A wall cupboard for nappies and wipes.
+          fill_rounded_rect(ctx, slot.x + 2, face.y + 4, slot.width - 4, 9, 1, css(CARE_TABLE));
+          line(
+            ctx,
+            slot.x + slot.width / 2,
+            face.y + 4.5,
+            slot.x + slot.width / 2,
+            face.y + 12.5,
+            css(shade(CARE_TABLE, 0.3)),
+            0.6,
+            "butt",
+          );
+          fill_rounded_rect(
+            ctx,
+            slot.x + 2,
+            face.y + 12,
+            slot.width - 4,
+            1,
+            0.5,
+            css(shade(CARE_TABLE, 0.25)),
+          );
+        }
+      },
+    },
+  ];
+  // The side walls; the one on the service side opens in a doorway with a jamb and a lintel.
+  const doorway_start = ground.y + ground.depth * 0.3;
+  const doorway_end = ground.y + ground.depth * 0.66;
+  for (const wall_side of ["west", "east"] as const) {
+    const x = wall_side === "west" ? ground.x : ground.x + ground.width - wall;
+    const spans: Array<[number, number]> =
+      side === wall_side
+        ? [
+            [ground.y, doorway_start],
+            [doorway_end, ground_bottom(ground)],
+          ]
+        : [[ground.y, ground_bottom(ground)]];
+    for (const [start, end] of spans) {
+      const segment: Ground = { x, y: start, width: wall, depth: end - start };
+      parts.push({
+        depth: end - 0.2,
+        draw: () => paint_prism(ctx, segment, CARE_WALL, CARE_WALL_TONE, frame, wall_options),
+      });
+    }
+    if (side === wall_side) {
+      const opening: Ground = {
+        x,
+        y: doorway_start,
+        width: wall,
+        depth: doorway_end - doorway_start,
+      };
+      parts.push({
+        depth: doorway_end - 0.1,
+        draw: () => {
+          // A darker threshold across the opening, the oak jambs on both sides of it and the
+          // lintel over it.
+          fill_rounded_rect(
+            ctx,
+            x - 0.5,
+            doorway_start,
+            wall + 1,
+            opening.depth,
+            0.5,
+            css(shade(CARE_FLOOR, 0.22)),
+          );
+          paint_prism(
+            ctx,
+            { x, y: doorway_start - 1.2, width: wall, depth: 1.2 },
+            CARE_WALL - 4,
+            CARE_DOOR,
+            frame,
+            { radius: 0.4, lip: 0.5 },
+          );
+          paint_prism(
+            ctx,
+            { x, y: doorway_end - 1.2, width: wall, depth: 1.2 },
+            CARE_WALL - 4,
+            CARE_DOOR,
+            frame,
+            { radius: 0.4, lip: 0.5 },
+          );
+          paint_prism(ctx, opening, CARE_WALL, CARE_WALL_TONE, frame, {
+            base: CARE_WALL - 4,
+            radius: 0.6,
+            lip: 0.6,
+          });
+        },
+      });
+      // The door leaf stands open into the room, hinged at the near jamb, so its whole face
+      // shows across the screen.
+      const leaf_width = 15;
+      const leaf: Ground = {
+        x: wall_side === "west" ? x + wall : x - leaf_width,
+        y: doorway_end - 1.8,
+        width: leaf_width,
+        depth: 1.6,
+      };
+      parts.push({
+        depth: ground_bottom(leaf),
+        draw: () => {
+          paint_prism(ctx, leaf, CARE_WALL - 4, shade(CARE_DOOR, 0.05), frame, {
+            front: CARE_DOOR,
+            radius: 0.5,
+            lip: 0.5,
+          });
+          const face = face_of(leaf, CARE_WALL - 4);
+          if (!frame.isLowDetail) {
+            paint_glass(
+              ctx,
+              { x: face.x + face.width * 0.3, y: face.y + 2.5, width: face.width * 0.4, height: 5 },
+              0x9fc8cf,
+              0.8,
+            );
+          }
+          const pull_x = wall_side === "west" ? face.x + face.width - 3 : face.x + 1.4;
+          fill_rounded_rect(ctx, pull_x, face.y + face.height * 0.5, 1.6, 3, 0.6, css(DARK_STEEL));
+        },
+      });
+    }
+  }
+  // The changing table against the far wall, with its pad.
+  const table = along(0.03, 0.31, 0, 13);
+  parts.push({
+    depth: ground_bottom(table),
+    draw: () => {
+      paint_prism(ctx, table, 14, CARE_TABLE, frame, { radius: 1, lip: 0.8 });
+      const pad = along(0.05, 0.29, 2, 9);
+      fill_rounded_rect(
+        ctx,
+        pad.x,
+        pad.y - 14,
+        pad.width,
+        pad.depth,
+        2,
+        css(tint(recipe.accent, 0.3)),
+      );
+      fill_rounded_rect(ctx, pad.x + 1, pad.y - 13.4, pad.width - 2, 1.2, 0.6, css(0xffffff, 0.4));
+    },
+  });
+  // The basin beside it.
+  const basin = along(0.34, 0.47, 0, 9);
+  parts.push({
+    depth: ground_bottom(basin),
+    draw: () => {
+      paint_prism(ctx, basin, 15, CERAMIC, frame, { radius: 1.5, lip: 0.9 });
+      fill_ellipse(
+        ctx,
+        basin.x + basin.width / 2,
+        basin.y - 15 + basin.depth / 2,
+        basin.width * 0.32,
+        basin.depth * 0.28,
+        css(WATER, 0.7),
+      );
+    },
+  });
+  // The nursing armchair in the far corner, its back to the wall.
+  const chair = along(0.75, 0.98, 2, 15);
+  parts.push({
+    depth: ground_bottom(chair),
+    draw: () => {
+      const back_rest = along(0.75, 0.98, 0, 3.5);
+      paint_prism(ctx, back_rest, 19, shade(CARE_CHAIR, 0.08), frame, { radius: 2, lip: 0.6 });
+      paint_prism(ctx, chair, 9, CARE_CHAIR, frame, { radius: 3, lip: 0.6 });
+    },
+  });
+  // The near wall: low and solid, with frosted glass and a rail above it, carrying the sign and,
+  // when the room faces south, the door.
+  const front: Ground = {
+    x: ground.x,
+    y: ground_bottom(ground) - wall,
+    width: ground.width,
+    depth: wall,
+  };
+  parts.push({
+    depth: ground_bottom(front) + 0.1,
+    draw: () => {
+      const face = face_of(front, CARE_WALL);
+      paint_glass(
+        ctx,
+        {
+          x: face.x + 1,
+          y: face.y + 2,
+          width: face.width - 2,
+          height: CARE_WALL - CARE_FRONT_WALL - 2,
+        },
+        CARE_WALL_TONE,
+        0.38,
+      );
+      paint_prism(ctx, { ...front }, CARE_FRONT_WALL, CARE_WALL_TONE, frame, wall_options);
+      paint_prism(ctx, front, CARE_WALL, tint(CARE_WALL_TONE, 0.2), frame, {
+        base: CARE_WALL - 2,
+        radius: 0.6,
+        lip: 0.8,
+      });
+      for (const post_x of [face.x + 0.6, face.x + face.width - 2.4]) {
+        fill_rounded_rect(
+          ctx,
+          post_x,
+          face.y,
+          1.8,
+          CARE_WALL - CARE_FRONT_WALL,
+          0.5,
+          css(CARE_WALL_TONE),
+        );
+      }
+      if (side === "south") {
+        const door_width = face.width * 0.22;
+        paint_care_door(
+          ctx,
+          face.x + face.width / 2 - door_width / 2,
+          face.y + 9,
+          door_width,
+          CARE_WALL - 9,
+          frame,
+        );
+      }
+      paint_care_sign(ctx, face.x + face.width / 2, face.y + 1, recipe, frame);
+    },
+  });
+  paint_parts(parts);
+}
+
+/**
+ * Paints the family pictogram of the care room's sign: an adult and a small child side by side,
+ * in cream.
+ *
+ * @param ctx - The paint context.
+ * @param cx - Centre x.
+ * @param cy - Centre y.
+ */
+function paint_family_pictogram(ctx: PaintContext, cx: number, cy: number): void {
+  fill_circle(ctx, cx - 1.2, cy - 1.8, 0.9, css(CREAM));
+  fill_rounded_rect(ctx, cx - 2.1, cy - 0.8, 1.8, 3.6, 0.6, css(CREAM));
+  fill_circle(ctx, cx + 1.6, cy - 0.2, 0.7, css(CREAM));
+  fill_rounded_rect(ctx, cx + 0.9, cy + 0.6, 1.4, 2.2, 0.5, css(CREAM));
 }

@@ -1,6 +1,6 @@
 # Launch Content Catalogue
 
-Status: Content `1.7.0` typed roster; its working-source gate passes ([TEST_REPORT.md](../TEST_REPORT.md)); exact-production browser and human cultural verification pending
+Status: Content `1.8.0` typed roster; its working-source gate passes ([TEST_REPORT.md](../TEST_REPORT.md)); exact-production browser and human cultural verification pending
 Counting rule: unique ID plus meaningful functional, footprint, interaction, unlock, or constructed-visual difference. Palette-only recolours do not count.
 
 ## Roster counts
@@ -11,10 +11,10 @@ This document owns the launch content counts. Other documents link here, except 
 |---|---:|---|
 | Fictional stalls | 18 | Exact |
 | Dishes | 91 | Exact |
-| Placeables | 80 | At least 80, with a minimum per category (see [Eighty placeables](#eighty-placeables)) |
+| Placeables | 98 | At least 98, with a minimum per category (see [Ninety-eight placeables](#ninety-eight-placeables)) |
 | Customer archetypes | 12 | Exact |
 | Customer lifecycle states | 11 | Fixed by the simulation's customer status type |
-| English localization entries | 402 | Pinned by the content tests |
+| English localization entries | 438 | Pinned by the content tests |
 | Released nutrition profiles | 171 | Derived: one per dish plus each additional variant preparation |
 | Nutrition variant families | 23 | Exact; together they expose 103 selectable variants, 80 of them beyond the defaults |
 | Nutrition source snapshots | 2 | Exact |
@@ -23,7 +23,7 @@ This document owns the launch content counts. Other documents link here, except 
 
 ## Nutrition coverage
 
-Content `1.7.0` provides a released source profile for every one of the 91 dishes. Twenty-three dish families add reviewed, rank-gated preparations for comparison: kopi, teh tarik, nasi lemak, fried carrot cake, roti prata, fish bee hoon soup, bak chor mee, chicken murtabak, chicken nasi briyani, thosai, yong tau foo, ban mian, bak kut teh, duck rice, prawn noodle soup, economic rice, nasi padang, mee siam, wanton mee, soya bean milk, chicken chop, fish and chips, and fish porridge. Together, the 91 base profiles and 80 additional preparation profiles produce 171 released nutrition profiles; the 23 families expose 103 selectable variants when their default preparations are included. In every family the default rates below at least one option the player can unlock, and seven profiles (vegetarian chicken rice, the roti prata set, laksa and the four bak kut teh bowls) are documented composites of exact source rows; see [NUTRITION_DATA.md](NUTRITION_DATA.md#recipe-variants-and-defaults).
+Content `1.8.0` provides a released source profile for every one of the 91 dishes. Twenty-three dish families add reviewed, rank-gated preparations for comparison: kopi, teh tarik, nasi lemak, fried carrot cake, roti prata, fish bee hoon soup, bak chor mee, chicken murtabak, chicken nasi briyani, thosai, yong tau foo, ban mian, bak kut teh, duck rice, prawn noodle soup, economic rice, nasi padang, mee siam, wanton mee, soya bean milk, chicken chop, fish and chips, and fish porridge. Together, the 91 base profiles and 80 additional preparation profiles produce 171 released nutrition profiles; the 23 families expose 103 selectable variants when their default preparations are included. In every family the default rates below at least one option the player can unlock, and seven profiles (vegetarian chicken rice, the roti prata set, laksa and the four bak kut teh bowls) are documented composites of exact source rows; see [NUTRITION_DATA.md](NUTRITION_DATA.md#recipe-variants-and-defaults).
 
 Every profile has a 1-to-5 Health rating that compares its serving with a meal's share (for a dessert, a snack's share) of general daily guidance (or, for a drink, Singapore's Nutri-Grade bands), plus condition-specific ratings for high cholesterol, obesity, diabetes, and hypertension. Every dish separately has a 1-to-5 Star rating derived from its authored quality and demand, representing taste and popularity rather than nutritional suitability. Nutrition values and recipe selection do not rewrite a dish family's price, Star rating, preparation time, serving time, or eating time. Customers with a visit-specific health condition use the applicable condition rating when choosing a stall and dish; the ordered meal applies a bounded satisfaction change from -0.2 to +0.2. Conditions are assigned independently of customer archetype and are simplified game traits, not diagnoses or medical advice. See [NUTRITION_DATA.md](NUTRITION_DATA.md) for source, validation, scoring, and disclosure boundaries.
 
@@ -179,11 +179,11 @@ Health conditions also remain separate from archetype and appearance. A determin
 
 The active simulation consumes each persona's budget, patience, walking speed, stall-choice sensitivities, novelty, dish tags, progression gate, visit schedule, and tray-return chance (read per guest from a hash of the guest's ID, together with a reachable tray return within 14 path tiles). Authored seat preference, group range, and satisfaction modifiers remain future balance hooks and are not advertised as current mechanics.
 
-## Eighty placeables
+## Ninety-eight placeables
 
-The names below mirror the current typed content. Each definition carries its own price, footprint, interaction points, accessibility flags, ambience/cleanliness/service modifiers, unlock, and procedural sprite reference. Each category heading gives the category's current count, which is also its validator minimum (`PLACEABLE_CATEGORY_MINIMUMS`); the roster may grow past 80, but no category may fall below its minimum.
+The names below mirror the current typed content. Each definition carries its own price, footprint, interaction points, accessibility flags, ambience/cleanliness/service modifiers, unlock, and procedural sprite reference. Each category heading gives the category's current count, which is also its validator minimum (`PLACEABLE_CATEGORY_MINIMUMS`); the roster may grow past 98, but no category may fall below its minimum.
 
-### Tables — 8
+### Tables — 10
 
 1. Compact Square Table — low-cost starter.
 2. Round Café Table — four-direction social seating.
@@ -191,116 +191,134 @@ The names below mirror the current typed content. Each definition carries its ow
 4. Family Trestle Table — group comfort.
 5. Accessible End Table — clear accessible seat approach.
 6. Standing Snack Ledge — short-stay counter service.
-7. Folding Overflow Table — inexpensive flexible capacity.
+7. Folding Overflow Table — budget overflow table whose diners eat and go a little sooner.
 8. Terrazzo Feature Table — premium ambience.
+9. Granite Chess Table — heavy one-tile stone table with an inlaid chessboard; the polished stone wipes clean, so the crew clears the seats around it faster (cleaning efficiency).
+10. Banquet Turntable Table — three-by-three clothed table with a glass turntable; the twelve seats around it finish their meals sooner (eating speed 0.25).
 
-### Seats — 10
+### Seats — 13
 
-9. Stacking Stool.
-10. Moulded Back Chair.
-11. Two-Person Bench.
-12. Easy-Rise Arm Chair.
-13. High Counter Stool.
-14. Booster Family Chair.
-15. Cushioned Dining Chair.
-16. Three-Person Communal Bench.
-17. Acoustic Booth Seat.
-18. Swivel Perch Seat.
+11. Stacking Stool.
+12. Moulded Back Chair.
+13. Two-Person Bench.
+14. Easy-Rise Arm Chair.
+15. High Counter Stool.
+16. Booster Family Chair.
+17. Cushioned Dining Chair.
+18. Three-Person Communal Bench.
+19. Acoustic Booth Seat.
+20. Swivel Perch Seat.
+21. Companion Transfer Bench — two places, one at transfer height beside a grab rail; priced per seat like the communal benches.
+22. Four-Person Teak Bench — four places along the longest tables, the cheapest bench per seat.
+23. Rattan Lounge Chair — the single chair that adds the most ambience to the seats around it.
 
-These differ by footprint, capacity, compatible interaction height, comfort, accessibility, group utility, or ambience—not palette alone.
+These differ by footprint, capacity, price per seat, eating speed or ambience—not palette alone. A seat's authored comfort and accessibility flags describe the piece; the simulation reads its seat points and its ambience, cleanliness and service effects.
 
-### Stall and service fixtures — 8
+### Stall and service fixtures — 9
 
-19. Queue Ticket Dispenser.
-20. Condiment Counter.
-21. Cutlery & Napkin Station.
-22. Water Carafe Station.
-23. Order Pickup Shelf.
-24. Heated Display Case.
-25. Chilled Display Case.
-26. Mobile Prep Cart.
+24. Queue Ticket Dispenser.
+25. Condiment Counter.
+26. Cutlery & Napkin Station.
+27. Water Carafe Station.
+28. Order Pickup Shelf.
+29. Heated Display Case.
+30. Chilled Display Case.
+31. Mobile Prep Cart.
+32. Self-Order Kiosk — touchscreen ordering and paying ahead for the queue beside it; the strongest queue-patience boost of any piece.
 
-### Tray return and waste — 8
+### Tray return and waste — 9
 
-27. Single-Bay Tray Return.
-28. Dual-Bay Tray Return.
-29. Dish Drop Counter.
-30. Recycling Sorter.
-31. Covered Food-Waste Bin.
-32. Covered General-Waste Bin.
-33. Cleaning Trolley Bay.
-34. Clean Tray Stack Rack.
+33. Single-Bay Tray Return.
+34. Dual-Bay Tray Return — two return openings, two table-cleaning crew members.
+35. Dish Drop Counter — a staffed counter, two table-cleaning crew members and a cleaning-efficiency boost.
+36. Recycling Sorter.
+37. Covered Food-Waste Bin.
+38. Covered General-Waste Bin.
+39. Cleaning Trolley Bay.
+40. Clean Tray Stack Rack.
+41. Tray-Return Conveyor — four-tile belt that clears itself, three table-cleaning crew members and a large cleaning-efficiency boost.
 
-### Lighting — 7
+### Lighting — 8
 
-35. Efficient Ceiling Tube Light.
-36. Pendant Dining Light.
-37. Woven Lantern Cluster.
-38. Counter Task Light.
-39. Low Path Light.
-40. Skylight Diffuser.
-41. Festive String Lights.
+42. Efficient Ceiling Tube Light.
+43. Pendant Dining Light.
+44. Woven Lantern Cluster.
+45. Counter Task Light.
+46. Low Path Light.
+47. Skylight Diffuser.
+48. Festive String Lights.
+49. Heritage Lamp Post — floor-standing cast-iron lantern for open courts; the crew clears trays faster in its light (cleaning efficiency).
 
 Decorative light motion becomes static in reduced-motion mode.
 
-### Fans and ventilation — 6
+### Fans and ventilation — 8
 
-42. Wall Circulation Fan.
-43. Wide Ceiling Fan.
-44. Column Fan.
-45. High-Volume Air Fan.
-46. Quiet Corner Fan.
-47. Stall Exhaust Booster.
+50. Wall Circulation Fan.
+51. Wide Ceiling Fan.
+52. Column Fan.
+53. High-Volume Air Fan.
+54. Quiet Corner Fan.
+55. Stall Exhaust Booster.
+56. Misting Fan — pedestal fan with a mist ring; a large queue-patience boost but a damp floor.
+57. Giant Ceiling Fan — four-by-four slow fan cooling a whole dining court: queue patience and eating speed.
 
-### Plants — 8
+### Plants — 10
 
-48. Table Herb Planter.
-49. Tall Areca Planter.
-50. Fern Trough.
-51. Vine Trellis.
-52. Rain-Garden Pot.
-53. Hanging Pothos Basket.
-54. Dwarf Banana Planter.
-55. Pandan Border Bed.
+58. Table Herb Planter.
+59. Tall Areca Planter.
+60. Fern Trough.
+61. Vine Trellis.
+62. Rain-Garden Pot.
+63. Hanging Pothos Basket.
+64. Dwarf Banana Planter.
+65. Pandan Border Bed.
+66. Frangipani Tree Planter — two-by-two flowering tree whose shade keeps a queue beside it patient.
+67. Bougainvillea Arch — walk-under flowering arch that shades a queue or walkway, at a small cleanliness cost.
 
-### Signage — 7
+### Signage — 8
 
-56. Entrance Directory.
-57. Stall Row Marker.
-58. Tray-Return Arrow Sign.
-59. Accessible Route Sign.
-60. Queue Courtesy Sign.
-61. Menu Preview Board.
-62. Centre Identity Sign.
+68. Entrance Directory.
+69. Stall Row Marker.
+70. Tray-Return Arrow Sign.
+71. Accessible Route Sign.
+72. Queue Courtesy Sign.
+73. Menu Preview Board.
+74. Centre Identity Sign.
+75. Order-Ready Number Board — hanging lit board of ready order numbers that keeps every queue in sight of it patient.
 
 Sign copy and symbols require legibility, translation/cultural, and accessible-wayfinding review.
 
-### Dividers — 6
+### Dividers — 7
 
-63. Low Timber Screen.
-64. Tiled Half Wall.
-65. Clear Wind Screen.
-66. Integrated Planter Divider.
-67. Retractable Queue Rail.
-68. Acoustic Screen.
+76. Low Timber Screen.
+77. Tiled Half Wall.
+78. Clear Wind Screen.
+79. Integrated Planter Divider.
+80. Retractable Queue Rail.
+81. Acoustic Screen.
+82. Breeze-Block Screen — wall of ventilation blocks that screens a zone and cools a queue beside it.
 
-### Practical facilities — 7
+### Practical facilities — 8
 
-69. Public Handwash Sink.
-70. Drinking-Water Fountain.
-71. Locked Cleaning Cupboard.
-72. Staff Mop Sink.
-73. First-Aid Cabinet.
-74. Accessible Wash Basin.
-75. Protected Utility Point.
+83. Public Handwash Sink.
+84. Drinking-Water Fountain.
+85. Locked Cleaning Cupboard.
+86. Staff Mop Sink.
+87. First-Aid Cabinet.
+88. Accessible Wash Basin.
+89. Protected Utility Point.
+90. Family Care Room — two-by-two private room with a changing table, nursing chair and basin; keeps the hall near it cleaner and nearby queues patient.
 
-### Decorations — 5
+### Decorations — 8
 
-76. Geometric Tile Mural.
-77. Community Noticeboard.
-78. Fabric Ceiling Bunting.
-79. Tabletop Flower Vase.
-80. Feature Centre Clock.
+91. Geometric Tile Mural.
+92. Community Noticeboard.
+93. Fabric Ceiling Bunting.
+94. Tabletop Flower Vase.
+95. Feature Centre Clock.
+96. Heritage Photo Wall — hung row of framed photographs of the fictional neighbourhood's early stalls, which queueing guests look at while they wait.
+97. Paper Umbrella Canopy — cluster of oil-paper umbrellas that shades a three-by-three dining court, so diners beneath finish sooner.
+98. Courtyard Water Feature — tiled basin and spill fountain whose trickle calms a queue beside it; the one decor piece that blocks movement.
 
 ## Neighbourhood calendar
 
@@ -321,8 +339,8 @@ Intensity runs from 0 (calm) to 1 (busy) and sets how the director weighs the ca
 | Heritage food walk | 0.65 | 1 | 1.05 | 1 | 1 | Curious Food Explorer ×2.2, Quality Treat Seeker ×1.6 | small-plate +0.8, seafood +0.8 |
 | Public holiday: families out | 0.6 | 1.05 | 1.2 | 1 | 1.15 | Family Table ×2, Comfort-Seeking Regular ×1.4, Office Lunch Sprinter ×0.4 | rice +0.6 |
 
-Each card's English copy (name, a one-line summary and the forecast shown the day before) lives with the card in `src/content/calendar.ts`, not in the launch localization table, so the 402 English localization entries in the [roster counts](#roster-counts) do not include it and the cards are not part of `LAUNCH_ROSTER`. The cards are parsed with `calendarCardSchema` at import (multipliers from 0.25 to 3, category bonuses from −2 to 2), and `tests/content/calendar.test.ts` checks that IDs are unique with exactly one opening day, that the bag has enough cards to avoid repeats, that every card names only launch personas and dish categories, that the bag has both calm and busy cards, that the opening day changes nothing, and that the copy labels neither food nor people.
+Each card's English copy (name, a one-line summary and the forecast shown the day before) lives with the card in `src/content/calendar.ts`, not in the launch localization table, so the 438 English localization entries in the [roster counts](#roster-counts) do not include it and the cards are not part of `LAUNCH_ROSTER`. The cards are parsed with `calendarCardSchema` at import (multipliers from 0.25 to 3, category bonuses from −2 to 2), and `tests/content/calendar.test.ts` checks that IDs are unique with exactly one opening day, that the bag has enough cards to avoid repeats, that every card names only launch personas and dish categories, that the bag has both calm and busy cards, that the opening day changes nothing, and that the copy labels neither food nor people.
 
 ## Validation requirements
 
-Automated tests must prove the [roster counts](#roster-counts): exactly 18 stalls, 91 dishes, and 12 customer archetypes, at least 80 placeables with at least the listed number in each placeable category, and 402 English keys. They must also prove unique IDs and primary stall/food visual references, a playable dish when each stall unlocks, an opening dish at or below the Student Saver's $6.50 mid budget at every stall, stalls authored in unlock order, valid rotations/footprints, interaction points outside blocking collisions, known asset/audio references, reachable required interactions, a valid unlock graph, and no palette-only duplicate counted as content. Nutrition validation must additionally prove 171 released profiles, 23 variant families with 103 selectable variants, a default in every family that rates below another option, no Borrowed source row outside an allowlisted composite component, a released base profile and Star rating for every dish, complete Health and condition ratings, deterministic source generation, and valid provenance.
+Automated tests must prove the [roster counts](#roster-counts): exactly 18 stalls, 91 dishes, and 12 customer archetypes, at least 98 placeables with at least the listed number in each placeable category, and 438 English keys. They must also prove unique IDs and primary stall/food visual references, a playable dish when each stall unlocks, an opening dish at or below the Student Saver's $6.50 mid budget at every stall, stalls authored in unlock order, valid rotations/footprints, interaction points outside blocking collisions, known asset/audio references, reachable required interactions, a valid unlock graph, and no palette-only duplicate counted as content. Nutrition validation must additionally prove 171 released profiles, 23 variant families with 103 selectable variants, a default in every family that rates below another option, no Borrowed source row outside an allowlisted composite component, a released base profile and Star rating for every dish, complete Health and condition ratings, deterministic source generation, and valid provenance.

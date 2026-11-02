@@ -1,13 +1,13 @@
 /**
  * Lighting painters: the slim ceiling batten, the enamel dining pendant, the woven rattan
  * lantern cluster, the articulated counter task light, the low path bollard, the suspended
- * skylight diffuser and the festoon string lights.
+ * skylight diffuser, the festoon string lights and the cast-iron heritage lamp post.
  *
  * Everything is drawn in the 3/4 oblique view from the south, lit from the north-west. The
  * ceiling-hung fittings sit high in their texture with their cords running up out of frame to
  * the ceiling, show the glowing underside of their shade or diffuser, and cast only a faint
- * shadow on the floor well to the south-east; the bollard stands on the floor with a contact
- * shadow, and the task light, which guests walk through and which sorts with them, is tucked
+ * shadow on the floor well to the south-east; the bollard and the lamp post stand on the floor
+ * with a contact shadow, and the task light, which guests walk through and which sorts with them, is tucked
  * against one edge of its footprint. Each painter adds just a modest local glow, because the
  * renderer lays the live light pool on the floor as a separate additive sprite. Linear fittings
  * follow their rotated footprint, and the task light faces the way it is turned. The
@@ -75,6 +75,10 @@ const ALUMINIUM = 0xb4bfbd;
 const CABLE = 0x2f3a37;
 /** The festive bulb colours, cycled along the string: amber, vermilion, teal and leaf. */
 const BULB_COLOURS = [0xffc857, 0xe8694a, 0x5fb8b0, 0x9ccf6a] as const;
+/** Dark green cast iron of the heritage lamp post. */
+const LAMP_POST_IRON = 0x2f4a3f;
+/** Height of the heritage lamp post, from its plinth to its finial. */
+const LAMP_POST_METRES = 2.3;
 /** Bulbs hung along each swag of the festoon string. */
 const BULBS_PER_SWAG = 7;
 /** The fraction of a linear footprint's long side a batten spans (a 1.5 m batten in 2 m). */
@@ -1171,6 +1175,7 @@ const LIGHTING_PAINTERS: Readonly<Record<LightingStyle, LightingPainter>> = {
   "path-light": paint_path_light,
   skylight: paint_skylight,
   string: paint_string_lights,
+  "lamp-post": paint_lamp_post,
   lamp: paint_drum_lamp,
 };
 
@@ -1197,4 +1202,106 @@ export function paint_lighting(
   clip_texture(ctx, box);
   LIGHTING_PAINTERS[style](ctx, box, frame, recipe, rotation);
   ctx.restore();
+}
+
+/**
+ * Paints the heritage lamp post: a dark green cast-iron post on a stepped round plinth, with a
+ * fluted column, a scrolled collar and crossbar, and a four-paned glass lantern under a domed cap
+ * and finial glowing warm at the top of the texture.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param frame - The paint frame.
+ * @param recipe - The recipe, whose accent picks out the collar band.
+ */
+function paint_lamp_post(
+  ctx: PaintContext,
+  box: Box,
+  frame: PaintFrame,
+  recipe: PlaceableVisualRecipe,
+): void {
+  const cx = box.centreX;
+  const base_y = box.y + box.height * 0.78;
+  const top_y = base_y - standing_height(LAMP_POST_METRES);
+  const iron = LAMP_POST_IRON;
+  if (!frame.isLowDetail) soft_glow(ctx, cx, base_y + 2, 20, 7, LAMP_LIGHT, 0.32);
+  floor_shadow(ctx, cx + 4, base_y + 1.5, 9, 3.2, 0.28);
+  // The stepped plinth.
+  for (const [radius, rise, tone] of [
+    [8.5, 0, 0.3],
+    [6.5, 3, 0.15],
+  ] as const) {
+    const y = base_y - rise;
+    fill_rounded_rect(ctx, cx - radius, y - 3, radius * 2, 3, 0, css(shade(iron, tone)));
+    fill_ellipse(ctx, cx, y, radius, radius * 0.32, css(shade(iron, tone + 0.1)));
+    fill_ellipse(ctx, cx, y - 3, radius, radius * 0.32, css(tint(iron, 0.15 - tone * 0.3)));
+  }
+  // The fluted column, tapering towards the collar.
+  const column_top = top_y + 15;
+  const column_foot = base_y - 6;
+  ctx.beginPath();
+  ctx.moveTo(cx - 3.2, column_foot);
+  ctx.lineTo(cx - 2, column_top);
+  ctx.lineTo(cx + 2, column_top);
+  ctx.lineTo(cx + 3.2, column_foot);
+  ctx.closePath();
+  ctx.fillStyle = linear_gradient(ctx, cx - 3.2, 0, cx + 3.2, 0, [
+    [0, tint(iron, 0.35)],
+    [0.45, iron],
+    [1, shade(iron, 0.45)],
+  ]);
+  ctx.fill();
+  stroke_outline(ctx, iron, frame);
+  if (!frame.isLowDetail) {
+    for (const offset of [-1, 0.8]) {
+      line(
+        ctx,
+        cx + offset * 1.2,
+        column_foot - 2,
+        cx + offset,
+        column_top + 2,
+        css(shade(iron, 0.4), 0.6),
+        0.5,
+      );
+    }
+  }
+  // The collar, the scrolled crossbar and the accent band.
+  fill_rounded_rect(ctx, cx - 3.5, column_top - 1, 7, 3, 1, css(tint(iron, 0.1)));
+  fill_rounded_rect(ctx, cx - 3.5, column_top + 2.2, 7, 1.2, 0.6, css(recipe.accent));
+  line(ctx, cx - 7, column_top + 1, cx + 7, column_top + 1, css(iron), 1.2);
+  for (const side of [-1, 1] as const) {
+    stroke_ellipse(ctx, cx + side * 7, column_top + 2.4, 1.4, 1.4, css(iron), 0.9);
+  }
+  // The lantern: a dark frame round four warm glass panes, two of them seen.
+  const lantern_top = top_y + 3;
+  const lantern_bottom = column_top - 1;
+  if (!frame.isLowDetail)
+    soft_glow(ctx, cx, (lantern_top + lantern_bottom) / 2, 14, 12, LAMP_LIGHT, 0.45);
+  ctx.beginPath();
+  ctx.moveTo(cx - 6, lantern_top);
+  ctx.lineTo(cx + 6, lantern_top);
+  ctx.lineTo(cx + 4, lantern_bottom);
+  ctx.lineTo(cx - 4, lantern_bottom);
+  ctx.closePath();
+  ctx.fillStyle = linear_gradient(ctx, 0, lantern_top, 0, lantern_bottom, [
+    [0, 0xfff6d8],
+    [1, 0xffc766],
+  ]);
+  ctx.fill();
+  stroke_outline(ctx, iron, frame);
+  line(ctx, cx, lantern_top, cx, lantern_bottom, css(iron), 1);
+  paint_bulb(ctx, cx, (lantern_top + lantern_bottom) / 2 + 1, 1.8, LAMP_LIGHT);
+  // The domed cap and finial.
+  fill_rounded_rect(ctx, cx - 7.5, lantern_top - 1.5, 15, 2, 1, css(shade(iron, 0.15)));
+  ctx.beginPath();
+  ctx.moveTo(cx - 6.5, lantern_top - 1.5);
+  ctx.quadraticCurveTo(cx, lantern_top - 8, cx + 6.5, lantern_top - 1.5);
+  ctx.closePath();
+  ctx.fillStyle = linear_gradient(ctx, cx - 6.5, 0, cx + 6.5, 0, [
+    [0, tint(iron, 0.3)],
+    [1, shade(iron, 0.35)],
+  ]);
+  ctx.fill();
+  stroke_outline(ctx, iron, frame);
+  fill_circle(ctx, cx, lantern_top - 6.8, 1.3, css(tint(iron, 0.2)));
 }

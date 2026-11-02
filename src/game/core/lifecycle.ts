@@ -33,8 +33,10 @@ import { getCustomerQueueCell } from "./queueing";
 import { cloneNutritionProfile, healthPreferenceResultForRating, personalizedHealthRating } from "./nutrition";
 import {
   adjustedEatingDurationMs,
+  compute_tapered_rating_gain,
   getUtilityInfluence,
   utilitySatisfactionBonus,
+  type UtilityInfluence,
 } from "./utility";
 import { completeSale, settleVisitRating } from "./visits";
 import { get_today_card } from "./neighbourhood";
@@ -54,24 +56,46 @@ const MEAL_SATISFACTION_BONUS = 0.25;
 const MIN_MEAL_COMFORT = 45;
 /** Comfort rating before nearby ambience utilities. */
 const BASE_MEAL_COMFORT = 76;
-/** Comfort rating per unit of nearby ambience. */
+/** Raw comfort points per unit of nearby ambience, before the taper. */
 const MEAL_COMFORT_AMBIENCE_WEIGHT = 6;
+/**
+ * Comfort points that count in full (ambience 2); each doubling of the raw points after that adds
+ * `MEAL_COMFORT_STEP_PER_DOUBLING`, so comfort reaches 100 at ambience 32.
+ */
+const MEAL_COMFORT_FULL_RATE_POINTS = 12;
+/** Comfort points each doubling of the raw comfort points adds past the full-rate stretch. */
+const MEAL_COMFORT_STEP_PER_DOUBLING = 3;
 /** Lowest cleanliness rating after a meal. */
 const MIN_MEAL_CLEANLINESS = 35;
 /** Comfort component of a served guest who gave up looking for a free seat. */
 const NO_SEAT_COMFORT = 30;
 /** Cleanliness rating before nearby cleanliness utilities. */
 const BASE_MEAL_CLEANLINESS = 82;
-/** Cleanliness rating per unit of nearby cleanliness. */
+/** Raw cleanliness points per unit of nearby cleanliness, before the taper. */
 const MEAL_CLEANLINESS_WEIGHT = 8;
-/** Cleanliness rating per unit of nearby cleaning efficiency. */
+/** Raw cleanliness points per unit of nearby cleaning efficiency, before the taper. */
 const MEAL_CLEANING_EFFICIENCY_WEIGHT = 6;
+/**
+ * Net cleanliness points (after the uncleared-tray penalty) that count in full (cleanliness 1);
+ * each doubling after that adds `MEAL_CLEANLINESS_STEP_PER_DOUBLING`, so cleanliness reaches 100
+ * at 128 net points (cleanliness 16).
+ */
+const MEAL_CLEANLINESS_FULL_RATE_POINTS = 8;
+/** Cleanliness points each doubling of the net points adds past the full-rate stretch. */
+const MEAL_CLEANLINESS_STEP_PER_DOUBLING = 2.5;
 /** Lowest ambience rating after a meal. */
 const MIN_MEAL_AMBIENCE = 40;
 /** Ambience rating before nearby ambience utilities. */
 const BASE_MEAL_AMBIENCE = 72;
-/** Ambience rating per unit of nearby ambience. */
+/** Raw ambience points per unit of nearby ambience, before the taper. */
 const MEAL_AMBIENCE_WEIGHT = 9;
+/**
+ * Ambience points that count in full (ambience 2); each doubling of the raw points after that adds
+ * `MEAL_AMBIENCE_STEP_PER_DOUBLING`, so the ambience part reaches 100 at ambience 32.
+ */
+const MEAL_AMBIENCE_FULL_RATE_POINTS = 18;
+/** Ambience points each doubling of the raw ambience points adds past the full-rate stretch. */
+const MEAL_AMBIENCE_STEP_PER_DOUBLING = 2.5;
 /** Satisfaction gained for returning a tray. */
 const TRAY_RETURN_SATISFACTION_BONUS = 0.1;
 /** Extra tray-return satisfaction per unit of nearby cleaning efficiency. */
@@ -351,23 +375,50 @@ function handle_eating(draft: Draft, customer: Customer): Customer {
         customer.satisfaction + MEAL_SATISFACTION_BONUS + utilitySatisfactionBonus(diningUtility),
       ),
     ),
-    ratingFactors: {
-      ...customer.ratingFactors,
-      comfort: Math.max(MIN_MEAL_COMFORT, Math.min(100, BASE_MEAL_COMFORT + diningUtility.ambience * MEAL_COMFORT_AMBIENCE_WEIGHT)),
-      cleanliness: Math.max(
-        MIN_MEAL_CLEANLINESS,
-        Math.min(
-          100,
-          BASE_MEAL_CLEANLINESS +
-            diningUtility.cleanliness * MEAL_CLEANLINESS_WEIGHT +
-            diningUtility.cleaningEfficiency * MEAL_CLEANING_EFFICIENCY_WEIGHT -
-            uncleared_penalty,
-        ),
-      ),
-      ambience: Math.max(MIN_MEAL_AMBIENCE, Math.min(100, BASE_MEAL_AMBIENCE + diningUtility.ambience * MEAL_AMBIENCE_WEIGHT)),
-    },
+    ratingFactors: { ...customer.ratingFactors, ...compute_meal_rating_factors(diningUtility, uncleared_penalty) },
   };
   return returns_tray ? finished : beginExit(draft, { ...finished, hasTray: false }, false);
+}
+
+/**
+ * Rates a finished meal's seat: its comfort, cleanliness and ambience factors.
+ *
+ * Each factor starts from its base and adds the seat's raw points (the utility times its weight)
+ * through `compute_tapered_rating_gain`, so the first points count in full and later ones keep
+ * paying at a decreasing rate until the factor reaches 100. The uncleared-tray penalty is taken
+ * from the raw cleanliness points before the taper, so a very clean area still softens a tray
+ * left nearby, and a penalty larger than the support counts in full.
+ *
+ * @param dining_utility - The utility influence at the seat.
+ * @param uncleared_penalty - The cleanliness penalty for trays left on neighbouring seats.
+ * @returns The three seat factors, each within its floor and 100.
+ */
+export function compute_meal_rating_factors(
+  dining_utility: Pick<UtilityInfluence, "ambience" | "cleanliness" | "cleaningEfficiency">,
+  uncleared_penalty = 0,
+): { readonly comfort: number; readonly cleanliness: number; readonly ambience: number } {
+  const comfort_gain = compute_tapered_rating_gain(
+    dining_utility.ambience * MEAL_COMFORT_AMBIENCE_WEIGHT,
+    MEAL_COMFORT_FULL_RATE_POINTS,
+    MEAL_COMFORT_STEP_PER_DOUBLING,
+  );
+  const cleanliness_gain = compute_tapered_rating_gain(
+    dining_utility.cleanliness * MEAL_CLEANLINESS_WEIGHT +
+      dining_utility.cleaningEfficiency * MEAL_CLEANING_EFFICIENCY_WEIGHT -
+      uncleared_penalty,
+    MEAL_CLEANLINESS_FULL_RATE_POINTS,
+    MEAL_CLEANLINESS_STEP_PER_DOUBLING,
+  );
+  const ambience_gain = compute_tapered_rating_gain(
+    dining_utility.ambience * MEAL_AMBIENCE_WEIGHT,
+    MEAL_AMBIENCE_FULL_RATE_POINTS,
+    MEAL_AMBIENCE_STEP_PER_DOUBLING,
+  );
+  return {
+    comfort: Math.max(MIN_MEAL_COMFORT, Math.min(100, BASE_MEAL_COMFORT + comfort_gain)),
+    cleanliness: Math.max(MIN_MEAL_CLEANLINESS, Math.min(100, BASE_MEAL_CLEANLINESS + cleanliness_gain)),
+    ambience: Math.max(MIN_MEAL_AMBIENCE, Math.min(100, BASE_MEAL_AMBIENCE + ambience_gain)),
+  };
 }
 
 /**

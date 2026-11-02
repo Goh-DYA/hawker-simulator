@@ -1,13 +1,13 @@
 /**
  * Signage painters: the entrance directory, stall row marker, tray-return and accessible-route
- * pictogram signs, queue courtesy sign, chalk menu board and the centre's identity sign, in the
- * 3/4 oblique view.
+ * pictogram signs, queue courtesy sign, chalk menu board, the centre's identity sign and the
+ * order-ready number board, in the 3/4 oblique view.
  *
  * Every sign's framed panel faces the camera (south) at every rotation, so it stays readable;
  * the rotation turns only what the sign points at, so a rotated sign's arrow or chevrons point
  * the rotated way. Guests walk across the tiles of the row marker, the three pictogram signs and
- * the identity sign, and the world view draws those above people, so they hang from the ceiling:
- * the panel sits high in the texture, in the overhang, on rods rising out of the texture's top
+ * the identity sign and the order-ready board, and the world view draws those above people, so
+ * they hang from the ceiling: the panel sits high in the texture, in the overhang, on rods rising out of the texture's top
  * edge, with empty floor and only a faint shadow below. The two signs that block movement (the
  * directory and the menu board) stand on posts just south of their footprint's centre line.
  * Every panel keeps its height at every rotation: turned to run north-south, a hung sign becomes
@@ -15,7 +15,7 @@
  * the same posts. The key light from the north-west lights each panel's top edge and the
  * left side of every post, and standing signs cast a soft shadow to the south-east. The
  * construction is chosen through the ID-keyed style tables in `render/art.ts`; the label branch
- * tells the seven launch signs apart.
+ * tells the eight launch signs apart.
  */
 import type { Rotation } from "@/src/game/core";
 
@@ -82,9 +82,22 @@ const MENU_STRIP_COLOURS = [VERMILION, MUSTARD, LEAF] as const;
 const ZINC_CAP_HEIGHT = 5;
 /** How far a board's lit top edge rises above its front face (see `paint_board`). */
 const BOARD_EDGE = 2.5;
+/** The near-black of the order-ready board's LED panel. */
+const LED_PANEL = 0x111a1c;
+/** LED amber of the ready order numbers. */
+const LED_AMBER = 0xffb454;
+/** LED red of the order-ready board's header. */
+const READY_RED = 0xb8352a;
+/** LED green of the newest ready order number. */
+const READY_GREEN = 0x7be08a;
+/** The ready order numbers the board shows, oldest first. */
+const READY_NUMBERS = ["214", "217", "218", "221", "223", "226", "229", "230"] as const;
 
 /** The signs that hang from the ceiling, because guests walk across their tiles. */
-type HungLabel = Extract<SignageLabelStyle, "row" | "return" | "accessible" | "queue" | "welcome">;
+type HungLabel = Extract<
+  SignageLabelStyle,
+  "row" | "return" | "accessible" | "queue" | "welcome" | "ready"
+>;
 
 /** The signs that stand on the floor, because they block movement. */
 type StandingLabel = Exclude<SignageLabelStyle, HungLabel>;
@@ -109,6 +122,7 @@ const HUNG_SIGN_PANELS: Readonly<
   accessible: { top: 8, height: 27, inset: 5, endInset: 5 },
   queue: { top: 8, height: 27, inset: 5, endInset: 5 },
   welcome: { top: 10, height: 28, inset: 8, endInset: 4 },
+  ready: { top: 8, height: 27, inset: 6, endInset: 5 },
 };
 
 /** The board of each standing sign: its height and the gap of post between board and floor. */
@@ -314,6 +328,7 @@ const SIGN_COLOURS: Record<
   queue: (accent) => ({ frame: accent, face: CREAM, post: DARK_STEEL }),
   row: (accent) => ({ frame: DARK_STEEL, face: accent, post: DARK_STEEL }),
   welcome: () => ({ frame: DEEP_TEAL, face: CREAM, post: DARK_STEEL }),
+  ready: () => ({ frame: FRAME_STEEL, face: LED_PANEL, post: DARK_STEEL }),
 };
 
 /**
@@ -867,6 +882,42 @@ const paint_welcome_face: FacePainter = (ctx, { rect, panel, recipe, frame, isPo
   paint_welcome_emblem(ctx, rect.x + rect.width - 22, cy, 0.95);
 };
 
+/**
+ * The order-ready number board: a dark LED panel under an LED-red "READY" header lit in amber,
+ * with the ready order numbers glowing in amber rows and the newest one picked out in green;
+ * north-south, the narrower panel stacks fewer numbers.
+ */
+const paint_ready_face: FacePainter = (ctx, { rect, frame, isPortrait }) => {
+  const cx = rect.x + rect.width / 2;
+  paint_header_band(ctx, rect, 7, READY_RED);
+  label(ctx, "READY", cx, rect.y + 3.8, {
+    maxWidth: rect.width - 6,
+    size: 5.5,
+    colour: LED_AMBER,
+    weight: 900,
+  });
+  const numbers = isPortrait ? READY_NUMBERS.slice(0, 4) : READY_NUMBERS;
+  const columns = isPortrait ? 2 : 4;
+  const rows = Math.ceil(numbers.length / columns);
+  const cell_width = (rect.width - 4) / columns;
+  const cell_height = (rect.height - 9) / rows;
+  numbers.forEach((number, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const x = rect.x + 2 + cell_width * (column + 0.5);
+    const y = rect.y + 8.5 + cell_height * (row + 0.5);
+    const is_newest = index === numbers.length - 1;
+    const colour = is_newest ? READY_GREEN : LED_AMBER;
+    if (!frame.isLowDetail) glow(ctx, x, y, 6, colour, 0.22);
+    label(ctx, number, x, y + 0.3, {
+      maxWidth: cell_width - 2,
+      size: 7,
+      colour,
+      weight: 800,
+    });
+  });
+};
+
 /** The face painter of each sign. */
 const FACE_PAINTERS = {
   directory: paint_directory_face,
@@ -876,4 +927,5 @@ const FACE_PAINTERS = {
   queue: paint_queue_face,
   row: paint_row_face,
   welcome: paint_welcome_face,
+  ready: paint_ready_face,
 } satisfies Record<SignageLabelStyle, FacePainter>;

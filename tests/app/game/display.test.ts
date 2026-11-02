@@ -210,6 +210,24 @@ describe("utility effects", () => {
     }
   });
 
+  it("lists only effects the simulation reads for the queue pieces", () => {
+    const by_id = (id: string) => PLACEABLES.find((candidate) => candidate.id === id)!;
+    const queue_points = {
+      ...by_id("item.retractable-queue-rail"),
+      queuePoints: [{ x: 0, y: 1 }, { x: 1, y: 1 }],
+    };
+
+    expect([
+      utilityEffects(by_id("item.queue-ticket-dispenser")),
+      utilityEffects(by_id("item.retractable-queue-rail")),
+      utilityEffects(queue_points),
+    ]).toEqual([
+      ["Queue patience +13%", "Improves queue patience"],
+      ["Queue patience +8%", "Walking speed +3%"],
+      ["Queue patience +8%", "Walking speed +3%"],
+    ]);
+  });
+
   it("uses the first effect as the primary utility", () => {
     const placeable = PLACEABLES.find((candidate) => utilityEffects(candidate).length > 0)!;
 

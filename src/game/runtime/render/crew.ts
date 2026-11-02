@@ -78,10 +78,11 @@ interface CrewWorld {
 /**
  * Gives the posts of a crew of a given size: member 0 at the first tray-return station (or the
  * exit, or the first access point, before any station is placed) and member `i` at station
- * `i - 1`.
+ * entry `i - 1`.
  *
  * @param state - The game state.
- * @param stations - The tray-return drop-off points, in object ID order.
+ * @param stations - The tray-return drop-off points, in object ID order, one entry per crew
+ *   member each station brings.
  * @param size - The crew size.
  * @returns One post per member.
  */
@@ -98,7 +99,8 @@ export function crew_posts(
 }
 
 /**
- * Lists the drop-off points of the tray-return stations, in object ID order.
+ * Lists the drop-off points of the tray-return stations, in object ID order, once for each crew
+ * member the station brings, so a station with a larger crew posts each of them at its drop-off.
  *
  * @param state - The game state.
  * @returns The points.
@@ -109,7 +111,8 @@ function station_points(state: GameState): GridPoint[] {
     .sort((a, b) => compareIds(a.id, b.id))
     .flatMap((object) => {
       const point = getObjectTrayReturnPoint(object, state.catalog);
-      return point ? [point] : [];
+      const crew = state.catalog.placeables[object.definitionId]?.cleaningCrew ?? 1;
+      return point ? Array.from({ length: crew }, () => point) : [];
     });
 }
 

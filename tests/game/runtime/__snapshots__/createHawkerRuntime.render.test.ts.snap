@@ -124,7 +124,7 @@ exports[`createHawkerRuntime rendering > (10) draws frames 480 and 960 of the tw
   ],
   "960": [
     "262 190 #17352e 0 guests",
-    "646 190 #17352e 0 guests",
+    "646 190 #17352e 2 guests",
   ],
 }
 `;

@@ -16,7 +16,7 @@ import type { PlaceableCategory } from "./types";
 export const LAUNCH_ROSTER = {
   stalls: 18,
   dishes: 91,
-  placeables: 80,
+  placeables: 98,
   customerArchetypes: 12,
   nutritionSourceSnapshots: 2,
   nutritionVariantFamilies: 23,
@@ -26,17 +26,17 @@ export const LAUNCH_ROSTER = {
 
 /** The fewest placeables each category must offer at launch. */
 export const PLACEABLE_CATEGORY_MINIMUMS = {
-  table: 8,
-  seat: 10,
-  "stall-fixture": 8,
-  "tray-waste": 8,
-  lighting: 7,
-  fan: 6,
-  plant: 8,
-  signage: 7,
-  divider: 6,
-  facility: 7,
-  decor: 5,
+  table: 10,
+  seat: 13,
+  "stall-fixture": 9,
+  "tray-waste": 9,
+  lighting: 8,
+  fan: 8,
+  plant: 10,
+  signage: 8,
+  divider: 7,
+  facility: 8,
+  decor: 8,
 } as const satisfies Readonly<Record<PlaceableCategory, number>>;
 
 /**

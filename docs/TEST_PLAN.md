@@ -97,7 +97,7 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 - No available stall, unaffordable dish, no seat, all exits stressed, and centre close.
 - Deterministic seeded results and agent despawn.
 - Rush demand peaks at lunch and dinner, backpressure halves inside a rush core, and the adaptive model spawns nobody from last orders until the next opening.
-- Tray return requires a reachable return within 14 path tiles and the persona's hashed habit; an unreturned tray blocks its seat until the crew (one plus one per tray-return station) clears it, oldest first; seated guests finish past the visit cap.
+- Tray return requires a reachable return within 14 path tiles and the persona's hashed habit; an unreturned tray blocks its seat until the crew (one plus each tray-return station's crew, one unless the station's `cleaningCrew` says more) clears it, oldest first; seated guests finish past the visit cap.
 - The neighbourhood draws only from its day streams, never `rngState`; the same world seed reproduces the same calendar, writer schedule and objectives.
 - Nutrition-intent assignment is seed-reproducible, independent of persona, limited to one intent from level 2, and consumes one roll only under its documented conditions.
 - Health-condition assignment is seed-reproducible, independent of persona and appearance, limited to at most one eligible condition, and covers high cholesterol, obesity, diabetes, and hypertension without changing archetype data.
@@ -118,7 +118,7 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 
 - Zod parse and safe error for malformed definitions.
 - Unique IDs/keys and valid cross-references.
-- The [roster counts](design/CONTENT_CATALOGUE.md#roster-counts): exactly 18 stalls, 91 dishes, and 12 archetypes, at least 80 placeables, and 402 English localization entries.
+- The [roster counts](design/CONTENT_CATALOGUE.md#roster-counts): exactly 18 stalls, 91 dishes, and 12 archetypes, at least 98 placeables, and 438 English localization entries.
 - Every dish assigned, every stall has a menu item available at its unlock and at least one opening dish at or below the Student Saver's $6.50 mid budget, stalls authored in unlock order (each at a later level than the one before, apart from the two level-1 starters), every required English key present, no unlock cycles.
 - Footprint/interaction/depth anchors valid, every referenced visual/audio/animation known, and every stall/dish primary visual reference unique.
 - Catalogue duplicate policy check.

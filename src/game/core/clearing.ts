@@ -6,8 +6,9 @@
  * tray-return habit says so; the habit is read from a hash of the guest's ID, so it draws nothing
  * from the simulation's random stream. Any other tray stays on the seat, which no one can use
  * until the crew has cleared it, and diners next to it rate the hall as less clean. The crew is
- * one member plus one per tray-return station, each clearing the oldest waiting tray first, so
- * extra seats without returns only lengthen the backlog.
+ * one member plus each tray-return station's crew (one member, or the station's `cleaningCrew`),
+ * each clearing the oldest waiting tray first, so extra seats without returns only lengthen the
+ * backlog.
  *
  * Internal to core; only `count_cleaning_crew` and `get_worked_tray_keys` are re-exported from
  * the barrel.
@@ -63,7 +64,8 @@ export function is_tray_returner(
 }
 
 /**
- * Counts the table-cleaning crew: the base crew plus one member per tray-return station.
+ * Counts the table-cleaning crew: the base crew plus each tray-return station's crew, which is
+ * one member unless the station's `cleaningCrew` says more.
  *
  * @param objects - The placed objects.
  * @param catalog - The catalog that classifies them.
@@ -75,7 +77,8 @@ export function count_cleaning_crew(
 ): number {
   let crew = BASE_CLEANING_CREW;
   for (const object of Object.values(objects)) {
-    if (catalog.placeables[object.definitionId]?.kind === "tray-return") crew += 1;
+    const definition = catalog.placeables[object.definitionId];
+    if (definition?.kind === "tray-return") crew += definition.cleaningCrew ?? 1;
   }
   return crew;
 }

@@ -69,6 +69,19 @@ describe("table-cleaning crew", () => {
     );
   });
 
+  it("counts each station's own crew size, with one member when it sets none", () => {
+    const state = makeGame();
+    const crewed: SimulationCatalog = {
+      ...state.catalog,
+      placeables: {
+        ...state.catalog.placeables,
+        tray: { ...state.catalog.placeables.tray!, cleaningCrew: 3 },
+      },
+    };
+    expect(count_cleaning_crew(state.objects, crewed)).toBe(BASE_CLEANING_CREW + 3);
+    expect(count_cleaning_crew(state.objects, state.catalog)).toBe(BASE_CLEANING_CREW + 1);
+  });
+
   it("leaves the tray on the seat when no tray return is reachable, then clears it", () => {
     const left = runUntil(
       game_without_tray_return(),

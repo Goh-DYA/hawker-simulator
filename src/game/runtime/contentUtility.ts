@@ -1,6 +1,7 @@
 /**
  * Projects authored placeable content (category, tags, interaction roles and modifiers) into
- * the core `UtilityEffects` the simulation applies.
+ * the core `UtilityEffects` the simulation applies, and counts the table-cleaning crew a tray
+ * return brings.
  */
 import type { PlaceableDefinition } from "@/src/content";
 import type { UtilityEffects } from "@/src/game/core";
@@ -48,7 +49,9 @@ export function utilityEffectsForPlaceable(item: PlaceableDefinition): UtilityEf
     cleanliness += 6;
     cleaningEfficiency += 0.12;
   }
-  if (item.queuePoints.length > 0 || roles.has("queue")) queuePatience += 0.025;
+  // Authored queue points are layout hints the simulation never reads, so only a queue
+  // interaction (the Queue Ticket Dispenser and the Self-Order Kiosk) counts.
+  if (roles.has("queue")) queuePatience += 0.025;
   if (item.category === "facility" && roles.has("use")) {
     cleanliness += 1;
     queuePatience += 0.01;
@@ -84,6 +87,24 @@ export function utilityEffectsForPlaceable(item: PlaceableDefinition): UtilityEf
     movementSpeed,
     wayfinding,
   };
+}
+
+/** Tags of a tray return that runs without a crew member at its bay: a staffed counter or a belt. */
+const SELF_CLEARING_TRAY_RETURN_TAGS = ["staffed", "conveyor"] as const;
+
+/**
+ * Counts the table-cleaning crew members a placeable brings to the hall: one per tray-return
+ * opening, plus one more for a station that clears itself (a staffed counter or a conveyor), whose
+ * bay needs no crew member of its own.
+ *
+ * @param item - The authored placeable.
+ * @returns The crew size, or 0 for a placeable without a tray-return opening.
+ */
+export function count_station_crew(item: PlaceableDefinition): number {
+  const openings = item.interactionPoints.filter((point) => point.role === "return-tray").length;
+  if (openings === 0) return 0;
+  const tags = new Set(item.tags);
+  return openings + (hasAny(tags, SELF_CLEARING_TRAY_RETURN_TAGS) ? 1 : 0);
 }
 
 /**

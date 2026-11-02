@@ -1,7 +1,7 @@
 /**
- * Table painters: the eight launch tables (compact laminate, round marble café, long communal,
- * family trestle, accessible end, standing snack ledge, folding overflow and terrazzo feature),
- * painted in the 3/4 view from the south.
+ * Table painters: the ten launch tables (compact laminate, round marble café, long communal,
+ * family trestle, accessible end, standing snack ledge, folding overflow, terrazzo feature, granite
+ * chess and banquet turntable), painted in the 3/4 view from the south.
  *
  * Each table's top surface comes from {@link table_top}: its outline on the floor (a rectangle,
  * or the café table's ellipse) and the height it is lifted by. The painters draw the top there,
@@ -34,6 +34,7 @@ import {
   shade,
   SHADOW_INK,
   speckle,
+  stroke_ellipse,
   stroke_rounded_rect,
   TAU,
   tint,
@@ -120,6 +121,51 @@ const TERRAZZO_LEG_WIDTH = 4.5;
 const THICK_EDGE = 4.5;
 /** Cast iron of the café table's foot, lit on its rounded top. */
 const IRON_HIGHLIGHT = 0x6f7c7a;
+/** Warm grey granite of the chess table, browner than the hall's stainless steel. */
+const GRANITE = 0xa18d7b;
+/** The darker and lighter grains of the granite, with a few rosy feldspar flecks. */
+const GRANITE_GRAINS = [0x5e544c, 0xd2c6b6, 0x7a6d62, 0xe8dccb, 0xb88a78] as const;
+/** The xiangqi pieces left on the board: the grid column and row, and whether the piece is red. */
+const CHESS_PIECES = [
+  [1, 0, false],
+  [4, 0, false],
+  [6, 2, false],
+  [2, 6, true],
+  [4, 9, true],
+  [7, 9, true],
+  [3, 3, false],
+] as const;
+/** Red of the xiangqi pieces' characters. */
+const CHESS_RED = 0xb8322c;
+/** Black of the xiangqi pieces' characters. */
+const CHESS_BLACK = 0x23201d;
+/** Pale stone of the chess table's inlaid board. */
+const GRANITE_INLAY = 0xd9d3c3;
+/** Warm ivory of the banquet table's top cloth. */
+const BANQUET_CLOTH = 0xf3eadb;
+/** Deep, warm red of the banquet table's skirt and embroidered border, toned into the hall. */
+const BANQUET_RED = 0xa83f33;
+/** Old gold of the banquet cloth's trim. */
+const BANQUET_GOLD = 0xc9a24a;
+/** Inset of the banquet table's round top from the footprint's sides. */
+const BANQUET_TOP_INSET = 6;
+/** How far the ivory top cloth hangs down over the red skirt, in pixels. */
+const BANQUET_CLOTH_DROP = 4;
+/** Width of the banquet turntable as a share of the top's width. */
+const BANQUET_TURNTABLE_SHARE = 0.55;
+/**
+ * Shares of the banquet top's free width and depth a meal may slide towards its diner. The big
+ * top leaves room for three meals along each side, so these are wider than the café table's.
+ */
+const BANQUET_MEAL_SLIDE = { x: 0.5, y: 0.5 } as const;
+/** The shared dishes riding on the banquet turntable: each food colour and plate half width. */
+const BANQUET_DISHES = [
+  { food: 0xe8873a, size: 6 },
+  { food: 0x5f9a45, size: 5.5 },
+  { food: 0xe2c35a, size: 5.5 },
+  { food: 0xb8653f, size: 6 },
+  { food: 0x8a5a3c, size: 5.5 },
+] as const;
 /** Muted terrazzo aggregate: the warm greys, beiges and taupes that make up most of the chips. */
 const TERRAZZO_FINE_CHIPS = [0xcbbca4, 0xb3a58f, 0xd8cdb9, 0x9c9488, 0xf5efe4, 0xa89c8c] as const;
 /** The few larger terrazzo accent chips: vermilion, teal, mustard and ink, toned into the binder. */
@@ -143,6 +189,11 @@ export interface TableTop {
   readonly halfDepth: number;
   /** Height of the top surface above the floor: it is drawn this many pixels higher. */
   readonly lift: number;
+  /**
+   * Shares of an elliptical top's free width (`x`) and depth (`y`) a diner's meal may slide
+   * towards a diner sitting off the top's middle; the world view's café shares when absent.
+   */
+  readonly mealSlide?: { readonly x: number; readonly y: number };
 }
 
 /**
@@ -259,6 +310,23 @@ export function table_top(box: Box, recipe: PlaceableVisualRecipe): TableTop {
     };
   }
   if (style.top === "snack-ledge") return rect_top(ledge_rect(box), LEDGE_LIFT);
+  if (style.top === "stone") return rect_top(top_rect(box, TOP_INSET), TABLE_TOP_LIFT);
+  if (style.top === "banquet") {
+    // A round banquet top, foreshortened like the café top.
+    const halfWidth = box.width / 2 - BANQUET_TOP_INSET;
+    return {
+      shape: "ellipse",
+      centreX: box.centreX,
+      centreY: box.centreY,
+      halfWidth,
+      halfDepth: Math.min(
+        box.height / 2 - BANQUET_TOP_INSET,
+        Math.round(halfWidth * CAFE_TOP_DEPTH),
+      ),
+      lift: TABLE_TOP_LIFT,
+      mealSlide: BANQUET_MEAL_SLIDE,
+    };
+  }
   return rect_top(
     top_rect(box, style.support === "trestle" ? TOP_INSET + 1 : TOP_INSET),
     TABLE_TOP_LIFT,
@@ -1567,6 +1635,445 @@ function paint_terrazzo_table(
 }
 
 /**
+ * Paints the inlaid xiangqi board of the granite chess table: a pale stone square ruled into a
+ * board of eight by nine squares with the river left open across its middle and crosses on the
+ * palace squares, set into the darker granite, with a few red and black pieces of a game left on
+ * it.
+ *
+ * @param ctx - The paint context (clipped to the top).
+ * @param face - The top face.
+ * @param frame - The paint frame.
+ */
+function paint_chessboard(ctx: PaintContext, face: ScreenRect, frame: PaintFrame): void {
+  const size = Math.min(face.width, face.height * 1.15) * 0.68;
+  const board_width = size;
+  const board_height = size * 0.86;
+  const x = face.x + (face.width - board_width) / 2;
+  const y = face.y + (face.height - board_height) / 2;
+  fill_rounded_rect(
+    ctx,
+    x - 1.5,
+    y - 1.5,
+    board_width + 3,
+    board_height + 3,
+    1.5,
+    css(GRANITE_INLAY),
+  );
+  const ink = css(shade(GRANITE, 0.45), frame.isHighContrast ? 1 : 0.8);
+  const columns = 8;
+  const rows = 9;
+  const step_x = board_width / columns;
+  const step_y = board_height / rows;
+  const river_top = y + step_y * 4;
+  const river_bottom = y + step_y * 5;
+  for (let column = 0; column <= columns; column += 1) {
+    const line_x = x + column * step_x;
+    const is_edge = column === 0 || column === columns;
+    line(ctx, line_x, y, line_x, is_edge ? y + board_height : river_top, ink, 0.6, "butt");
+    if (!is_edge) line(ctx, line_x, river_bottom, line_x, y + board_height, ink, 0.6, "butt");
+  }
+  for (let row = 0; row <= rows; row += 1) {
+    line(ctx, x, y + row * step_y, x + board_width, y + row * step_y, ink, 0.6, "butt");
+  }
+  // The two palaces' diagonal crosses.
+  for (const palace_top of [y, y + step_y * 7]) {
+    line(
+      ctx,
+      x + step_x * 3,
+      palace_top,
+      x + step_x * 5,
+      palace_top + step_y * 2,
+      ink,
+      0.5,
+      "butt",
+    );
+    line(
+      ctx,
+      x + step_x * 5,
+      palace_top,
+      x + step_x * 3,
+      palace_top + step_y * 2,
+      ink,
+      0.5,
+      "butt",
+    );
+  }
+  if (frame.isLowDetail) return;
+  // A game in progress: a few wooden discs with red or black characters on the intersections.
+  const radius = Math.min(step_x, step_y) * 0.46;
+  for (const [column, row, is_red] of CHESS_PIECES) {
+    const piece_x = x + column * step_x;
+    const piece_y = y + row * step_y;
+    fill_circle(ctx, piece_x + 0.3, piece_y + 0.5, radius, css(SHADOW_INK, 0.3));
+    fill_circle(ctx, piece_x, piece_y, radius, css(0xe9d2a6));
+    fill_circle(ctx, piece_x, piece_y, radius * 0.55, css(is_red ? CHESS_RED : CHESS_BLACK));
+  }
+}
+
+/**
+ * Fills a granite top: speckled grey stone with darker and lighter grains.
+ *
+ * @param ctx - The paint context (clipped to the top).
+ * @param face - The top face.
+ * @param seed - Seed for the grain positions.
+ * @param frame - The paint frame.
+ */
+function fill_granite(ctx: PaintContext, face: ScreenRect, seed: number, frame: PaintFrame): void {
+  ctx.fillStyle = linear_gradient(ctx, face.x, face.y, face.x + face.width, face.y + face.height, [
+    [0, tint(GRANITE, 0.18)],
+    [1, shade(GRANITE, 0.08)],
+  ]);
+  ctx.fillRect(face.x, face.y, face.width, face.height);
+  if (frame.isLowDetail) return;
+  speckle(
+    ctx,
+    face.x,
+    face.y,
+    face.width,
+    face.height,
+    Math.round((face.width * face.height) / 14),
+    GRANITE_GRAINS,
+    seed,
+    1.1,
+  );
+}
+
+/**
+ * Paints the granite chess table: a heavy square granite top with a thick polished edge and an
+ * inlaid xiangqi board, on a solid round granite drum whose base flares onto the floor, like the
+ * stone tables of a void deck.
+ *
+ * @param ctx - The paint context.
+ * @param top - The table top.
+ * @param recipe - The recipe.
+ * @param frame - The paint frame.
+ */
+function paint_chess_table(
+  ctx: PaintContext,
+  top: TableTop,
+  recipe: PlaceableVisualRecipe,
+  frame: PaintFrame,
+): void {
+  const rect = top_ground_rect(top);
+  const cx = top.centreX;
+  floor_shadow(ctx, inset_rect(rect, 6), { round: true, alpha: 0.3 });
+  // The drum stands under the top's centre; only its near face shows below the edge.
+  const drum_floor = top.centreY + 8;
+  const drum_top = rect.y1 - top.lift + THICK_EDGE - 1;
+  fill_ellipse(ctx, cx, drum_floor, 11, 3.2, css(shade(GRANITE, 0.35)));
+  fill_rounded_rect(
+    ctx,
+    cx - 8,
+    drum_top,
+    16,
+    drum_floor - drum_top,
+    2,
+    linear_gradient(ctx, cx - 8, 0, cx + 8, 0, [
+      [0, tint(GRANITE, 0.22)],
+      [0.45, GRANITE],
+      [1, shade(GRANITE, 0.35)],
+    ]),
+  );
+  if (frame.isHighContrast) {
+    stroke_rounded_rect(ctx, cx - 8, drum_top, 16, drum_floor - drum_top, 2, css(SHADOW_INK), 1);
+  }
+  paint_rect_top(
+    ctx,
+    rect,
+    top.lift,
+    {
+      top: GRANITE,
+      rim: shade(GRANITE, 0.12),
+      radius: 6,
+      edgeDepth: THICK_EDGE,
+      edge: shade(GRANITE, 0.18),
+    },
+    frame,
+    (face) => {
+      fill_granite(ctx, face, recipe.seed, frame);
+      paint_chessboard(ctx, face, frame);
+    },
+  );
+}
+
+/**
+ * Paints the banquet skirt: the red cloth that falls from the round top to the floor, lit on its
+ * west side like a drum, with soft folds hanging down it and a darker hem.
+ *
+ * @param ctx - The paint context.
+ * @param top - The banquet top.
+ * @param frame - The paint frame.
+ */
+function paint_banquet_skirt(ctx: PaintContext, top: TableTop, frame: PaintFrame): void {
+  const cx = top.centreX;
+  const rx = top.halfWidth;
+  const ry = top.halfDepth;
+  const top_y = top.centreY - top.lift;
+  const hem_y = top.centreY;
+  const flare = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(cx - rx, top_y);
+  ctx.lineTo(cx - rx - flare, hem_y);
+  ctx.ellipse(cx, hem_y, rx + flare, ry + flare * 0.6, 0, Math.PI, 0, true);
+  ctx.lineTo(cx + rx, top_y);
+  ctx.closePath();
+  ctx.fillStyle = linear_gradient(ctx, cx - rx, 0, cx + rx, 0, [
+    [0, tint(BANQUET_RED, 0.18)],
+    [0.35, BANQUET_RED],
+    [1, shade(BANQUET_RED, 0.32)],
+  ]);
+  ctx.fill();
+  if (!frame.isLowDetail) {
+    // The folds: alternating shade and light lines round the front of the drum.
+    const folds = 14;
+    for (let fold = 1; fold < folds; fold += 1) {
+      const angle = Math.PI - (fold / folds) * Math.PI;
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      const is_shadow = fold % 2 === 0;
+      line(
+        ctx,
+        cx + rx * cos,
+        top_y + ry * sin,
+        cx + (rx + flare) * cos,
+        hem_y + (ry + flare * 0.6) * sin - 0.4,
+        css(is_shadow ? shade(BANQUET_RED, 0.4) : tint(BANQUET_RED, 0.28), is_shadow ? 0.5 : 0.35),
+        is_shadow ? 1.4 : 1,
+      );
+    }
+  }
+  // A darker hem where the skirt meets the floor.
+  ctx.beginPath();
+  ctx.ellipse(cx, hem_y - 0.4, rx + flare, ry + flare * 0.6, 0, Math.PI * 0.04, Math.PI * 0.96);
+  ctx.strokeStyle = css(shade(BANQUET_RED, 0.45), 0.8);
+  ctx.lineWidth = 1.1;
+  ctx.stroke();
+}
+
+/**
+ * Paints the ivory top cloth of the banquet table: lit from the north-west, with an embroidered
+ * red-and-gold border inside its edge and a short scalloped drop over the skirt on its near side.
+ *
+ * @param ctx - The paint context.
+ * @param top - The banquet top.
+ * @param frame - The paint frame.
+ */
+function paint_banquet_cloth(ctx: PaintContext, top: TableTop, frame: PaintFrame): void {
+  const cx = top.centreX;
+  const rx = top.halfWidth;
+  const ry = top.halfDepth;
+  const cy = top.centreY - top.lift;
+  // The drop: the cloth hangs a little over the skirt, ending in shallow scallops.
+  const scallops = frame.isLowDetail ? 0 : 11;
+  const steps = 66;
+  ctx.beginPath();
+  ctx.moveTo(cx - rx, cy);
+  for (let step = 0; step <= steps; step += 1) {
+    const angle = Math.PI - (step / steps) * Math.PI;
+    const wave = scallops > 0 ? Math.abs(Math.sin((step / steps) * Math.PI * scallops)) : 1;
+    ctx.lineTo(
+      cx + rx * Math.cos(angle),
+      cy + ry * Math.sin(angle) + (BANQUET_CLOTH_DROP - 1.5 + wave * 1.5) * Math.sin(angle),
+    );
+  }
+  ctx.closePath();
+  ctx.fillStyle = linear_gradient(ctx, cx - rx, 0, cx + rx, 0, [
+    [0, shade(BANQUET_CLOTH, 0.04)],
+    [1, shade(BANQUET_CLOTH, 0.24)],
+  ]);
+  ctx.fill();
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, TAU);
+  ctx.clip();
+  ctx.fillStyle = linear_gradient(ctx, cx - rx, cy - ry, cx + rx * 0.4, cy + ry, [
+    [0, tint(BANQUET_CLOTH, 0.5)],
+    [1, shade(BANQUET_CLOTH, 0.05)],
+  ]);
+  ctx.fillRect(cx - rx, cy - ry, rx * 2, ry * 2);
+  // A soft sheen across the north-west of the cloth and a shade towards its near edge.
+  fill_ellipse(
+    ctx,
+    cx - rx * 0.35,
+    cy - ry * 0.35,
+    rx * 0.7,
+    ry * 0.55,
+    radial_gradient(ctx, cx - rx * 0.35, cy - ry * 0.35, 0, rx * 0.7, [
+      [0, 0xffffff, 0.35],
+      [1, 0xffffff, 0],
+    ]),
+  );
+  ctx.fillStyle = linear_gradient(ctx, 0, cy + ry * 0.2, 0, cy + ry, [
+    [0, SHADOW_INK, 0],
+    [1, SHADOW_INK, 0.1],
+  ]);
+  ctx.fillRect(cx - rx, cy, rx * 2, ry);
+  if (!frame.isLowDetail) {
+    // Pressed creases from the folded cloth, crossing at the centre.
+    line(ctx, cx - rx, cy, cx + rx, cy, css(shade(BANQUET_CLOTH, 0.3), 0.22), 0.8, "butt");
+    line(ctx, cx, cy - ry, cx, cy + ry, css(shade(BANQUET_CLOTH, 0.3), 0.22), 0.8, "butt");
+  }
+  ctx.restore();
+  // The embroidered border: a red band edged with gold, inside the cloth's edge.
+  const border_x = rx - 6;
+  const border_y = ry - 5;
+  stroke_ellipse(ctx, cx, cy, border_x, border_y, css(BANQUET_RED, 0.8), 2.4);
+  if (!frame.isLowDetail) {
+    stroke_ellipse(ctx, cx, cy, border_x + 2.2, border_y + 2.2, css(BANQUET_GOLD, 0.75), 0.7);
+    stroke_ellipse(ctx, cx, cy, border_x - 2.2, border_y - 2.2, css(BANQUET_GOLD, 0.75), 0.7);
+  }
+  // The lit arris along the cloth's near edge.
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx - 0.6, ry - 0.6, 0, Math.PI * 0.12, Math.PI * 0.88);
+  ctx.strokeStyle = css(0xffffff, 0.55);
+  ctx.lineWidth = 0.9;
+  ctx.lineCap = "round";
+  ctx.stroke();
+}
+
+/**
+ * Paints a small banquet dish on the turntable: a white plate with a blue rim and a mound of food.
+ *
+ * @param ctx - The paint context.
+ * @param x - Plate centre x.
+ * @param y - Plate centre y.
+ * @param size - Half the plate's width.
+ * @param food - Colour of the food.
+ * @param frame - The paint frame.
+ */
+function paint_banquet_dish(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  size: number,
+  food: number,
+  frame: PaintFrame,
+): void {
+  const depth = size * 0.62;
+  fill_ellipse(ctx, x + 0.8, y + 1.2, size, depth, css(SHADOW_INK, 0.16));
+  fill_ellipse(ctx, x, y, size, depth, css(0xfbf8f1));
+  stroke_ellipse(ctx, x, y, size - 0.6, depth - 0.5, css(0x3d6fa8, 0.75), 0.7);
+  fill_ellipse(ctx, x, y - 0.6, size * 0.6, depth * 0.58, css(food));
+  if (!frame.isLowDetail) {
+    fill_ellipse(
+      ctx,
+      x - size * 0.2,
+      y - depth * 0.4,
+      size * 0.25,
+      depth * 0.2,
+      css(tint(food, 0.45)),
+    );
+  }
+}
+
+/**
+ * Paints the banquet turntable: a wide glass lazy Susan on a steel hub, carrying a teapot in the
+ * middle, a ring of shared dishes round it and a steamed fish on its long platter in front.
+ *
+ * @param ctx - The paint context.
+ * @param top - The banquet top.
+ * @param frame - The paint frame.
+ */
+function paint_banquet_turntable(ctx: PaintContext, top: TableTop, frame: PaintFrame): void {
+  const cx = top.centreX;
+  const cy = top.centreY - top.lift;
+  const trx = Math.round(top.halfWidth * BANQUET_TURNTABLE_SHARE);
+  const tryy = Math.round(trx * (top.halfDepth / top.halfWidth));
+  fill_ellipse(ctx, cx + 1.2, cy + 2, trx, tryy, css(SHADOW_INK, 0.14));
+  fill_ellipse(
+    ctx,
+    cx,
+    cy,
+    trx,
+    tryy,
+    radial_gradient(ctx, cx - trx * 0.35, cy - tryy * 0.45, 0, trx * 1.1, [
+      [0, 0xffffff, 0.8],
+      [1, 0xcfe2de, 0.65],
+    ]),
+  );
+  stroke_ellipse(ctx, cx, cy, trx - 0.5, tryy - 0.5, css(shade(STEEL, 0.3), 0.9), 1.1);
+  if (!frame.isLowDetail) {
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, trx - 2.5, tryy - 2, 0, Math.PI * 1.1, Math.PI * 1.55);
+    ctx.strokeStyle = css(0xffffff, 0.85);
+    ctx.lineWidth = 1.1;
+    ctx.lineCap = "round";
+    ctx.stroke();
+  }
+  // The shared dishes ride round the back and sides of the turntable's ring.
+  const ring_x = trx * 0.68;
+  const ring_y = tryy * 0.58;
+  for (const [index, dish] of BANQUET_DISHES.entries()) {
+    const angle = Math.PI * 0.75 + ((index + 0.5) / BANQUET_DISHES.length) * Math.PI * 1.5;
+    paint_banquet_dish(
+      ctx,
+      cx + Math.cos(angle) * ring_x,
+      cy + Math.sin(angle) * ring_y,
+      dish.size,
+      dish.food,
+      frame,
+    );
+  }
+  // The steamed fish on its long platter, at the front of the ring.
+  const fish_y = cy + ring_y + 1;
+  fill_ellipse(ctx, cx + 0.8, fish_y + 1.4, 9.5, 4.4, css(SHADOW_INK, 0.16));
+  fill_ellipse(ctx, cx, fish_y, 9.5, 4.4, css(0xfbf8f1));
+  stroke_ellipse(ctx, cx, fish_y, 8.9, 3.9, css(0x3d6fa8, 0.75), 0.7);
+  fill_ellipse(ctx, cx - 1, fish_y - 0.4, 5.6, 2.1, css(0xd8b78a));
+  fill_polygon(
+    ctx,
+    [
+      [cx + 4, fish_y - 0.4],
+      [cx + 7.4, fish_y - 2.4],
+      [cx + 7.4, fish_y + 1.6],
+    ],
+    css(shade(0xd8b78a, 0.12)),
+  );
+  if (!frame.isLowDetail) {
+    line(ctx, cx - 4.6, fish_y - 1.3, cx + 2.4, fish_y - 1.3, css(0x6fa84a, 0.9), 0.9);
+  }
+  // The teapot sits on the hub in the middle.
+  fill_ellipse(ctx, cx + 0.8, cy + 2.4, 5, 2.2, css(SHADOW_INK, 0.18));
+  fill_ellipse(ctx, cx, cy, 4.8, 4, css(0xf4efe6));
+  fill_ellipse(ctx, cx - 1.2, cy - 1.4, 2, 1.2, css(0xffffff, 0.8));
+  fill_ellipse(ctx, cx, cy - 3.4, 2.2, 1, css(tint(BANQUET_RED, 0.15)));
+  line(ctx, cx + 4.2, cy - 0.6, cx + 7, cy - 2.6, css(0xe4ddd0), 1.3);
+  stroke_ellipse(ctx, cx, cy, 4.8, 4, css(shade(0xf4efe6, 0.4), 0.7), 0.6);
+}
+
+/**
+ * Paints the banquet turntable table: a big round table under an ivory cloth with an embroidered
+ * red border, over a warm red skirt that falls to the floor in soft folds and hides its legs, with
+ * a wide glass turntable at the centre carrying a teapot and the shared dishes.
+ *
+ * @param ctx - The paint context.
+ * @param top - The table's elliptical top.
+ * @param frame - The paint frame.
+ */
+function paint_banquet_table(ctx: PaintContext, top: TableTop, frame: PaintFrame): void {
+  const cx = top.centreX;
+  const rx = top.halfWidth;
+  const ry = top.halfDepth;
+  const cy = top.centreY - top.lift;
+  floor_shadow(
+    ctx,
+    { x0: cx - rx + 2, y0: top.centreY - ry + 2, x1: cx + rx - 1, y1: top.centreY + ry + 3 },
+    { round: true, alpha: 0.3 },
+  );
+  paint_banquet_skirt(ctx, top, frame);
+  paint_banquet_cloth(ctx, top, frame);
+  paint_banquet_turntable(ctx, top, frame);
+  const stroke = outline_style(frame, BANQUET_RED);
+  ctx.beginPath();
+  ctx.ellipse(cx, top.centreY, rx + 1.5, ry + 0.9, 0, 0, Math.PI);
+  ctx.ellipse(cx, cy, rx, ry, 0, Math.PI, TAU);
+  ctx.closePath();
+  ctx.strokeStyle = stroke.style;
+  ctx.lineWidth = stroke.width;
+  ctx.stroke();
+}
+
+/**
  * Paints a table in the 3/4 view, turned to its placement rotation.
  *
  * @param ctx - The paint context.
@@ -1586,7 +2093,9 @@ export function paint_table(
   const style: TableStyle = resolve_placeable_style("table", recipe);
   const top = table_top(box, recipe);
   const motif = recipe.motif;
-  if (style.top === "terrazzo") paint_terrazzo_table(ctx, top, recipe, frame);
+  if (style.top === "stone") paint_chess_table(ctx, top, recipe, frame);
+  else if (style.top === "banquet") paint_banquet_table(ctx, top, frame);
+  else if (style.top === "terrazzo") paint_terrazzo_table(ctx, top, recipe, frame);
   else if (style.top === "round") paint_cafe_table(ctx, top, recipe, frame);
   else if (style.top === "snack-ledge") paint_snack_ledge(ctx, box, top, recipe, frame);
   else if (style.support === "folding") paint_folding_table(ctx, box, top, recipe, frame);

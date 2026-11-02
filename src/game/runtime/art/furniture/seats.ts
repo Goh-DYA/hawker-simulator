@@ -1,7 +1,7 @@
 /**
- * Seat painters: the ten launch seats (the stacking stool, high counter stool and swivel perch;
- * the moulded, easy-rise arm, booster and cushioned chairs; the two- and three-person benches and
- * the acoustic booth), painted in the 3/4 view from the south at real-world scale.
+ * Seat painters: the thirteen launch seats (the stacking stool, high counter stool and swivel
+ * perch; the moulded, easy-rise arm, booster, cushioned and rattan lounge chairs; the two-person,
+ * companion transfer, three-person and four-person teak benches and the acoustic booth), painted in the 3/4 view from the south at real-world scale.
  *
  * A tile is about a metre, so a seat is small inside it: a stool seat is about 18 px across, a
  * chair about 22 px wide and a bench about 16 px deep, and the rest of the tile is left as floor.
@@ -56,6 +56,7 @@ import {
   type GroundRect,
   type Orientation,
   type Part,
+  type ScreenRect,
   type Side,
 } from "./seatingKit";
 import { type Box, DARK_STEEL, STEEL, STOOL_COLOURS, TIMBER } from "./shared";
@@ -88,6 +89,37 @@ const SEAT_THICKNESS = 2.5;
 const BACK_RISE = 14;
 /** Height of the two-person bench's low back above its seat. */
 const BENCH_BACK_RISE = 10;
+
+/** The colours of a chair's arm rests: the front posts and the rails along the seat. */
+interface ArmMaterial {
+  readonly post: number;
+  readonly rail: number;
+}
+
+/** The easy-rise chair's walnut arm rests. */
+const WALNUT_ARMS: ArmMaterial = { post: WALNUT, rail: tint(TIMBER, 0.08) };
+/** Honey cane of the rattan lounge chair. */
+const RATTAN = 0xc89a5b;
+/** Cream canvas of the rattan lounge chair's cushion. */
+const CUSHION = 0xf1e6cf;
+/** Half the width of the rattan lounge chair's seat, wider than a dining chair's. */
+const LOUNGE_HALF_WIDTH = 13;
+/** Half the depth of the lounge chair's deep seat. */
+const LOUNGE_HALF_DEPTH = 9.5;
+/** Width of each of the lounge chair's broad woven arms. */
+const LOUNGE_ARM = 3.5;
+/** Height of the lounge chair's backrest above its seat. */
+const LOUNGE_BACK_RISE = 15;
+/** How far the lounge chair's backrest leans back from its foot to its top, on the floor. */
+const LOUNGE_RECLINE = 5;
+/** Oiled teak of the four-person bench. */
+const OILED_TEAK = 0x6f3b22;
+/** Pale cool grey of the transfer bench's companion seat and back. */
+const COMPANION_SHELL = 0xc3cbc8;
+/** Accessible teal of the transfer bench's transfer seat, as on the accessible end table. */
+const TRANSFER_TEAL = 0x3c958e;
+/** Blue of the transfer bench's access marker. */
+const ACCESS_BLUE = 0x2a6db5;
 
 /** A chair's construction, as the chair painter reads it. */
 interface ChairDesign {
@@ -393,9 +425,15 @@ function paint_moulded_chair(
  * @param ctx - The paint context.
  * @param orientation - The chair's orientation.
  * @param frame - The paint frame.
+ * @param material - The colours of the posts and the rails; walnut by default.
  * @returns The arm parts.
  */
-function arm_parts(ctx: PaintContext, orientation: Orientation, frame: PaintFrame): Part[] {
+function arm_parts(
+  ctx: PaintContext,
+  orientation: Orientation,
+  frame: PaintFrame,
+  material: ArmMaterial = WALNUT_ARMS,
+): Part[] {
   const cu = orientation.width / 2;
   const cv = orientation.height / 2;
   const armTop = SEAT_HEIGHT + 6;
@@ -414,7 +452,7 @@ function arm_parts(ctx: PaintContext, orientation: Orientation, frame: PaintFram
       {
         rect: { x0: post.x - 1.2, y0: post.y - 1.2, x1: post.x + 1.2, y1: post.y + 1.2 },
         z0: 0,
-        draw: () => paint_post(ctx, post.x, post.y + 1.2, 0, armTop - 1, 2.4, WALNUT, frame),
+        draw: () => paint_post(ctx, post.x, post.y + 1.2, 0, armTop - 1, 2.4, material.post, frame),
       },
       {
         rect: rail,
@@ -425,7 +463,7 @@ function arm_parts(ctx: PaintContext, orientation: Orientation, frame: PaintFram
             rail,
             armTop - 2,
             armTop,
-            { top: tint(TIMBER, 0.08), front: WALNUT, radius: 1.4, gloss: 0.4 },
+            { top: material.rail, front: material.post, radius: 1.4, gloss: 0.4 },
             frame,
           );
         },
@@ -1588,6 +1626,637 @@ function paint_swivel_perch(
 }
 
 /**
+ * Paints a rattan weave over a face: two sets of diagonal cane strands, clipped to the face.
+ *
+ * @param ctx - The paint context.
+ * @param face - The face to weave.
+ * @param colour - The cane colour the strands are shaded from.
+ */
+function paint_weave(ctx: PaintContext, face: ScreenRect, colour: number): void {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(face.x, face.y, face.width, face.height);
+  ctx.clip();
+  for (let offset = -face.height; offset < face.width; offset += 3) {
+    line(
+      ctx,
+      face.x + offset,
+      face.y,
+      face.x + offset + face.height,
+      face.y + face.height,
+      css(shade(colour, 0.38), 0.55),
+      0.7,
+      "butt",
+    );
+    line(
+      ctx,
+      face.x + offset + face.height,
+      face.y,
+      face.x + offset,
+      face.y + face.height,
+      css(tint(colour, 0.3), 0.45),
+      0.6,
+      "butt",
+    );
+  }
+  fill_rounded_rect(ctx, face.x, face.y, face.width, 1.2, 0.6, css(tint(colour, 0.35), 0.6));
+  ctx.restore();
+}
+
+/**
+ * Gives the screen corners of a reclined backrest panel: its foot along the seat's back edge and
+ * its top leaning back by {@link LOUNGE_RECLINE}, offset back by a thickness.
+ *
+ * @param orientation - The chair's orientation.
+ * @param u0 - Authored west end of the panel.
+ * @param u1 - Authored east end of the panel.
+ * @param v - Authored y of the panel's foot (its front face).
+ * @param z0 - Height of the foot.
+ * @param z1 - Height of the top.
+ * @param offset - How far behind the front face to trace, for the panel's rear.
+ * @returns The four screen corners: foot west, foot east, top east, top west.
+ */
+function lounge_back_quad(
+  orientation: Orientation,
+  u0: number,
+  u1: number,
+  v: number,
+  z0: number,
+  z1: number,
+  offset = 0,
+): Array<[number, number]> {
+  const at = (u: number, along: number, z: number): [number, number] => {
+    const point = to_ground(orientation, u, along);
+    return [point.x, point.y - z];
+  };
+  return [
+    at(u0, v - offset, z0),
+    at(u1, v - offset, z0),
+    at(u1, v - offset - LOUNGE_RECLINE, z1),
+    at(u0, v - offset - LOUNGE_RECLINE, z1),
+  ];
+}
+
+/**
+ * Paints the rattan lounge chair: a low, wide armchair of honey cane with a deep seat and a
+ * woven back that reclines well behind it, broad woven arms on both sides and plump cream
+ * cushions on the seat and against the back, edged in a darker cream so they read as cushions.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param recipe - The recipe; its accent tints the cushion seam.
+ * @param frame - The paint frame.
+ * @param rotation - The placement rotation.
+ */
+function paint_rattan_chair(
+  ctx: PaintContext,
+  box: Box,
+  recipe: PlaceableVisualRecipe,
+  frame: PaintFrame,
+  rotation: Rotation,
+): void {
+  const orientation = orient(box, rotation);
+  const cu = orientation.width / 2;
+  const cv = orientation.height / 2 + 1.5;
+  const half_width = LOUNGE_HALF_WIDTH;
+  const half_depth = LOUNGE_HALF_DEPTH;
+  const seat_top = SEAT_HEIGHT - 2;
+  const seat_bottom = seat_top - 5;
+  const back_side = rotated_side(rotation, "north");
+  const edge = shade(CUSHION, 0.28);
+  const seam = mix(edge, recipe.accent, 0.15);
+  const cane_edge = outline_style(frame, RATTAN);
+  floor_shadow(
+    ctx,
+    ground_rect(
+      orientation,
+      cu - half_width - 2,
+      cv - half_depth - 4,
+      cu + half_width + 2,
+      cv + half_depth,
+    ),
+    { alpha: 0.22 },
+  );
+  // Short splayed cane legs.
+  const legs: Array<readonly [number, number]> = [
+    [cu - half_width + 2, cv - half_depth + 2],
+    [cu + half_width - 2, cv - half_depth + 2],
+    [cu - half_width + 2, cv + half_depth - 2],
+    [cu + half_width - 2, cv + half_depth - 2],
+  ];
+  paint_peek_legs(ctx, orientation, legs, seat_bottom, 3, shade(RATTAN, 0.2), frame);
+  for (const leg of leg_parts(ctx, orientation, legs, seat_bottom, 3, shade(RATTAN, 0.2), frame)) {
+    leg.draw();
+  }
+  const draw_back = (): void => {
+    const u0 = cu - half_width;
+    const u1 = cu + half_width;
+    const foot_v = cv - half_depth + 1;
+    const rear = lounge_back_quad(
+      orientation,
+      u0,
+      u1,
+      foot_v,
+      seat_top - 2,
+      seat_top + LOUNGE_BACK_RISE,
+      3.5,
+    );
+    const front = lounge_back_quad(
+      orientation,
+      u0,
+      u1,
+      foot_v,
+      seat_top - 2,
+      seat_top + LOUNGE_BACK_RISE,
+    );
+    // The panel's rear and top edge, then its woven front.
+    fill_polygon(ctx, rear, css(shade(RATTAN, 0.25)));
+    fill_polygon(ctx, [front[3], front[2], rear[2], rear[3]], css(tint(RATTAN, 0.2)));
+    const faces_viewer = back_side !== "south";
+    fill_polygon(ctx, front, css(faces_viewer ? RATTAN : shade(RATTAN, 0.12)));
+    if (!frame.isLowDetail) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(front[0][0], front[0][1]);
+      for (const [x, y] of front.slice(1)) ctx.lineTo(x, y);
+      ctx.closePath();
+      ctx.clip();
+      const xs = front.map(([x]) => x);
+      const ys = front.map(([, y]) => y);
+      const left = Math.min(...xs);
+      const top = Math.min(...ys);
+      paint_weave(
+        ctx,
+        { x: left, y: top, width: Math.max(...xs) - left, height: Math.max(...ys) - top },
+        RATTAN,
+      );
+      ctx.restore();
+    }
+    // The back cushion leaning on the woven panel, seen from the front only.
+    if (back_side === "north") {
+      const pad = lounge_back_quad(
+        orientation,
+        u0 + 3,
+        u1 - 3,
+        foot_v + 1.5,
+        seat_top,
+        seat_top + LOUNGE_BACK_RISE - 4,
+      );
+      fill_polygon(ctx, pad, css(CUSHION));
+      ctx.beginPath();
+      ctx.moveTo(pad[0][0], pad[0][1]);
+      for (const [x, y] of pad.slice(1)) ctx.lineTo(x, y);
+      ctx.closePath();
+      ctx.strokeStyle = css(edge);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(rear[0][0], rear[0][1]);
+    for (const point of [rear[1], front[1], front[2], rear[2], rear[3], front[3], front[0]]) {
+      ctx.lineTo(point[0], point[1]);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = cane_edge.style;
+    ctx.lineWidth = cane_edge.width;
+    ctx.stroke();
+  };
+  const seat = ground_rect(
+    orientation,
+    cu - half_width,
+    cv - half_depth,
+    cu + half_width,
+    cv + half_depth,
+  );
+  const draw_seat = (): void => {
+    paint_block(
+      ctx,
+      seat,
+      seat_bottom,
+      seat_top,
+      { top: RATTAN, front: shade(RATTAN, 0.1), radius: 3 },
+      frame,
+      (faces) => {
+        if (!frame.isLowDetail) paint_weave(ctx, faces.front, RATTAN);
+      },
+    );
+    // The seat cushion, plump and edged in a darker cream.
+    const cushion = ground_rect(
+      orientation,
+      cu - half_width + 1.5,
+      cv - half_depth + 1.5,
+      cu + half_width - 1.5,
+      cv + half_depth - 1,
+    );
+    paint_block(
+      ctx,
+      cushion,
+      seat_top,
+      seat_top + 2.5,
+      { top: CUSHION, front: edge, radius: 3.5, gloss: 0.45 },
+      frame,
+      (faces) => {
+        const { x, y, width, height } = faces.top;
+        fill_ellipse(
+          ctx,
+          x + width * 0.42,
+          y + height * 0.4,
+          width * 0.36,
+          height * 0.3,
+          css(0xffffff, 0.35),
+        );
+        if (!frame.isLowDetail) {
+          stroke_rounded_rect(
+            ctx,
+            x + 1.5,
+            y + 1.5,
+            width - 3,
+            height - 3,
+            2.5,
+            css(seam, 0.55),
+            0.7,
+          );
+        }
+      },
+    );
+  };
+  // Broad woven arms on both sides, from the back to the front of the seat.
+  const arm_top = seat_top + 5;
+  const arms = [-1, 1].map((side) => {
+    const inner = cu + side * half_width;
+    const outer = inner + side * LOUNGE_ARM;
+    const rect = ground_rect(
+      orientation,
+      Math.min(inner, outer),
+      cv - half_depth - 2,
+      Math.max(inner, outer),
+      cv + half_depth,
+    );
+    return {
+      rect,
+      draw: () => {
+        paint_block(
+          ctx,
+          rect,
+          seat_bottom - 1,
+          arm_top,
+          { top: tint(RATTAN, 0.15), front: RATTAN, radius: 1.8, gloss: 0.4 },
+          frame,
+          (faces) => {
+            if (!frame.isLowDetail) paint_weave(ctx, faces.front, RATTAN);
+          },
+        );
+      },
+    };
+  });
+  arms.sort((first, second) => first.rect.y1 - second.rect.y1);
+  if (back_side === "south") {
+    draw_seat();
+    for (const arm of arms) arm.draw();
+    draw_back();
+  } else if (back_side === "north") {
+    draw_back();
+    draw_seat();
+    for (const arm of arms) arm.draw();
+  } else {
+    arms[0]?.draw();
+    draw_back();
+    draw_seat();
+    arms[1]?.draw();
+  }
+}
+
+/**
+ * Paints the four-person teak bench: three oiled-teak seat slats and two back slats on dark steel
+ * frames, one at each end and one under every place, with a teak arm rest at each end, so it reads
+ * as a long backed bench rather than the backless communal bench.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param recipe - The recipe.
+ * @param frame - The paint frame.
+ * @param rotation - The placement rotation.
+ */
+function paint_teak_bench(
+  ctx: PaintContext,
+  box: Box,
+  recipe: PlaceableVisualRecipe,
+  frame: PaintFrame,
+  rotation: Rotation,
+): void {
+  const orientation = orient(box, rotation);
+  const { width } = orientation;
+  const cv = orientation.height / 2;
+  const slat_top = SEAT_HEIGHT;
+  const slat_bottom = SEAT_HEIGHT - 2.5;
+  const rail_bottom = slat_bottom - 1.5;
+  const back_top = SEAT_HEIGHT + BENCH_BACK_RISE + 1;
+  const back_v0 = cv - SEAT_HALF_DEPTH - 1.5;
+  const back_v1 = cv - SEAT_HALF_DEPTH + 1;
+  const places = Math.max(1, Math.round(width / 48));
+  const frames = Array.from(
+    { length: places + 1 },
+    (_, index) => 9 + ((width - 18) * index) / places,
+  );
+  const leg_points: Array<readonly [number, number]> = frames.flatMap((u) => [
+    [u, cv - 5.5] as const,
+    [u, cv + 5.5] as const,
+  ]);
+  const slats = [
+    [cv - 6.5, cv - 2.4],
+    [cv - 2, cv + 2],
+    [cv + 2.4, cv + 6.5],
+  ] as const;
+  const back_side = rotated_side(rotation, "north");
+  floor_shadow(ctx, ground_rect(orientation, 5, cv - 9, width - 5, cv + 8), { alpha: 0.2 });
+  paint_peek_legs(ctx, orientation, leg_points, rail_bottom, 2.6, DARK_STEEL, frame);
+  paint_parts([
+    ...leg_parts(ctx, orientation, leg_points, rail_bottom, 2.6, DARK_STEEL, frame),
+    ...frames.map((u): Part => {
+      const rect = ground_rect(orientation, u - 1.4, cv - 7, u + 1.4, cv + 7);
+      return {
+        rect,
+        z0: rail_bottom,
+        sortY: rect.y0,
+        draw: () => {
+          paint_block(
+            ctx,
+            rect,
+            rail_bottom,
+            slat_bottom,
+            { top: DARK_STEEL, radius: 0.5, gloss: 0.2 },
+            frame,
+          );
+        },
+      };
+    }),
+    ...frames.map((u): Part => {
+      const foot = to_ground(orientation, u, (back_v0 + back_v1) / 2);
+      const rect: GroundRect = {
+        x0: foot.x - 1.2,
+        y0: foot.y - 1.2,
+        x1: foot.x + 1.2,
+        y1: foot.y + 1.2,
+      };
+      return {
+        rect,
+        z0: slat_bottom,
+        draw: () => paint_post(ctx, foot.x, rect.y1, slat_bottom, back_top, 2.2, DARK_STEEL, frame),
+      };
+    }),
+    ...slats.map(([v0, v1], index): Part => {
+      const rect = ground_rect(orientation, 4, v0, width - 4, v1);
+      const tone = index === 1 ? shade(OILED_TEAK, 0.05) : tint(OILED_TEAK, 0.05);
+      return {
+        rect,
+        z0: slat_bottom,
+        draw: () => {
+          paint_block(
+            ctx,
+            rect,
+            slat_bottom,
+            slat_top,
+            { top: tone, radius: 1.2, gloss: 0.3 },
+            frame,
+            (faces) => {
+              if (frame.isLowDetail) return;
+              const { x, y, width: face_width, height } = faces.top;
+              wood_grain(
+                ctx,
+                x,
+                y,
+                face_width,
+                height,
+                tone,
+                recipe.seed + index * 613,
+                height > face_width,
+              );
+            },
+          );
+        },
+      };
+    }),
+    ...(
+      [
+        [SEAT_HEIGHT + 3, SEAT_HEIGHT + 6],
+        [SEAT_HEIGHT + 7.5, back_top],
+      ] as const
+    ).map(([z0, z1]): Part => {
+      // The back slats end inside the arm rests, so no rail end sticks out past them.
+      const rect = ground_rect(orientation, 5.2, back_v0, width - 5.2, back_v1);
+      return {
+        rect,
+        z0,
+        draw: () => {
+          const faces = paint_block(
+            ctx,
+            rect,
+            z0,
+            z1,
+            { top: tint(OILED_TEAK, 0.08), radius: 1, gloss: 0.35 },
+            frame,
+          );
+          if (back_side === "east" || back_side === "west") {
+            paint_back_edge(ctx, faces, back_side, OILED_TEAK);
+          }
+        },
+      };
+    }),
+    ...[3.5, width - 3.5].flatMap((u): Part[] => {
+      const arm_top = SEAT_HEIGHT + 6;
+      const rail = ground_rect(orientation, u - 1.6, cv - 7, u + 1.6, cv + 6);
+      const post = to_ground(orientation, u, cv + 4.5);
+      return [
+        {
+          rect: { x0: post.x - 1.2, y0: post.y - 1.2, x1: post.x + 1.2, y1: post.y + 1.2 },
+          z0: 0,
+          draw: () => paint_post(ctx, post.x, post.y + 1.2, 0, arm_top - 1, 2.4, DARK_STEEL, frame),
+        },
+        {
+          rect: rail,
+          z0: arm_top - 2,
+          draw: () => {
+            paint_block(
+              ctx,
+              rail,
+              arm_top - 2,
+              arm_top,
+              { top: tint(OILED_TEAK, 0.12), front: OILED_TEAK, radius: 1.2, gloss: 0.4 },
+              frame,
+            );
+          },
+        },
+      ];
+    }),
+  ]);
+}
+
+/**
+ * Paints the companion transfer bench: a two-place moulded seat with a low back in the recipe
+ * accent, a steel grab rail looping up beside the transfer seat, which is moulded in the
+ * accessible teal and carries a blue access marker, so the supported place reads at a glance
+ * beside its pale companion place. The marker is left off when the backrest faces the camera
+ * and would hide all but a sliver of it.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param recipe - The recipe.
+ * @param frame - The paint frame.
+ * @param rotation - The placement rotation.
+ */
+function paint_transfer_bench(
+  ctx: PaintContext,
+  box: Box,
+  recipe: PlaceableVisualRecipe,
+  frame: PaintFrame,
+  rotation: Rotation,
+): void {
+  const orientation = orient(box, rotation);
+  const { width } = orientation;
+  const cv = orientation.height / 2;
+  const leg_height = SEAT_HEIGHT - 3;
+  const shell = mix(COMPANION_SHELL, recipe.accent, 0.12);
+  const seat_start = 9;
+  const seat = ground_rect(
+    orientation,
+    seat_start,
+    cv - SEAT_HALF_DEPTH,
+    width - 5,
+    cv + SEAT_HALF_DEPTH,
+  );
+  const back = ground_rect(
+    orientation,
+    seat_start + 1,
+    cv - SEAT_HALF_DEPTH - 3,
+    width - 6,
+    cv - SEAT_HALF_DEPTH + 0.5,
+  );
+  const leg_points: Array<readonly [number, number]> = [
+    [seat_start + 5, cv - 6],
+    [seat_start + 5, cv + 6.5],
+    [width - 10, cv - 6],
+    [width - 10, cv + 6.5],
+  ];
+  const rail_top = SEAT_HEIGHT + 9;
+  const rail_posts = [cv - 5.5, cv + 5.5].map((v) => to_ground(orientation, 4, v));
+  const rail = ground_rect(orientation, 2.5, cv - 6.5, 5.5, cv + 6.5);
+  const marker = to_ground(orientation, (seat_start + width / 2) / 2, cv + 1);
+  const back_side = rotated_side(rotation, "north");
+  floor_shadow(ctx, ground_rect(orientation, 3, cv - 9, width - 8, cv + 8), { alpha: 0.2 });
+  paint_peek_legs(ctx, orientation, leg_points, leg_height, 2.6, DARK_STEEL, frame);
+  paint_parts([
+    ...leg_parts(ctx, orientation, leg_points, leg_height, 2.6, DARK_STEEL, frame),
+    ...rail_posts.map((post): Part => ({
+      rect: { x0: post.x - 1.2, y0: post.y - 1.2, x1: post.x + 1.2, y1: post.y + 1.2 },
+      z0: 0,
+      draw: () => paint_post(ctx, post.x, post.y + 1.2, 0, rail_top - 1, 2.2, STEEL, frame),
+    })),
+    {
+      rect: rail,
+      z0: rail_top - 2,
+      draw: () => {
+        paint_block(
+          ctx,
+          rail,
+          rail_top - 2,
+          rail_top,
+          { top: tint(STEEL, 0.2), front: shade(STEEL, 0.25), radius: 1.4, gloss: 0.5 },
+          frame,
+        );
+      },
+    },
+    {
+      rect: seat,
+      z0: leg_height,
+      draw: () =>
+        paint_block(
+          ctx,
+          seat,
+          leg_height,
+          SEAT_HEIGHT,
+          { top: tint(shell, 0.06), radius: 4 },
+          frame,
+          (faces) => {
+            const { x, y, width: face_width, height } = faces.top;
+            const is_long = face_width >= height;
+            const halves = is_long
+              ? [
+                  { ...faces.top, width: face_width / 2 },
+                  { ...faces.top, x: x + face_width / 2, width: face_width / 2 },
+                ]
+              : [
+                  { ...faces.top, height: height / 2 },
+                  { ...faces.top, y: y + height / 2, height: height / 2 },
+                ];
+            const marker_y = marker.y - SEAT_HEIGHT;
+            for (const half of halves) {
+              const is_transfer =
+                marker.x >= half.x &&
+                marker.x <= half.x + half.width &&
+                marker_y >= half.y &&
+                marker_y <= half.y + half.height;
+              if (is_transfer) {
+                fill_rounded_rect(
+                  ctx,
+                  half.x + 0.8,
+                  half.y + 0.8,
+                  half.width - 1.6,
+                  half.height - 1.6,
+                  3,
+                  linear_gradient(
+                    ctx,
+                    half.x,
+                    half.y,
+                    half.x + half.width * 0.4,
+                    half.y + half.height,
+                    [
+                      [0, tint(TRANSFER_TEAL, 0.2)],
+                      [1, TRANSFER_TEAL],
+                    ],
+                  ),
+                );
+              }
+              paint_scoop(ctx, { top: half, front: faces.front }, 3);
+            }
+            if (back_side === "south") return;
+            fill_rounded_rect(ctx, marker.x - 3.5, marker_y - 3, 7, 6, 1.4, css(ACCESS_BLUE));
+            fill_circle(ctx, marker.x - 0.6, marker_y - 1.5, 0.9, css(0xffffff));
+            stroke_ellipse(ctx, marker.x - 0.2, marker_y + 0.9, 1.9, 1.4, css(0xffffff), 0.8);
+          },
+        ),
+    },
+    {
+      rect: back,
+      z0: SEAT_HEIGHT - 1,
+      draw: () => {
+        const faces = paint_block(
+          ctx,
+          back,
+          SEAT_HEIGHT - 1,
+          SEAT_HEIGHT + BENCH_BACK_RISE,
+          { top: shade(shell, 0.04), radius: 1.5, gloss: 0.4 },
+          frame,
+        );
+        if (back_side === "east" || back_side === "west") {
+          paint_back_edge(ctx, faces, back_side, shell);
+          return;
+        }
+        const { front } = faces;
+        line(
+          ctx,
+          front.x + front.width / 2,
+          front.y + 1.5,
+          front.x + front.width / 2,
+          front.y + front.height - 1.5,
+          css(shade(shell, 0.4), 0.6),
+          0.9,
+        );
+      },
+    },
+  ]);
+}
+
+/**
  * Reports whether a seat has a solid backrest that rises from its seat (the chairs, the
  * two-person bench's moulded back and the booth's back). Turned to 180 degrees, such a backrest
  * stands between the camera and the diner and hides the seat behind it, so the world view sorts
@@ -1633,10 +2302,13 @@ export function paint_seat(
     const turned = fit_rotation(box, rotation);
     if (motif.includes("acoustic")) paint_booth(ctx, box, recipe, frame, turned);
     else if (motif.includes("three-person")) paint_slatted_bench(ctx, box, recipe, frame, turned);
+    else if (motif.includes("teak")) paint_teak_bench(ctx, box, recipe, frame, turned);
+    else if (motif.includes("transfer")) paint_transfer_bench(ctx, box, recipe, frame, turned);
     else paint_moulded_bench(ctx, box, recipe, frame, turned);
     return;
   }
   if (motif.includes("cushioned")) paint_cushioned_chair(ctx, box, recipe, frame, rotation);
+  else if (motif.includes("rattan")) paint_rattan_chair(ctx, box, recipe, frame, rotation);
   else if (motif.includes("easy-rise") || motif.includes("arm-chair")) {
     paint_arm_chair(ctx, box, recipe, frame, rotation);
   } else if (motif.includes("booster")) paint_booster_chair(ctx, box, recipe, frame, rotation);

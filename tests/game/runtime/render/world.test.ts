@@ -261,7 +261,7 @@ describe("nearest_table_meal_anchor", () => {
 
   it("keeps every meal wholly on its table top, for every launch table, rotation and seat tile", () => {
     const tables = PLACEABLES.filter((item) => item.category === "table");
-    expect(tables).toHaveLength(8);
+    expect(tables).toHaveLength(10);
     for (const item of tables) {
       for (const rotation of ROTATIONS) {
         const table = table_at(5, 5, item.id, rotation);

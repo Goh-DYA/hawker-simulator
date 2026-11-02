@@ -20,8 +20,8 @@ import {
 const DIVIDERS = launch_items("divider");
 
 describe("paint_divider", () => {
-  it("covers the six launch dividers", () => {
-    expect(DIVIDERS).toHaveLength(6);
+  it("covers the seven launch dividers", () => {
+    expect(DIVIDERS).toHaveLength(7);
   });
 
   it("paints every divider at every frame and rotation", () => {

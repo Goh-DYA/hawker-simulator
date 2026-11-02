@@ -8,10 +8,10 @@
  * Starting from the committed gallery save, it raises the centre to the level cap with every
  * definition unlocked and every stall at mastery rank 7, resets the recipe-variant choices to
  * the current defaults, and lists each stall's variant-family dishes first on its menu, so
- * every reviewed variant can show on a counter. It then places every stall the save does not
- * hold yet through the place tool, in authored order, on the first tile (scanning rows) whose
- * footprint and a one-tile margin around it are clear floor, expanding the hall whenever no
- * such tile is left, and writes the exported save.
+ * every reviewed variant can show on a counter. It then places every stall and placeable the save
+ * does not hold yet through the place tool, in authored order (stalls first), on the first tile
+ * (scanning rows) whose footprint and a one-tile margin around it are clear floor, expanding the
+ * hall whenever no such tile is left, and writes the exported save.
  * Run it only for an intentional content or visual change, then re-pin the render digests.
  */
 import { readFileSync, writeFileSync } from "node:fs";
@@ -87,7 +87,7 @@ function occupied_tiles(save: GallerySave): Set<string> {
  * floor.
  *
  * @param save - The gallery save.
- * @param definition_id - The stall to place.
+ * @param definition_id - The stall or placeable to place.
  * @returns The origin, or undefined when the map has no room.
  */
 function find_clear_origin(save: GallerySave, definition_id: string): GridPoint | undefined {
@@ -151,14 +151,15 @@ it.skipIf(process.env.GALLERY_REGENERATE !== "1")(
     const runtime = await create_test_runtime([save]);
     const scene = runtime.boot();
     let exported = save;
-    for (const stall of STALLS.filter((candidate) => !placed.has(candidate.id))) {
-      let origin = find_clear_origin(exported, stall.id);
+    const missing = [...STALLS, ...PLACEABLES].filter((candidate) => !placed.has(candidate.id));
+    for (const definition of missing) {
+      let origin = find_clear_origin(exported, definition.id);
       while (origin === undefined) {
-        if (!runtime.controller.expandMap()) throw new Error(`No room for ${stall.id}`);
+        if (!runtime.controller.expandMap()) throw new Error(`No room for ${definition.id}`);
         exported = runtime.controller.exportState() as GallerySave;
-        origin = find_clear_origin(exported, stall.id);
+        origin = find_clear_origin(exported, definition.id);
       }
-      runtime.controller.selectBuildItem(stall.id);
+      runtime.controller.selectBuildItem(definition.id);
       const camera = scene.cameras.main;
       const pointer = {
         x: ((origin.x + 0.5) * TILE_SIZE_PX - camera.scrollX) * camera.zoom,
@@ -168,8 +169,8 @@ it.skipIf(process.env.GALLERY_REGENERATE !== "1")(
       scene.input.emit("pointerdown", pointer);
       scene.input.emit("pointerup", pointer);
       exported = runtime.controller.exportState() as GallerySave;
-      if (!exported.core.objects.some((object) => object.definitionId === stall.id)) {
-        throw new Error(`The place tool rejected ${stall.id} at ${origin.x},${origin.y}`);
+      if (!exported.core.objects.some((object) => object.definitionId === definition.id)) {
+        throw new Error(`The place tool rejected ${definition.id} at ${origin.x},${origin.y}`);
       }
     }
     runtime.controller.selectBuildItem(undefined);

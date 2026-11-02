@@ -13,10 +13,10 @@ describe("code-native placeable visual recipes", () => {
       visualRecipeForPlaceable(item.id, item.category, item.tags),
     );
 
-    assert.equal(recipes.length, 80);
-    assert.equal(new Set(recipes.map((recipe) => recipe.contractKey)).size, 80);
-    assert.equal(new Set(recipes.map((recipe) => recipe.semanticKey)).size, 80);
-    assert.equal(new Set(recipes.map((recipe) => recipe.motif)).size, 80);
+    assert.equal(recipes.length, 98);
+    assert.equal(new Set(recipes.map((recipe) => recipe.contractKey)).size, 98);
+    assert.equal(new Set(recipes.map((recipe) => recipe.semanticKey)).size, 98);
+    assert.equal(new Set(recipes.map((recipe) => recipe.motif)).size, 98);
     assert.ok(recipes.every((recipe) => recipe.motif.length >= 4));
     assert.ok(recipes.every((recipe) => recipe.form.length >= 4));
     assert.ok(recipes.every((recipe) => recipe.material !== "composite"));

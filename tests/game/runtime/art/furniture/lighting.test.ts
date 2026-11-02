@@ -95,8 +95,8 @@ function fitting(id: string): (typeof LIGHTING)[number] {
 }
 
 describe("lighting painters", () => {
-  it("covers the seven launch fittings", () => {
-    expect(LIGHTING).toHaveLength(7);
+  it("covers the eight launch fittings", () => {
+    expect(LIGHTING).toHaveLength(8);
   });
 
   it("paints every fitting at every rotation and frame, clipped to its texture", () => {

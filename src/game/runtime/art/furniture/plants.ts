@@ -1,7 +1,8 @@
 /**
  * Plant painters: the glazed herb trough on its stand, the tall areca palm, the fern trough, the
  * vine trellis with bougainvillea, the rain-garden bowl, the hanging pothos basket, the dwarf
- * banana and the pandan border bed.
+ * banana, the pandan border bed, the frangipani tree planter and the walk-through bougainvillea
+ * arch.
  *
  * Everything is drawn in the 3/4 oblique view from the south, lit from the north-west: pots
  * and troughs show their rim and soil from above and their front face below it, and the
@@ -96,6 +97,24 @@ const HERB_STAND_METRES = 0.4;
 const HERB_STAND_FLOOR = 18;
 /** Gap between the herb planter and the side edge of its tile. */
 const HERB_CORNER_INSET = 3;
+/** Smooth grey bark of the frangipani tree. */
+const FRANGIPANI_BARK = 0x8f8a80;
+/** Cream of frangipani petals. */
+const FRANGIPANI_CREAM = 0xfbf3df;
+/** Yellow heart of a frangipani flower. */
+const FRANGIPANI_YELLOW = 0xf2c14e;
+/** Longest frangipani leaf in a rosette, which sets how high the crown may reach. */
+const FRANGIPANI_LEAF = 15;
+/** Dark steel of the bougainvillea arch's hoop. */
+const ARCH_STEEL = 0x3f4b4a;
+/** How far below the texture top the arch's span may run, leaving room for its foliage. */
+const ARCH_FOLIAGE_CLEARANCE = 13;
+/** How far each post of the north-south arch is set to the side, so both read. */
+const ARCH_SIDE_OFFSET = 10;
+/** How far the north-south arch's span rises above its post tops at the crown. */
+const ARCH_SIDE_RISE = 30;
+/** Height of the bougainvillea arch's posts above their pots (about 1.3 m). */
+const ARCH_METRES = 1.3;
 
 type PlantPainter = (
   ctx: PaintContext,
@@ -1360,6 +1379,8 @@ function paint_pandan_bed(
 
 /** The painter for each plant style. */
 const PLANT_PAINTERS: Readonly<Record<PlantStyle, PlantPainter>> = {
+  frangipani: paint_frangipani,
+  "bougainvillea-arch": paint_bougainvillea_arch,
   leafy: paint_herb_planter,
   areca: paint_areca,
   fern: paint_fern_trough,
@@ -1392,4 +1413,269 @@ export function paint_plant(
   clip_texture(ctx, box);
   PLANT_PAINTERS[style](ctx, box, frame, recipe, rotation);
   ctx.restore();
+}
+
+/**
+ * Paints one frangipani flower seen from above: five overlapping cream petals with a yellow
+ * heart.
+ *
+ * @param ctx - The paint context.
+ * @param x - Flower centre x.
+ * @param y - Flower centre y.
+ * @param size - Petal length.
+ * @param turn - Rotation of the flower, in radians.
+ */
+function paint_frangipani_flower(
+  ctx: PaintContext,
+  x: number,
+  y: number,
+  size: number,
+  turn: number,
+): void {
+  for (let petal = 0; petal < 5; petal += 1) {
+    const angle = turn + (petal / 5) * TAU;
+    ctx.save();
+    ctx.translate(x + Math.cos(angle) * size * 0.45, y + Math.sin(angle) * size * 0.36);
+    ctx.rotate(angle + 0.5);
+    fill_ellipse(ctx, 0, 0, size * 0.55, size * 0.32, css(FRANGIPANI_CREAM));
+    ctx.restore();
+  }
+  fill_circle(ctx, x, y, size * 0.32, css(FRANGIPANI_YELLOW));
+}
+
+/**
+ * Paints the frangipani tree planter: a raised square concrete planter holding a small tree with
+ * a short smooth grey trunk that forks into candelabra branches, each tipped with a full rosette
+ * of long paddle leaves round a cluster of cream-and-yellow flowers. The crown spreads over the
+ * planter and stays inside the texture's overhang.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param frame - The paint frame.
+ * @param recipe - The recipe, whose seed varies the leaves and flowers.
+ */
+function paint_frangipani(
+  ctx: PaintContext,
+  box: Box,
+  frame: PaintFrame,
+  recipe: PlaceableVisualRecipe,
+): void {
+  const unit = Math.min(box.width, box.height) / 96;
+  const cx = box.centreX;
+  const planter = {
+    x: cx - 30 * unit,
+    y: box.bottom - 34 * unit,
+    width: 60 * unit,
+    depth: 18 * unit,
+    face: 12 * unit,
+  };
+  floor_shadow(ctx, cx + 5, planter.y + planter.depth + planter.face, 36 * unit, 9 * unit, 0.26);
+  // The crown's shade on the floor beside the planter.
+  fill_ellipse(
+    ctx,
+    cx + 10 * unit,
+    box.bottom - 12 * unit,
+    42 * unit,
+    11 * unit,
+    css(SHADOW_INK, 0.12),
+  );
+  paint_planter_box(ctx, planter, CONCRETE, "concrete", recipe.seed, frame);
+  const base: Point = [cx, planter.y + planter.depth * 0.55];
+  const fork: Point = [cx + 1 * unit, planter.y - 14 * unit];
+  // The branch tips, back ones first; the highest stays a leaf's length below the texture top.
+  const top = box.y - OVERHANG + FRANGIPANI_LEAF * unit + 3;
+  const tips: readonly Point[] = [
+    [cx - 13 * unit, top],
+    [cx + 13 * unit, top + 2 * unit],
+    [cx - 30 * unit, top + 13 * unit],
+    [cx + 30 * unit, top + 15 * unit],
+    [cx - 1 * unit, top + 22 * unit],
+  ];
+  const bark = (x0: number, x1: number) =>
+    linear_gradient(ctx, x0, 0, x1, 0, [
+      [0, tint(FRANGIPANI_BARK, 0.3)],
+      [1, shade(FRANGIPANI_BARK, 0.3)],
+    ]);
+  // The trunk, then the branches forking out of it.
+  ctx.beginPath();
+  ctx.moveTo(base[0] - 4.5 * unit, base[1]);
+  ctx.quadraticCurveTo(cx - 5 * unit, (base[1] + fork[1]) / 2, fork[0] - 3.5 * unit, fork[1]);
+  ctx.lineTo(fork[0] + 3.5 * unit, fork[1]);
+  ctx.quadraticCurveTo(cx + 4 * unit, (base[1] + fork[1]) / 2, base[0] + 4.5 * unit, base[1]);
+  ctx.closePath();
+  ctx.fillStyle = bark(cx - 5 * unit, cx + 5 * unit);
+  ctx.fill();
+  stroke_outline(ctx, FRANGIPANI_BARK, frame);
+  for (const [tip_x, tip_y] of tips) {
+    ctx.beginPath();
+    ctx.moveTo(fork[0], fork[1] + 2);
+    ctx.quadraticCurveTo(
+      (fork[0] + tip_x) / 2 + (tip_x - fork[0]) * 0.2,
+      fork[1] - 4 * unit,
+      tip_x,
+      tip_y + 4,
+    );
+    ctx.strokeStyle = bark(Math.min(fork[0], tip_x), Math.max(fork[0], tip_x) + 1);
+    ctx.lineWidth = 3.4 * unit;
+    ctx.lineCap = "round";
+    ctx.stroke();
+  }
+  // A full rosette of leaves and a flower cluster at each branch tip.
+  const next = seeded(recipe.seed ^ 0x5eed);
+  tips.forEach(([tip_x, tip_y], tip) => {
+    const leaves = frame.isLowDetail ? 6 : 9;
+    for (let leaf = 0; leaf < leaves; leaf += 1) {
+      // The rosette radiates all round, its upper leaves longer, squashed by the view.
+      const angle = -Math.PI / 2 + (leaf / leaves) * TAU + (next() - 0.5) * 0.25;
+      const reach = Math.sin(angle) < 0 ? 1 : 0.72;
+      paint_paddle_leaf(
+        ctx,
+        tip_x,
+        tip_y,
+        angle,
+        (FRANGIPANI_LEAF - 3 + next() * 3) * reach * unit,
+        5.4 * unit,
+        GREENS[(leaf + tip) % GREENS.length] ?? LEAF_MID,
+        recipe.seed + tip * 11 + leaf,
+        frame,
+      );
+    }
+    const flowers = frame.isLowDetail ? 3 : 5;
+    for (let flower = 0; flower < flowers; flower += 1) {
+      const angle = (flower / flowers) * TAU + next() * 0.6;
+      paint_frangipani_flower(
+        ctx,
+        tip_x + Math.cos(angle) * 4.5 * unit,
+        tip_y - 1 * unit + Math.sin(angle) * 3 * unit,
+        3.4 * unit,
+        next() * TAU,
+      );
+    }
+    paint_frangipani_flower(ctx, tip_x, tip_y - 1.5 * unit, 3.6 * unit, next() * TAU);
+  });
+}
+
+/**
+ * Paints the bougainvillea arch: a slim steel hoop standing on a planter pot at each end, its
+ * posts rising into round shoulders and a raised span overhead, thickly grown with leaves and
+ * magenta bracts, with a few fallen bracts on the floor below. Turned north-south, the camera
+ * sees the arch from its south end, a little from the side, so the far post and pot, the near
+ * post and the span climbing between them all read. The crown stays inside the overhang.
+ *
+ * @param ctx - The paint context.
+ * @param box - The footprint box.
+ * @param frame - The paint frame.
+ * @param recipe - The recipe, whose seed varies the foliage and bracts.
+ */
+function paint_bougainvillea_arch(
+  ctx: PaintContext,
+  box: Box,
+  frame: PaintFrame,
+  recipe: PlaceableVisualRecipe,
+): void {
+  const is_across = box.width >= box.height;
+  const pot = 8;
+  // The highest the foliage may be drawn: a cluster's spread below the texture top.
+  const ceiling = box.y - OVERHANG + ARCH_FOLIAGE_CLEARANCE;
+  const feet: readonly [Point, Point] = is_across
+    ? [
+        [box.x + 12, box.y + 38],
+        [box.right - 12, box.y + 38],
+      ]
+    : [
+        [box.centreX - ARCH_SIDE_OFFSET, box.y + 36],
+        [box.centreX + ARCH_SIDE_OFFSET, box.bottom - 8],
+      ];
+  const post = Math.min(
+    standing_height(ARCH_METRES) * (is_across ? 0.6 : 1),
+    Math.min(feet[0][1], feet[1][1]) - pot - ceiling - 2,
+  );
+  // Seen face-on the span can only rise to the ceiling; seen from the end it rises higher.
+  const span_rise = is_across ? feet[0][1] - pot - post - ceiling : ARCH_SIDE_RISE;
+  /**
+   * Gives a point on the span between the post tops.
+   *
+   * @param t - 0 at the first post, 1 at the second.
+   * @returns The screen point.
+   */
+  const span_point = (t: number): Point => {
+    const floor_x = feet[0][0] + (feet[1][0] - feet[0][0]) * t;
+    const floor_y = feet[0][1] + (feet[1][1] - feet[0][1]) * t;
+    const lift = pot + post + span_rise * Math.sin(Math.PI * t) ** 0.55;
+    return [floor_x, floor_y - lift];
+  };
+  // Fallen bracts on the floor under the arch.
+  const fallen = seeded(recipe.seed ^ 0xb7a);
+  for (let petal = 0; petal < (frame.isLowDetail ? 4 : 9); petal += 1) {
+    const x = is_across
+      ? box.x + 20 + fallen() * (box.width - 40)
+      : box.centreX + (fallen() - 0.5) * 24;
+    const y = is_across ? box.y + 28 + fallen() * 14 : box.y + 30 + fallen() * (box.height - 44);
+    fill_ellipse(ctx, x, y, 1.6, 1, css(BRACTS[petal % BRACTS.length] ?? 0xd94f7a, 0.8));
+  }
+  for (const [x, y] of feet) {
+    floor_shadow(ctx, x + 3, y + 1, 9, 3, 0.24);
+    paint_round_pot(
+      ctx,
+      x,
+      y - pot,
+      8,
+      8,
+      { colour: TERRACOTTA, taper: 0.75, inner: SOIL, is_glazed: false },
+      frame,
+    );
+  }
+  // The steel hoop: two posts and the span between their tops.
+  const steps = 24;
+  ctx.beginPath();
+  ctx.moveTo(feet[0][0], feet[0][1] - pot);
+  for (let step = 0; step <= steps; step += 1) {
+    const [x, y] = span_point(step / steps);
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(feet[1][0], feet[1][1] - pot);
+  ctx.strokeStyle = css(ARCH_STEEL);
+  ctx.lineWidth = 2;
+  ctx.lineJoin = "round";
+  ctx.stroke();
+  ink_current_path(ctx, frame, 0.8);
+  // Vines climbing each post.
+  for (const [x, y] of feet) {
+    paint_vine(
+      ctx,
+      [
+        [x, y - pot - 2],
+        [x + 4, y - pot - post * 0.35],
+        [x - 4, y - pot - post * 0.7],
+        [x + 1, y - pot - post + 2],
+      ],
+      5,
+      2.8,
+      frame,
+    );
+  }
+  // Foliage along the span, heaviest over the shoulders and the crown.
+  const clusters = is_across ? 8 : 7;
+  for (let index = 0; index < clusters; index += 1) {
+    const [x, y] = span_point(index / (clusters - 1));
+    paint_leaf_cluster(ctx, x, y, {
+      count: 9,
+      leaf: 3.4,
+      spread_x: is_across ? 11 : 8,
+      spread_y: is_across ? 5.5 : 7,
+      seed: recipe.seed + index * 7,
+      frame,
+    });
+  }
+  const sprays = seeded(recipe.seed + 3);
+  for (let spray = 0; spray < (is_across ? 13 : 10); spray += 1) {
+    const [x, y] = span_point(sprays());
+    paint_bracts(
+      ctx,
+      x + (sprays() - 0.5) * (is_across ? 6 : 10),
+      y + (sprays() - 0.5) * 6,
+      recipe.seed + spray * 5,
+      frame,
+    );
+  }
 }
