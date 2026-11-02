@@ -98,6 +98,24 @@ describe("neighbourhood view", () => {
     expect(during.rushNotice).toMatch(/^Lunch rush under way/);
   });
 
+  it("walks through the closing steps once the doors close, ahead of any rush notice", () => {
+    const state = fresh_state();
+    const notice_at = (minute: number) =>
+      build_neighbourhood_view(at_minute(state, minute), VISUALS)!.rushNotice;
+
+    expect([
+      build_neighbourhood_view(state, VISUALS)!.doorsCloseMinute,
+      notice_at(19 * 60 + 20),
+      notice_at(20 * 60),
+      notice_at(20 * 60 + 29),
+    ]).toEqual([
+      19 * 60 + 20,
+      "Last entry passed: the doors are closed. Guests inside order by 8:00 PM.",
+      "Last orders. Guests already in line are still served; diners finish up by 8:12 PM.",
+      "Closing up. Diners finish their meals and head home; the hall clears before tomorrow.",
+    ]);
+  });
+
   it("is absent for a centre without a neighbourhood and added on load", () => {
     const state = fresh_state();
     const bare: GameState = { ...state, neighbourhood: undefined };

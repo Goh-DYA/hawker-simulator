@@ -4,7 +4,7 @@ exports[`createHawkerRuntime > (1) exports a fresh centre built from the real co
 {
   "runtimeSchemaVersion": 2,
   "core": {
-    "schemaVersion": 5,
+    "schemaVersion": 6,
     "savedAtTick": 0,
     "map": {
       "width": 24,
@@ -933,8 +933,9 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
     },
     "minuteOfDay": 690,
     "openingMinute": 630,
-    "lastOrdersMinute": 1090,
-    "closingMinute": 1110,
+    "doorsCloseMinute": 1160,
+    "lastOrdersMinute": 1200,
+    "closingMinute": 1230,
     "rushWindows": [
       {
         "kind": "lunch",
@@ -945,8 +946,8 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
       {
         "kind": "dinner",
         "label": "Dinner",
-        "startMinute": 1009,
-        "endMinute": 1057,
+        "startMinute": 1094,
+        "endMinute": 1142,
       },
     ],
     "activeRush": undefined,
@@ -10169,7 +10170,7 @@ exports[`createHawkerRuntime > (10) reports the last runtime snapshot of an open
       "completed": false,
     },
   ],
-  "objectiveRefreshLabel": "7h 0m",
+  "objectiveRefreshLabel": "9h 0m",
   "claimedMilestoneCount": 1,
   "milestoneTracks": [
     {

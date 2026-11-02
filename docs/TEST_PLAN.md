@@ -59,7 +59,8 @@ The day-rhythm systems have their own suites:
 
 | Suite | What it covers |
 |---|---|
-| `tests/game/core/rush.test.ts` | The lunch and dinner demand bumps, the rush cores, last orders from 18:10 and no adaptive spawns until the next opening. |
+| `tests/game/core/rush.test.ts` | The lunch and dinner demand bumps, the rush cores, the doors closing from 19:20, last orders from 20:00, the closing call from 20:12, the time left until the closing call and no adaptive spawns from the doors closing until the next opening. |
+| `tests/game/core/closing.test.ts` | The closing wind-down and admission: no arrival after the doors close, nobody turned away (every guest still queueing when the doors close is served), a guest still waiting at the closing call sent home unrated, no order taken that cannot be cooked by the closing call, arrivals stopping earlier when the kitchen is slow, every diner finishing up at the closing call and rated as served, an empty hall with no queues, reservations or trays when the next day opens, and a fixed arrival interval that ignores the clock. |
 | `tests/game/core/table-clearing.test.ts` | The hash-based tray-return habit, the crew size, trays left when no return is reachable and their clearing, seats with trays skipped, crew capacity, trays dropped with their seat, seated guests finishing past the visit cap, and departure reasons on visit ratings. |
 | `tests/game/core/neighbourhood.test.ts` | Day streams seeded only from the world seed, system and day; the shuffle bag (opening day, no consecutive repeats, every card before a repeat); the director's tilt and day performance; card effects on the crowds; the day-end report, `day-ended` event and fresh ledger; seeded reproducibility; peak reputation; the food writer's threshold ladder, plaque, no-plaque and too-few-visits verdicts, review window and schedule; and the seeded daily objectives and their targets. |
 | `tests/game/core/reputation.test.ts` | The wait component's patience grace and linear fall, and the reputation moving average: its smoothing, settling, recovery, monotonicity and bounds. |
@@ -96,7 +97,7 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 - Seat choice term sensitivity: path, group, comfort, cleanliness, congestion.
 - No available stall, unaffordable dish, no seat, all exits stressed, and centre close.
 - Deterministic seeded results and agent despawn.
-- Rush demand peaks at lunch and dinner, backpressure halves inside a rush core, and the adaptive model spawns nobody from last orders until the next opening.
+- Rush demand peaks at lunch and dinner, backpressure halves inside a rush core, and the adaptive model spawns nobody from the doors closing (19:20) until the next opening and admits a guest only while a stall can serve them by the closing call; stalls take only orders they can cook by the closing call; nobody is turned away, the closing call ends every meal, and the hall is empty when the next day opens.
 - Tray return requires a reachable return within 14 path tiles and the persona's hashed habit; an unreturned tray blocks its seat until the crew (one plus each tray-return station's crew, one unless the station's `cleaningCrew` says more) clears it, oldest first; seated guests finish past the visit cap.
 - The neighbourhood draws only from its day streams, never `rngState`; the same world seed reproduces the same calendar, writer schedule and objectives.
 - Nutrition-intent assignment is seed-reproducible, independent of persona, limited to one intent from level 2, and consumes one roll only under its documented conditions.
@@ -171,7 +172,7 @@ Run the suites with `CI=true npm test`, so that a missing snapshot fails instead
 11. Install/cache once, go offline, reload, continue, save, and reload again.
 12. Trigger update flow with a second build; preserve save.
 13. Reset with cancel first, then confirm; verify only game-owned data is cleared.
-14. Play through a full day: verify the forecast for tomorrow, the rush notice before lunch and dinner, last orders, the Service Review at day end and the next day's card matching the forecast; with a food-writer day, verify the review window and verdict.
+14. Play through a full day: verify the forecast for tomorrow, the rush notice before lunch and dinner, the doors closing at 19:20, last orders at 20:00 and the closing call at 20:12 (queues turn for home, diners leave, the hall empties), the Service Review at day end, the next morning opening with an empty hall and the next day's card matching the forecast; with a food-writer day, verify the review window and verdict.
 
 Run at 1280 × 720 and 1024 × 640, plus zoom levels in [ACCESSIBILITY.md](release/ACCESSIBILITY.md).
 

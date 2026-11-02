@@ -109,7 +109,10 @@ export function leave_tray(draft: Draft, seat_key: string, seat_point: GridPoint
 export function compute_uncleared_neighbour_penalty(draft: Draft, seat_point: GridPoint): number {
   let count = 0;
   for (const seat of getSeatLocations(draft.objects, draft.source.catalog)) {
-    if (!draft.unclearedTrays[seat.key]) continue;
+    const tray = draft.unclearedTrays[seat.key];
+    // A tray a neighbour left this same tick does not count, so diners finishing together (as at
+    // the closing call) are rated alike whatever order they are processed in.
+    if (!tray || tray.leftAtTick === draft.tick) continue;
     const distance = Math.max(
       Math.abs(seat.point.x - seat_point.x),
       Math.abs(seat.point.y - seat_point.y),

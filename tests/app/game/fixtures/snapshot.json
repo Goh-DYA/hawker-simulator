@@ -63,8 +63,9 @@
     },
     "minuteOfDay": 690,
     "openingMinute": 630,
-    "lastOrdersMinute": 1090,
-    "closingMinute": 1110,
+    "doorsCloseMinute": 1160,
+    "lastOrdersMinute": 1200,
+    "closingMinute": 1230,
     "rushWindows": [
       {
         "kind": "lunch",
@@ -75,8 +76,8 @@
       {
         "kind": "dinner",
         "label": "Dinner",
-        "startMinute": 1011,
-        "endMinute": 1059
+        "startMinute": 1096,
+        "endMinute": 1144
       }
     ],
     "rushNotice": "Lunch crowd from about 11:54 AM. Ready the queues and seats.",

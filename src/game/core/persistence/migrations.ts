@@ -13,6 +13,7 @@ import type {
   PersistentGameStateV3,
   PersistentGameStateV4,
   PersistentGameStateV5,
+  PersistentGameStateV6,
 } from "../types";
 import {
   PersistenceError,
@@ -279,6 +280,34 @@ function upgrade_v4_to_v5(old: PersistentGameStateV4): Record<string, unknown> {
   } satisfies PersistentGameStateV5;
 }
 
+function parseV6(value: Record<string, unknown>): PersistentGameStateV6 {
+  return { ...parseV5({ ...value, schemaVersion: 5 }), schemaVersion: 6 };
+}
+
+/** Length of a V5 operating day (10:30 to 18:30), in simulated milliseconds. */
+const V5_OPERATING_DAY_MS = 8 * 60 * 1_000;
+/** Length of a V6 operating day (10:30 to 20:30), in simulated milliseconds. */
+const V6_OPERATING_DAY_MS = 10 * 60 * 1_000;
+
+/**
+ * Re-counts the elapsed time on the ten-minute operating day, so a migrated save keeps its day
+ * number (which the focus day, the neighbourhood calendar, the day ledger and the visit ratings
+ * record) and its time of day (both days open at 10:30, one minute per simulated second).
+ *
+ * @param old - A parsed V5 save.
+ * @returns The same save as V6.
+ */
+function upgrade_v5_to_v6(old: PersistentGameStateV5): Record<string, unknown> {
+  const elapsed_ms = Math.max(0, old.elapsedMs);
+  const day_index = Math.floor(elapsed_ms / V5_OPERATING_DAY_MS);
+  const time_of_day_ms = elapsed_ms - day_index * V5_OPERATING_DAY_MS;
+  return {
+    ...old,
+    schemaVersion: 6,
+    elapsedMs: day_index * V6_OPERATING_DAY_MS + time_of_day_ms,
+  } satisfies PersistentGameStateV6;
+}
+
 /**
  * One-version upgrades keyed by the schema version they start from.
  *
@@ -292,6 +321,7 @@ const UPGRADES: ReadonlyMap<unknown, (value: Record<string, unknown>) => Record<
     [2, (value) => upgrade_v2_to_v3(parseV2(value))],
     [3, (value) => upgrade_v3_to_v4(parseV3(value))],
     [4, (value) => upgrade_v4_to_v5(parseV4(value))],
+    [5, (value) => upgrade_v5_to_v6(parseV5(value))],
   ]);
 
 /**
@@ -304,7 +334,7 @@ const UPGRADES: ReadonlyMap<unknown, (value: Record<string, unknown>) => Record<
  * @returns The save as a current-version persistent state.
  * @throws PersistenceError When the save is not an object, has an unsupported version or is malformed.
  */
-export function migratePersistentState(value: unknown): PersistentGameStateV5 {
+export function migratePersistentState(value: unknown): PersistentGameStateV6 {
   if (!isRecord(value)) throw new PersistenceError("Save data must be an object");
   let current = value;
   while (current.schemaVersion !== PERSISTENT_SCHEMA_VERSION) {
@@ -314,5 +344,5 @@ export function migratePersistentState(value: unknown): PersistentGameStateV5 {
     }
     current = upgrade(current);
   }
-  return parseV5(current);
+  return parseV6(current);
 }

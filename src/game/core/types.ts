@@ -317,6 +317,11 @@ export interface Customer {
   readonly departureReason?: DepartureReason;
   /** Set when the guest's sale counts towards today's food-writer review. */
   readonly isWriterSample?: boolean;
+  /**
+   * Set when last orders sent the guest home before they ordered: the closing, not the centre's
+   * service, ended the visit, so it leaves no visit rating.
+   */
+  readonly isSentHome?: boolean;
   /** True once the order has been handed over, including a zero-price dish. */
   readonly served: boolean;
   readonly spent: number;
@@ -965,7 +970,18 @@ export interface PersistentGameStateV3 {
   readonly elapsedMs: number;
 }
 
-/** Save V4, the current core save shape: adds the saved nutrition metrics. */
+/**
+ * Save V6, the current core save shape: the same fields as V5, with `elapsedMs` counted on the
+ * ten-minute operating day (10:30 to 20:30) instead of V5's eight-minute day.
+ */
+export interface PersistentGameStateV6 extends Omit<PersistentGameStateV5, "schemaVersion"> {
+  readonly schemaVersion: 6;
+}
+
+/**
+ * Save V5: adds the peak reputation and the neighbourhood; `elapsedMs` counts eight-minute
+ * operating days (10:30 to 18:30).
+ */
 export interface PersistentGameStateV5 {
   readonly schemaVersion: 5;
   readonly savedAtTick: number;
@@ -1020,4 +1036,5 @@ export type AnyPersistentGameState =
   | PersistentGameStateV2
   | PersistentGameStateV3
   | PersistentGameStateV4
-  | PersistentGameStateV5;
+  | PersistentGameStateV5
+  | PersistentGameStateV6;

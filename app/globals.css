@@ -713,6 +713,19 @@ kbd {
   border-left: 2px dashed var(--zinc-deep);
 }
 
+/* The wind-down from the doors closing to the end of the day, striped like a shutter. */
+.today-closing {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: repeating-linear-gradient(
+    135deg,
+    rgb(23 53 46 / 22%) 0 3px,
+    rgb(23 53 46 / 8%) 3px 6px
+  );
+}
+
 .today-now {
   border-left: 3px solid var(--vermilion-strong);
 }

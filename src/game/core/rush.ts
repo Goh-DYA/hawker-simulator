@@ -3,9 +3,18 @@
  *
  * A neighbourhood centre fills twice: a lunch crowd around midday and a smaller dinner crowd
  * before closing. Each crowd is a smooth bump (a biweight polynomial, so no transcendental
- * functions whose last bits may differ between engines) added to a base demand, and arrivals
- * stop for last orders shortly before the day ends. The windows are plain data, so the HUD can
- * draw the same bands the simulation uses.
+ * functions whose last bits may differ between engines) added to a base demand. The windows are
+ * plain data, so the HUD can draw the same bands the simulation uses.
+ *
+ * The day then winds down in steps sized to real service times (a guest takes about twenty to
+ * thirty minutes to reach a counter, and a dish up to an hour to cook), so the hall is empty when
+ * the next day opens and no guest is let in only to be sent away: the doors close to new guests at
+ * `DOORS_CLOSE_MINUTE` (19:20), forty minutes before last orders and after the dinner crowd; from
+ * then on a stall takes only orders it can hand over by the closing call
+ * (`ms_until_closing_call`); at `LAST_ORDERS_MINUTE` (20:00) guests who have not reached a counter
+ * head home; and at `CLOSING_CALL_MINUTE` (20:12) diners finish their meals and leave, eighteen
+ * minutes before the day ends, which is time to walk out of the hall. Whoever is still inside when
+ * the day ends at 20:30 is cleared with the night.
  */
 import { OPERATING_DAY_MS, operatingMinuteOfDay } from "./progression";
 
@@ -32,17 +41,34 @@ export const LUNCH_RUSH: RushWindow = {
   half_width_minutes: 60,
   peak: 0.9,
 };
-/** The dinner crowd: peaking at 17:15 and spreading forty minutes either side. */
+/**
+ * The dinner crowd: peaking at 18:40 and spreading forty minutes either side, so the rush itself
+ * (its core, `RUSH_CORE_SHARE` of the spread) is over before the doors close at 19:20, even on a
+ * day whose crowd comes the full fifteen minutes of jitter late.
+ */
 export const DINNER_RUSH: RushWindow = {
   kind: "dinner",
-  centre_minute: 17 * 60 + 15,
+  centre_minute: 18 * 60 + 40,
   half_width_minutes: 40,
   peak: 0.6,
 };
 /** The default crowds of a day without a neighbourhood plan, in time order. */
 export const DEFAULT_RUSH_WINDOWS: readonly RushWindow[] = [LUNCH_RUSH, DINNER_RUSH];
-/** In-game minute after which no new guest arrives (18:10, twenty minutes before closing). */
-export const LAST_ORDERS_MINUTE = 18 * 60 + 10;
+/**
+ * In-game minute from which no new guest comes in (19:20), the last entry: forty minutes before
+ * last orders, so the last guest through the doors has time to reach a counter and order.
+ */
+export const DOORS_CLOSE_MINUTE = 19 * 60 + 20;
+/**
+ * In-game minute from which the stalls take no more orders (20:00, thirty minutes before
+ * closing): guests still choosing or queueing go home without a visit rating.
+ */
+export const LAST_ORDERS_MINUTE = 20 * 60;
+/**
+ * In-game minute from which diners finish their meals and leave (20:12), eighteen minutes before
+ * closing, so the hall empties before the day ends.
+ */
+export const CLOSING_CALL_MINUTE = 20 * 60 + 12;
 /**
  * Share of a crowd's half-width, either side of its centre, that counts as the rush itself.
  * At this distance the bump still adds about 40% of its peak.
@@ -95,13 +121,46 @@ export function active_rush_window(
 }
 
 /**
- * Whether new guests have stopped arriving for the day.
+ * Whether the doors are closed to new guests for the rest of the day.
+ *
+ * @param elapsed_ms - The simulated time.
+ * @returns True from `DOORS_CLOSE_MINUTE` until the day ends.
+ */
+export function is_doors_closed(elapsed_ms: number): boolean {
+  return operatingMinuteOfDay(elapsed_ms) >= DOORS_CLOSE_MINUTE;
+}
+
+/**
+ * Whether the stalls have stopped taking orders for the day.
  *
  * @param elapsed_ms - The simulated time.
  * @returns True from `LAST_ORDERS_MINUTE` until the day ends.
  */
 export function is_last_orders(elapsed_ms: number): boolean {
   return operatingMinuteOfDay(elapsed_ms) >= LAST_ORDERS_MINUTE;
+}
+
+/**
+ * Whether diners have been asked to finish up for the day.
+ *
+ * @param elapsed_ms - The simulated time.
+ * @returns True from `CLOSING_CALL_MINUTE` until the day ends.
+ */
+export function is_closing_call(elapsed_ms: number): boolean {
+  return operatingMinuteOfDay(elapsed_ms) >= CLOSING_CALL_MINUTE;
+}
+
+/**
+ * Returns the simulated milliseconds left until today's closing call, the latest moment a stall
+ * may hand over an order.
+ *
+ * @param elapsed_ms - The simulated time; negative values count as zero.
+ * @returns The milliseconds until the closing call, or a negative value once it has passed.
+ */
+export function ms_until_closing_call(elapsed_ms: number): number {
+  const day_elapsed_ms = Math.max(0, elapsed_ms) % OPERATING_DAY_MS;
+  const closing_call_ms = (CLOSING_CALL_MINUTE - operatingMinuteOfDay(0)) * 1_000;
+  return closing_call_ms - day_elapsed_ms;
 }
 
 /**

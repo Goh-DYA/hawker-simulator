@@ -5,6 +5,16 @@
  * through choosing a stall, queueing, ordering, waiting, finding a seat, eating, returning the
  * tray and walking to an exit, recovering when a target disappears. Its helpers edit the step
  * draft in place in a fixed order, so seeded runs stay identical.
+ *
+ * In a centre that keeps operating hours (`follows_operating_hours`) the visit also follows the
+ * closing schedule in `rush.ts`, and admission in `closing.ts` lets in only guests who can be
+ * served: a guest whom the closing leaves nothing to order goes home without a rating; from last
+ * orders a guest still choosing a stall goes home without a rating, while a guest already in a
+ * queue may still order while the kitchen can cook in time; from the closing call a guest who never
+ * reached a counter goes home unrated, diners finish their meals (leaving their trays for the night
+ * crew) and a served guest still looking for a seat takes the meal away, rated with
+ * `CLOSING_TAKEAWAY_COMFORT`; and `clear_hall_at_closing` ends every visit still running when the
+ * day ends, so each day opens with an empty hall.
  */
 import { samePoint } from "./grid";
 import {
@@ -24,6 +34,7 @@ import {
 import {
   chooseDish,
   chooseStall,
+  is_kitchen_closed_for,
   findReservedSeat,
   findSeat,
   findTargetTrayPoint,
@@ -46,6 +57,9 @@ import {
   leave_tray,
   TRAY_RETURN_MAX_PATH_TILES,
 } from "./clearing";
+import { follows_operating_hours } from "./closing";
+import { compare_customer_ids } from "./ordering";
+import { is_closing_call, is_last_orders } from "./rush";
 import type { Customer, CustomerStatus } from "./types";
 
 // Eating and tray-return factors (processCustomer).
@@ -69,6 +83,12 @@ const MEAL_COMFORT_STEP_PER_DOUBLING = 3;
 const MIN_MEAL_CLEANLINESS = 35;
 /** Comfort component of a served guest who gave up looking for a free seat. */
 const NO_SEAT_COMFORT = 30;
+/**
+ * Comfort component of a served guest who never sat down because the centre closed: between a
+ * guest who gave up on finding a seat and the default of a served guest, since closing cut the
+ * search short.
+ */
+const CLOSING_TAKEAWAY_COMFORT = 45;
 /** Cleanliness rating before nearby cleanliness utilities. */
 const BASE_MEAL_CLEANLINESS = 82;
 /** Raw cleanliness points per unit of nearby cleanliness, before the taper. */
@@ -243,6 +263,9 @@ function handle_ordering(draft: Draft, customer: Customer): Customer {
   }
   if (customer.stateElapsedMs < (stall.definition.stall?.orderMs ?? 0)) return customer;
   const choice = chooseDish(draft, stall, customer);
+  if (!choice && is_kitchen_closed_for(draft, stall, customer)) {
+    return beginExit(draft, { ...customer, isSentHome: true }, false);
+  }
   if (!choice) return beginExit(draft, { ...customer, departureReason: "no-dish" }, true);
   const healthRating = personalizedHealthRating(
     choice.variant?.profile,
@@ -361,9 +384,12 @@ function handle_eating(draft: Draft, customer: Customer): Customer {
     // Without a dish the meal never ends, and eating is exempt from the visit cap.
     return beginExit(draft, releaseSeat(draft, customer), false);
   }
-  if (customer.stateElapsedMs < adjustedEatingMs) return customer;
+  // At the closing call every diner finishes up, with the meal counted in full.
+  const is_finishing_up = follows_operating_hours(draft.source) && is_closing_call(draft.source.elapsedMs);
+  if (customer.stateElapsedMs < adjustedEatingMs && !is_finishing_up) return customer;
   const uncleared_penalty = compute_uncleared_neighbour_penalty(draft, seat.point);
-  const returns_tray = will_return_tray(draft, customer);
+  // After the closing call diners leave their trays for the night crew, so they are out in time.
+  const returns_tray = !is_finishing_up && will_return_tray(draft, customer);
   customer = releaseSeat(draft, customer);
   if (!returns_tray) leave_tray(draft, seat.key, seat.point);
   const finished: Customer = {
@@ -510,12 +536,28 @@ function handle_walking_to_exit(draft: Draft, customer: Customer, delta_ms: numb
   if (!targetExit) return undefined;
   const movement = moveToward(draft, customer, targetExit.position, delta_ms);
   if (!movement.arrived && !movement.failed) return movement.customer;
-  customer = settleVisitRating(
-    draft,
-    movement.customer,
-    !movement.customer.served,
-    movement.customer.departureReason ?? (movement.customer.served ? "served" : "abandoned"),
-  );
+  despawn_customer(draft, movement.customer, movement.failed ? "forced-after-stuck" : undefined);
+  return undefined;
+}
+
+/**
+ * Settles a leaving guest's visit rating, frees their queue place and seat, counts them and
+ * emits their despawn event. A guest sent home at last orders leaves no rating.
+ *
+ * @param draft - The draft the step edits.
+ * @param source - The leaving guest.
+ * @param message - The despawn event's message, when it is not the one their visit implies.
+ */
+function despawn_customer(draft: Draft, source: Customer, message?: string): void {
+  const is_unrated = source.isSentHome === true && !source.served;
+  const customer = is_unrated
+    ? source
+    : settleVisitRating(
+        draft,
+        source,
+        !source.served,
+        source.departureReason ?? (source.served ? "served" : "abandoned"),
+      );
   removeFromAllQueues(draft, customer.id);
   releaseSeat(draft, customer);
   draft.metrics = {
@@ -526,8 +568,94 @@ function handle_walking_to_exit(draft: Draft, customer: Customer, delta_ms: numb
   event(draft, {
     type: "customer-despawned",
     entityId: customer.id,
-    message: movement.failed ? "forced-after-stuck" : customer.served ? "completed" : "abandoned",
+    message: message ?? (is_unrated ? "sent-home" : customer.served ? "completed" : "abandoned"),
   });
+}
+
+/**
+ * Ends every visit still running when the operating day ends, so the next day opens with an
+ * empty hall: each guest left inside is settled as if they had walked out, in
+ * `compare_customer_ids` order. A served guest is rated as served (with
+ * `CLOSING_TAKEAWAY_COMFORT` if they never sat down); an unserved guest still waiting on the
+ * centre leaves no rating; an unserved guest already leaving for another reason keeps that
+ * reason's rating. The queues and seat reservations are emptied, and the night clears every tray
+ * left on a table.
+ *
+ * @param draft - The draft of the step that ends the day.
+ */
+export function clear_hall_at_closing(draft: Draft): void {
+  for (const id of Object.keys(draft.customers).sort(compare_customer_ids)) {
+    const customer = draft.customers[id]!;
+    const is_waiting_on_centre = !customer.served && CLOSING_UNRATED_STATUSES.has(customer.status);
+    const settled = customer.served && SEATLESS_STATUSES.has(customer.status)
+      ? with_takeaway_comfort(customer)
+      : is_waiting_on_centre
+        ? { ...customer, isSentHome: true }
+        : customer;
+    despawn_customer(draft, settled, "closing");
+  }
+  draft.customers = {};
+  draft.queues = Object.fromEntries(Object.keys(draft.queues).map((stall_id) => [stall_id, []]));
+  draft.seatReservations = {};
+  draft.unclearedTrays = {};
+}
+
+/**
+ * Statuses of a guest who has not yet reached a stall's counter, whom the closing call sends home.
+ * A guest already ordering or waiting for food is still served.
+ */
+const PRE_ORDER_STATUSES: ReadonlySet<CustomerStatus> = new Set([
+  "choosing-stall",
+  "walking-to-queue",
+  "queued",
+]);
+
+/** Statuses of an unserved guest still waiting on the centre, who leaves unrated at closing. */
+const CLOSING_UNRATED_STATUSES: ReadonlySet<CustomerStatus> = new Set([
+  ...PRE_ORDER_STATUSES,
+  "ordering",
+  "waiting-for-food",
+]);
+
+/** Statuses of a served guest who has not sat down to eat. */
+const SEATLESS_STATUSES: ReadonlySet<CustomerStatus> = new Set(["seeking-seat", "walking-to-seat"]);
+
+/**
+ * Gives a served guest who never sat down because the centre closed the closing takeaway comfort.
+ *
+ * @param customer - The served guest.
+ * @returns The guest with their comfort factor set.
+ */
+function with_takeaway_comfort(customer: Customer): Customer {
+  return {
+    ...customer,
+    hasTray: false,
+    ratingFactors: { ...customer.ratingFactors, comfort: CLOSING_TAKEAWAY_COMFORT },
+  };
+}
+
+/**
+ * Applies the closing schedule to one guest: from last orders a guest still choosing a stall goes
+ * home unrated, from the closing call so does a guest who never reached a counter, and from the
+ * closing call a served guest still looking for a seat takes their meal away with the closing
+ * takeaway comfort. Diners finishing up is handled in
+ * `handle_eating`.
+ *
+ * @param draft - The draft the step edits.
+ * @param customer - The customer, with this step's time already added.
+ * @returns The guest heading home, or `undefined` when the schedule does not move them.
+ */
+function apply_closing_schedule(draft: Draft, customer: Customer): Customer | undefined {
+  if (!follows_operating_hours(draft.source)) return undefined;
+  const elapsed_ms = draft.source.elapsedMs;
+  const is_choosing_late = customer.status === "choosing-stall" && is_last_orders(elapsed_ms);
+  const is_still_waiting = PRE_ORDER_STATUSES.has(customer.status) && is_closing_call(elapsed_ms);
+  if (!customer.served && (is_choosing_late || is_still_waiting)) {
+    return beginExit(draft, { ...customer, isSentHome: true }, false);
+  }
+  if (customer.served && SEATLESS_STATUSES.has(customer.status) && is_closing_call(elapsed_ms)) {
+    return beginExit(draft, with_takeaway_comfort(customer), false);
+  }
   return undefined;
 }
 
@@ -560,8 +688,8 @@ const CUSTOMER_STATUS_HANDLERS = {
 /**
  * Advances one customer through one fixed step of its visit state machine.
  *
- * Adds the step to the visit and state timers, sends a customer past the maximum visit length
- * towards the exit, then runs the handler for its status.
+ * Adds the step to the visit and state timers, applies the closing schedule, sends a customer past
+ * the maximum visit length towards the exit, then runs the handler for its status.
  *
  * @param draft - The draft the step edits; queues, seats, metrics and events may change.
  * @param source - The customer at the start of the step.
@@ -574,6 +702,11 @@ export function processCustomer(draft: Draft, source: Customer, deltaMs: number)
     visitElapsedMs: source.visitElapsedMs + deltaMs,
     stateElapsedMs: source.stateElapsedMs + deltaMs,
   };
+
+  // The closing schedule goes first, so a guest whose visit cap falls due after last orders goes
+  // home unrated like the guests around them.
+  const sent_home = apply_closing_schedule(draft, customer);
+  if (sent_home) return sent_home;
 
   if (customer.visitElapsedMs >= draft.source.config.maxVisitMs && !VISIT_CAP_EXEMPT_STATUSES.has(customer.status)) {
     return beginExit(draft, { ...customer, departureReason: "visit-cap" }, !customer.served);

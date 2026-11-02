@@ -21,8 +21,11 @@ import type {
   ObjectiveKind,
 } from "./types";
 
-/** Length of one operating day in simulated milliseconds (eight minutes). */
-export const OPERATING_DAY_MS = 8 * 60 * 1_000;
+/**
+ * Length of one operating day in simulated milliseconds: ten minutes, one in-game minute per
+ * simulated second, so the clock runs from the 10:30 opening to the 20:30 close.
+ */
+export const OPERATING_DAY_MS = 10 * 60 * 1_000;
 const OPERATING_START_MINUTE = 10 * 60 + 30;
 const MASTERY_RANK_DIVISOR = 100;
 /** Cash awarded per tier when a milestone is claimed. */
