@@ -148,13 +148,15 @@ export interface Announcer {
   setActivityUnread(count: number): void;
   /** Removes every toast on screen, as when the practice day swaps centres. */
   clearToasts(): void;
+  /** Removes one toast before its timer ends, when the player dismisses it. */
+  dismissToast(id: number): void;
 }
 
 /**
  * Own the toasts, the activity feed and its unread count, and the storage warning latch.
  *
  * Toasts queue through {@link queue_toast}: up to three stay on screen, newest first, each
- * until its own timer ends.
+ * until its own timer ends or the player dismisses it.
  *
  * `announce` and `reportStorageIssue` are stable for the component's life, so effects
  * that depend on them never restart.
@@ -193,6 +195,11 @@ export function useAnnouncer(is_activity_panel_open: boolean): Announcer {
 
   const clearToasts = useCallback(() => setToasts([]), []);
 
+  const dismissToast = useCallback(
+    (id: number) => setToasts((current) => current.filter((toast) => toast.id !== id)),
+    [],
+  );
+
   const reportStorageIssue = useCallback(
     (message: string) => {
       if (storageWarningRef.current) return;
@@ -211,6 +218,7 @@ export function useAnnouncer(is_activity_panel_open: boolean): Announcer {
     activityUnread,
     setActivityUnread,
     clearToasts,
+    dismissToast,
   };
 }
 

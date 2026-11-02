@@ -225,21 +225,25 @@ describe("TopBar", () => {
 });
 
 describe("ToastStack", () => {
-  it("shows the update notice ahead of the toasts", () => {
+  it("shows the update notice ahead of the toasts, each with a dismiss button", () => {
     const html = renderToStaticMarkup(
       createElement(ToastStack, {
         isUpdateReady: true,
         toasts: [{ id: 1, kind: "success", message: "Centre saved on this device." }],
         isInert: false,
         onApplyUpdate: () => undefined,
+        onDismissUpdate: () => undefined,
+        onDismissToast: () => undefined,
       }),
     );
 
     expect(html).toBe(
       '<div class="toast-stack" aria-live="polite" aria-atomic="false" aria-hidden="false">' +
         '<div class="toast info"><span>↻</span><p>A safe update is ready. Save, then reload when convenient.</p>' +
-        '<button type="button">Save &amp; update</button></div>' +
-        '<div class="toast success"><span aria-hidden="true">✓</span><p>Centre saved on this device.</p></div>' +
+        '<div class="toast-actions"><button type="button">Save &amp; update</button>' +
+        '<button type="button" class="toast-dismiss" aria-label="Dismiss notice: A safe update is ready. Save, then reload when convenient." title="Dismiss"></button></div></div>' +
+        '<div class="toast success"><span aria-hidden="true">✓</span><p>Centre saved on this device.</p>' +
+        '<button type="button" class="toast-dismiss" aria-label="Dismiss notice: Centre saved on this device." title="Dismiss"></button></div>' +
         "</div>",
     );
   });
